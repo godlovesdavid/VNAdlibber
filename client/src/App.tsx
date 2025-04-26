@@ -35,12 +35,12 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <VnProvider>
+      <VnProvider>
+        <TooltipProvider>
           <Toaster />
           <Router />
-        </VnProvider>
-      </TooltipProvider>
+        </TooltipProvider>
+      </VnProvider>
     </QueryClientProvider>
   );
 }
