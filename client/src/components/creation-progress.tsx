@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { useVnContext } from "@/context/vn-context";
 import { cn } from "@/lib/utils";
 
@@ -21,7 +22,7 @@ export function CreationProgress({ currentStep }: CreationProgressProps) {
     <div className="pt-16 px-4 pb-4 bg-white shadow-sm">
       <div className="progress-bar flex items-center justify-between max-w-4xl mx-auto py-3">
         {[1, 2, 3, 4, 5, 6].map((step) => (
-          <React.Fragment key={step}>
+          <Fragment key={step}>
             <div 
               className={cn(
                 "flex items-center justify-center w-8 h-8 rounded-full border-2 text-sm font-medium cursor-pointer",
@@ -43,7 +44,7 @@ export function CreationProgress({ currentStep }: CreationProgressProps) {
                 )}
               />
             )}
-          </React.Fragment>
+          </Fragment>
         ))}
       </div>
       
