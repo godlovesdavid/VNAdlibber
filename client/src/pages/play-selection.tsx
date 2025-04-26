@@ -1,0 +1,274 @@
+import { useState, useRef } from "react";
+import { useLocation } from "wouter";
+import { useVnContext } from "@/context/vn-context";
+import { NavBar } from "@/components/nav-bar";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Upload, Play, ArrowLeft } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { GeneratedAct } from "@/types/vn";
+
+export default function PlaySelection() {
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const { projectData } = useVnContext();
+  const [importedStories, setImportedStories] = useState<Array<{
+    id: string;
+    title: string;
+    actNumber: number;
+    createdAt: string;
+    actData: GeneratedAct;
+  }>>([]);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Handle import story
+  const handleImportStory = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+  
+  // Process imported file
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const content = event.target?.result as string;
+        const actData = JSON.parse(content) as GeneratedAct;
+        
+        // Extract act number from filename if possible
+        const filename = file.name;
+        const actMatch = filename.match(/Act(\d+)/i);
+        const actNumber = actMatch ? parseInt(actMatch[1], 10) : 1;
+        
+        // Extract title from filename if possible
+        let title = "Imported Story";
+        const titleMatch = filename.match(/^(.+?)-Act\d+/);
+        if (titleMatch) {
+          title = titleMatch[1].replace(/_/g, ' ');
+        }
+        
+        // Add to imported stories
+        const storyId = Date.now().toString();
+        setImportedStories([
+          ...importedStories,
+          {
+            id: storyId,
+            title,
+            actNumber,
+            createdAt: new Date().toISOString(),
+            actData
+          }
+        ]);
+        
+        toast({
+          title: "Story Imported",
+          description: `Successfully imported ${file.name}`,
+        });
+        
+        // Reset the file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      } catch (error) {
+        toast({
+          title: "Import Failed",
+          description: "The file format is not valid. Please upload a valid story JSON file.",
+          variant: "destructive",
+        });
+      }
+    };
+    reader.readAsText(file);
+  };
+  
+  // Handle play story
+  const handlePlayStory = (storyId: string) => {
+    // For imported stories
+    const story = importedStories.find(s => s.id === storyId);
+    if (story) {
+      // Store the story in session storage for the player to access
+      sessionStorage.setItem('current_story', JSON.stringify(story));
+      setLocation(`/player/imported`);
+      return;
+    }
+    
+    // For generated acts from the current project
+    const actNumber = parseInt(storyId);
+    if (!isNaN(actNumber) && actNumber >= 1 && actNumber <= 5) {
+      setLocation(`/player/${actNumber}`);
+    }
+  };
+  
+  // Get acts from current project
+  const getCurrentProjectActs = () => {
+    if (!projectData?.generatedActs) return [];
+    
+    return Object.keys(projectData.generatedActs)
+      .map(key => {
+        const actNumber = parseInt(key.replace('act', ''));
+        return {
+          id: actNumber.toString(),
+          title: projectData.title || "Untitled Project",
+          actNumber,
+          fullTitle: `${projectData.title || "Untitled Project"} - Act ${actNumber}`
+        };
+      })
+      .sort((a, b) => a.actNumber - b.actNumber);
+  };
+  
+  // Back to main menu
+  const handleBackToMenu = () => {
+    setLocation("/");
+  };
+  
+  return (
+    <>
+      <NavBar />
+      
+      <div className="pt-16">
+        <div className="max-w-4xl mx-auto p-6">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-6">Play Story</h2>
+          <p className="text-gray-600 mb-6">Select a visual novel to play or import a JSON file.</p>
+          
+          <div className="mb-6">
+            <Button 
+              variant="outline" 
+              className="border-primary text-primary hover:bg-primary/10 flex items-center"
+              onClick={handleImportStory}
+            >
+              <Upload className="mr-2 h-4 w-4" /> Import Story File
+            </Button>
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              onChange={handleFileUpload} 
+              accept=".json" 
+              className="hidden"
+            />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Current Project Acts */}
+            {getCurrentProjectActs().map((act) => (
+              <Card key={act.id} className="overflow-hidden">
+                <div className="h-32 bg-neutral-800 flex items-center justify-center">
+                  <div className="text-white text-center">
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      className="mx-auto h-12 w-12 mb-2" 
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" 
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <CardContent className="p-4">
+                  <h3 className="font-semibold text-lg mb-1">{act.title}</h3>
+                  <p className="text-sm text-neutral-500 mb-3">Act {act.actNumber}</p>
+                </CardContent>
+                <CardFooter className="px-4 py-3 bg-gray-50 flex justify-between">
+                  <span className="text-xs text-neutral-400">
+                    From Current Project
+                  </span>
+                  <Button 
+                    size="sm"
+                    onClick={() => handlePlayStory(act.id)}
+                  >
+                    <Play className="mr-1 h-3 w-3" /> Play
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+            
+            {/* Imported Stories */}
+            {importedStories.map((story) => (
+              <Card key={story.id} className="overflow-hidden">
+                <div className="h-32 bg-neutral-800 flex items-center justify-center">
+                  <div className="text-white text-center">
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      className="mx-auto h-12 w-12 mb-2" 
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" 
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <CardContent className="p-4">
+                  <h3 className="font-semibold text-lg mb-1">{story.title}</h3>
+                  <p className="text-sm text-neutral-500 mb-3">Act {story.actNumber} • Imported</p>
+                </CardContent>
+                <CardFooter className="px-4 py-3 bg-gray-50 flex justify-between">
+                  <span className="text-xs text-neutral-400">
+                    {new Date(story.createdAt).toLocaleDateString()}
+                  </span>
+                  <Button 
+                    size="sm"
+                    onClick={() => handlePlayStory(story.id)}
+                  >
+                    <Play className="mr-1 h-3 w-3" /> Play
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+            
+            {/* Empty State */}
+            {getCurrentProjectActs().length === 0 && importedStories.length === 0 && (
+              <Card className="overflow-hidden border-2 border-dashed border-neutral-300 flex items-center justify-center p-6 col-span-2">
+                <div className="text-center">
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    className="mx-auto h-12 w-12 text-neutral-400 mb-2" 
+                    fill="none" 
+                    viewBox="0 0 24 24" 
+                    stroke="currentColor"
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2} 
+                      d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" 
+                    />
+                  </svg>
+                  <p className="text-neutral-500">Import a story file to play or generate acts from the Create Story menu</p>
+                </div>
+              </Card>
+            )}
+          </div>
+          
+          <div className="pt-6">
+            <Button
+              variant="outline"
+              onClick={handleBackToMenu}
+              className="flex items-center"
+            >
+              <ArrowLeft className="mr-1 h-4 w-4" /> Back to Main Menu
+            </Button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
