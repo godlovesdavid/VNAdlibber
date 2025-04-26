@@ -126,6 +126,47 @@ export default function CharactersForm() {
     setGeneratingCharacterIndex(null);
   };
   
+  // Generate all characters
+  const handleGenerateAllCharacters = async () => {
+    // Only generate for existing characters
+    if (characters.length === 0) return;
+    
+    setGeneratingCharacterIndex(-1); // -1 indicates "all"
+    
+    // Generate for each character sequentially
+    for (let i = 0; i < characters.length; i++) {
+      // Skip generation if we're canceled
+      if (generatingCharacterIndex === null) break;
+      
+      setGeneratingCharacterIndex(i);
+      
+      // Create partial character data
+      const partialCharacter = {
+        name: characters[i].name,
+        role: characters[i].role,
+        gender: characters[i].gender,
+        age: characters[i].age
+      };
+      
+      // Generate character data
+      const generatedCharacter = await generateCharacterData(i, partialCharacter);
+      
+      if (generatedCharacter) {
+        const updatedCharacters = [...characters];
+        updatedCharacters[i] = {
+          ...updatedCharacters[i],
+          ...generatedCharacter
+        };
+        setCharacters(updatedCharacters);
+        
+        // Log generation to console
+        console.log(`Generated character ${i + 1}:`, generatedCharacter);
+      }
+    }
+    
+    setGeneratingCharacterIndex(null);
+  };
+  
   // Go back to previous step
   const handleBack = () => {
     goToStep(2);
@@ -201,44 +242,60 @@ export default function CharactersForm() {
                       
                       <div className="form-group">
                         <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                        <Select 
-                          value={character.role} 
-                          onValueChange={(value) => updateCharacter(index, "role", value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select role" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="protagonist">Protagonist</SelectItem>
-                            <SelectItem value="antagonist">Antagonist</SelectItem>
-                            <SelectItem value="rival">Rival</SelectItem>
-                            <SelectItem value="mentor">Mentor</SelectItem>
-                            <SelectItem value="sidekick">Sidekick</SelectItem>
-                            <SelectItem value="love_interest">Love Interest</SelectItem>
-                            <SelectItem value="childhood_friend">Childhood Friend</SelectItem>
-                            <SelectItem value="parent">Parent</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        {index === 0 ? (
+                          <Input
+                            placeholder="Protagonist"
+                            value="Protagonist"
+                            disabled
+                            className="bg-gray-100 text-gray-500"
+                          />
+                        ) : (
+                          <Select 
+                            value={character.role} 
+                            onValueChange={(value) => updateCharacter(index, "role", value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select role" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="antagonist">Antagonist</SelectItem>
+                              <SelectItem value="rival">Rival</SelectItem>
+                              <SelectItem value="mentor">Mentor</SelectItem>
+                              <SelectItem value="sidekick">Sidekick</SelectItem>
+                              <SelectItem value="love_interest">Love Interest</SelectItem>
+                              <SelectItem value="childhood_friend">Childhood Friend</SelectItem>
+                              <SelectItem value="parent">Parent</SelectItem>
+                              <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
                       </div>
                       
                       <div className="form-group">
                         <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-                        <Select 
-                          value={character.gender} 
-                          onValueChange={(value) => updateCharacter(index, "gender", value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select gender" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="male">Male</SelectItem>
-                            <SelectItem value="female">Female</SelectItem>
-                            <SelectItem value="non-binary">Non-binary</SelectItem>
-                            <SelectItem value="robot">Robot/AI</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        {index === 0 ? (
+                          <Input
+                            placeholder="Character's gender (e.g., Male, Female, Non-binary)"
+                            value={character.gender}
+                            onChange={(e) => updateCharacter(index, "gender", e.target.value)}
+                          />
+                        ) : (
+                          <Select 
+                            value={character.gender} 
+                            onValueChange={(value) => updateCharacter(index, "gender", value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select gender" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="male">Male</SelectItem>
+                              <SelectItem value="female">Female</SelectItem>
+                              <SelectItem value="non-binary">Non-binary</SelectItem>
+                              <SelectItem value="robot">Robot/AI</SelectItem>
+                              <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
                       </div>
                       
                       <div className="form-group">
@@ -288,13 +345,26 @@ export default function CharactersForm() {
                   {/* Additional Info */}
                   <div className="mt-4 space-y-3">
                     <div className="form-group">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Relationship Potential</label>
-                      <Textarea
-                        rows={2}
-                        placeholder="How they might connect with the protagonist"
-                        value={character.relationshipPotential}
-                        onChange={(e) => updateCharacter(index, "relationshipPotential", e.target.value)}
-                      />
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Relationship Potential
+                        {index === 0 && <span className="text-xs text-gray-500 ml-1">(N/A for protagonist)</span>}
+                      </label>
+                      {index === 0 ? (
+                        <Textarea
+                          rows={2}
+                          placeholder="N/A - This is the protagonist"
+                          value="This is the protagonist character"
+                          disabled
+                          className="bg-gray-100 text-gray-500"
+                        />
+                      ) : (
+                        <Textarea
+                          rows={2}
+                          placeholder="How they might connect with the protagonist"
+                          value={character.relationshipPotential}
+                          onChange={(e) => updateCharacter(index, "relationshipPotential", e.target.value)}
+                        />
+                      )}
                     </div>
                     
                     <div className="form-group">
@@ -335,7 +405,7 @@ export default function CharactersForm() {
             ))}
             
             <div className="pt-6 flex flex-col space-y-4">
-              <div className="flex justify-center">
+              <div className="flex justify-center gap-4">
                 <Button
                   onClick={addCharacter}
                   variant="secondary"
@@ -343,6 +413,26 @@ export default function CharactersForm() {
                   disabled={characters.length >= 5}
                 >
                   <Plus className="mr-1 h-4 w-4" /> Add Character
+                </Button>
+                
+                <Button
+                  onClick={handleGenerateAllCharacters}
+                  variant="secondary"
+                  className="flex items-center text-primary border-primary hover:bg-primary/10"
+                  disabled={isGenerating || characters.length === 0}
+                >
+                  <Wand2 className="mr-1 h-4 w-4" /> 
+                  {generatingCharacterIndex === -1 && isGenerating ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Generating All...
+                    </>
+                  ) : (
+                    <>Generate All Characters</>
+                  )}
                 </Button>
               </div>
               <div className="flex justify-between">

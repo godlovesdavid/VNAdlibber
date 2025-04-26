@@ -134,6 +134,45 @@ export default function PathsForm() {
     setGeneratingPathIndex(null);
   };
   
+  // Generate all paths
+  const handleGenerateAllPaths = async () => {
+    // Only generate for existing paths
+    if (routes.length === 0) return;
+    
+    setGeneratingPathIndex(-1); // -1 indicates "all"
+    
+    // Generate for each path sequentially
+    for (let i = 0; i < routes.length; i++) {
+      // Skip generation if we're canceled
+      if (generatingPathIndex === null) break;
+      
+      setGeneratingPathIndex(i);
+      
+      // Create partial path data
+      const partialPath = {
+        title: routes[i].title,
+        loveInterest: routes[i].loveInterest
+      };
+      
+      // Generate path data
+      const generatedPath = await generatePathData(i, partialPath);
+      
+      if (generatedPath) {
+        const updatedRoutes = [...routes];
+        updatedRoutes[i] = {
+          ...updatedRoutes[i],
+          ...generatedPath
+        };
+        setRoutes(updatedRoutes);
+        
+        // Log generation to console
+        console.log(`Generated path ${i + 1}:`, generatedPath);
+      }
+    }
+    
+    setGeneratingPathIndex(null);
+  };
+  
   // Go back to previous step
   const handleBack = () => {
     goToStep(3);

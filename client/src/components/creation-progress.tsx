@@ -75,7 +75,7 @@ export function CreationProgress({ currentStep }: CreationProgressProps) {
       <div className="pt-16 px-4 pb-4 bg-white shadow-sm">
         <div className="progress-bar flex items-center justify-between max-w-4xl mx-auto py-3">
           {[1, 2, 3, 4, 5, 6].map((step) => (
-            <Fragment key={step}>
+            <div key={step} className="flex items-center">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div 
@@ -106,7 +106,7 @@ export function CreationProgress({ currentStep }: CreationProgressProps) {
                   )}
                 />
               )}
-            </Fragment>
+            </div>
           ))}
         </div>
         
