@@ -58,33 +58,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch projects" });
     }
   });
-  
+
   app.get("/api/projects/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const project = await storage.getProject(id);
-      
+
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
       }
-      
+
       res.json(project);
     } catch (error) {
       console.error("Error fetching project:", error);
       res.status(500).json({ message: "Failed to fetch project" });
     }
   });
-  
+
   app.post("/api/projects", async (req, res) => {
     try {
       const projectData = req.body;
-      
+
       // If project has an ID, update it
       if (projectData.id) {
-        const updatedProject = await storage.updateProject(projectData.id, projectData);
+        const updatedProject = await storage.updateProject(
+          projectData.id,
+          projectData,
+        );
         return res.json(updatedProject);
       }
-      
+
       // Otherwise create a new project
       const newProject = await storage.createProject(projectData);
       res.status(201).json(newProject);
@@ -93,7 +96,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to save project" });
     }
   });
-  
+
   app.delete("/api/projects/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -104,7 +107,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to delete project" });
     }
   });
-  
+
   // VN Story CRUD operations
   app.get("/api/stories", async (req, res) => {
     try {
@@ -115,7 +118,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch stories" });
     }
   });
-  
+
   app.post("/api/stories", async (req, res) => {
     try {
       const storyData = insertVnStorySchema.parse(req.body);
@@ -126,120 +129,129 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to save story" });
     }
   });
-  
+
   // AI Generation endpoints
   app.post("/api/generate/concept", async (req, res) => {
     try {
       const { basicData } = generateConceptSchema.parse(req.body);
-      
+
       // Create prompt for the concept generation
-      const prompt = `
-        Create a visual novel concept with the following parameters:
-        - Theme: ${basicData.theme}
-        - Tone: ${basicData.tone}
-        - Genre: ${basicData.genre}
-        
-        Please generate a JSON object with the following structure:
+      const prompt = `Theme: ${basicData.theme}
+        Tone: ${basicData.tone}
+        Genre: ${basicData.genre}
+        Generate a JSON object with the following structure
         {
-          "title": "A memorable and fitting title for the visual novel",
-          "tagline": "A single sentence that captures the essence of the story",
-          "premise": "A few sentences describing the premise, setting, main characters, and central conflict"
+          "title": "Intriguing title",
+          "tagline": "Very short & memorable catchphrase (<10 words and no period)",
+          "premise": "Premise & main conflict in < 50 words. Don't name names (designed later)"
         }
+        Be wildly imaginative, original, and surprising — but keep it emotionally resonant. 
       `;
-      
+
       // Generate concept using OpenAI
       const response = await openai.chat.completions.create({
-        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        model: "gpt-4o-mini",
+        temperature: 1.4,
+        frequency_penalty: 0.2,
+        presence_penalty: 0.5,
+        top_p: 1.0,
+        stop: null,
         messages: [
           {
             role: "system",
-            content: "You are a visual novel writer assistant. You create compelling concepts for visual novels."
+            content:
+              "You are a creative fiction brainstorming assistant specializing in visual novels.",
           },
-          { role: "user", content: prompt }
+          { role: "user", content: prompt },
         ],
-        response_format: { type: "json_object" }
+        response_format: { type: "json_object" },
       });
-      
+
       // Log the generated response for debugging
       console.log("Generated concept:", response.choices[0].message.content);
-      
+
       // Parse and return the generated concept
-      const generatedConcept = JSON.parse(response.choices[0].message.content || "{}");
+      const generatedConcept = JSON.parse(
+        response.choices[0].message.content || "{}",
+      );
       res.json(generatedConcept);
     } catch (error) {
       console.error("Error generating concept:", error);
       res.status(500).json({ message: "Failed to generate concept" });
     }
   });
-  
+
   app.post("/api/generate/character", async (req, res) => {
     try {
-      const { index, partialCharacter, projectContext } = generateCharacterSchema.parse(req.body);
-      
+      const { index, partialCharacter, projectContext } =
+        generateCharacterSchema.parse(req.body);
+
       // Create prompt for the character generation
-      const prompt = `
-        Create a detailed character for a visual novel with the following parameters:
-        ${JSON.stringify(projectContext, null, 2)}
-        
-        Partial character information:
-        ${JSON.stringify(partialCharacter, null, 2)}
-        
-        This is character #${index + 1} in the story.
-        
-        Please generate a JSON object with the following structure:
+      // Partial character information
+      // ${JSON.stringify(partialCharacter, null, 2)}
+      const prompt = `Given 
+      ${JSON.stringify(projectContext, null, 2)}
+        Generate a JSON object with the following structure
         {
-          "name": "${partialCharacter.name || "Character name"}",
-          "role": "${partialCharacter.role || "Character role"}",
-          "gender": "${partialCharacter.gender || "Character gender"}",
-          "age": "${partialCharacter.age || "Character age"}",
-          "appearance": "Detailed physical description",
-          "personality": "Key personality traits and behaviors",
-          "goals": "Primary motivations and objectives",
-          "relationshipPotential": "How they might connect with the protagonist",
-          "conflict": "Their primary internal or external struggle"
+          "name": ""Character name"}",
+          "role": ""Character role"}",
+          "gender": ""Character gender"}",
+          "age": ""Character age"}",
+          "appearance": "Physical description (<15 words)",
+          "personality": "Key personality traits and behaviors (<40 words)",
+          "goals": "Primary motivations and objectives (<40 words)",
+          "relationshipPotential": "Relationship potential with main protagonist. (<15 words)",
+          "conflict": "Their primary internal or external struggle (<40 words)"
         }
+        Be wildly imaginative, original, and surprising — but keep it emotionally resonant. 
       `;
-      
+
       // Generate character using OpenAI
       const response = await openai.chat.completions.create({
-        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        model: "gpt-4o-mini",
+        temperature: 1.4,
+        frequency_penalty: 0.2,
+        presence_penalty: 0.5,
+        top_p: 1.0,
+        stop: null,
         messages: [
           {
             role: "system",
-            content: "You are a visual novel character designer. You create rich, multi-dimensional characters for visual novels."
+            content:
+              "You are a creative fiction brainstorming assistant specializing in visual novels.",
           },
-          { role: "user", content: prompt }
+          { role: "user", content: prompt },
         ],
-        response_format: { type: "json_object" }
+        response_format: { type: "json_object" },
       });
-      
+
       // Log the generated response for debugging
       console.log("Generated character:", response.choices[0].message.content);
-      
+
       // Parse and return the generated character
-      const generatedCharacter = JSON.parse(response.choices[0].message.content || "{}");
+      const generatedCharacter = JSON.parse(
+        response.choices[0].message.content || "{}",
+      );
       res.json(generatedCharacter);
     } catch (error) {
       console.error("Error generating character:", error);
       res.status(500).json({ message: "Failed to generate character" });
     }
   });
-  
+
   app.post("/api/generate/path", async (req, res) => {
     try {
-      const { index, partialPath, projectContext } = generatePathSchema.parse(req.body);
-      
+      const { index, partialPath, projectContext } = generatePathSchema.parse(
+        req.body,
+      );
+
       // Create prompt for the path generation
-      const prompt = `
-        Create a detailed story path for a visual novel with the following parameters:
+      const prompt = `Create a detailed story path for a visual novel with the following parameters
         ${JSON.stringify(projectContext, null, 2)}
-        
-        Partial path information:
+        Partial path information
         ${JSON.stringify(partialPath, null, 2)}
-        
-        This is path #${index + 1} in the story.
-        
-        Please generate a JSON object with the following structure:
+        This is path #${index + 1} in the story
+        Generate a JSON object with the following structure
         {
           "title": "${partialPath.title || "Path title"}",
           "loveInterest": ${partialPath.loveInterest ? `"${partialPath.loveInterest}"` : "null"},
@@ -251,44 +263,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
           "badEnding": "Description of negative outcome"
         }
       `;
-      
+
       // Generate path using OpenAI
       const response = await openai.chat.completions.create({
-        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        model: "gpt-4o-mini",
+        temperature: 1.2,
+        frequency_penalty: 0.2,
+        presence_penalty: 0.5,
+        top_p: 1.0,
+        stop: null,
         messages: [
           {
             role: "system",
-            content: "You are a visual novel narrative designer. You create engaging story paths with branching narratives."
+            content:
+              "You are a creative fiction brainstorming assistant specializing in visual novels.",
           },
-          { role: "user", content: prompt }
+          { role: "user", content: prompt },
         ],
-        response_format: { type: "json_object" }
+        response_format: { type: "json_object" },
       });
-      
+
       // Log the generated response for debugging
       console.log("Generated path:", response.choices[0].message.content);
-      
+
       // Parse and return the generated path
-      const generatedPath = JSON.parse(response.choices[0].message.content || "{}");
+      const generatedPath = JSON.parse(
+        response.choices[0].message.content || "{}",
+      );
       res.json(generatedPath);
     } catch (error) {
       console.error("Error generating path:", error);
       res.status(500).json({ message: "Failed to generate path" });
     }
   });
-  
+
   app.post("/api/generate/plot", async (req, res) => {
     try {
       const { projectContext } = generatePlotSchema.parse(req.body);
-      
+
       // Create prompt for the plot generation
-      const prompt = `
-        Create a master plot outline for a visual novel with the following parameters:
+      const prompt = `Create a master plot outline for a visual novel with the following parameters
         ${JSON.stringify(projectContext, null, 2)}
-        
-        Structure the plot into 5 acts: Introduction, Rising Action, Midpoint Twist, Escalating Conflicts, and Resolution/Endings.
-        
-        Please generate a JSON object with the following structure:
+        Structure the plot into 5 acts: Introduction, Rising Action, Midpoint Twist, Escalating Conflict, Resolution/Endings
+        Generate a JSON object with the following structure
         {
           "plotOutline": {
             "act1": {
@@ -299,51 +316,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
               "arcIntersections": ["Intersection 1", "Intersection 2"],
               "playerChoices": ["Choice 1 - Consequences", "Choice 2 - Consequences"]
             },
-            "act2": { ... similar structure ... },
-            "act3": { ... similar structure ... },
-            "act4": { ... similar structure ... },
-            "act5": { ... similar structure ... }
+            "act2": {...},
+            "act3": {...},
+            "act4": {...},
+            "act5": {...}
           }
         }
       `;
-      
-      // Generate plot using OpenAI
+
       const response = await openai.chat.completions.create({
-        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        model: "gpt-4o-mini",
         messages: [
           {
             role: "system",
-            content: "You are a visual novel plot designer. You create cohesive, engaging plot outlines that weave together characters and narrative paths."
+            content:
+              "You are a creative fiction brainstorming assistant specializing in visual novels.",
           },
-          { role: "user", content: prompt }
+          { role: "user", content: prompt },
         ],
-        response_format: { type: "json_object" }
+        response_format: { type: "json_object" },
       });
-      
+
       // Log the generated response for debugging
-      console.log("Generated plot outline:", response.choices[0].message.content);
-      
+      console.log(
+        "Generated plot outline:",
+        response.choices[0].message.content,
+      );
+
       // Parse and return the generated plot
-      const generatedPlot = JSON.parse(response.choices[0].message.content || "{}");
+      const generatedPlot = JSON.parse(
+        response.choices[0].message.content || "{}",
+      );
       res.json(generatedPlot);
     } catch (error) {
       console.error("Error generating plot:", error);
       res.status(500).json({ message: "Failed to generate plot" });
     }
   });
-  
+
   app.post("/api/generate/act", async (req, res) => {
     try {
-      const { actNumber, scenesCount, projectContext } = generateActSchema.parse(req.body);
-      
+      const { actNumber, scenesCount, projectContext } =
+        generateActSchema.parse(req.body);
+
       // Create prompt for the act generation
-      const prompt = `
-        Create scenes for Act ${actNumber} of a visual novel with the following context:
+      const prompt = `Create scenes for Act ${actNumber} of a visual novel with the following context
         ${JSON.stringify(projectContext, null, 2)}
-        
-        Generate ${scenesCount} scenes for this act following the structure from the plot outline.
-        
-        Please generate a JSON object with the following structure:
+        Create ${scenesCount} scenes for this act following the structure from the plot outline
+        Generate a JSON object with the following structure:
         {
           "meta": {
             "theme": "theme from context",
@@ -384,34 +404,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           ]
         }
-        
-        IMPORTANT:
-        1. Make sure scene IDs are sequential and use format "${actNumber}-1", "${actNumber}-2", etc.
-        2. Include branching paths based on choices.
-        3. Some choices may have conditions that check player relationship values.
-        4. The final scene of the act should have choices set to null.
-        5. Include meaningful "delta" values for relationships, inventory items or skills.
-        6. Make sure the "next" property always points to a valid scene ID.
+        IMPORTANT
+        Make sure scene IDs are sequential and use format "${actNumber}-1", "${actNumber}-2" etc
+        Include branching paths based on choices
+        Some choices may have conditions that check player relationship values
+        The final scene of the act should have choices set to null
+        Include meaningful "delta" values for relationships, inventory items or skills
+        Make sure the "next" property always points to a valid scene ID
       `;
-      
+
       // Generate act using OpenAI
       const response = await openai.chat.completions.create({
-        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        model: "gpt-4.1-mini",
+        temperature: 0.7,
         messages: [
           {
             role: "system",
-            content: "You are a visual novel scene writer. You create branching narrative scenes with dialogue and player choices."
+            content:
+              "You are a creative fiction brainstorming assistant specializing in visual novels.",
           },
-          { role: "user", content: prompt }
+          { role: "user", content: prompt },
         ],
-        response_format: { type: "json_object" }
+        response_format: { type: "json_object" },
+        max_tokens: 32768,
       });
-      
+
       // Log the generated response for debugging
-      console.log(`Generated Act ${actNumber}:`, response.choices[0].message.content?.substring(0, 200) + "...");
-      
+      console.log(
+        `Generated Act ${actNumber}:`,
+        response.choices[0].message.content?.substring(0, 200) + "...",
+      );
+
       // Parse and return the generated act
-      const generatedAct = JSON.parse(response.choices[0].message.content || "{}");
+      const generatedAct = JSON.parse(
+        response.choices[0].message.content || "{}",
+      );
       res.json(generatedAct);
     } catch (error) {
       console.error("Error generating act:", error);

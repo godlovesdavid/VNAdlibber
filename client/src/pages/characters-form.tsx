@@ -160,19 +160,9 @@ export default function CharactersForm() {
       
       <div className="pt-16">
         <div className="creation-container max-w-4xl mx-auto p-6">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-800">Step 3: Characters</h2>
-              <p className="text-gray-600">Create the characters who will bring your story to life. You can add up to 5 characters.</p>
-            </div>
-            <Button
-              onClick={addCharacter}
-              variant="secondary"
-              className="flex items-center"
-              disabled={characters.length >= 5}
-            >
-              <Plus className="mr-1 h-4 w-4" /> Add Character
-            </Button>
+          <div className="mb-6">
+            <h2 className="text-2xl font-semibold text-gray-800">Step 3: Characters</h2>
+            <p className="text-gray-600">Create the characters who will bring your story to life. You can add up to 5 characters.</p>
           </div>
           
           <div className="space-y-6">
@@ -344,16 +334,28 @@ export default function CharactersForm() {
               </Card>
             ))}
             
-            <div className="pt-6 flex justify-between">
-              <Button
-                variant="outline"
-                onClick={handleBack}
-              >
-                Back
-              </Button>
-              <Button onClick={handleNext}>
-                Next: Paths
-              </Button>
+            <div className="pt-6 flex flex-col space-y-4">
+              <div className="flex justify-center">
+                <Button
+                  onClick={addCharacter}
+                  variant="secondary"
+                  className="flex items-center"
+                  disabled={characters.length >= 5}
+                >
+                  <Plus className="mr-1 h-4 w-4" /> Add Character
+                </Button>
+              </div>
+              <div className="flex justify-between">
+                <Button
+                  variant="outline"
+                  onClick={handleBack}
+                >
+                  Back
+                </Button>
+                <Button onClick={handleNext}>
+                  Next: Paths
+                </Button>
+              </div>
             </div>
             
             {isGenerating && generatingCharacterIndex !== null && (

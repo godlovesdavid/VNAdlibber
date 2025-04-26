@@ -185,19 +185,9 @@ export default function PathsForm() {
       
       <div className="pt-16">
         <div className="creation-container max-w-4xl mx-auto p-6">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-800">Step 4: Story Paths</h2>
-              <p className="text-gray-600">Define the different routes and endings your story can take. You can create up to 3 distinct paths.</p>
-            </div>
-            <Button
-              onClick={addPath}
-              variant="secondary"
-              className="flex items-center"
-              disabled={routes.length >= 3}
-            >
-              <Plus className="mr-1 h-4 w-4" /> Add Path
-            </Button>
+          <div className="mb-6">
+            <h2 className="text-2xl font-semibold text-gray-800">Step 4: Story Paths</h2>
+            <p className="text-gray-600">Define the different routes and endings your story can take. You can create up to 3 distinct paths.</p>
           </div>
           
           <div className="space-y-6">
@@ -351,16 +341,28 @@ export default function PathsForm() {
               </Card>
             ))}
             
-            <div className="pt-6 flex justify-between">
-              <Button
-                variant="outline"
-                onClick={handleBack}
-              >
-                Back
-              </Button>
-              <Button onClick={handleNext}>
-                Next: Plot
-              </Button>
+            <div className="pt-6 flex flex-col space-y-4">
+              <div className="flex justify-center">
+                <Button
+                  onClick={addPath}
+                  variant="secondary"
+                  className="flex items-center"
+                  disabled={routes.length >= 3}
+                >
+                  <Plus className="mr-1 h-4 w-4" /> Add Path
+                </Button>
+              </div>
+              <div className="flex justify-between">
+                <Button
+                  variant="outline"
+                  onClick={handleBack}
+                >
+                  Back
+                </Button>
+                <Button onClick={handleNext}>
+                  Next: Plot
+                </Button>
+              </div>
             </div>
             
             {isGenerating && generatingPathIndex !== null && (
