@@ -1,0 +1,163 @@
+
+VN Adlibber
+I want to build a VN Ad-libber app for the user to customize the plot before letting the AI generate a full visual novel out of it. It is also a "choose your own adventure" type of text based story, giving the player options that change the outcome of the story along the way.
+There are several steps to building the VN, each step having its own UI page. each page prompts either the user to type in or chatgpt to generate that element of the VN, and contains a "generate" button.
+include all the prior step's outputs in each successive ChatGPT prompt.
+there is a save session button on every step.
+on any of the pages, if user goes back to any of the prior steps, it will erase the data from the successive steps. confirm to continue.
+
+These are the UI pages:
+
+0. main menu
+shows:
+"New project" that takes you to step 1 below. on every step pages 1-6, the top shows a creation progress bar with links to any of the 6 pages.
+"Load project" to load a creation session
+"Play Story" that imports individual JSON files to play through (more later)
+"Share" that allows you to share (placeholder)
+1. Basic
+{
+  "theme": "identity, trust and betrayal, love vs duty, freedom vs control, revenge and justice, technology and humanity, sacrifice, corruption, truth vs illusion, legacy, etc",
+  "tone": "lighthearted, melancholic, dark, satirical, suspenseful, whimsical, romantic, tragicomic, Adventurous, gritty, etc",
+  "genre": "cyberpunk, steampunk, mystery, romance, science fiction, fantasy, slice of life, thriller, comedy, horror, drama, etc"
+}
+2. Concept
+{
+  "title": "Title of the Visual Novel",
+  "tagline": "One-sentence tagline that captures the essence",
+  "premise": "a few sentences describing the premise, characters, and main conflict"
+}
+3. Characters
+{
+  "characters": [
+    {
+      "name": "Character Name",
+      "role": "Protagonist/antagonist/rival/mentor/sidekick/childhood friend/mother/etc.",
+      "gender": "male/female/non-binary/robot/etc.",
+      "age": "Age",
+      "appearance": "description",
+      "personality": "Key personality traits and behaviors",
+      "goals": "Primary motivations and objectives",
+      "relationshipPotential": "How they might connect with the protagonist",
+      "conflict": "Their primary internal or external struggle"
+    },
+    {
+      ... second character ...
+    },
+    {
+      ... third character ...
+    }
+	(up to 5)
+  ]
+}
+4. Paths
+{
+  "routes": [
+    {
+      "title": "route1", //thematic name for this storyline
+      "loveInterest": "Character Name or null if not romance-focused",
+      "keyChoices": ["Choice 1", "Choice 2", "Choice 3"], //critical player decisions that shape this route
+      "beginning": "Description of how this route begins",
+      "middle": "Description of conflict escalation and unexpected twist(s)",
+      "climax": "Description of the highest tension moment of this path",
+      "goodEnding": "Description of positive resolution",
+      "badEnding": "Description of negative outcome"
+    },
+    {
+      ... second route ...
+    },
+    {
+      ... up to third route ...
+    }
+  ]
+}
+5. Plot
+this part can only be AI-generated. prompt AI to weave together all the prior generated info into a master plot outline like this.
+//Each act should be in the form of Introduction (Act 1), Rising Action (Act 2), Midpoint Twist (Act 3), Escalating Conflicts (Act 4), and Resolution/Endings (Act 5)
+{ 
+  "plotOutline": {
+    "act1": {
+      "title": "Act 1 Title", //thematic name for this section of the story
+      "summary": "Brief overview of Act 1", //brief overview of this story section
+      "events": ["Event 1", "Event 2", "Event 3", "Event 4", "Event 5"], //major plot points that happen in this act
+      "arcsActivated": ["route1", "route2"], //which character development arcs are introduced or advanced
+      "arcIntersections": ["Intersection 1", "Intersection 2"], //how different character storylines intersect or conflict
+      "playerChoices": ["Choice 1 - Consequences", "Choice 2 - Consequences"] //list key player decision points in this act with their consequences
+    },
+    "act2": {
+      ... second act ...
+    },
+    "act3": {
+      ... third act ...
+    },
+    "act4": {
+      ... fourth act ...
+    },
+    "act5": {
+      ... fifth act ...
+    }
+  }
+}
+
+6. Generate VN
+on the next ui screen, it shows 5 buttons labeled Act1, Act2 .. Act5 that are disabled (grayed out) until the act is generated. next to each button there is a "generate" button. if you click generate, AI will generate that act's scenes with a prompt like this:
+
+{
+ "meta": { "theme":"steampunk", "relationshipVars":["alice","bruno"] },
+ "scenes":[
+   { "id":"1-1", //for act 1 scene 1
+     "setting":"Airship dock", //will be written on the top left corner of screen. also used to refer back later for cached image
+	 "bg":"brass airship dock, overcast sky, workers unloading crates, steam hissing from vents" //background description for image generation. only include if first time visiting this setting
+     "dialogue":[["Alice","Welcome aboard!"],["MC","..."]],
+     "choices":[
+       { "id":"greet","delta":{"alice":+1},"next":"1-2a" },//relationship point changes due to choice. for items, do "delta":{"itemname":+1}. same for skills
+       { "id":"snub","delta":{"alice":-1},"next":"1-2b" } //2-4 player choices are okay. 
+     ]
+   },
+   //scene example for relationship requirement
+	{
+	  "id": "2-5",
+	  "setting": "Engine Room",
+	  "bg":"dimly lit engine room, flickering valves, massive pressure dials, creaking pipes overhead"
+	  "dialogue": [
+		["Bruno", "Only someone I trust can see this."]
+	  ],
+	  "choices": [ //set to null if final scene
+		{
+		  "id": "enter_room",
+		  "text": "Try to enter the engine room",
+		  "condition": { "bruno": 2 },
+		  "next": "2-5a",
+		  "failNext": "2-5b" //if condition not met, goes to rejection scene
+		},
+		{
+		  "id": "ask_trust",
+		  "text": "Ask how to earn his trust",
+		  "next": "2-5c"
+		}
+	  ]
+	},
+	{
+	  "id": "2-6b",
+	  "bg": "door blocked",
+	  "dialogue": [
+		["Bruno", "Not yet. You're not ready."]
+	  ]
+	}
+ ]
+}
+
+include steps 1-5 outputs in ChatGPT prompt here, but not generations from step 6.
+there is also a dropdown list for number of scenes to generate per act in 5 unit increments from 5 up to 25.
+User may regenerate again if they wish (prompt for overwrite). show "generating" animation during each generation, but also allow cancelling midway.
+at bottom of page is an "export acts" button that exports all the generated data on this page as "VN_Title-Act1.json" "VN_Title-Act2.json" etc. that can be replayed individually in the player. this player is accessible at the main menu.
+Once user clicks on an act, it goes into the play mode, and runs the generated act. After the act ends, it goes back to the generate VN screen with the act buttons. You'll know that it's the last scene if 'choices' = null.
+Relationship, inventory, and skills values are saved after playing through an act. make this data resettable, and also editable by allowing user to edit the key : value data.
+Once a key: value is set through "delta", write it at the top of the screen during scenes. e.g. "alice: 4, bruno: -2, credits: 23, shiny_object: 1, banter_skill: 3". this relationship/inventory/skill data, let's call it "Player Data", has state savepoints at every act completion. it only gets saved once current act is completed i.e. if they return without finishing, it won't save this act session's values. Use case: user finishes act 1, state saved, user starts act 2, system loads values from the act 1 completion checkpoint. if user plays act 4 before playing act 3, there will be no save at the act 3 checkpoint, and they will begin the act with empty values. if they finished all acts 1-5 and replay any of those acts, it will load the values at that checkpoint.
+Make these checkpoint values visible and editable somehow.
+the text will be at the bottom, like a classic VN game. it scrolls one dialog at a time, ending with the choices, which will take the user to next specified scene. 
+scroll the text very quickly and show a down arrow icon for next
+images will come later, i just want the text part working first (plan is to get DALL-E to generate images on the fly). make a placeholder for the upper 2/3 of the screen, and maybe placeholders in code.
+Also make a placeholder in code for music and audio.
+Log each chatGPT output in the console (not the input).
+Top few pixels is a navbar that lets you (1) restart current act, (2) show the log of the dialogue from the beginning of this act, (3) edit relationship/inventory/skill data, (4) return to generate VN screen, (5) option menu for audio (placeholder), text scroll speed, and ability to turn image gen on/off (placeholder)
+Keep code as simple as possible.
