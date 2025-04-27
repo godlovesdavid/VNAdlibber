@@ -4,7 +4,8 @@ import { useToast } from "@/hooks/use-toast";
 import { 
   generateConcept, 
   generatePlot, 
-  generateAct
+  generateAct,
+  GenerationResult
 } from "@/lib/openai";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -211,7 +212,7 @@ export function useVnData() {
   const generateActData = useCallback(async (
     actNumber: number, 
     scenesCount: number
-  ) => {
+  ): Promise<GenerationResult<any> | null> => {
     if (!vnContext.projectData || !vnContext.projectData.plotData) {
       toast({
         title: "Error",
@@ -226,7 +227,7 @@ export function useVnData() {
       const controller = new AbortController();
       setAbortController(controller);
       
-      const actData = await generateAct(
+      const result = await generateAct(
         actNumber,
         scenesCount,
         {
@@ -241,7 +242,18 @@ export function useVnData() {
       );
       
       setAbortController(null);
-      return actData;
+      
+      // Check for validation errors from AI
+      if (result && result.error) {
+        toast({
+          title: "Content Validation Failed",
+          description: result.error,
+          variant: "destructive",
+        });
+        return { error: result.error } as GenerationResult<any>;
+      }
+      
+      return result && result.data ? { data: result.data } as GenerationResult<any> : null;
     } catch (error) {
       if ((error as Error).name !== 'AbortError') {
         toast({

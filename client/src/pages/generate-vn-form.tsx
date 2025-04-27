@@ -26,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { Download, Wand2, Play } from "lucide-react";
 import { PlayerData, GeneratedAct } from "@/types/vn";
 import { ConfirmationModal } from "@/components/modals/confirmation-modal";
+import { GenerationResult } from "@/lib/openai";
 
 export default function GenerateVnForm() {
   const [, setLocation] = useLocation();
@@ -114,13 +115,19 @@ export default function GenerateVnForm() {
   const generateAct = async (actNumber: number) => {
     setCurrentGeneratingAct(actNumber);
     
-    const generatedAct = await generateActData(actNumber, scenesPerAct);
+    const result = await generateActData(actNumber, scenesPerAct);
     
-    if (generatedAct) {
-      setGeneratedAct(actNumber, generatedAct);
+    // Check if we received an error from validation
+    if (result && 'error' in result && result.error) {
+      // Handle validation error
+      setValidationError(result.error);
+      setTimeout(() => setValidationError(null), 8000); // Auto-dismiss after 8 seconds
+    } else if (result && 'data' in result && result.data) {
+      // No error, process the generated act
+      setGeneratedAct(actNumber, result.data as GeneratedAct);
       
       // Log generation to console
-      console.log(`Generated Act ${actNumber}:`, generatedAct);
+      console.log(`Generated Act ${actNumber}:`, result.data);
     }
     
     setCurrentGeneratingAct(null);

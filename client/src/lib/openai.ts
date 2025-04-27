@@ -214,7 +214,7 @@ export async function generatePlot(
 }
 
 // Interface for generation result with error validation
-interface GenerationResult<T> {
+export interface GenerationResult<T> {
   data?: T;
   error?: string;
 }
