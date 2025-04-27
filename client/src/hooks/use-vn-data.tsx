@@ -578,17 +578,35 @@ export function useVnData() {
     }
   }, [vnContext.projectData, toast]);
   
-  // Cancel ongoing generation - ultra-simplified version
+  // Cancel ongoing generation
   const cancelGeneration = useCallback(() => {
-    // Just update UI state without touching the controller
-    setIsGenerating(false);
-    setAbortController(null);
-    
+    // Show toast first
     toast({
       title: "Generation Cancelled",
       description: "The AI generation process was cancelled.",
     });
-  }, [toast]);
+    
+    // Update UI state
+    setIsGenerating(false);
+    
+    // Store the controller locally to prevent race conditions
+    const currentController = abortController;
+    
+    // Clear the state immediately
+    setAbortController(null);
+    
+    // Use a setTimeout to move the actual abort to the next event cycle
+    // This helps avoid the runtime error while still aborting the request
+    if (currentController) {
+      setTimeout(() => {
+        try {
+          currentController.abort();
+        } catch (error) {
+          console.error("Error aborting (handled):", error);
+        }
+      }, 0);
+    }
+  }, [abortController, toast]);
   
   return {
     generateConceptData,
