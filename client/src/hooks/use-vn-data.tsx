@@ -59,7 +59,8 @@ export function useVnData() {
   // Generate character details using AI
   const generateCharacterData = useCallback(async (
     index: number, 
-    partialCharacter: any
+    partialCharacter: any,
+    existingCharacters?: any[]
   ) => {
     if (!vnContext.projectData) {
       toast({
@@ -75,13 +76,23 @@ export function useVnData() {
       const controller = new AbortController();
       setAbortController(controller);
       
+      // Create a project context that includes the latest characters data
+      const projectContext: any = {
+        basicData: vnContext.projectData.basicData,
+        conceptData: vnContext.projectData.conceptData,
+      };
+      
+      // If we have existing characters (for batch generation), include them in the context
+      if (existingCharacters) {
+        projectContext.charactersData = {
+          characters: existingCharacters
+        };
+      }
+      
       const characterData = await generateCharacter(
         index,
         partialCharacter,
-        {
-          basicData: vnContext.projectData.basicData,
-          conceptData: vnContext.projectData.conceptData,
-        },
+        projectContext,
         controller.signal
       );
       

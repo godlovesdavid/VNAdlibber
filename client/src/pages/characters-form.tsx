@@ -143,39 +143,58 @@ export default function CharactersForm() {
     }
 
     // Make a copy of the current characters array
-    const allCharacters = [...characters];
+    let workingCharacters = [...characters];
 
     // Set state for UI feedback
     setGeneratingCharacterIndex(-1);
+    console.log("Setting generating character index to -1");
 
     try {
-      // Generate each character one by one without using the hooks directly
-      for (let i = 0; i < allCharacters.length; i++) {
+      // Generate each character one by one
+      for (let i = 0; i < workingCharacters.length; i++) {
         console.log(`Starting generation for character ${i + 1}`);
 
         // Update UI to show which character we're generating
         setGeneratingCharacterIndex(i);
 
+        // Skip if this character is the protagonist and is already complete
+        if (i === 0 && 
+            workingCharacters[i].personality && 
+            workingCharacters[i].goals && 
+            workingCharacters[i].appearance) {
+          console.log("Skipping protagonist as it's already complete");
+          continue;
+        }
+
         // Allow some time for UI to update
         await new Promise((resolve) => setTimeout(resolve, 100));
 
         try {
-          // Make the API call
+          // Make the API call with the current state of all characters
           console.log(`Generating character ${i + 1}...`);
 
           const generatedCharacter = await generateCharacterData(
             i,
-            allCharacters[i],
+            workingCharacters[i],
+            workingCharacters  // Pass the current state of all characters
           );
 
           if (generatedCharacter) {
-            // Update the specific character with new data
-            allCharacters[i] = {
-              ...allCharacters[i],
-              ...generatedCharacter,
-            };
-            setCharacters(allCharacters);
-            await new Promise((resolve) => setTimeout(resolve, 0));
+            // Update our working copy with the newly generated character
+            workingCharacters = workingCharacters.map((char, idx) => {
+              if (idx === i) {
+                return { ...char, ...generatedCharacter };
+              }
+              return char;
+            });
+            
+            // Update the UI
+            setCharacters([...workingCharacters]);
+            
+            // Save this character immediately to the context for persistent storage
+            setCharactersData({
+              characters: workingCharacters
+            });
             
             console.log(`Successfully generated character ${i + 1}`);
           }
