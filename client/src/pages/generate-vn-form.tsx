@@ -115,12 +115,10 @@ export default function GenerateVnForm() {
     const generatedAct = await generateActData(actNumber, scenesPerAct);
     
     if (generatedAct) {
-      // Update the project context with the generated act
       setGeneratedAct(actNumber, generatedAct);
       
       // Log generation to console
-      console.log(`🔥 Generated Act ${actNumber}:`, generatedAct);
-      console.log(`🔥 Updated project context with Act ${actNumber} data`);
+      console.log(`Generated Act ${actNumber}:`, generatedAct);
     }
     
     setCurrentGeneratingAct(null);
