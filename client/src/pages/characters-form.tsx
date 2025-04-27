@@ -103,86 +103,114 @@ export default function CharactersForm() {
   // Generate character details using AI
   const handleGenerateCharacter = async (index: number) => {
     setGeneratingCharacterIndex(index);
-
-    const partialCharacter = {
-      name: characters[index].name,
-      role: characters[index].role,
-      gender: characters[index].gender,
-      age: typeof characters[index].age === 'number' ? String(characters[index].age) : characters[index].age, // Ensure age is a string
-      appearance: characters[index].appearance,
-      personality: characters[index].personality,
-      goals: characters[index].goals,
-      relationshipPotential: characters[index].relationshipPotential,
-      conflict: characters[index].conflict,
-    };
-
-    const generatedCharacter = await generateCharacterData(
-      index,
-      partialCharacter,
-    );
-
-    if (generatedCharacter) {
-      const updatedCharacters = [...characters];
-      updatedCharacters[index] = {
-        ...updatedCharacters[index],
-        ...generatedCharacter,
-      };
-      setCharacters(updatedCharacters);
-
-      // Log generation to console
-      console.log(`Generated character ${index + 1}:`, generatedCharacter);
-    }
-
-    setGeneratingCharacterIndex(null);
-  };
-
-  // Generate all characters
-  const handleGenerateAllCharacters = async () => {
-    // Only generate for existing characters
-    if (characters.length === 0) return;
-
-    setGeneratingCharacterIndex(-1); // -1 indicates "all"
-
-    // Generate for each character sequentially
-    for (let i = 0; i < characters.length; i++) {
-      // Skip generation if we're canceled
-      if (generatingCharacterIndex === null) break;
-
-      setGeneratingCharacterIndex(i);
-
-      // Create partial character data
+    
+    try {
       const partialCharacter = {
-        name: characters[i].name,
-        role: characters[i].role,
-        gender: characters[i].gender,
-        age: typeof characters[i].age === 'number' ? String(characters[i].age) : characters[i].age, // Ensure age is a string
-        appearance: characters[i].appearance,
-        personality: characters[i].personality,
-        goals: characters[i].goals,
-        relationshipPotential: characters[i].relationshipPotential,
-        conflict: characters[i].conflict,
+        name: characters[index].name,
+        role: characters[index].role,
+        gender: characters[index].gender,
+        age: typeof characters[index].age === 'number' ? String(characters[index].age) : characters[index].age, // Ensure age is a string
+        appearance: characters[index].appearance,
+        personality: characters[index].personality,
+        goals: characters[index].goals,
+        relationshipPotential: characters[index].relationshipPotential,
+        conflict: characters[index].conflict,
       };
 
-      // Generate character data
+      console.log("Calling generateCharacterData for single character...");
       const generatedCharacter = await generateCharacterData(
-        i,
+        index,
         partialCharacter,
       );
+      console.log("generateCharacterData returned:", generatedCharacter);
 
       if (generatedCharacter) {
         const updatedCharacters = [...characters];
-        updatedCharacters[i] = {
-          ...updatedCharacters[i],
+        updatedCharacters[index] = {
+          ...updatedCharacters[index],
           ...generatedCharacter,
         };
         setCharacters(updatedCharacters);
 
         // Log generation to console
-        console.log(`Generated character ${i + 1}:`, generatedCharacter);
+        console.log(`Generated character ${index + 1}:`, generatedCharacter);
+      } else {
+        console.log(`Failed to generate character ${index + 1}`);
       }
+    } catch (error) {
+      console.error("Error in handleGenerateCharacter:", error);
+    } finally {
+      setGeneratingCharacterIndex(null);
+    }
+  };
+
+  // Generate all characters
+  const handleGenerateAllCharacters = async () => {
+    console.log("Generate All Characters button clicked");
+    
+    // Only generate for existing characters
+    if (characters.length === 0) {
+      console.log("No characters to generate");
+      return;
     }
 
-    setGeneratingCharacterIndex(null);
+    setGeneratingCharacterIndex(-1); // -1 indicates "all"
+    console.log("Setting generating character index to -1");
+
+    try {
+      // Generate for each character sequentially
+      for (let i = 0; i < characters.length; i++) {
+        console.log(`Starting generation for character ${i + 1}`);
+        
+        // Skip generation if we're canceled
+        if (generatingCharacterIndex === null) {
+          console.log("Generation canceled");
+          break;
+        }
+
+        setGeneratingCharacterIndex(i);
+        console.log(`Set generating character index to ${i}`);
+
+        // Create partial character data
+        const partialCharacter = {
+          name: characters[i].name,
+          role: characters[i].role,
+          gender: characters[i].gender,
+          age: typeof characters[i].age === 'number' ? String(characters[i].age) : characters[i].age, // Ensure age is a string
+          appearance: characters[i].appearance,
+          personality: characters[i].personality,
+          goals: characters[i].goals,
+          relationshipPotential: characters[i].relationshipPotential,
+          conflict: characters[i].conflict,
+        };
+        
+        console.log("Partial character data:", partialCharacter);
+
+        // Generate character data
+        console.log("Calling generateCharacterData...");
+        const generatedCharacter = await generateCharacterData(i, partialCharacter);
+        console.log("generateCharacterData returned:", generatedCharacter);
+        
+        if (generatedCharacter) {
+          const updatedCharacters = [...characters];
+          updatedCharacters[i] = {
+            ...updatedCharacters[i],
+            ...generatedCharacter,
+          };
+          setCharacters(updatedCharacters);
+
+          // Log generation to console
+          console.log(`Generated character ${i + 1}:`, generatedCharacter);
+        } else {
+          console.log(`Failed to generate character ${i + 1}`);
+        }
+      }
+    } catch (error) {
+      console.error("Error in handleGenerateAllCharacters:", error);
+    } finally {
+      console.log("Finished generation, resetting index");
+      setGeneratingCharacterIndex(null);
+    }
   };
 
   // Go back to previous step
