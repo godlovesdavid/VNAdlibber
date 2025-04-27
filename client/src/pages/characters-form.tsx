@@ -154,7 +154,7 @@ export default function CharactersForm() {
       return;
     }
 
-    // Store a local variable so it doesn't get affected by state updates
+    // Make a copy of the current characters array
     const allCharacters = [...characters];
     
     // Set state for UI feedback
@@ -162,47 +162,60 @@ export default function CharactersForm() {
     console.log("Setting generating character index to -1");
 
     try {
-      // Generate for each character sequentially
+      // Generate each character one by one without using the hooks directly
       for (let i = 0; i < allCharacters.length; i++) {
         console.log(`Starting generation for character ${i + 1}`);
         
-        // Set state for UI feedback (but don't rely on reading it back)
+        // Update UI to show which character we're generating
         setGeneratingCharacterIndex(i);
-        console.log(`Set generating character index to ${i}`);
-        console.log("DEBUG - Local loop variable generatingCharacterIndex:", generatingCharacterIndex);
         
-        // Create partial character data
+        // Skip if this character is the protagonist and is already complete
+        if (i === 0 && allCharacters[i].personality && allCharacters[i].goals && allCharacters[i].appearance) {
+          console.log("Skipping protagonist as it's already complete");
+          continue;
+        }
+        
+        // Create partial character data for API call
         const partialCharacter = {
-          name: allCharacters[i].name,
-          role: allCharacters[i].role,
-          gender: allCharacters[i].gender,
-          age: typeof allCharacters[i].age === 'number' ? String(allCharacters[i].age) : allCharacters[i].age, // Ensure age is a string
-          appearance: allCharacters[i].appearance,
-          personality: allCharacters[i].personality,
-          goals: allCharacters[i].goals,
-          relationshipPotential: allCharacters[i].relationshipPotential,
-          conflict: allCharacters[i].conflict,
+          name: allCharacters[i].name || `Character ${i + 1}`,
+          role: i === 0 ? "Protagonist" : (allCharacters[i].role || "Supporting character"),
+          gender: allCharacters[i].gender || "",
+          age: typeof allCharacters[i].age === 'number' ? String(allCharacters[i].age) : (allCharacters[i].age || ""),
+          appearance: allCharacters[i].appearance || "",
+          personality: allCharacters[i].personality || "",
+          goals: allCharacters[i].goals || "",
+          relationshipPotential: i === 0 ? "This is the protagonist character" : (allCharacters[i].relationshipPotential || ""),
+          conflict: allCharacters[i].conflict || "",
         };
         
-        console.log("Partial character data:", partialCharacter);
-
-        // Generate character data
-        console.log("Calling generateCharacterData...");
-        const generatedCharacter = await generateCharacterData(i, partialCharacter);
-        console.log("generateCharacterData returned:", generatedCharacter);
+        // Allow some time for UI to update
+        await new Promise(resolve => setTimeout(resolve, 100));
         
-        if (generatedCharacter) {
-          const updatedCharacters = [...characters];
-          updatedCharacters[i] = {
-            ...updatedCharacters[i],
-            ...generatedCharacter,
-          };
-          setCharacters(updatedCharacters);
-
-          // Log generation to console
-          console.log(`Generated character ${i + 1}:`, generatedCharacter);
-        } else {
-          console.log(`Failed to generate character ${i + 1}`);
+        try {
+          // Call the OpenAI API directly for this character
+          if (!projectData) {
+            console.error("Missing project data");
+            continue;
+          }
+          
+          // Make the API call
+          console.log(`Generating character ${i + 1}...`);
+          
+          const generatedCharacter = await generateCharacterData(i, partialCharacter);
+          
+          if (generatedCharacter) {
+            // Update the specific character with new data
+            const updatedCharacters = [...characters];
+            updatedCharacters[i] = {
+              ...updatedCharacters[i],
+              ...generatedCharacter,
+            };
+            setCharacters(updatedCharacters);
+            console.log(`Successfully generated character ${i + 1}`);
+          }
+        } catch (charError) {
+          console.error(`Error generating character ${i + 1}:`, charError);
+          // Continue with the next character even if this one fails
         }
       }
     } catch (error) {

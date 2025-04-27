@@ -144,53 +144,63 @@ export default function PathsForm() {
       return;
     }
     
+    // Make a copy of the current routes array
+    const allRoutes = [...routes];
+    
+    // Set state for UI feedback
     setGeneratingPathIndex(-1); // -1 indicates "all"
     console.log("Setting generating path index to -1");
     
     try {
-      // Generate for each path sequentially
-      for (let i = 0; i < routes.length; i++) {
+      // Generate each path one by one
+      for (let i = 0; i < allRoutes.length; i++) {
         console.log(`Starting generation for path ${i + 1}`);
         
-        // Skip generation if we're canceled
-        if (generatingPathIndex === null) {
-          console.log("Generation canceled");
-          break;
-        }
-        
+        // Update UI to show which path we're generating
         setGeneratingPathIndex(i);
-        console.log(`Set generating path index to ${i}`);
         
-        // Create partial path data
+        // Create partial path data for API call
         const partialPath = {
-          title: routes[i].title,
-          loveInterest: routes[i].loveInterest
+          title: allRoutes[i].title || `Path ${i + 1}`,
+          loveInterest: allRoutes[i].loveInterest || null
         };
+        
         console.log("Partial path data:", partialPath);
         
-        // Generate path data
-        console.log("Calling generatePathData...");
-        const generatedPath = await generatePathData(i, partialPath);
-        console.log("generatePathData returned:", generatedPath);
+        // Allow some time for UI to update
+        await new Promise(resolve => setTimeout(resolve, 100));
         
-        if (generatedPath) {
-          const updatedRoutes = [...routes];
-          updatedRoutes[i] = {
-            ...updatedRoutes[i],
-            ...generatedPath
-          };
-          setRoutes(updatedRoutes);
+        try {
+          // Call the OpenAI API for this path
+          if (!projectData) {
+            console.error("Missing project data");
+            continue;
+          }
           
-          // Log generation to console
-          console.log(`Generated path ${i + 1}:`, generatedPath);
-        } else {
-          console.log(`Failed to generate path ${i + 1}`);
+          // Make the API call
+          console.log(`Generating path ${i + 1}...`);
+          
+          const generatedPath = await generatePathData(i, partialPath);
+          
+          if (generatedPath) {
+            // Update the specific path with new data
+            const updatedRoutes = [...routes];
+            updatedRoutes[i] = {
+              ...updatedRoutes[i],
+              ...generatedPath
+            };
+            setRoutes(updatedRoutes);
+            console.log(`Successfully generated path ${i + 1}`);
+          }
+        } catch (pathError) {
+          console.error(`Error generating path ${i + 1}:`, pathError);
+          // Continue with the next path even if this one fails
         }
       }
     } catch (error) {
       console.error("Error in handleGenerateAllPaths:", error);
     } finally {
-      console.log("Finished generation, resetting index");
+      console.log("Finished path generation, resetting index");
       setGeneratingPathIndex(null);
     }
   };
