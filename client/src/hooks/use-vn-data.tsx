@@ -59,8 +59,7 @@ export function useVnData() {
   // Generate character details using AI
   const generateCharacterData = useCallback(async (
     index: number, 
-    partialCharacter: any,
-    existingCharacters?: any[]
+    partialCharacter: any
   ) => {
     if (!vnContext.projectData) {
       toast({
@@ -76,23 +75,13 @@ export function useVnData() {
       const controller = new AbortController();
       setAbortController(controller);
       
-      // Create a project context that includes the latest characters data
-      const projectContext: any = {
-        basicData: vnContext.projectData.basicData,
-        conceptData: vnContext.projectData.conceptData,
-      };
-      
-      // If we have existing characters (for batch generation), include them in the context
-      if (existingCharacters) {
-        projectContext.charactersData = {
-          characters: existingCharacters
-        };
-      }
-      
       const characterData = await generateCharacter(
         index,
         partialCharacter,
-        projectContext,
+        {
+          basicData: vnContext.projectData.basicData,
+          conceptData: vnContext.projectData.conceptData,
+        },
         controller.signal
       );
       
@@ -116,8 +105,7 @@ export function useVnData() {
   // Generate path details using AI
   const generatePathData = useCallback(async (
     index: number, 
-    partialPath: any,
-    existingPaths?: any[]
+    partialPath: any
   ) => {
     if (!vnContext.projectData) {
       toast({
@@ -133,24 +121,14 @@ export function useVnData() {
       const controller = new AbortController();
       setAbortController(controller);
       
-      // Create a project context that includes the latest data
-      const projectContext: any = {
-        basicData: vnContext.projectData.basicData,
-        conceptData: vnContext.projectData.conceptData,
-        charactersData: vnContext.projectData.charactersData,
-      };
-      
-      // If we have existing paths (for batch generation), include them in the context
-      if (existingPaths) {
-        projectContext.pathsData = {
-          routes: existingPaths
-        };
-      }
-      
       const pathData = await generatePath(
         index,
         partialPath,
-        projectContext,
+        {
+          basicData: vnContext.projectData.basicData,
+          conceptData: vnContext.projectData.conceptData,
+          charactersData: vnContext.projectData.charactersData,
+        },
         controller.signal
       );
       

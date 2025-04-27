@@ -103,12 +103,24 @@ export default function CharactersForm() {
   // Generate character details using AI
   const handleGenerateCharacter = async (index: number) => {
     setGeneratingCharacterIndex(index);
-
+    
     try {
+      const partialCharacter = {
+        name: characters[index].name,
+        role: characters[index].role,
+        gender: characters[index].gender,
+        age: typeof characters[index].age === 'number' ? String(characters[index].age) : characters[index].age, // Ensure age is a string
+        appearance: characters[index].appearance,
+        personality: characters[index].personality,
+        goals: characters[index].goals,
+        relationshipPotential: characters[index].relationshipPotential,
+        conflict: characters[index].conflict,
+      };
+
       console.log("Calling generateCharacterData for single character...");
       const generatedCharacter = await generateCharacterData(
         index,
-        characters[index],
+        partialCharacter,
       );
       console.log("generateCharacterData returned:", generatedCharacter);
 
@@ -135,7 +147,7 @@ export default function CharactersForm() {
   // Generate all characters
   const handleGenerateAllCharacters = async () => {
     console.log("Generate All Characters button clicked");
-
+    
     // Only generate for existing characters
     if (characters.length === 0) {
       console.log("No characters to generate");
@@ -143,59 +155,62 @@ export default function CharactersForm() {
     }
 
     // Make a copy of the current characters array
-    let workingCharacters = [...characters];
-
+    const allCharacters = [...characters];
+    
     // Set state for UI feedback
-    setGeneratingCharacterIndex(-1);
+    setGeneratingCharacterIndex(-1); // -1 indicates "all"
     console.log("Setting generating character index to -1");
 
     try {
-      // Generate each character one by one
-      for (let i = 0; i < workingCharacters.length; i++) {
+      // Generate each character one by one without using the hooks directly
+      for (let i = 0; i < allCharacters.length; i++) {
         console.log(`Starting generation for character ${i + 1}`);
-
+        
         // Update UI to show which character we're generating
         setGeneratingCharacterIndex(i);
-
+        
         // Skip if this character is the protagonist and is already complete
-        if (i === 0 && 
-            workingCharacters[i].personality && 
-            workingCharacters[i].goals && 
-            workingCharacters[i].appearance) {
+        if (i === 0 && allCharacters[i].personality && allCharacters[i].goals && allCharacters[i].appearance) {
           console.log("Skipping protagonist as it's already complete");
           continue;
         }
-
+        
+        // Create partial character data for API call
+        const partialCharacter = {
+          name: allCharacters[i].name || `Character ${i + 1}`,
+          role: i === 0 ? "Protagonist" : (allCharacters[i].role || "Supporting character"),
+          gender: allCharacters[i].gender || "",
+          age: typeof allCharacters[i].age === 'number' ? String(allCharacters[i].age) : (allCharacters[i].age || ""),
+          appearance: allCharacters[i].appearance || "",
+          personality: allCharacters[i].personality || "",
+          goals: allCharacters[i].goals || "",
+          relationshipPotential: i === 0 ? "This is the protagonist character" : (allCharacters[i].relationshipPotential || ""),
+          conflict: allCharacters[i].conflict || "",
+        };
+        
         // Allow some time for UI to update
-        await new Promise((resolve) => setTimeout(resolve, 100));
-
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         try {
-          // Make the API call with the current state of all characters
+          // Call the OpenAI API directly for this character
+          if (!projectData) {
+            console.error("Missing project data");
+            continue;
+          }
+          
+          // Make the API call
           console.log(`Generating character ${i + 1}...`);
-
-          const generatedCharacter = await generateCharacterData(
-            i,
-            workingCharacters[i],
-            workingCharacters  // Pass the current state of all characters
-          );
-
+          
+          const generatedCharacter = await generateCharacterData(i, partialCharacter);
+          
           if (generatedCharacter) {
-            // Update our working copy with the newly generated character
-            workingCharacters = workingCharacters.map((char, idx) => {
-              if (idx === i) {
-                return { ...char, ...generatedCharacter };
-              }
-              return char;
-            });
-            
-            // Update the UI
-            setCharacters([...workingCharacters]);
-            
-            // Save this character immediately to the context for persistent storage
-            setCharactersData({
-              characters: workingCharacters
-            });
-            
+            // Update the specific character with new data
+            const updatedCharacters = [...characters];
+            updatedCharacters[i] = {
+              ...updatedCharacters[i],
+              ...generatedCharacter,
+            };
+            setCharacters(updatedCharacters);
             console.log(`Successfully generated character ${i + 1}`);
           }
         } catch (charError) {
