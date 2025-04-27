@@ -1,5 +1,11 @@
 import { apiRequest } from "./queryClient";
 
+// Interface for generation result with error validation
+export interface GenerationResult<T> {
+  data?: T;
+  error?: string;
+}
+
 // Function to generate story concept
 export async function generateConcept(
   basicData: {
@@ -8,11 +14,11 @@ export async function generateConcept(
     genre: string;
   },
   signal?: AbortSignal
-): Promise<{
+): Promise<GenerationResult<{
   title: string;
   tagline: string;
   premise: string;
-}> {
+}>> {
   try {
     const response = await apiRequest(
       "POST",
@@ -20,10 +26,18 @@ export async function generateConcept(
       { basicData },
       signal
     );
-    return await response.json();
+    
+    const result = await response.json();
+    
+    // Check if the API returned an error
+    if (result.error) {
+      return { error: result.error };
+    }
+    
+    return { data: result };
   } catch (error) {
     console.error("Error generating concept:", error);
-    throw error;
+    return { error: "Failed to generate concept. Please try again." };
   }
 }
 
@@ -38,7 +52,7 @@ export async function generateCharacter(
   }>,
   projectContext: any,
   signal?: AbortSignal
-): Promise<{
+): Promise<GenerationResult<{
   name: string;
   role: string;
   gender: string;
@@ -48,7 +62,7 @@ export async function generateCharacter(
   goals: string;
   relationshipPotential: string;
   conflict: string;
-}> {
+}>> {
   try {
     const response = await apiRequest(
       "POST",
@@ -56,10 +70,18 @@ export async function generateCharacter(
       { index, partialCharacter, projectContext },
       signal
     );
-    return await response.json();
+    
+    const result = await response.json();
+    
+    // Check if the API returned an error
+    if (result.error) {
+      return { error: result.error };
+    }
+    
+    return { data: result };
   } catch (error) {
     console.error("Error generating character:", error);
-    throw error;
+    return { error: "Failed to generate character. Please try again." };
   }
 }
 
@@ -73,7 +95,7 @@ export async function generateMultipleCharacters(
   }>>,
   projectContext: any,
   signal?: AbortSignal
-): Promise<{
+): Promise<GenerationResult<{
   characters: Array<{
     name: string;
     role: string;
@@ -95,7 +117,7 @@ export async function generateMultipleCharacters(
   goals: string;
   relationshipPotential: string;
   conflict: string;
-}>> {
+}>>> {
   try {
     const response = await apiRequest(
       "POST",
@@ -103,10 +125,18 @@ export async function generateMultipleCharacters(
       { characterTemplates, projectContext },
       signal
     );
-    return await response.json();
+    
+    const result = await response.json();
+    
+    // Check if the API returned an error
+    if (result.error) {
+      return { error: result.error };
+    }
+    
+    return { data: result };
   } catch (error) {
     console.error("Error generating multiple characters:", error);
-    throw error;
+    return { error: "Failed to generate characters. Please try again." };
   }
 }
 
@@ -119,7 +149,7 @@ export async function generatePath(
   }>,
   projectContext: any,
   signal?: AbortSignal
-): Promise<{
+): Promise<GenerationResult<{
   title: string;
   loveInterest: string | null;
   keyChoices: string[];
@@ -128,7 +158,7 @@ export async function generatePath(
   climax: string;
   goodEnding: string;
   badEnding: string;
-}> {
+}>> {
   try {
     const response = await apiRequest(
       "POST",
@@ -136,10 +166,18 @@ export async function generatePath(
       { index, partialPath, projectContext },
       signal
     );
-    return await response.json();
+    
+    const result = await response.json();
+    
+    // Check if the API returned an error
+    if (result.error) {
+      return { error: result.error };
+    }
+    
+    return { data: result };
   } catch (error) {
     console.error("Error generating path:", error);
-    throw error;
+    return { error: "Failed to generate path. Please try again." };
   }
 }
 
@@ -151,7 +189,7 @@ export async function generateMultiplePaths(
   }>>,
   projectContext: any,
   signal?: AbortSignal
-): Promise<{
+): Promise<GenerationResult<{
   paths: Array<{
     title: string;
     loveInterest: string | null;
@@ -171,7 +209,7 @@ export async function generateMultiplePaths(
   climax: string;
   goodEnding: string;
   badEnding: string;
-}>> {
+}>>> {
   try {
     const response = await apiRequest(
       "POST",
@@ -179,10 +217,18 @@ export async function generateMultiplePaths(
       { pathTemplates, projectContext },
       signal
     );
-    return await response.json();
+    
+    const result = await response.json();
+    
+    // Check if the API returned an error
+    if (result.error) {
+      return { error: result.error };
+    }
+    
+    return { data: result };
   } catch (error) {
     console.error("Error generating multiple paths:", error);
-    throw error;
+    return { error: "Failed to generate paths. Please try again." };
   }
 }
 
@@ -190,7 +236,7 @@ export async function generateMultiplePaths(
 export async function generatePlot(
   projectContext: any,
   signal?: AbortSignal
-): Promise<{
+): Promise<GenerationResult<{
   plotOutline: {
     act1: any;
     act2: any;
@@ -198,7 +244,7 @@ export async function generatePlot(
     act4: any;
     act5: any;
   };
-}> {
+}>> {
   try {
     const response = await apiRequest(
       "POST",
@@ -206,10 +252,18 @@ export async function generatePlot(
       { projectContext },
       signal
     );
-    return await response.json();
+    
+    const result = await response.json();
+    
+    // Check if the API returned an error
+    if (result.error) {
+      return { error: result.error };
+    }
+    
+    return { data: result };
   } catch (error) {
     console.error("Error generating plot:", error);
-    throw error;
+    return { error: "Failed to generate plot. Please try again." };
   }
 }
 
