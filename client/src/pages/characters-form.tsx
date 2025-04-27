@@ -119,11 +119,17 @@ export default function CharactersForm() {
           ...generatedCharacter,
         };
         setCharacters(updatedCharacters);
+        
+        // Update the project context after character generation
+        setCharactersData({
+          characters: updatedCharacters
+        });
 
         // Log generation to console
-        console.log(`Generated character ${index + 1}:`, generatedCharacter);
+        console.log(`🔥 Generated character ${index + 1}:`, generatedCharacter);
+        console.log(`🔥 Updated project context with character ${index + 1} data`);
       } else {
-        console.log(`Failed to generate character ${index + 1}`);
+        console.log(`🔥 Failed to generate character ${index + 1}`);
       }
     } catch (error) {
       console.error("Error in handleGenerateCharacter:", error);
@@ -193,8 +199,15 @@ export default function CharactersForm() {
               ...generatedCharacter,
             };
             setCharacters(allCharacters);
+            
+            // Update the project context after each character generation
+            setCharactersData({
+              characters: allCharacters
+            });
+            
             await new Promise((resolve) => setTimeout(resolve, 0));
-            console.log(`Successfully generated character ${i + 1}`);
+            console.log(`🔥 Successfully generated character ${i + 1}`);
+            console.log(`🔥 Updated project context with character ${i + 1} data`);
           }
         } catch (charError) {
           console.error(`Error generating character ${i + 1}:`, charError);

@@ -185,8 +185,15 @@ export default function PathsForm() {
               ...generatedPath,
             };
             setRoutes(allRoutes);
+            
+            // Update the project context after each path generation
+            setPathsData({
+              routes: allRoutes
+            });
+            
             await new Promise((resolve) => setTimeout(resolve, 0));
-            console.log(`Successfully generated path ${i + 1}`);
+            console.log(`🔥 Successfully generated path ${i + 1}`);
+            console.log(`🔥 Updated project context with path ${i + 1} data`);
           }
         } catch (pathError) {
           console.error(`Error generating path ${i + 1}:`, pathError);
