@@ -19,21 +19,15 @@ export default function BasicForm() {
   
   // Form state
   const [theme, setTheme] = useState("");
-  const [customTheme, setCustomTheme] = useState("");
   const [tone, setTone] = useState("");
-  const [customTone, setCustomTone] = useState("");
   const [genre, setGenre] = useState("");
-  const [customGenre, setCustomGenre] = useState("");
   
   // Load existing data if available
   useEffect(() => {
     if (projectData?.basicData) {
       setTheme(projectData.basicData.theme || "");
-      setCustomTheme(projectData.basicData.customTheme || "");
       setTone(projectData.basicData.tone || "");
-      setCustomTone(projectData.basicData.customTone || "");
       setGenre(projectData.basicData.genre || "");
-      setCustomGenre(projectData.basicData.customGenre || "");
     }
   }, [projectData]);
   
@@ -53,11 +47,8 @@ export default function BasicForm() {
     // Save data
     setBasicData({
       theme: theme,
-      customTheme: customTheme,
       tone: tone,
-      customTone: customTone,
       genre: genre,
-      customGeneric: customGenre,
     });
     
     // Navigate to next step
@@ -65,9 +56,9 @@ export default function BasicForm() {
   };
   
   // Helper functions to get actual values
-  const getThemeValue = () => theme === "custom" ? customTheme : theme;
-  const getToneValue = () => tone === "custom" ? customTone : tone;
-  const getGenreValue = () => genre === "custom" ? customGenre : genre;
+  const getThemeValue = () => theme;
+  const getToneValue = () => tone;
+  const getGenreValue = () => genre;
   
   return (
     <>
@@ -99,19 +90,9 @@ export default function BasicForm() {
                   <SelectItem value="corruption">Corruption</SelectItem>
                   <SelectItem value="truth_illusion">Truth vs Illusion</SelectItem>
                   <SelectItem value="legacy">Legacy</SelectItem>
-                  <SelectItem value="custom">Custom Theme...</SelectItem>
                 </SelectContent>
               </Select>
               
-              {theme === "custom" && (
-                <Input
-                  id="custom-theme"
-                  placeholder="Enter your custom theme"
-                  className="mt-2"
-                  value={customTheme}
-                  onChange={(e) => setCustomTheme(e.target.value)}
-                />
-              )}
             </div>
             
             {/* Tone Selection */}
@@ -133,19 +114,9 @@ export default function BasicForm() {
                   <SelectItem value="tragicomic">Tragicomic</SelectItem>
                   <SelectItem value="adventurous">Adventurous</SelectItem>
                   <SelectItem value="gritty">Gritty</SelectItem>
-                  <SelectItem value="custom">Custom Tone...</SelectItem>
                 </SelectContent>
               </Select>
               
-              {tone === "custom" && (
-                <Input
-                  id="custom-tone"
-                  placeholder="Enter your custom tone"
-                  className="mt-2"
-                  value={customTone}
-                  onChange={(e) => setCustomTone(e.target.value)}
-                />
-              )}
             </div>
             
             {/* Genre Selection */}
@@ -168,19 +139,9 @@ export default function BasicForm() {
                   <SelectItem value="comedy">Comedy</SelectItem>
                   <SelectItem value="horror">Horror</SelectItem>
                   <SelectItem value="drama">Drama</SelectItem>
-                  <SelectItem value="custom">Custom Genre...</SelectItem>
                 </SelectContent>
               </Select>
               
-              {genre === "custom" && (
-                <Input
-                  id="custom-genre"
-                  placeholder="Enter your custom genre"
-                  className="mt-2"
-                  value={customGenre}
-                  onChange={(e) => setCustomGenre(e.target.value)}
-                />
-              )}
             </div>
             
             <div className="pt-6 flex justify-between">

@@ -241,10 +241,9 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
             </div>
           )}
           
-          {/* End of act message */}
-          {currentScene.choices === null && (
+          {/* End of act message is now shown in the dialogue of the last scene */}
+          {currentScene.choices === null && showChoices && (
             <div className="mt-8 text-center">
-              <p className="text-primary-300 text-lg mb-4">End of Act {actNumber}</p>
               <Button onClick={onReturn}>
                 Return to Generation Screen
               </Button>
