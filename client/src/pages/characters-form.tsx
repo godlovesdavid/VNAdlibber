@@ -62,7 +62,7 @@ export default function CharactersForm() {
       ...characters,
       {
         name: "",
-        role: (characters.length === 0 ? "protagonist" : ""),
+        role: characters.length === 0 ? "protagonist" : "",
         gender: "",
         age: "",
         appearance: "",
@@ -119,10 +119,10 @@ export default function CharactersForm() {
           ...generatedCharacter,
         };
         setCharacters(updatedCharacters);
-        
+
         // Update the project context after character generation
         setCharactersData({
-          characters: updatedCharacters
+          characters: updatedCharacters,
         });
 
         // Log generation to console
@@ -199,12 +199,12 @@ export default function CharactersForm() {
               ...generatedCharacter,
             };
             setCharacters(allCharacters);
-            
+
             // Update the project context after each character generation
             setCharactersData({
-              characters: allCharacters
+              characters: allCharacters,
             });
-            
+
             await new Promise((resolve) => setTimeout(resolve, 0));
             console.log(`Successfully generated character ${i + 1}`);
             console.log(`Updated project context with character ${i + 1} data`);
@@ -330,6 +330,7 @@ export default function CharactersForm() {
                         ) : (
                           <Input
                             value={character.role}
+                            placeholder="e.g. antagonist, rival, mentor, sidekick, childhood friend, mother, hidden ally"
                             onChange={(e) =>
                               updateCharacter(index, "role", e.target.value)
                             }
@@ -342,7 +343,7 @@ export default function CharactersForm() {
                           Gender
                         </label>
                         <Input
-                          placeholder="Character's gender (e.g., Male, Female, Non-binary, Robot/AI, etc.)"
+                          placeholder="e.g. Male, Female, Non-binary, Robot/AI"
                           value={character.gender}
                           onChange={(e) =>
                             updateCharacter(index, "gender", e.target.value)
@@ -419,11 +420,6 @@ export default function CharactersForm() {
                     <div className="form-group">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Relationship Potential
-                        {index === 0 && (
-                          <span className="text-xs text-gray-500 ml-1">
-                            (N/A)
-                          </span>
-                        )}
                       </label>
                       {index === 0 ? (
                         <Textarea

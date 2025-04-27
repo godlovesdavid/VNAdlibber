@@ -28,12 +28,30 @@ const generateCharacterSchema = z.object({
   projectContext: z.any(),
 });
 
+const generateMultipleCharactersSchema = z.object({
+  characterTemplates: z.array(z.object({
+    name: z.string().optional(),
+    role: z.string().optional(),
+    gender: z.string().optional(),
+    age: z.string().optional(),
+  })),
+  projectContext: z.any(),
+});
+
 const generatePathSchema = z.object({
   index: z.number(),
   partialPath: z.object({
     title: z.string().optional(),
     loveInterest: z.string().nullable().optional(),
   }),
+  projectContext: z.any(),
+});
+
+const generateMultiplePathsSchema = z.object({
+  pathTemplates: z.array(z.object({
+    title: z.string().optional(),
+    loveInterest: z.string().nullable().optional(),
+  })),
   projectContext: z.any(),
 });
 
@@ -188,8 +206,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         generateCharacterSchema.parse(req.body);
 
       // Create prompt for the character generation
-      // Partial character information
-      // ${JSON.stringify(partialCharacter, null, 2)}
       const prompt = `Given 
       ${JSON.stringify(projectContext, null, 2)}
         Generate a JSON with one character as structured
@@ -204,7 +220,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           "relationshipPotential": "(optional) Relationship potential with main protagonist. Lovers must be opposite gender. (<15 words)",
           "conflict": "Their primary internal or external struggle (<40 words)",
         }
-        Be wildly imaginative, original, and surprising — but keep it emotionally resonant. 
       `;
 
       // Generate character using OpenAI
@@ -225,9 +240,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ],
         response_format: { type: "json_object" },
       });
-      // console.log(projectContext)
-      
-      console.log("Generated character:", response.choices[0].message.content);
+      console.log(projectContext)
+
+      // console.log("Generated character:", response.choices[0].message.content);
 
       // Parse and return the generated character
       const generatedCharacter = JSON.parse(
@@ -237,6 +252,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error generating character:", error);
       res.status(500).json({ message: "Failed to generate character" });
+    }
+  });
+  
+  app.post("/api/generate/characters-bundle", async (req, res) => {
+    try {
+      const { characterTemplates, projectContext } = generateMultipleCharactersSchema.parse(
+        req.body,
+      );
+
+      // Create prompt for the characters bundle generation
+      const prompt = `Given
+        ${JSON.stringify(projectContext, null, 2)}
+        Generate ${characterTemplates.length} characters at once in a JSON array as structured
+        [
+          {
+            "name": "Character 1 name",
+            "role": "Character 1 role",
+            "gender": "Character 1 gender",
+            "age": "Character 1 age as a string",
+            "appearance": "Physical description (<15 words)",
+            "personality": "Key personality traits and behaviors (<40 words)",
+            "goals": "Primary motivations and objectives (<40 words)",
+            "relationshipPotential": "(optional) Relationship potential with main protagonist. Lovers must be opposite gender. (<15 words)",
+            "conflict": "Their primary internal or external struggle (<40 words)"
+          },
+          {
+            ... additional characters ...
+          }
+        ]
+        Make each character unique with different strengths, flaws, and motivations. Ensure they fit the story concept.
+      `;
+
+      // Generate characters bundle using OpenAI
+      const response = await openai.chat.completions.create({
+        model: "gpt-4.1-nano",
+        temperature: 1.2,
+        frequency_penalty: 0.2,
+        presence_penalty: 0.5,
+        top_p: 1.0,
+        stop: null,
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a creative fiction brainstorming assistant specializing in visual novels.",
+          },
+          { role: "user", content: prompt },
+        ],
+        response_format: { type: "json_object" },
+      });
+
+      console.log(`Generating ${characterTemplates.length} characters at once`);
+
+      // Parse and return the generated characters bundle
+      const generatedCharacters = JSON.parse(
+        response.choices[0].message.content || "[]",
+      );
+      res.json(generatedCharacters);
+    } catch (error) {
+      console.error("Error generating characters bundle:", error);
+      res.status(500).json({ message: "Failed to generate characters bundle" });
     }
   });
 
@@ -249,7 +325,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create prompt for the path generation
       const prompt = `Given
         ${JSON.stringify(projectContext, null, 2)}
-        Generate a plot path/arc in a JSON as structured
+        Generate one plot path/arc in a JSON as structured
         {
           "title": "Path title"}",
           "loveInterest": "(optional) One of the opposite-gender characters otherwise write leave empty"},
@@ -284,7 +360,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Sent:", JSON.stringify(projectContext, null, 2));
 
       // Log the generated response for debugging
-      console.log("Generated path:", response.choices[0].message.content);
+      // console.log("Generated path:", response.choices[0].message.content);
 
       // Parse and return the generated path
       const generatedPath = JSON.parse(
@@ -296,6 +372,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to generate path" });
     }
   });
+  
+  app.post("/api/generate/paths-bundle", async (req, res) => {
+    try {
+      const { pathTemplates, projectContext } = generateMultiplePathsSchema.parse(
+        req.body,
+      );
+
+      // Create prompt for the paths bundle generation
+      const prompt = `Given
+        ${JSON.stringify(projectContext, null, 2)}
+        Generate ${pathTemplates.length} plot paths/arcs at once in a JSON array as structured
+        [
+          {
+            "title": "Path 1 title",
+            "loveInterest": "(optional) One of the opposite-gender characters otherwise leave as null",
+            "keyChoices": ["Critical player decision 1", "Critical player decision 2", "Critical player decision 3"],
+            "beginning": "Description of how this route begins (< 30 words)",
+            "middle": "Description of conflict escalation and unexpected twists (< 30 words)",
+            "climax": "Description of the highest tension moment of this path (< 30 words)",
+            "goodEnding": "Description of positive resolution (< 20 words)",
+            "badEnding": "Description of negative outcome (< 20 words)"
+          },
+          {
+            ... additional paths ...
+          }
+        ]
+        Make each path unique and ensure they offer distinct experiences.
+      `;
+
+      // Generate paths bundle using OpenAI
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        temperature: 1.2,
+        frequency_penalty: 0.2,
+        presence_penalty: 0.5,
+        top_p: 1.0,
+        stop: null,
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a creative fiction brainstorming assistant specializing in visual novels.",
+          },
+          { role: "user", content: prompt },
+        ],
+        response_format: { type: "json_object" },
+      });
+
+      console.log(`Generating ${pathTemplates.length} paths at once`);
+
+      // Parse and return the generated paths bundle
+      const generatedPaths = JSON.parse(
+        response.choices[0].message.content || "[]",
+      );
+      res.json(generatedPaths);
+    } catch (error) {
+      console.error("Error generating paths bundle:", error);
+      res.status(500).json({ message: "Failed to generate paths bundle" });
+    }
+  });
 
   app.post("/api/generate/plot", async (req, res) => {
     try {
@@ -304,7 +440,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create prompt for the plot generation
       const prompt = `Given
         ${JSON.stringify(projectContext, null, 2)}
-        Generate a master plot outline in a JSON as structured
+        Generate the master plot outline in a JSON as structured
         {
           "plotOutline": {
             "act1": {
@@ -362,7 +498,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create prompt for the act generation
       const prompt = `Create scenes for Act ${actNumber} of a visual novel with the following context
         ${JSON.stringify(projectContext, null, 2)}
-        Create ${scenesCount} scenes for this act following the structure from the plot outline
+        Create approximately ${scenesCount} scenes for this act following the structure from the plot outline
         Generate a JSON as structured
         {
           "meta": {

@@ -6,7 +6,9 @@ import {
   generateCharacter, 
   generatePath, 
   generatePlot, 
-  generateAct 
+  generateAct,
+  generateMultipleCharacters,
+  generateMultiplePaths
 } from "@/lib/openai";
 
 export function useVnData() {
@@ -242,6 +244,95 @@ export function useVnData() {
     }
   }, [vnContext.projectData, vnContext.playerData, toast]);
   
+  // Generate multiple characters at once
+  const generateMultipleCharactersData = useCallback(async (
+    characterTemplates: any[]
+  ) => {
+    if (!vnContext.projectData) {
+      toast({
+        title: "Error",
+        description: "Missing project data",
+        variant: "destructive",
+      });
+      return null;
+    }
+    
+    try {
+      setIsGenerating(true);
+      const controller = new AbortController();
+      setAbortController(controller);
+      
+      const charactersData = await generateMultipleCharacters(
+        characterTemplates,
+        {
+          basicData: vnContext.projectData.basicData,
+          conceptData: vnContext.projectData.conceptData,
+        },
+        controller.signal
+      );
+      
+      setAbortController(null);
+      return charactersData;
+    } catch (error) {
+      if ((error as Error).name !== 'AbortError') {
+        toast({
+          title: "Generation Failed",
+          description: "Failed to generate characters. Please try again.",
+          variant: "destructive",
+        });
+        console.error("Error generating multiple characters:", error);
+      }
+      return null;
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [vnContext.projectData, toast]);
+  
+  // Generate multiple paths at once
+  const generateMultiplePathsData = useCallback(async (
+    pathTemplates: any[]
+  ) => {
+    if (!vnContext.projectData) {
+      toast({
+        title: "Error",
+        description: "Missing project data",
+        variant: "destructive",
+      });
+      return null;
+    }
+    
+    try {
+      setIsGenerating(true);
+      const controller = new AbortController();
+      setAbortController(controller);
+      
+      const pathsData = await generateMultiplePaths(
+        pathTemplates,
+        {
+          basicData: vnContext.projectData.basicData,
+          conceptData: vnContext.projectData.conceptData,
+          charactersData: vnContext.projectData.charactersData,
+        },
+        controller.signal
+      );
+      
+      setAbortController(null);
+      return pathsData;
+    } catch (error) {
+      if ((error as Error).name !== 'AbortError') {
+        toast({
+          title: "Generation Failed",
+          description: "Failed to generate paths. Please try again.",
+          variant: "destructive",
+        });
+        console.error("Error generating multiple paths:", error);
+      }
+      return null;
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [vnContext.projectData, toast]);
+  
   // Cancel ongoing generation
   const cancelGeneration = useCallback(() => {
     if (abortController) {
@@ -258,7 +349,9 @@ export function useVnData() {
   return {
     generateConceptData,
     generateCharacterData,
+    generateMultipleCharactersData,
     generatePathData,
+    generateMultiplePathsData,
     generatePlotData,
     generateActData,
     cancelGeneration,

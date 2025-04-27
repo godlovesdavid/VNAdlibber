@@ -63,6 +63,41 @@ export async function generateCharacter(
   }
 }
 
+// Function to generate multiple characters at once
+export async function generateMultipleCharacters(
+  characterTemplates: Array<Partial<{
+    name: string;
+    role: string;
+    gender: string;
+    age: string;
+  }>>,
+  projectContext: any,
+  signal?: AbortSignal
+): Promise<Array<{
+  name: string;
+  role: string;
+  gender: string;
+  age: string;
+  appearance: string;
+  personality: string;
+  goals: string;
+  relationshipPotential: string;
+  conflict: string;
+}>> {
+  try {
+    const response = await apiRequest(
+      "POST",
+      "/api/generate/characters-bundle",
+      { characterTemplates, projectContext },
+      signal
+    );
+    return await response.json();
+  } catch (error) {
+    console.error("Error generating multiple characters:", error);
+    throw error;
+  }
+}
+
 // Function to generate path details
 export async function generatePath(
   index: number,
@@ -92,6 +127,38 @@ export async function generatePath(
     return await response.json();
   } catch (error) {
     console.error("Error generating path:", error);
+    throw error;
+  }
+}
+
+// Function to generate multiple paths at once
+export async function generateMultiplePaths(
+  pathTemplates: Array<Partial<{
+    title: string;
+    loveInterest: string | null;
+  }>>,
+  projectContext: any,
+  signal?: AbortSignal
+): Promise<Array<{
+  title: string;
+  loveInterest: string | null;
+  keyChoices: string[];
+  beginning: string;
+  middle: string;
+  climax: string;
+  goodEnding: string;
+  badEnding: string;
+}>> {
+  try {
+    const response = await apiRequest(
+      "POST",
+      "/api/generate/paths-bundle",
+      { pathTemplates, projectContext },
+      signal
+    );
+    return await response.json();
+  } catch (error) {
+    console.error("Error generating multiple paths:", error);
     throw error;
   }
 }
