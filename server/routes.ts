@@ -225,8 +225,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ],
         response_format: { type: "json_object" },
       });
+      console.log("Sent:", JSON.stringify(projectContext, null, 2));
       // Log the generated response for debugging
-      console.log("Generated character:", response.choices[0].message.content);
+      // console.log("Generated character:", response.choices[0].message.content);
 
       // Parse and return the generated character
       const generatedCharacter = JSON.parse(
@@ -251,7 +252,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         Generate a plot path/arc in a JSON as structured
         {
           "title": "Path title"}",
-          "loveInterest": "(optional; at most 50% chance) One of the opposite-gender characters otherwise write None - Not romance focused"},
+          "loveInterest": "(optional) One of the opposite-gender characters otherwise leave blank"},
           "keyChoices": ["Critical player decision 1", "Critical player decision 2", "Critical player decision 3"],
           "beginning": "Description of how this route begins (< 30 words)",
           "middle": "Description of conflict escalation and unexpected twists (< 30 words)",
@@ -280,8 +281,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         response_format: { type: "json_object" },
       });
 
-      console.log('Sent:', JSON.stringify(projectContext, null, 2));
-      
       // Log the generated response for debugging
       console.log("Generated path:", response.choices[0].message.content);
 
