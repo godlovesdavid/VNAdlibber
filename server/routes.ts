@@ -20,7 +20,7 @@ function checkResponseForError(parsedResponse: any, res: any): boolean {
 
 // Standard system prompt for content validation
 const standardValidationInstructions =
-  'You\'re a VN brainstormer. Please generate content based on the given prompt. However, if the story context provided is plot-conflicting, incoherent, sexually explicit, offensive, or has irrelevant characters, or is otherwise difficult to generate content from, return a JSON instead with an error key explaining the issue like: { "error": "Brief description of why the content is invalid." }';
+  'Return a JSON based on the given story context. If story context is plot-conflicting, incoherent, sexually explicit, or offensive, then instead return a JSON with an error key explaining the issue like this: { "error": "Brief description of why the content is invalid." }';
 
 // Schema for generation requests
 const generateConceptSchema = z.object({
@@ -176,7 +176,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         Theme: ${basicData.theme}
         Tone: ${basicData.tone}
         Genre: ${basicData.genre}
-        Generate a story concept in a JSON as structured
+        Return a story concept in a JSON as structured:
         {
           "title": "Intriguing title",
           "tagline": "Very short & memorable catchphrase (<10 words and no period)",
@@ -230,7 +230,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create prompt for the character generation
       const prompt = `Given this story context:
         ${JSON.stringify(projectContext, null, 2)}
-        Generate exactly ${indices.length} character${indices.length > 1 ? "s" : ""} as a JSON:
+        Return exactly ${indices.length} character${indices.length > 1 ? "s" : ""} as a JSON:
         ${
           indices.length > 1
             ? `
@@ -377,7 +377,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create prompt for the path generation
       const prompt = `Given this story context:
         ${JSON.stringify(projectContext, null, 2)}
-        Generate exactly ${indices.length} plot arc${indices.length > 1 ? "s" : ""} as JSON:
+        Return exactly ${indices.length} plot arc${indices.length > 1 ? "s" : ""} as a JSON:
         {
           "paths":
           [
@@ -393,16 +393,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           ]
         }
-        Ensure unique + distinct paths
       `;
       console.log("Prompt:", prompt);
 
       // Generate paths using OpenAI
       const response = await openai.chat.completions.create({
         model: "gpt-4.1-nano",
-        temperature: 1.0,
-        frequency_penalty: 0.1,
-        presence_penalty: 0.2,
+        temperature: 0.7,
+        frequency_penalty: 0.0,
+        presence_penalty: 0.0,
         top_p: 1.0,
         messages: [
           {
@@ -503,7 +502,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create prompt for the plot generation
       const prompt = `Given this story context:
         ${JSON.stringify(projectContext, null, 2)}
-        Generate the master plot outline in a JSON as structured
+        Return a master plot outline in a JSON as structured:
         {
           "plotOutline": {
             "act1": {
@@ -568,7 +567,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const prompt = `Create scenes for Act ${actNumber} of a visual novel with the following context:
         ${JSON.stringify(projectContext, null, 2)}
         Create approximately ${scenesCount} scenes for this act following the structure from the plot outline:
-        Generate a JSON as structured:
+        Return a JSON as structured:
         {
           "meta": {
             "theme": "theme from context",

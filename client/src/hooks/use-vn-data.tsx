@@ -47,7 +47,7 @@ export function useVnData() {
           title: "Content Validation Failed",
           description: result.error,
           variant: "destructive",
-          duration: 120000,
+          duration: 60000,
         });
         return null;
       }
@@ -113,6 +113,7 @@ export function useVnData() {
           title: "Content Validation Failed",
           description: errorMessage,
           variant: "destructive",
+          duration: 60000,
         });
         return null;
       }
@@ -144,6 +145,7 @@ export function useVnData() {
           title: "Content Validation Failed",
           description: errorMsg,
           variant: "destructive",
+          duration: 60000,
         });
         console.error("Error generating character:", error);
       }
@@ -200,6 +202,7 @@ export function useVnData() {
           title: "Content Validation Failed",
           description: errorMessage,
           variant: "destructive",
+          duration: 60000,
         });
         return null;
       }
@@ -272,6 +275,7 @@ export function useVnData() {
           title: "Content Validation Failed",
           description: result.error,
           variant: "destructive",
+          duration: 60000,
         });
         return null;
       }
@@ -302,6 +306,7 @@ export function useVnData() {
           title: "Content Validation Failed",
           description: errorMsg,
           variant: "destructive",
+          duration: 60000,
         });
         console.error("Error generating plot:", error);
       }
@@ -352,6 +357,7 @@ export function useVnData() {
           title: "Content Validation Failed",
           description: result.error,
           variant: "destructive",
+          duration: 60000,
         });
         return { error: result.error } as GenerationResult<any>;
       }
@@ -382,6 +388,7 @@ export function useVnData() {
           title: "Content Validation Failed",
           description: errorMsg,
           variant: "destructive",
+          duration: 60000,
         });
         console.error(`Error generating Act ${actNumber}:`, error);
       }
@@ -439,6 +446,7 @@ export function useVnData() {
           title: "Content Validation Failed",
           description: errorMessage,
           variant: "destructive",
+          duration: 60000,
         });
         return null;
       }
@@ -533,6 +541,7 @@ export function useVnData() {
           title: "Content Validation Failed",
           description: errorMessage,
           variant: "destructive",
+          duration: 60000,
         });
         return null;
       }
@@ -569,6 +578,7 @@ export function useVnData() {
           title: "Content Validation Failed",
           description: errorMsg,
           variant: "destructive",
+          duration: 60000,
         });
         console.error("Error generating multiple paths:", error);
       }
@@ -580,31 +590,26 @@ export function useVnData() {
   
   // Cancel ongoing generation
   const cancelGeneration = useCallback(() => {
-    // Show toast first
     toast({
       title: "Generation Cancelled",
       description: "The AI generation process was cancelled.",
     });
-    
-    // Update UI state
+
     setIsGenerating(false);
-    
-    // Store the controller locally to prevent race conditions
+
     const currentController = abortController;
-    
-    // Clear the state immediately
     setAbortController(null);
-    
-    // Use a setTimeout to move the actual abort to the next event cycle
-    // This helps avoid the runtime error while still aborting the request
+
     if (currentController) {
-      setTimeout(() => {
+      Promise.resolve().then(() => {
         try {
-          currentController.abort();
+          if (!currentController.signal.aborted) {
+            currentController.abort("UserCancelledGeneration");
+          }
         } catch (error) {
           console.error("Error aborting (handled):", error);
         }
-      }, 0);
+      });
     }
   }, [abortController, toast]);
   
