@@ -219,6 +219,27 @@ export interface GenerationResult<T> {
   error?: string;
 }
 
+// Standard error handling wrapper for generation functions
+async function withErrorHandling<T>(
+  apiCall: () => Promise<Response>,
+  errorMsg: string
+): Promise<GenerationResult<T>> {
+  try {
+    const response = await apiCall();
+    const result = await response.json();
+    
+    // Check if the API returned an error
+    if (result.error) {
+      return { error: result.error };
+    }
+    
+    return { data: result };
+  } catch (error) {
+    console.error(errorMsg, error);
+    return { error: `${errorMsg}. Please try again.` };
+  }
+}
+
 // Function to generate visual novel act
 export async function generateAct(
   actNumber: number,
@@ -245,8 +266,8 @@ export async function generateAct(
     }> | null;
   }>;
 }>> {
-  try {
-    const response = await apiRequest(
+  return withErrorHandling<any>(
+    () => apiRequest(
       "POST",
       "/api/generate/act",
       { 
@@ -256,18 +277,7 @@ export async function generateAct(
         validate: true // Add validation flag to check for inconsistencies
       },
       signal
-    );
-    
-    const result = await response.json();
-    
-    // Check if the API returned an error
-    if (result.error) {
-      return { error: result.error };
-    }
-    
-    return { data: result };
-  } catch (error) {
-    console.error(`Error generating act ${actNumber}:`, error);
-    return { error: `Failed to generate Act ${actNumber}. Please try again.` };
-  }
+    ),
+    `Error generating act ${actNumber}`
+  );
 }
