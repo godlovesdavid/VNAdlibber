@@ -237,7 +237,12 @@ export default function GenerateVnForm() {
           {[1, 2, 3, 4, 5].map((actNumber) => (
             <Card key={`act-section-${actNumber}`} className="mb-6">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold text-neutral-800">Act {actNumber}</CardTitle>
+                <CardTitle className="text-lg font-semibold text-neutral-800">
+                  Act {actNumber}
+                  {isActGenerated(actNumber) && projectData?.generatedActs?.[`act${actNumber}`]?.scenes && 
+                    ` (${projectData.generatedActs[`act${actNumber}`].scenes.length} scenes)`
+                  }
+                </CardTitle>
                 <CardDescription>
                   {isActGenerated(actNumber) 
                     ? `This act has been generated and is ready to play. You can regenerate it if desired.` 
@@ -257,40 +262,43 @@ export default function GenerateVnForm() {
                 )}
               </CardContent>
               <CardFooter className="flex justify-between">
-                {/* Play button moved to left */}
-                {isActGenerated(actNumber) && (
-                  <Button 
-                    className="flex items-center"
-                    onClick={() => playAct(actNumber)}
-                  >
-                    <Play className="mr-1 h-4 w-4" /> Play
-                  </Button>
-                )}
+                <div>
+                  {/* Empty div on the left for spacing */}
+                </div>
                 
-                {/* If act is not generated, we still need a placeholder div for spacing */}
-                {!isActGenerated(actNumber) && <div />}
-                
-                <Button
-                  variant="outline"
-                  className={`border-primary text-primary hover:bg-primary/10 flex items-center justify-center ${isActGenerating(actNumber) ? 'opacity-75' : ''}`}
-                  onClick={() => handleGenerateAct(actNumber)}
-                  disabled={isGenerating}
-                >
-                  {isActGenerating(actNumber) ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Wand2 className="mr-1 h-4 w-4" /> 
-                      {isActGenerated(actNumber) ? "Regenerate" : "Generate"}
-                    </>
+                <div className="flex space-x-2">
+                  {/* Play button first, then Regenerate */}
+                  {isActGenerated(actNumber) && (
+                    <Button 
+                      className="flex items-center"
+                      onClick={() => playAct(actNumber)}
+                    >
+                      <Play className="mr-1 h-4 w-4" /> Play
+                    </Button>
                   )}
-                </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className={`border-primary text-primary hover:bg-primary/10 flex items-center justify-center ${isActGenerating(actNumber) ? 'opacity-75' : ''}`}
+                    onClick={() => handleGenerateAct(actNumber)}
+                    disabled={isGenerating}
+                  >
+                    {isActGenerating(actNumber) ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Wand2 className="mr-1 h-4 w-4" /> 
+                        {isActGenerated(actNumber) ? "Regenerate" : "Generate"}
+                      </>
+                    )}
+                  </Button>
+                </div>
               </CardFooter>
             </Card>
           ))}

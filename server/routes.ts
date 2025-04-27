@@ -517,6 +517,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { actNumber, scenesCount, projectContext } =
         generateActSchema.parse(req.body);
 
+      // First, validate the content to check for conflicts, incoherence, or offensive material
+      const validationPrompt = `
+        You are a content validator that checks for plot conflicts, incoherence, and offensive material.
+        Review the following story context for a visual novel:
+        ${JSON.stringify(projectContext, null, 2)}
+        
+        Check if there are any issues with this content:
+        1. Plot conflicts or inconsistencies
+        2. Incoherent narrative elements 
+        3. Offensive, inappropriate, or harmful content
+        4. Content unsuitable for general audiences
+
+        Respond with a JSON object in the following format:
+        {
+          "isValid": true/false,
+          "error": "Detailed explanation of any issues detected" (null if isValid is true)
+        }
+
+        Be strict but fair in your assessment. If no issues are found, respond with {"isValid": true, "error": null}.
+      `;
+
+      // First perform validation check
+      const validationResponse = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        temperature: 0.3, // Lower temperature for more predictable validation
+        messages: [
+          { role: "system", content: "You are a content validator for visual novels" },
+          { role: "user", content: validationPrompt }
+        ],
+        response_format: { type: "json_object" }
+      });
+
+      // Parse validation response
+      const validationResult = JSON.parse(validationResponse.choices[0].message.content || "{}");
+      console.log("Validation result:", validationResult);
+
+      // If content validation fails, return the error
+      if (validationResult && validationResult.isValid === false) {
+        return res.status(400).json({ 
+          error: validationResult.error || "Content validation failed. Please revise your story elements."
+        });
+      }
+
+      // If validation passes, proceed with generation
       // Create prompt for the act generation
       const prompt = `Create scenes for Act ${actNumber} of a visual novel with the following context:
         ${JSON.stringify(projectContext, null, 2)}
@@ -569,6 +613,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         -The final scene of the act should have choices set to null.
         -Include meaningful "delta" values for relationships, inventory items or skills.
         -Make sure the "next" property always points to a valid scene ID.
+        -Review for plot conflicts, incoherence, or offensive content before finalizing.
       `;
 
       // Generate act using OpenAI
