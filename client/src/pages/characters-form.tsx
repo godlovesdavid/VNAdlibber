@@ -20,7 +20,12 @@ import { Character } from "@/types/vn";
 export default function CharactersForm() {
   const [, setLocation] = useLocation();
   const { projectData, setCharactersData, goToStep } = useVnContext();
-  const { generateCharacterData, generateMultipleCharactersData, isGenerating, cancelGeneration } = useVnData();
+  const {
+    generateCharacterData,
+    generateMultipleCharactersData,
+    isGenerating,
+    cancelGeneration,
+  } = useVnData();
 
   // Form state
   const [characters, setCharacters] = useState<Character[]>([
@@ -169,22 +174,25 @@ export default function CharactersForm() {
             personality: char.personality,
             goals: char.goals,
             relationshipPotential: char.relationshipPotential,
-            conflict: char.conflict
+            conflict: char.conflict,
           };
         }
         return {
           name: char.name,
           role: char.role,
           gender: char.gender,
-          age: char.age
+          age: char.age,
         };
       });
 
-      console.log(`Generating ${characterTemplates.length} characters at once...`);
-      
+      console.log(
+        `Generating ${characterTemplates.length} characters at once...`,
+      );
+
       // Generate all characters in one API call
-      const generatedCharacters = await generateMultipleCharactersData(characterTemplates);
-      
+      const generatedCharacters =
+        await generateMultipleCharactersData(characterTemplates);
+
       if (generatedCharacters && Array.isArray(generatedCharacters)) {
         // Merge the generated characters with existing character data
         const updatedCharacters = allCharacters.map((char, idx) => {
@@ -195,16 +203,17 @@ export default function CharactersForm() {
           // Otherwise use the generated data
           return {
             ...char,
-            ...generatedCharacters[idx]
+            ...generatedCharacters[idx],
           };
         });
-        
+
         // Update state and project context
-        setCharacters(updatedCharacters);
         setCharactersData({
-          characters: updatedCharacters
+          characters: updatedCharacters,
         });
-        
+        setCharacters(updatedCharacters);
+
+        await new Promise((resolve) => setTimeout(resolve, 0));
         console.log("Successfully generated all characters at once");
         console.log("Updated project context with all character data");
       } else {

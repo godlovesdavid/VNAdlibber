@@ -29,12 +29,14 @@ const generateCharacterSchema = z.object({
 });
 
 const generateMultipleCharactersSchema = z.object({
-  characterTemplates: z.array(z.object({
-    name: z.string().optional(),
-    role: z.string().optional(),
-    gender: z.string().optional(),
-    age: z.string().optional(),
-  })),
+  characterTemplates: z.array(
+    z.object({
+      name: z.string().optional(),
+      role: z.string().optional(),
+      gender: z.string().optional(),
+      age: z.string().optional(),
+    }),
+  ),
   projectContext: z.any(),
 });
 
@@ -48,10 +50,12 @@ const generatePathSchema = z.object({
 });
 
 const generateMultiplePathsSchema = z.object({
-  pathTemplates: z.array(z.object({
-    title: z.string().optional(),
-    loveInterest: z.string().nullable().optional(),
-  })),
+  pathTemplates: z.array(
+    z.object({
+      title: z.string().optional(),
+      loveInterest: z.string().nullable().optional(),
+    }),
+  ),
   projectContext: z.any(),
 });
 
@@ -240,7 +244,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ],
         response_format: { type: "json_object" },
       });
-      console.log(projectContext)
+      console.log(projectContext);
 
       // console.log("Generated character:", response.choices[0].message.content);
 
@@ -254,12 +258,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to generate character" });
     }
   });
-  
+
   app.post("/api/generate/characters-bundle", async (req, res) => {
     try {
-      const { characterTemplates, projectContext } = generateMultipleCharactersSchema.parse(
-        req.body,
-      );
+      const { characterTemplates, projectContext } =
+        generateMultipleCharactersSchema.parse(req.body);
 
       // Create prompt for the characters bundle generation
       const prompt = `Given
@@ -305,11 +308,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`Generating ${characterTemplates.length} characters at once`);
 
+      console.log("sending", projectContext);
+
       // Parse and return the generated characters bundle
       const generatedCharacters = JSON.parse(
         response.choices[0].message.content || "[]",
       );
       res.json(generatedCharacters);
+
+      console.log("got", generatedCharacters);
     } catch (error) {
       console.error("Error generating characters bundle:", error);
       res.status(500).json({ message: "Failed to generate characters bundle" });
@@ -372,12 +379,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to generate path" });
     }
   });
-  
+
   app.post("/api/generate/paths-bundle", async (req, res) => {
     try {
-      const { pathTemplates, projectContext } = generateMultiplePathsSchema.parse(
-        req.body,
-      );
+      const { pathTemplates, projectContext } =
+        generateMultiplePathsSchema.parse(req.body);
 
       // Create prompt for the paths bundle generation
       const prompt = `Given
