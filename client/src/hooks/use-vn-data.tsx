@@ -3,13 +3,10 @@ import { useVnContext } from "@/context/vn-context";
 import { useToast } from "@/hooks/use-toast";
 import { 
   generateConcept, 
-  generateCharacter, 
-  generatePath, 
   generatePlot, 
-  generateAct,
-  generateMultipleCharacters,
-  generateMultiplePaths
+  generateAct
 } from "@/lib/openai";
+import { apiRequest } from "@/lib/queryClient";
 
 export function useVnData() {
   const { toast } = useToast();
@@ -77,18 +74,26 @@ export function useVnData() {
       const controller = new AbortController();
       setAbortController(controller);
       
-      const characterData = await generateCharacter(
-        index,
-        partialCharacter,
+      // Use our unified characters endpoint
+      const response = await apiRequest(
+        "POST",
+        "/api/generate/characters",
         {
-          basicData: vnContext.projectData.basicData,
-          conceptData: vnContext.projectData.conceptData,
+          indices: [index],
+          characterTemplates: [partialCharacter],
+          projectContext: {
+            basicData: vnContext.projectData.basicData,
+            conceptData: vnContext.projectData.conceptData,
+          }
         },
         controller.signal
       );
       
+      const characters = await response.json();
+      
       setAbortController(null);
-      return characterData;
+      // Return just the first character since we only requested one
+      return Array.isArray(characters) && characters.length > 0 ? characters[0] : null;
     } catch (error) {
       if ((error as Error).name !== 'AbortError') {
         toast({
@@ -123,19 +128,27 @@ export function useVnData() {
       const controller = new AbortController();
       setAbortController(controller);
       
-      const pathData = await generatePath(
-        index,
-        partialPath,
+      // Use our unified paths endpoint
+      const response = await apiRequest(
+        "POST",
+        "/api/generate/paths",
         {
-          basicData: vnContext.projectData.basicData,
-          conceptData: vnContext.projectData.conceptData,
-          charactersData: vnContext.projectData.charactersData,
+          indices: [index],
+          pathTemplates: [partialPath],
+          projectContext: {
+            basicData: vnContext.projectData.basicData,
+            conceptData: vnContext.projectData.conceptData,
+            charactersData: vnContext.projectData.charactersData,
+          }
         },
         controller.signal
       );
       
+      const paths = await response.json();
+      
       setAbortController(null);
-      return pathData;
+      // Return just the first path since we only requested one
+      return Array.isArray(paths) && paths.length > 0 ? paths[0] : null;
     } catch (error) {
       if ((error as Error).name !== 'AbortError') {
         toast({
@@ -262,26 +275,34 @@ export function useVnData() {
       const controller = new AbortController();
       setAbortController(controller);
       
-      const response = await generateMultipleCharacters(
-        characterTemplates,
+      // Create indices based on the number of templates
+      const indices = Array.from({ length: characterTemplates.length }, (_, i) => i);
+      
+      // Use our unified characters endpoint
+      const response = await apiRequest(
+        "POST",
+        "/api/generate/characters",
         {
-          basicData: vnContext.projectData.basicData,
-          conceptData: vnContext.projectData.conceptData,
+          indices,
+          characterTemplates,
+          projectContext: {
+            basicData: vnContext.projectData.basicData,
+            conceptData: vnContext.projectData.conceptData,
+          }
         },
         controller.signal
       );
       
+      const characters = await response.json();
+      console.log("Received characters:", characters);
+      
       setAbortController(null);
       
-      // Handle the new response format
-      if (response && response.characters && Array.isArray(response.characters)) {
-        console.log("Received characters bundle:", response.characters);
-        return response.characters;
-      } else if (Array.isArray(response)) {
-        console.log("Received characters array:", response);
-        return response;
+      // Just return the array directly
+      if (Array.isArray(characters)) {
+        return characters;
       } else {
-        console.error("Unexpected response format:", response);
+        console.error("Unexpected response format:", characters);
         return null;
       }
     } catch (error) {
@@ -317,27 +338,35 @@ export function useVnData() {
       const controller = new AbortController();
       setAbortController(controller);
       
-      const response = await generateMultiplePaths(
-        pathTemplates,
+      // Create indices based on the number of templates
+      const indices = Array.from({ length: pathTemplates.length }, (_, i) => i);
+      
+      // Use our unified paths endpoint
+      const response = await apiRequest(
+        "POST",
+        "/api/generate/paths",
         {
-          basicData: vnContext.projectData.basicData,
-          conceptData: vnContext.projectData.conceptData,
-          charactersData: vnContext.projectData.charactersData,
+          indices,
+          pathTemplates,
+          projectContext: {
+            basicData: vnContext.projectData.basicData,
+            conceptData: vnContext.projectData.conceptData,
+            charactersData: vnContext.projectData.charactersData,
+          }
         },
         controller.signal
       );
       
+      const paths = await response.json();
+      console.log("Received paths:", paths);
+      
       setAbortController(null);
       
-      // Handle the new response format
-      if (response && response.paths && Array.isArray(response.paths)) {
-        console.log("Received paths bundle:", response.paths);
-        return response.paths;
-      } else if (Array.isArray(response)) {
-        console.log("Received paths array:", response);
-        return response;
+      // Just return the array directly
+      if (Array.isArray(paths)) {
+        return paths;
       } else {
-        console.error("Unexpected response format:", response);
+        console.error("Unexpected response format:", paths);
         return null;
       }
     } catch (error) {
