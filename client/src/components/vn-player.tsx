@@ -23,34 +23,52 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
   
   const containerRef = useRef<HTMLDivElement>(null);
   
+  // Add end of act message to the last scene
+  const processScene = (scene: Scene): Scene => {
+    // Deep clone the scene to avoid mutating the original data
+    const processedScene = JSON.parse(JSON.stringify(scene));
+    
+    // If this is the last scene with no choices (end of act), append end of act message
+    const isLastScene = processedScene.choices === null;
+    if (isLastScene && processedScene.dialogue.length > 0) {
+      // Add the "End of Act" message to the last dialogue line
+      const lastDialogueIndex = processedScene.dialogue.length - 1;
+      const [speaker, text] = processedScene.dialogue[lastDialogueIndex];
+      processedScene.dialogue[lastDialogueIndex] = [speaker, `${text}\n\n(End of Act ${actNumber})`];
+    }
+    
+    return processedScene;
+  };
+  
   // Initialize with the first scene
   useEffect(() => {
     if (actData && actData.scenes && actData.scenes.length > 0) {
-      const firstScene = actData.scenes[0];
+      const firstScene = processScene(actData.scenes[0]);
       setCurrentSceneId(firstScene.id);
       setCurrentScene(firstScene);
       setCurrentDialogueIndex(0);
       setShowChoices(false);
       setDialogueLog([]);
     }
-  }, [actData]);
+  }, [actData, actNumber]);
   
   // Update current scene when scene ID changes
   useEffect(() => {
     if (actData && currentSceneId) {
       const scene = actData.scenes.find(s => s.id === currentSceneId);
       if (scene) {
-        setCurrentScene(scene);
+        const processedScene = processScene(scene);
+        setCurrentScene(processedScene);
         setCurrentDialogueIndex(0);
         setShowChoices(false);
       }
     }
-  }, [actData, currentSceneId]);
+  }, [actData, currentSceneId, actNumber]);
   
   // Handle restart
   const handleRestart = () => {
     if (actData && actData.scenes && actData.scenes.length > 0) {
-      const firstScene = actData.scenes[0];
+      const firstScene = processScene(actData.scenes[0]);
       setCurrentSceneId(firstScene.id);
       setCurrentScene(firstScene);
       setCurrentDialogueIndex(0);
