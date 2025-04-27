@@ -59,6 +59,11 @@ export default function PlotForm() {
     if (generatedPlot) {
       setPlotOutline(generatedPlot.plotOutline);
       
+      // Update the project context after plot generation
+      setPlotData({
+        plotOutline: generatedPlot.plotOutline
+      });
+      
       // Expand the first act after generation
       setExpandedActs({
         ...expandedActs,
@@ -66,7 +71,8 @@ export default function PlotForm() {
       });
       
       // Log generation to console
-      console.log("Generated plot outline:", generatedPlot);
+      console.log("🔥 Generated plot outline:", generatedPlot);
+      console.log("🔥 Updated project context with plot data");
     }
   };
   

@@ -130,9 +130,15 @@ export default function PathsForm() {
         ...generatedPath,
       };
       setRoutes(updatedRoutes);
+      
+      // Update the project context after path generation
+      setPathsData({
+        routes: updatedRoutes
+      });
 
       // Log generation to console
-      console.log(`Generated path ${index + 1}:`, generatedPath);
+      console.log(`🔥 Generated path ${index + 1}:`, generatedPath);
+      console.log(`🔥 Updated project context with path ${index + 1} data`);
     }
 
     setGeneratingPathIndex(null);
