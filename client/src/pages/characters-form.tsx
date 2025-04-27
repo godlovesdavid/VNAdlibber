@@ -32,6 +32,7 @@ export default function CharactersForm() {
     {
       name: "",
       role: "protagonist",
+      occupation: "",
       gender: "",
       age: "",
       appearance: "",
@@ -68,6 +69,7 @@ export default function CharactersForm() {
       {
         name: "",
         role: characters.length === 0 ? "protagonist" : "",
+        occupation: "",
         gender: "",
         age: "",
         appearance: "",

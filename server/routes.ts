@@ -211,34 +211,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create prompt for the character generation
       const prompt = `Given
         ${JSON.stringify(projectContext, null, 2)}
-        Generate exactly ${indices.length} character${indices.length > 1 ? 's' : ''} in a JSON array as structured
-        [
-          {
-            "name": "Character name",
-            "role": "Character role",
-            "gender": "Character gender",
-            "age": "Character age as a string",
-            "appearance": "Physical description (<15 words)",
-            "personality": "Key personality traits and behaviors (<40 words)",
-            "goals": "Primary motivations and objectives (<40 words)",
-            "relationshipPotential": "Relationship potential with main protagonist. Lovers must be opposite gender. (<15 words)",
-            "conflict": "Their primary internal or external struggle (<40 words)"
-          }${indices.length > 1 ? '\n          ... ' + (indices.length-1) + ' more characters ...' : ''}
-        ]
-        Make each character unique with different strengths, flaws, and motivations. Ensure they fit the story concept.
+        Generate exactly ${indices.length} character${indices.length > 1 ? "s" : ""} as JSON:
+        {
+          "characters":
+          [
+            {
+              "name": "Character name",
+              "role": "${indices.length == 1 ? "Main Protagonist" : "Character role in story"}",
+              "occupation": "Character occupation",
+              "gender": "Character gender",
+              "age": "Character age as a string",
+              "appearance": "Physical description (<15 words)",
+              "personality": "Key personality traits and behaviors (<40 words)",
+              "goals": "Primary motivations and objectives (<40 words)",
+              "relationshipPotential": "Relationship potential with main protagonist. Lovers must be opposite gender. (<15 words)",
+              "conflict": "Their primary internal or external struggle (<40 words)"
+            }
+          ]
+        }
+        Ensure unique characters with varying strengths, flaws, and motivations, and fit story concept
+        Character one is the main protagonist
       `;
 
       // Generate characters using OpenAI
       const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        temperature: 0.6, // Lower temperature for more format consistency
+        model: "gpt-4.1-nano",
+        temperature: 0.7,
         frequency_penalty: 0.1,
         presence_penalty: 0.1,
         top_p: 0.9,
         messages: [
           {
             role: "system",
-            content: "You are a creative assistant that must return valid JSON in the exact array format requested with no additional text or commentary.",
+            content: "You're' a creative visual novel brainstorming assistant",
           },
           { role: "user", content: prompt },
         ],
@@ -248,29 +253,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Generating ${indices.length} characters at once`);
       console.log("Got:", response.choices[0].message.content);
 
-      // Parse and ensure we have an array
-      let generatedCharacters = [];
-      try {
-        const parsed = JSON.parse(response.choices[0].message.content || "[]");
-        
-        if (Array.isArray(parsed)) {
-          generatedCharacters = parsed;
-        } else if (parsed.characters && Array.isArray(parsed.characters)) {
-          generatedCharacters = parsed.characters;
-        } else if (typeof parsed === 'object') {
-          // If we got a single character, wrap it in an array
-          generatedCharacters = [parsed];
-        }
-        console.log("Final characters:", generatedCharacters);
-      } catch (err) {
-        console.error("Error parsing response:", err);
-      }
-      
-      // Return array of characters (not wrapped in an object)
-      res.json(generatedCharacters);
+      // Parse response
+      if (response.choices[0].message.content == "{}") 
+        throw "Empty response";
+      const parsed = JSON.parse(response.choices[0].message.content || "{}");
+
+      // Return array of characters
+      res.json(parsed.characters);
     } catch (error) {
       console.error("Error generating characters:", error);
-      res.status(500).json({ message: "Failed to generate characters" });
+      res.status(500).json({
+        message: "Failed to generate characters for whatever reason.",
+      });
     }
   });
 
@@ -278,20 +272,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/generate/character", async (req, res) => {
     try {
       const { index, partialCharacter, projectContext } = req.body;
-      
+
       // Redirect to the unified endpoint
-      const response = await fetch(`${req.protocol}://${req.get('host')}/api/generate/characters`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${req.protocol}://${req.get("host")}/api/generate/characters`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            indices: [index],
+            characterTemplates: [partialCharacter],
+            projectContext,
+          }),
         },
-        body: JSON.stringify({
-          indices: [index],
-          characterTemplates: [partialCharacter],
-          projectContext
-        }),
-      });
-      
+      );
+
       const characters = await response.json();
       // Return just the first character for backward compatibility
       res.json(characters[0]);
@@ -300,27 +297,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to generate character" });
     }
   });
-  
+
   app.post("/api/generate/characters-bundle", async (req, res) => {
     try {
       const { characterTemplates, projectContext } = req.body;
-      
+
       // Create indices array based on the number of templates
-      const indices = Array.from({ length: characterTemplates.length }, (_, i) => i);
-      
+      const indices = Array.from(
+        { length: characterTemplates.length },
+        (_, i) => i,
+      );
+
       // Redirect to the unified endpoint
-      const response = await fetch(`${req.protocol}://${req.get('host')}/api/generate/characters`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${req.protocol}://${req.get("host")}/api/generate/characters`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            indices,
+            characterTemplates,
+            projectContext,
+          }),
         },
-        body: JSON.stringify({
-          indices,
-          characterTemplates,
-          projectContext
-        }),
-      });
-      
+      );
+
       const characters = await response.json();
       // Wrap in characters object for backward compatibility
       res.json({ characters });
@@ -337,33 +340,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create prompt for the path generation
       const prompt = `Given
         ${JSON.stringify(projectContext, null, 2)}
-        Generate exactly ${indices.length} plot path${indices.length > 1 ? 's' : ''}/arc${indices.length > 1 ? 's' : ''} in a JSON array as structured
-        [
-          {
-            "title": "Path title",
-            "loveInterest": "(optional) One of the opposite-gender characters otherwise leave as null",
-            "keyChoices": ["Critical player decision 1", "Critical player decision 2", "Critical player decision 3"],
-            "beginning": "Description of how this route begins (< 30 words)",
-            "middle": "Description of conflict escalation and unexpected twists (< 30 words)",
-            "climax": "Description of the highest tension moment of this path (< 30 words)",
-            "goodEnding": "Description of positive resolution (< 20 words)",
-            "badEnding": "Description of negative outcome (< 20 words)"
-          }${indices.length > 1 ? '\n          ... ' + (indices.length-1) + ' more paths ...' : ''}
-        ]
-        Make each path unique and ensure they offer distinct experiences.
+        Generate exactly ${indices.length} plot arc${indices.length > 1 ? "s" : ""} as JSON:
+        {
+          "paths":
+          [
+            {
+              "title": "Path title",
+              "loveInterest": "(optional) One of the opposite-gender characters otherwise leave as null",
+              "keyChoices": "Comma-separated choices that alter the course of story",
+              "beginning": "Description of how this route begins (< 30 words)",
+              "middle": "Description of conflict escalation and unexpected twists (< 30 words)",
+              "climax": "Description of the highest tension moment of this path (< 30 words)",
+              "goodEnding": "Description of positive resolution (< 20 words)",
+              "badEnding": "Description of negative outcome (< 20 words)"
+            }
+          ]
+        }
+        Ensure unique + distinct paths
       `;
 
       // Generate paths using OpenAI
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",
-        temperature: 0.6, // Lower temperature for more format consistency
+        temperature: 0.7, 
         frequency_penalty: 0.1,
         presence_penalty: 0.1,
         top_p: 0.9,
         messages: [
           {
             role: "system",
-            content: "You are a creative assistant that must return valid JSON in the exact array format requested with no additional text or commentary.",
+            content:
+              "You are a creative visual novel brainstorming assistant",
           },
           { role: "user", content: prompt },
         ],
@@ -373,27 +380,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Generating ${indices.length} paths at once`);
       console.log("Got:", response.choices[0].message.content);
 
-      // Parse and ensure we have an array
-      let generatedPaths = [];
-      try {
-        const parsed = JSON.parse(response.choices[0].message.content || "[]");
-        
-        if (Array.isArray(parsed)) {
-          generatedPaths = parsed;
-        } else if (parsed.paths && Array.isArray(parsed.paths)) {
-          generatedPaths = parsed.paths;
-        } else if (typeof parsed === 'object') {
-          // If we got a single path, wrap it in an array
-          generatedPaths = [parsed];
-        }
-        console.log("Final paths:", generatedPaths);
-      } catch (err) {
-        console.error("Error parsing response:", err);
-      }
-      
+      // Parse
+      if (response.choices[0].message.content == "{}")
+        throw "Empty response"
+      const parsed = JSON.parse(response.choices[0].message.content || "{}");
+
       // Return array of paths (not wrapped in an object)
-      res.json(generatedPaths);
-    } catch (error) {
+      res.json(parsed.paths);
+    } 
+    catch (error) 
+    {
       console.error("Error generating paths:", error);
       res.status(500).json({ message: "Failed to generate paths" });
     }
@@ -403,20 +399,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/generate/path", async (req, res) => {
     try {
       const { index, partialPath, projectContext } = req.body;
-      
+
       // Redirect to the unified endpoint
-      const response = await fetch(`${req.protocol}://${req.get('host')}/api/generate/paths`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${req.protocol}://${req.get("host")}/api/generate/paths`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            indices: [index],
+            pathTemplates: [partialPath],
+            projectContext,
+          }),
         },
-        body: JSON.stringify({
-          indices: [index],
-          pathTemplates: [partialPath],
-          projectContext
-        }),
-      });
-      
+      );
+
       const paths = await response.json();
       // Return just the first path for backward compatibility
       res.json(paths[0]);
@@ -425,27 +424,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to generate path" });
     }
   });
-  
+
   app.post("/api/generate/paths-bundle", async (req, res) => {
     try {
       const { pathTemplates, projectContext } = req.body;
-      
+
       // Create indices array based on the number of templates
       const indices = Array.from({ length: pathTemplates.length }, (_, i) => i);
-      
+
       // Redirect to the unified endpoint
-      const response = await fetch(`${req.protocol}://${req.get('host')}/api/generate/paths`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${req.protocol}://${req.get("host")}/api/generate/paths`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            indices,
+            pathTemplates,
+            projectContext,
+          }),
         },
-        body: JSON.stringify({
-          indices,
-          pathTemplates,
-          projectContext
-        }),
-      });
-      
+      );
+
       const paths = await response.json();
       // Wrap in paths object for backward compatibility
       res.json({ paths });

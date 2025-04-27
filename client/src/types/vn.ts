@@ -19,6 +19,7 @@ export interface ConceptData {
 export interface Character {
   name: string;
   role: string;
+  occupation: string;  // Added occupation field to distinguish from role
   gender: string;
   age: string;
   appearance: string;
@@ -37,7 +38,7 @@ export interface CharactersData {
 export interface Route {
   title: string;
   loveInterest: string | null;
-  keyChoices: string[];
+  keyChoices: string;  // Changed from array to a single text area
   beginning: string;
   middle: string;
   climax: string;
