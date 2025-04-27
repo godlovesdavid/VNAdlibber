@@ -362,34 +362,15 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     
     const currentStep = projectData.currentStep;
     
-    // If going backwards, confirm with user
+    // If going backwards, just update the step without erasing data
+    // This preserves continuity while allowing changes
     if (stepNumber < currentStep) {
-      // Forward navigation will be handled by individual components
-      // to ensure data is saved before proceeding
-      const confirmed = window.confirm(
-        "Going back will erase data from the current and subsequent steps. Are you sure you want to continue?"
-      );
-      
-      if (!confirmed) return;
-      
-      // Clear data for subsequent steps
-      const updatedProject: VnProjectData = { ...projectData };
-      
-      if (stepNumber <= 1) {
-        updatedProject.conceptData = undefined;
-      }
-      if (stepNumber <= 2) {
-        updatedProject.charactersData = undefined;
-      }
-      if (stepNumber <= 3) {
-        updatedProject.pathsData = undefined;
-      }
-      if (stepNumber <= 4) {
-        updatedProject.plotData = undefined;
-      }
-      if (stepNumber <= 5) {
-        updatedProject.generatedActs = undefined;
-      }
+      // The confirmation modal is now handled in the generate-vn-form.tsx component
+      // to provide a better user experience with warnings about continuity
+      const updatedProject: VnProjectData = { 
+        ...projectData,
+        currentStep: stepNumber 
+      };
       
       setProjectData(updatedProject);
     }

@@ -51,6 +51,7 @@ export default function GenerateVnForm() {
   const [currentGeneratingAct, setCurrentGeneratingAct] = useState<number | null>(null);
   const [regenerateConfirmOpen, setRegenerateConfirmOpen] = useState(false);
   const [actToRegenerate, setActToRegenerate] = useState<number | null>(null);
+  const [showBackWarning, setShowBackWarning] = useState(false);
   
   // Player data editing state
   const [editablePlayerData, setEditablePlayerData] = useState<PlayerData>({
@@ -149,9 +150,15 @@ export default function GenerateVnForm() {
     return currentGeneratingAct === actNumber && isGenerating;
   };
   
-  // Go back to previous step
+  // Show warning when going back
   const handleBack = () => {
+    setShowBackWarning(true);
+  };
+  
+  // Confirm going back
+  const confirmGoBack = () => {
     goToStep(5);
+    setShowBackWarning(false);
   };
   
   // Handle export actions
@@ -202,27 +209,7 @@ export default function GenerateVnForm() {
             </Button>
           </div>
           
-          {/* Card with Play Buttons */}
-          <Card className="mb-6">
-            <CardContent className="pt-6">
-              <div className="act-buttons grid grid-cols-1 md:grid-cols-5 gap-4">
-                {[1, 2, 3, 4, 5].map((actNumber) => (
-                  <Button
-                    key={actNumber}
-                    variant={isActGenerated(actNumber) ? "default" : "outline"}
-                    className="px-4 py-3 flex flex-col items-center justify-center"
-                    disabled={!isActGenerated(actNumber)}
-                    onClick={() => playAct(actNumber)}
-                  >
-                    <span className={`${isActGenerated(actNumber) ? 'text-base font-semibold text-white' : 'text-xs text-muted-foreground'}`}>
-                      Play
-                    </span>
-                    <span className="font-medium">Act {actNumber}</span>
-                  </Button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          {/* Play buttons were moved to individual act cards */}
 
           {/* Generation progress indicator */}
           {isGenerating && currentGeneratingAct !== null && (
@@ -267,6 +254,18 @@ export default function GenerateVnForm() {
                     <p className="text-sm text-neutral-600 mb-4">
                       {projectData.plotData.plotOutline[`act${actNumber}` as keyof typeof projectData.plotData.plotOutline]?.summary || 'No summary available'}
                     </p>
+                  </div>
+                )}
+                
+                {/* Play button for this act */}
+                {isActGenerated(actNumber) && (
+                  <div className="mt-4">
+                    <Button 
+                      className="w-full"
+                      onClick={() => playAct(actNumber)}
+                    >
+                      Play Act {actNumber}
+                    </Button>
                   </div>
                 )}
               </CardContent>
@@ -397,6 +396,18 @@ export default function GenerateVnForm() {
         description={`Are you sure you want to regenerate Act ${actToRegenerate}? This will overwrite the existing act.`}
         confirmText="Regenerate"
         onConfirm={confirmRegeneration}
+      />
+      
+      {/* Back Navigation Warning Modal */}
+      <ConfirmationModal
+        open={showBackWarning}
+        onOpenChange={setShowBackWarning}
+        title="Warning: Going Back"
+        description="Editing previous steps might destroy continuity with your generated content. Are you sure you want to go back?"
+        confirmText="Yes, Go Back"
+        cancelText="Stay Here"
+        variant="destructive"
+        onConfirm={confirmGoBack}
       />
     </>
   );
