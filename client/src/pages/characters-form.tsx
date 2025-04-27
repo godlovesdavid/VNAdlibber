@@ -62,7 +62,7 @@ export default function CharactersForm() {
       ...characters,
       {
         name: "",
-        role: characters.length === 0 ? "protagonist" : "supporting",
+        role: (characters.length === 0 ? "protagonist" : ""),
         gender: "",
         age: "",
         appearance: "",
@@ -126,10 +126,10 @@ export default function CharactersForm() {
         });
 
         // Log generation to console
-        console.log(`🔥 Generated character ${index + 1}:`, generatedCharacter);
-        console.log(`🔥 Updated project context with character ${index + 1} data`);
+        console.log(`Generated character ${index + 1}:`, generatedCharacter);
+        console.log(`Updated project context with character ${index + 1} data`);
       } else {
-        console.log(`🔥 Failed to generate character ${index + 1}`);
+        console.log(`Failed to generate character ${index + 1}`);
       }
     } catch (error) {
       console.error("Error in handleGenerateCharacter:", error);
@@ -206,8 +206,8 @@ export default function CharactersForm() {
             });
             
             await new Promise((resolve) => setTimeout(resolve, 0));
-            console.log(`🔥 Successfully generated character ${i + 1}`);
-            console.log(`🔥 Updated project context with character ${i + 1} data`);
+            console.log(`Successfully generated character ${i + 1}`);
+            console.log(`Updated project context with character ${i + 1} data`);
           }
         } catch (charError) {
           console.error(`Error generating character ${i + 1}:`, charError);
@@ -421,7 +421,7 @@ export default function CharactersForm() {
                         Relationship Potential
                         {index === 0 && (
                           <span className="text-xs text-gray-500 ml-1">
-                            (N/A for protagonist)
+                            (N/A)
                           </span>
                         )}
                       </label>
