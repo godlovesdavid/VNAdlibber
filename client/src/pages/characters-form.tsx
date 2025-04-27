@@ -170,6 +170,7 @@ export default function CharactersForm() {
           return {
             name: char.name,
             role: char.role,
+            occupation: char.occupation,
             gender: char.gender,
             age: char.age,
             appearance: char.appearance,
@@ -182,6 +183,7 @@ export default function CharactersForm() {
         return {
           name: char.name,
           role: char.role,
+          occupation: char.occupation,
           gender: char.gender,
           age: char.age,
         };
@@ -241,7 +243,9 @@ export default function CharactersForm() {
       (char) =>
         char.name &&
         char.role &&
+        char.occupation &&
         char.gender &&
+        char.age &&
         char.appearance &&
         char.personality &&
         char.goals &&
@@ -367,6 +371,19 @@ export default function CharactersForm() {
                           value={character.age}
                           onChange={(e) =>
                             updateCharacter(index, "age", e.target.value)
+                          }
+                        />
+                      </div>
+                      
+                      <div className="form-group">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Occupation
+                        </label>
+                        <Input
+                          placeholder="e.g. student, doctor, teacher, police officer"
+                          value={character.occupation}
+                          onChange={(e) =>
+                            updateCharacter(index, "occupation", e.target.value)
                           }
                         />
                       </div>

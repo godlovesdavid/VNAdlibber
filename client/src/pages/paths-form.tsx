@@ -34,7 +34,7 @@ export default function PathsForm() {
     {
       title: "",
       loveInterest: null,
-      keyChoices: ["", "", ""],
+      keyChoices: "",
       beginning: "",
       middle: "",
       climax: "",
@@ -69,7 +69,7 @@ export default function PathsForm() {
       {
         title: "",
         loveInterest: null,
-        keyChoices: ["", "", ""],
+        keyChoices: "",
         beginning: "",
         middle: "",
         climax: "",
