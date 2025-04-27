@@ -47,6 +47,7 @@ export function useVnData() {
           title: "Content Validation Failed",
           description: result.error,
           variant: "destructive",
+          duration: 120000,
         });
         return null;
       }
