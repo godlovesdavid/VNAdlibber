@@ -22,6 +22,27 @@ function checkResponseForError(parsedResponse: any, res: any): boolean {
 const standardValidationInstructions =
   'Return a JSON based on the given story context. If story context is plot-conflicting, incoherent, sexually explicit, or offensive, then instead return a JSON with an error key explaining the issue like this: { "error": "Brief description of why the content is invalid." }';
 
+// Explicit validation system prompt that prevents "looks good" errors
+const validationSystemPrompt = `You are a content validation system for a visual novel generator app.
+Your ONLY job is to validate the provided content for a visual novel and return errors if any exist.
+
+You should ONLY check for:
+1. Plot inconsistencies or logical flaws
+2. Offensive or inappropriate content
+3. Incoherent character motivations
+4. Conflicting story elements
+
+IMPORTANT: ONLY return a JSON with an 'error' key if there's a genuine issue.
+If the content is valid, return {"valid": true} ONLY. Never include praise, suggestions, or confirmation messages.
+
+DO NOT return errors like:
+- "No issues detected"
+- "The content looks good"
+- "Content is coherent and appropriate"
+- Any other positive assessments
+
+These are NOT errors and will break the app if returned as errors.`;
+
 // Schema for generation requests
 const generateConceptSchema = z.object({
   basicData: z.object({
@@ -370,6 +391,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add a new validation endpoint
+  app.post("/api/validate/paths", async (req, res) => {
+    try {
+      const { projectContext } = req.body;
+
+      // Create prompt for validation
+      const validationPrompt = `Please validate this story context for a visual novel plot arc:
+        ${JSON.stringify(projectContext, null, 2)}
+      `;
+
+      // Validate using OpenAI with explicit validation system prompt
+      const validationResponse = await openai.chat.completions.create({
+        model: "gpt-4.1-nano",
+        temperature: 0.2, // Lower temperature for more consistent validation
+        messages: [
+          {
+            role: "system",
+            content: validationSystemPrompt,
+          },
+          { role: "user", content: validationPrompt },
+        ],
+        response_format: { type: "json_object" },
+      });
+
+      console.log("Validation result:", validationResponse.choices[0].message.content);
+      
+      // Parse validation response
+      const validationResult = JSON.parse(
+        validationResponse.choices[0].message.content || "{}"
+      );
+
+      // If validation failed, return the error
+      if (validationResult.error) {
+        return res.status(400).json({ message: validationResult.error });
+      }
+
+      // If validation passed, return success
+      res.json({ valid: true });
+    } catch (error) {
+      console.error("Error validating paths:", error);
+      res.status(500).json({ message: "Failed to validate paths" });
+    }
+  });
+
   app.post("/api/generate/paths", async (req, res) => {
     try {
       const { indices, pathTemplates, projectContext } = req.body;
@@ -377,7 +442,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create prompt for the path generation
       const prompt = `Given this story context:
         ${JSON.stringify(projectContext, null, 2)}
-        Return exactly ${indices.length} plot arc${indices.length > 1 ? "s" : ""} as a JSON:
+        Generate exactly ${indices.length} plot arc${indices.length > 1 ? "s" : ""} as a JSON:
         {
           "paths":
           [
@@ -393,10 +458,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           ]
         }
+        Ensure unique + distinct paths
       `;
-      console.log("Prompt:", prompt);
+      console.log("Generating paths prompt:", prompt);
 
-      // Generate paths using OpenAI
+      // Generate paths using OpenAI WITHOUT validation instruction
       const response = await openai.chat.completions.create({
         model: "gpt-4.1-nano",
         temperature: 0.7,
@@ -404,10 +470,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         presence_penalty: 0.0,
         top_p: 1.0,
         messages: [
-          {
-            role: "system",
-            content: standardValidationInstructions,
-          },
+          // No system message for validation - just generate
           { role: "user", content: prompt },
         ],
         response_format: { type: "json_object" },
@@ -419,11 +482,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Parse
       if (response.choices[0].message.content == "{}") throw "Empty response";
       const parsed = JSON.parse(response.choices[0].message.content || "{}");
-
-      // Check if the response contains an error and return early if it does
-      if (checkResponseForError(parsed, res)) {
-        return;
-      }
 
       // Return array of paths (not wrapped in an object)
       res.json(parsed.paths);
