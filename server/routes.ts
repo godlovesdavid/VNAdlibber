@@ -183,7 +183,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           {
             role: "system",
             content:
-              "You're a VN brainstormer",
+              "You're a VN brainstormer. If the requested content is plot-conflicting, incoherent, or offensive, instead of generating content, return a JSON with an error key explaining the issue like: { \"error\": \"Brief description of why the concept is invalid.\" }",
           },
           { role: "user", content: prompt },
         ],
@@ -253,7 +253,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         messages: [
           {
             role: "system",
-            content: "You're a VN brainstormer",
+            content: "You're a VN brainstormer. If the requested content is plot-conflicting, incoherent, or offensive, instead of generating content, return a JSON with an error key explaining the issue like: { \"error\": \"Brief description of why the characters are invalid.\" }",
           },
           { role: "user", content: prompt },
         ],
@@ -384,7 +384,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         messages: [
           {
             role: "system",
-            content: "You're a VN brainstormer",
+            content: "You're a VN brainstormer. If the requested content is plot-conflicting, incoherent, or offensive, instead of generating content, return a JSON with an error key explaining the issue like: { \"error\": \"Brief description of why the paths are invalid.\" }",
           },
           { role: "user", content: prompt },
         ],
@@ -397,7 +397,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Parse
       if (response.choices[0].message.content == "{}") throw "Empty response";
       const parsed = JSON.parse(response.choices[0].message.content || "{}");
-
+      
+      // Check if the response contains an error
+      if ('error' in parsed) {
+        console.error("AI validation error:", parsed.error);
+        return res.status(400).json({ message: parsed.error });
+      }
+      
       // Return array of paths (not wrapped in an object)
       res.json(parsed.paths);
     } catch (error) {
@@ -501,7 +507,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           {
             role: "system",
             content:
-              "You're a VN brainstormer",
+              "You're a VN brainstormer. If the requested content is plot-conflicting, incoherent, or offensive, instead of generating content, return a JSON with an error key explaining the issue like: { \"error\": \"Brief description of why the plot is invalid.\" }",
           },
           { role: "user", content: prompt },
         ],
@@ -514,10 +520,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         response.choices[0].message.content,
       );
 
-      // Parse and return the generated plot
+      // Parse the generated plot
       const generatedPlot = JSON.parse(
         response.choices[0].message.content || "{}",
       );
+      
+      // Check if the response contains an error
+      if ('error' in generatedPlot) {
+        console.error("AI validation error:", generatedPlot.error);
+        return res.status(400).json({ message: generatedPlot.error });
+      }
+      
       res.json(generatedPlot);
     } catch (error) {
       console.error("Error generating plot:", error);
@@ -637,7 +650,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           {
             role: "system",
             content:
-              "You're a VN brainstormer",
+              "You're a VN brainstormer. If the requested content is plot-conflicting, incoherent, or offensive, instead of generating content, return a JSON with an error key explaining the issue like: { \"error\": \"Brief description of why the act generation is invalid.\" }",
           },
           { role: "user", content: prompt },
         ],
@@ -651,10 +664,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         response.choices[0].message.content?.substring(0, 200) + "...",
       );
 
-      // Parse and return the generated act
+      // Parse the generated act
       const generatedAct = JSON.parse(
         response.choices[0].message.content || "{}",
       );
+      
+      // Check if the response contains an error
+      if ('error' in generatedAct) {
+        console.error("AI validation error:", generatedAct.error);
+        return res.status(400).json({ message: generatedAct.error });
+      }
+      
       res.json(generatedAct);
     } catch (error) {
       console.error("Error generating act:", error);
