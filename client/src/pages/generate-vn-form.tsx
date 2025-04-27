@@ -52,6 +52,7 @@ export default function GenerateVnForm() {
   const [regenerateConfirmOpen, setRegenerateConfirmOpen] = useState(false);
   const [actToRegenerate, setActToRegenerate] = useState<number | null>(null);
   const [showBackWarning, setShowBackWarning] = useState(false);
+  const [suppressBackWarning, setSuppressBackWarning] = useState(false);
   
   // Player data editing state
   const [editablePlayerData, setEditablePlayerData] = useState<PlayerData>({
@@ -152,7 +153,12 @@ export default function GenerateVnForm() {
   
   // Show warning when going back
   const handleBack = () => {
-    setShowBackWarning(true);
+    // Skip warning if user has chosen to suppress it
+    if (suppressBackWarning) {
+      goToStep(5);
+    } else {
+      setShowBackWarning(true);
+    }
   };
   
   // Confirm going back
@@ -398,17 +404,46 @@ export default function GenerateVnForm() {
         onConfirm={confirmRegeneration}
       />
       
-      {/* Back Navigation Warning Modal */}
-      <ConfirmationModal
-        open={showBackWarning}
-        onOpenChange={setShowBackWarning}
-        title="Warning: Going Back"
-        description="Editing previous steps might destroy continuity with your generated content. Are you sure you want to go back?"
-        confirmText="Yes, Go Back"
-        cancelText="Stay Here"
-        variant="destructive"
-        onConfirm={confirmGoBack}
-      />
+      {/* Back Navigation Warning Modal with Checkbox */}
+      <Dialog open={showBackWarning} onOpenChange={setShowBackWarning}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-destructive">Warning: Going Back</DialogTitle>
+            <DialogDescription>
+              Editing previous steps might destroy continuity with your generated content. Are you sure you want to go back?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center space-x-2 py-2">
+            <Checkbox 
+              id="dont-show-again" 
+              checked={suppressBackWarning}
+              onCheckedChange={(checked) => setSuppressBackWarning(checked === true)}
+            />
+            <label
+              htmlFor="dont-show-again"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Don't show this message again
+            </label>
+          </div>
+          <DialogFooter className="sm:justify-end">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setShowBackWarning(false)}
+            >
+              Stay Here
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={confirmGoBack}
+            >
+              Yes, Go Back
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

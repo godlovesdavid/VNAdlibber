@@ -541,7 +541,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   "id": "choice1",
                   "text": "Choice text displayed to player",
                   "delta": {"relationshipVar": 1},
-                  "next": "${actNumber}-2a"
+                  "next": "${actNumber}-2a" //can also be 
                 },
                 {
                   "id": "choice2",
