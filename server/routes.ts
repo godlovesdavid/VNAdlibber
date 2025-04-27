@@ -20,7 +20,7 @@ function checkResponseForError(parsedResponse: any, res: any): boolean {
 
 // Standard system prompt for content validation
 const standardValidationInstructions =
-  'You\'re a VN brainstormer. If the story context provided is plot-conflicting, incoherent, sexually explicit, offensive, or has irrelevant characters, or is otherwise difficult to generate content from, then instead of generating content, return a JSON with an error key explaining the issue like: { "error": "Brief description of why the content is invalid." }';
+  'You\'re a VN brainstormer. Please generate content based on the given prompt. However, if the story context provided is plot-conflicting, incoherent, sexually explicit, offensive, or has irrelevant characters, or is otherwise difficult to generate content from, return a JSON instead with an error key explaining the issue like: { "error": "Brief description of why the content is invalid." }';
 
 // Schema for generation requests
 const generateConceptSchema = z.object({
@@ -188,16 +188,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate concept using OpenAI
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",
-        temperature: 1.4,
+        temperature: 1.0,
         frequency_penalty: 0.2,
         presence_penalty: 0.5,
         top_p: 1.0,
         stop: null,
         messages: [
-          {
-            role: "system",
-            content: standardValidationInstructions,
-          },
+          // {
+          //   role: "system",
+          //   content: standardValidationInstructions,
+          // },
           { role: "user", content: prompt },
         ],
         response_format: { type: "json_object" },
@@ -272,12 +272,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         temperature: 1.0,
         frequency_penalty: 0.1,
         presence_penalty: 0.2,
-        top_p: 0.9,
+        top_p: 1.0,
         messages: [
-          {
-            role: "system",
-            content: standardValidationInstructions,
-          },
+          // {
+          //   role: "system",
+          //   content: standardValidationInstructions,
+          // },
           { role: "user", content: prompt },
         ],
         response_format: { type: "json_object" },

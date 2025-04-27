@@ -580,8 +580,12 @@ export function useVnData() {
   
   // Cancel ongoing generation
   const cancelGeneration = useCallback(() => {
-    if (abortController) {
-      abortController.abort();
+    if (abortController && !abortController.signal.aborted) {
+      try {
+        abortController.abort();
+      } catch (error) {
+        console.error("Error during abort:", error);
+      }
       setAbortController(null);
       setIsGenerating(false);
       toast({
