@@ -13,6 +13,8 @@ export function useVnData() {
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
+  // For batch operations we'll use a separate controller
+  const [batchMode, setBatchMode] = useState(false);
   const vnContext = useVnContext();
   
   // Generate concept using AI

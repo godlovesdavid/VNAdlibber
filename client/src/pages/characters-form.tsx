@@ -154,34 +154,34 @@ export default function CharactersForm() {
       return;
     }
 
+    // Store a local variable so it doesn't get affected by state updates
+    const allCharacters = [...characters];
+    
+    // Set state for UI feedback
     setGeneratingCharacterIndex(-1); // -1 indicates "all"
     console.log("Setting generating character index to -1");
 
     try {
       // Generate for each character sequentially
-      for (let i = 0; i < characters.length; i++) {
+      for (let i = 0; i < allCharacters.length; i++) {
         console.log(`Starting generation for character ${i + 1}`);
         
-        // Skip generation if we're canceled
-        if (generatingCharacterIndex === null) {
-          console.log("Generation canceled");
-          break;
-        }
-
+        // Set state for UI feedback (but don't rely on reading it back)
         setGeneratingCharacterIndex(i);
         console.log(`Set generating character index to ${i}`);
-
+        console.log("DEBUG - Local loop variable generatingCharacterIndex:", generatingCharacterIndex);
+        
         // Create partial character data
         const partialCharacter = {
-          name: characters[i].name,
-          role: characters[i].role,
-          gender: characters[i].gender,
-          age: typeof characters[i].age === 'number' ? String(characters[i].age) : characters[i].age, // Ensure age is a string
-          appearance: characters[i].appearance,
-          personality: characters[i].personality,
-          goals: characters[i].goals,
-          relationshipPotential: characters[i].relationshipPotential,
-          conflict: characters[i].conflict,
+          name: allCharacters[i].name,
+          role: allCharacters[i].role,
+          gender: allCharacters[i].gender,
+          age: typeof allCharacters[i].age === 'number' ? String(allCharacters[i].age) : allCharacters[i].age, // Ensure age is a string
+          appearance: allCharacters[i].appearance,
+          personality: allCharacters[i].personality,
+          goals: allCharacters[i].goals,
+          relationshipPotential: allCharacters[i].relationshipPotential,
+          conflict: allCharacters[i].conflict,
         };
         
         console.log("Partial character data:", partialCharacter);
