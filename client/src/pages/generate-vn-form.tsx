@@ -120,11 +120,12 @@ export default function GenerateVnForm() {
     // Check if we received an error from validation
     if (result && 'error' in result && result.error) {
       // Handle validation error
-      setValidationError(result.error);
+      setValidationError(result.error || 'Unknown validation error');
       setTimeout(() => setValidationError(null), 8000); // Auto-dismiss after 8 seconds
     } else if (result && 'data' in result && result.data) {
       // No error, process the generated act
-      setGeneratedAct(actNumber, result.data as GeneratedAct);
+      const actData = result.data as unknown as GeneratedAct;
+      setGeneratedAct(actNumber, actData);
       
       // Log generation to console
       console.log(`Generated Act ${actNumber}:`, result.data);
