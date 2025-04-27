@@ -311,10 +311,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("sending", projectContext);
 
       // Parse and return the generated characters bundle
-      const generatedCharacters = JSON.parse(
-        response.choices[0].message.content || "[]",
-      );
-      res.json(generatedCharacters);
+      const content = response.choices[0].message.content || "[]";
+      let generatedCharacters = [];
+      
+      try {
+        const parsed = JSON.parse(content);
+        
+        // Handle both array and single object responses
+        if (Array.isArray(parsed)) {
+          generatedCharacters = parsed;
+        } else if (parsed.characters && Array.isArray(parsed.characters)) {
+          generatedCharacters = parsed.characters;
+        } else if (typeof parsed === 'object') {
+          // If we got a single character, wrap it in an array
+          generatedCharacters = [parsed];
+        }
+        
+        console.log("Final characters:", generatedCharacters);
+      } catch (err) {
+        console.error("Error parsing OpenAI response:", err);
+        generatedCharacters = [];
+      }
+      
+      // Always return an array
+      res.json({ characters: generatedCharacters });
 
       console.log("got", generatedCharacters);
     } catch (error) {
@@ -429,10 +449,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Generating ${pathTemplates.length} paths at once`);
 
       // Parse and return the generated paths bundle
-      const generatedPaths = JSON.parse(
-        response.choices[0].message.content || "[]",
-      );
-      res.json(generatedPaths);
+      const content = response.choices[0].message.content || "[]";
+      let generatedPaths = [];
+      
+      try {
+        const parsed = JSON.parse(content);
+        
+        // Handle both array and single object responses
+        if (Array.isArray(parsed)) {
+          generatedPaths = parsed;
+        } else if (parsed.paths && Array.isArray(parsed.paths)) {
+          generatedPaths = parsed.paths;
+        } else if (typeof parsed === 'object') {
+          // If we got a single path, wrap it in an array
+          generatedPaths = [parsed];
+        }
+        
+        console.log("Final paths:", generatedPaths);
+      } catch (err) {
+        console.error("Error parsing OpenAI response:", err);
+        generatedPaths = [];
+      }
+      
+      // Always return an array
+      res.json({ paths: generatedPaths });
     } catch (error) {
       console.error("Error generating paths bundle:", error);
       res.status(500).json({ message: "Failed to generate paths bundle" });

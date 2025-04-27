@@ -262,7 +262,7 @@ export function useVnData() {
       const controller = new AbortController();
       setAbortController(controller);
       
-      const charactersData = await generateMultipleCharacters(
+      const response = await generateMultipleCharacters(
         characterTemplates,
         {
           basicData: vnContext.projectData.basicData,
@@ -272,7 +272,18 @@ export function useVnData() {
       );
       
       setAbortController(null);
-      return charactersData;
+      
+      // Handle the new response format
+      if (response && response.characters && Array.isArray(response.characters)) {
+        console.log("Received characters bundle:", response.characters);
+        return response.characters;
+      } else if (Array.isArray(response)) {
+        console.log("Received characters array:", response);
+        return response;
+      } else {
+        console.error("Unexpected response format:", response);
+        return null;
+      }
     } catch (error) {
       if ((error as Error).name !== 'AbortError') {
         toast({
@@ -306,7 +317,7 @@ export function useVnData() {
       const controller = new AbortController();
       setAbortController(controller);
       
-      const pathsData = await generateMultiplePaths(
+      const response = await generateMultiplePaths(
         pathTemplates,
         {
           basicData: vnContext.projectData.basicData,
@@ -317,7 +328,18 @@ export function useVnData() {
       );
       
       setAbortController(null);
-      return pathsData;
+      
+      // Handle the new response format
+      if (response && response.paths && Array.isArray(response.paths)) {
+        console.log("Received paths bundle:", response.paths);
+        return response.paths;
+      } else if (Array.isArray(response)) {
+        console.log("Received paths array:", response);
+        return response;
+      } else {
+        console.error("Unexpected response format:", response);
+        return null;
+      }
     } catch (error) {
       if ((error as Error).name !== 'AbortError') {
         toast({

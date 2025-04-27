@@ -73,7 +73,19 @@ export async function generateMultipleCharacters(
   }>>,
   projectContext: any,
   signal?: AbortSignal
-): Promise<Array<{
+): Promise<{
+  characters: Array<{
+    name: string;
+    role: string;
+    gender: string;
+    age: string;
+    appearance: string;
+    personality: string;
+    goals: string;
+    relationshipPotential: string;
+    conflict: string;
+  }>
+} | Array<{
   name: string;
   role: string;
   gender: string;
@@ -139,7 +151,18 @@ export async function generateMultiplePaths(
   }>>,
   projectContext: any,
   signal?: AbortSignal
-): Promise<Array<{
+): Promise<{
+  paths: Array<{
+    title: string;
+    loveInterest: string | null;
+    keyChoices: string[];
+    beginning: string;
+    middle: string;
+    climax: string;
+    goodEnding: string;
+    badEnding: string;
+  }>
+} | Array<{
   title: string;
   loveInterest: string | null;
   keyChoices: string[];
