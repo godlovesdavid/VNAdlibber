@@ -101,16 +101,47 @@ export function useVnData() {
         controller.signal
       );
       
-      const characters = await response.json();
+      const result = await response.json();
       
       setAbortController(null);
-      // Return just the first character since we only requested one
-      return Array.isArray(characters) && characters.length > 0 ? characters[0] : null;
-    } catch (error) {
-      if ((error as Error).name !== 'AbortError') {
+      
+      // Check if the API returned an error
+      if (result.error || result.message) {
+        const errorMessage = result.error || result.message;
         toast({
-          title: "Generation Failed",
-          description: "Failed to generate character details. Please try again.",
+          title: "Content Validation Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        return null;
+      }
+      
+      // Return just the first character since we only requested one
+      return Array.isArray(result) && result.length > 0 ? result[0] : null;
+    } catch (error: any) {
+      if ((error as Error).name !== 'AbortError') {
+        // Try to extract error message from the error response if it exists
+        let errorMsg = "Failed to generate character details. Please try again.";
+        
+        try {
+          // If error has a data property with message
+          if (error.data && (error.data.message || error.data.error)) {
+            errorMsg = error.data.message || error.data.error;
+          } 
+          // If error has detailed message in the error string
+          else if (error.message && error.message.includes(':')) {
+            const parts = error.message.split(':');
+            if (parts.length > 1) {
+              errorMsg = parts.slice(1).join(':').trim();
+            }
+          }
+        } catch (parseError) {
+          console.error("Failed to parse error data:", parseError);
+        }
+        
+        toast({
+          title: "Content Validation Failed",
+          description: errorMsg,
           variant: "destructive",
         });
         console.error("Error generating character:", error);
@@ -156,16 +187,46 @@ export function useVnData() {
         controller.signal
       );
       
-      const paths = await response.json();
+      // Capture the response data regardless of status code
+      const result = await response.json();
       
       setAbortController(null);
+      
+      // Check if the API returned an error in any form
+      if (result.error || result.message) {
+        const errorMessage = result.error || result.message;
+        toast({
+          title: "Content Validation Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        return null;
+      }
+      
       // Return just the first path since we only requested one
-      return Array.isArray(paths) && paths.length > 0 ? paths[0] : null;
-    } catch (error) {
+      return Array.isArray(result) && result.length > 0 ? result[0] : null;
+    } catch (error: any) {
       if ((error as Error).name !== 'AbortError') {
+        // Try to extract error message from the error response if it exists
+        let errorMsg = "Failed to generate path details. Please try again.";
+        
+        try {
+          // If error has a response property (fetch error), try to parse it
+          if (error.response) {
+            const errorData = await error.response.json();
+            if (errorData.message || errorData.error) {
+              errorMsg = errorData.message || errorData.error;
+            }
+          } else if (error.message) {
+            errorMsg = error.message;
+          }
+        } catch (parseError) {
+          console.error("Failed to parse error response:", parseError);
+        }
+        
         toast({
           title: "Generation Failed",
-          description: "Failed to generate path details. Please try again.",
+          description: errorMsg,
           variant: "destructive",
         });
         console.error("Error generating path:", error);
@@ -215,11 +276,30 @@ export function useVnData() {
       }
       
       return result.data;
-    } catch (error) {
+    } catch (error: any) {
       if ((error as Error).name !== 'AbortError') {
+        // Try to extract error message from the error response if it exists
+        let errorMsg = "Failed to generate plot outline. Please try again.";
+        
+        try {
+          // If error has a data property with message
+          if (error.data && (error.data.message || error.data.error)) {
+            errorMsg = error.data.message || error.data.error;
+          } 
+          // If error has detailed message in the error string
+          else if (error.message && error.message.includes(':')) {
+            const parts = error.message.split(':');
+            if (parts.length > 1) {
+              errorMsg = parts.slice(1).join(':').trim();
+            }
+          }
+        } catch (parseError) {
+          console.error("Failed to parse error data:", parseError);
+        }
+        
         toast({
-          title: "Generation Failed",
-          description: "Failed to generate plot outline. Please try again.",
+          title: "Content Validation Failed",
+          description: errorMsg,
           variant: "destructive",
         });
         console.error("Error generating plot:", error);
@@ -276,11 +356,30 @@ export function useVnData() {
       }
       
       return result && result.data ? { data: result.data } as GenerationResult<any> : null;
-    } catch (error) {
+    } catch (error: any) {
       if ((error as Error).name !== 'AbortError') {
+        // Try to extract error message from the error response if it exists
+        let errorMsg = `Failed to generate Act ${actNumber}. Please try again.`;
+        
+        try {
+          // If error has a data property with message
+          if (error.data && (error.data.message || error.data.error)) {
+            errorMsg = error.data.message || error.data.error;
+          } 
+          // If error has detailed message in the error string
+          else if (error.message && error.message.includes(':')) {
+            const parts = error.message.split(':');
+            if (parts.length > 1) {
+              errorMsg = parts.slice(1).join(':').trim();
+            }
+          }
+        } catch (parseError) {
+          console.error("Failed to parse error data:", parseError);
+        }
+        
         toast({
-          title: "Generation Failed",
-          description: `Failed to generate Act ${actNumber}. Please try again.`,
+          title: "Content Validation Failed",
+          description: errorMsg,
           variant: "destructive",
         });
         console.error(`Error generating Act ${actNumber}:`, error);
@@ -327,23 +426,53 @@ export function useVnData() {
         controller.signal
       );
       
-      const characters = await response.json();
-      console.log("Received characters:", characters);
+      const result = await response.json();
+      console.log("Received characters response:", result);
       
       setAbortController(null);
       
-      // Just return the array directly
-      if (Array.isArray(characters)) {
-        return characters;
-      } else {
-        console.error("Unexpected response format:", characters);
+      // Check if the API returned an error
+      if (result.error || result.message) {
+        const errorMessage = result.error || result.message;
+        toast({
+          title: "Content Validation Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
         return null;
       }
-    } catch (error) {
+      
+      // Just return the array directly
+      if (Array.isArray(result)) {
+        return result;
+      } else {
+        console.error("Unexpected response format:", result);
+        return null;
+      }
+    } catch (error: any) {
       if ((error as Error).name !== 'AbortError') {
+        // Try to extract error message from the error response if it exists
+        let errorMsg = "Failed to generate characters. Please try again.";
+        
+        try {
+          // If error has a data property with message
+          if (error.data && (error.data.message || error.data.error)) {
+            errorMsg = error.data.message || error.data.error;
+          } 
+          // If error has detailed message in the error string
+          else if (error.message && error.message.includes(':')) {
+            const parts = error.message.split(':');
+            if (parts.length > 1) {
+              errorMsg = parts.slice(1).join(':').trim();
+            }
+          }
+        } catch (parseError) {
+          console.error("Failed to parse error data:", parseError);
+        }
+        
         toast({
           title: "Generation Failed",
-          description: "Failed to generate characters. Please try again.",
+          description: errorMsg,
           variant: "destructive",
         });
         console.error("Error generating multiple characters:", error);
@@ -391,23 +520,53 @@ export function useVnData() {
         controller.signal
       );
       
-      const paths = await response.json();
-      console.log("Received paths:", paths);
+      const result = await response.json();
+      console.log("Received paths response:", result);
       
       setAbortController(null);
       
-      // Just return the array directly
-      if (Array.isArray(paths)) {
-        return paths;
-      } else {
-        console.error("Unexpected response format:", paths);
+      // Check if the API returned an error
+      if (result.error || result.message) {
+        const errorMessage = result.error || result.message;
+        toast({
+          title: "Content Validation Failed",
+          description: errorMessage,
+          variant: "destructive",
+        });
         return null;
       }
-    } catch (error) {
+      
+      // Just return the array directly
+      if (Array.isArray(result)) {
+        return result;
+      } else {
+        console.error("Unexpected response format:", result);
+        return null;
+      }
+    } catch (error: any) {
       if ((error as Error).name !== 'AbortError') {
+        // Try to extract error message from the error response if it exists
+        let errorMsg = "Failed to generate paths. Please try again.";
+        
+        try {
+          // If error has a data property with message
+          if (error.data && (error.data.message || error.data.error)) {
+            errorMsg = error.data.message || error.data.error;
+          } 
+          // If error has detailed message in the error string
+          else if (error.message && error.message.includes(':')) {
+            const parts = error.message.split(':');
+            if (parts.length > 1) {
+              errorMsg = parts.slice(1).join(':').trim();
+            }
+          }
+        } catch (parseError) {
+          console.error("Failed to parse error data:", parseError);
+        }
+        
         toast({
-          title: "Generation Failed",
-          description: "Failed to generate paths. Please try again.",
+          title: "Content Validation Failed",
+          description: errorMsg,
           variant: "destructive",
         });
         console.error("Error generating multiple paths:", error);

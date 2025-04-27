@@ -248,10 +248,10 @@ export default function CharactersForm() {
         char.conflict,
     );
 
-    if (!isValid) {
-      alert("Please fill in all required fields for each character");
-      return;
-    }
+    // if (!isValid) {
+    //   alert("Please fill in all required fields for each character");
+    //   return;
+    // }
 
     // Save data
     setCharactersData({

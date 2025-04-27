@@ -10,7 +10,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "" });
 
 // Helper function to check for error in OpenAI responses
 function checkResponseForError(parsedResponse: any, res: any): boolean {
-  if ('error' in parsedResponse) {
+  if ("error" in parsedResponse) {
     console.error("AI validation error:", parsedResponse.error);
     res.status(400).json({ message: parsedResponse.error });
     return true;
@@ -19,8 +19,8 @@ function checkResponseForError(parsedResponse: any, res: any): boolean {
 }
 
 // Standard system prompt for content validation
-const standardValidationInstructions = 
-  "You're a VN brainstormer. If the requested content is plot-conflicting, incoherent, or offensive, instead of generating content, return a JSON with an error key explaining the issue like: { \"error\": \"Brief description of why the content is invalid.\" }";
+const standardValidationInstructions =
+  'You\'re a VN brainstormer. If the story context provided is plot-conflicting, incoherent, sexually explicit, offensive, or has irrelevant characters, or is otherwise difficult to generate content from, then instead of generating content, return a JSON with an error key explaining the issue like: { "error": "Brief description of why the content is invalid." }';
 
 // Schema for generation requests
 const generateConceptSchema = z.object({
@@ -210,12 +210,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const generatedConcept = JSON.parse(
         response.choices[0].message.content || "{}",
       );
-      
+
       // Check if the response contains an error and return early if it does
       if (checkResponseForError(generatedConcept, res)) {
         return;
       }
-      
+
       res.json(generatedConcept);
     } catch (error) {
       console.error("Error generating concept:", error);
@@ -231,11 +231,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const prompt = `Given this story context:
         ${JSON.stringify(projectContext, null, 2)}
         Generate exactly ${indices.length} character${indices.length > 1 ? "s" : ""} as a JSON:
-        ${indices.length > 1 ?`
+        ${
+          indices.length > 1
+            ? `
         {
           "characters":
-          [` : ""
-            }
+          [`
+            : ""
+        }
             {
               "name": "Memorable name",
               "role": "${indices.length == 1 && indices[0] == 0 ? "Main Protagonist" : "Story role e.g. antagonist"}",
@@ -247,12 +250,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
               "goals": "Primary motivations and objectives (<40 words)",
               "relationshipPotential": "${indices.length == 1 && indices[0] == 0 ? "(Leave blank)" : "Relationship potential with main protagonist. Lovers must be opposite gender. (<15 words)"}",
               "conflict": "Their primary internal or external struggle (<40 words)"
-            } ${indices.length > 1 ? `
+            } ${
+              indices.length > 1
+                ? `
           ]
-        }` : ""}
-        ${indices.length == 1 ? "" : `
+        }`
+                : ""
+            }
+        ${
+          indices.length == 1
+            ? ""
+            : `
         Ensure unique characters with varying strengths, flaws, and motivations, and fit story concept
-        Character one is the main protagonist`}
+        Character one is the main protagonist`
+        }
       `;
       console.log("Prompt:", prompt);
       // Generate characters using OpenAI
@@ -278,14 +289,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Parse response
       if (response.choices[0].message.content == "{}") throw "Empty response";
       const parsed = JSON.parse(response.choices[0].message.content || "{}");
-      
+
       // Check if the response contains an error and return early if it does
       if (checkResponseForError(parsed, res)) {
         return;
       }
-      
+
       // Return array of characters
-      res.json('characters' in parsed ? parsed.characters : [parsed]);
+      res.json("characters" in parsed ? parsed.characters : [parsed]);
     } catch (error) {
       console.error("Error generating characters:", error);
       res.status(500).json({
@@ -384,6 +395,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         Ensure unique + distinct paths
       `;
+      console.log("Prompt:", prompt);
 
       // Generate paths using OpenAI
       const response = await openai.chat.completions.create({
@@ -408,12 +420,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Parse
       if (response.choices[0].message.content == "{}") throw "Empty response";
       const parsed = JSON.parse(response.choices[0].message.content || "{}");
-      
+
       // Check if the response contains an error and return early if it does
       if (checkResponseForError(parsed, res)) {
         return;
       }
-      
+
       // Return array of paths (not wrapped in an object)
       res.json(parsed.paths);
     } catch (error) {
@@ -510,6 +522,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         Structure the plot into 5 acts: Introduction, Rising Action, Midpoint Twist, Escalating Conflict, Resolution/Endings
       `;
+      console.log("Prompt:", prompt);
 
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",
@@ -533,12 +546,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const generatedPlot = JSON.parse(
         response.choices[0].message.content || "{}",
       );
-      
+
       // Check if the response contains an error and return early if it does
       if (checkResponseForError(generatedPlot, res)) {
         return;
       }
-      
+
       res.json(generatedPlot);
     } catch (error) {
       console.error("Error generating plot:", error);
@@ -605,6 +618,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         -Make sure the "next" property always points to a valid scene ID.
         -Review for plot conflicts, incoherence, or offensive content before finalizing.
       `;
+      console.log("Prompt:", prompt);
 
       // Generate act using OpenAI
       const response = await openai.chat.completions.create({
@@ -631,12 +645,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const generatedAct = JSON.parse(
         response.choices[0].message.content || "{}",
       );
-      
+
       // Check if the response contains an error and return early if it does
       if (checkResponseForError(generatedAct, res)) {
         return;
       }
-      
+
       res.json(generatedAct);
     } catch (error) {
       console.error("Error generating act:", error);

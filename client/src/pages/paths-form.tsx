@@ -215,10 +215,10 @@ export default function PathsForm() {
         route.badEnding,
     );
 
-    if (!isValid) {
-      alert("Please fill in all required fields for each path");
-      return;
-    }
+    // if (!isValid) {
+    //   alert("Please fill in all required fields for each path");
+    //   return;
+    // }
 
     // Save data
     setPathsData({
