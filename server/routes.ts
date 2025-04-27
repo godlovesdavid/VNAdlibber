@@ -395,7 +395,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         messages: [
           {
             role: "system",
-            content: "You're a VN brainstormer. If the story context is plot-conflicting, incoherent, or offensive, instead of generating content, return a JSON with an error key explaining the issue like: { \"error\": \"Brief description of why the paths are invalid.\" }",
+            content: standardValidationInstructions,
           },
           { role: "user", content: prompt },
         ],
@@ -409,10 +409,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (response.choices[0].message.content == "{}") throw "Empty response";
       const parsed = JSON.parse(response.choices[0].message.content || "{}");
       
-      // Check if the response contains an error
-      if ('error' in parsed) {
-        console.error("AI validation error:", parsed.error);
-        return res.status(400).json({ message: parsed.error });
+      // Check if the response contains an error and return early if it does
+      if (checkResponseForError(parsed, res)) {
+        return;
       }
       
       // Return array of paths (not wrapped in an object)
@@ -517,8 +516,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         messages: [
           {
             role: "system",
-            content:
-              "You're a VN brainstormer. If the story context is plot-conflicting, incoherent, or offensive, instead of generating content, return a JSON with an error key explaining the issue like: { \"error\": \"Brief description of why the plot is invalid.\" }",
+            content: standardValidationInstructions,
           },
           { role: "user", content: prompt },
         ],
@@ -536,10 +534,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         response.choices[0].message.content || "{}",
       );
       
-      // Check if the response contains an error
-      if ('error' in generatedPlot) {
-        console.error("AI validation error:", generatedPlot.error);
-        return res.status(400).json({ message: generatedPlot.error });
+      // Check if the response contains an error and return early if it does
+      if (checkResponseForError(generatedPlot, res)) {
+        return;
       }
       
       res.json(generatedPlot);
@@ -554,50 +551,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { actNumber, scenesCount, projectContext } =
         generateActSchema.parse(req.body);
 
-      // First, validate the content to check for conflicts, incoherence, or offensive material
-      const validationPrompt = `
-        You are a content validator that checks for plot conflicts, incoherence, and offensive material.
-        Review the following story context for a visual novel:
-        ${JSON.stringify(projectContext, null, 2)}
-        
-        Check if there are any issues with this content:
-        1. Plot conflicts or inconsistencies
-        2. Incoherent narrative elements 
-        3. Offensive, inappropriate, or harmful content
-        4. Content unsuitable for general audiences
-
-        Respond with a JSON object in the following format:
-        {
-          "isValid": true/false,
-          "error": "Detailed explanation of any issues detected" (null if isValid is true)
-        }
-
-        Be strict but fair in your assessment. If no issues are found, respond with {"isValid": true, "error": null}.
-      `;
-
-      // First perform validation check
-      const validationResponse = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        temperature: 0.3, // Lower temperature for more predictable validation
-        messages: [
-          { role: "system", content: "You are a content validator for visual novels" },
-          { role: "user", content: validationPrompt }
-        ],
-        response_format: { type: "json_object" }
-      });
-
-      // Parse validation response
-      const validationResult = JSON.parse(validationResponse.choices[0].message.content || "{}");
-      console.log("Validation result:", validationResult);
-
-      // If content validation fails, return the error
-      if (validationResult && validationResult.isValid === false) {
-        return res.status(400).json({ 
-          error: validationResult.error || "Content validation failed. Please revise your story elements."
-        });
-      }
-
-      // If validation passes, proceed with generation
       // Create prompt for the act generation
       const prompt = `Create scenes for Act ${actNumber} of a visual novel with the following context:
         ${JSON.stringify(projectContext, null, 2)}
@@ -660,8 +613,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         messages: [
           {
             role: "system",
-            content:
-              "You're a VN brainstormer. If the story context is plot-conflicting, incoherent, or offensive, instead of generating content, return a JSON with an error key explaining the issue like: { \"error\": \"Brief description of why the act generation is invalid.\" }",
+            content: standardValidationInstructions,
           },
           { role: "user", content: prompt },
         ],
@@ -680,10 +632,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         response.choices[0].message.content || "{}",
       );
       
-      // Check if the response contains an error
-      if ('error' in generatedAct) {
-        console.error("AI validation error:", generatedAct.error);
-        return res.status(400).json({ message: generatedAct.error });
+      // Check if the response contains an error and return early if it does
+      if (checkResponseForError(generatedAct, res)) {
+        return;
       }
       
       res.json(generatedAct);
