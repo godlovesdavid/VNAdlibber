@@ -98,6 +98,9 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
       // Show choices if there are any, otherwise this is the end
       if (currentScene.choices && currentScene.choices.length > 0) {
         setShowChoices(true);
+      } else {
+        // This ensures the "End of Act" message is visible when there are no choices
+        setShowChoices(true);
       }
     }
   };
@@ -259,10 +262,10 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
             </div>
           )}
           
-          {/* End of act message is now shown in the dialogue of the last scene */}
-          {currentScene.choices === null && showChoices && (
+          {/* End of act - show return button when at the final scene with no more choices */}
+          {currentScene.choices === null && currentDialogueIndex >= currentScene.dialogue.length - 1 && (
             <div className="mt-8 text-center">
-              <Button onClick={onReturn}>
+              <Button onClick={onReturn} className="mx-auto">
                 Return to Generation Screen
               </Button>
             </div>

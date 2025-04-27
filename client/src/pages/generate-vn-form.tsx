@@ -1,12 +1,11 @@
-import { useState, useEffect, Fragment } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useVnData } from "@/hooks/use-vn-data";
 import { CreationProgress } from "@/components/creation-progress";
 import { NavBar } from "@/components/nav-bar";
 import { 
-  Button, 
-  buttonVariants 
+  Button,
 } from "@/components/ui/button";
 import { 
   Card, 
@@ -24,9 +23,18 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Download, Play, Wand2 } from "lucide-react";
-import { ConfirmationModal } from "@/components/modals/confirmation-modal";
+import { Download, Wand2, Play } from "lucide-react";
 import { PlayerData, GeneratedAct } from "@/types/vn";
+import { ConfirmationModal } from "@/components/modals/confirmation-modal";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function GenerateVnForm() {
   const [, setLocation] = useLocation();
@@ -215,8 +223,6 @@ export default function GenerateVnForm() {
             </Button>
           </div>
           
-          {/* Play buttons were moved to individual act cards */}
-
           {/* Generation progress indicator */}
           {isGenerating && currentGeneratingAct !== null && (
             <Card className="mb-6 border-primary/20 bg-primary/5">
@@ -262,20 +268,8 @@ export default function GenerateVnForm() {
                     </p>
                   </div>
                 )}
-                
-                {/* Play button for this act */}
-                {isActGenerated(actNumber) && (
-                  <div className="mt-4">
-                    <Button 
-                      className="w-full"
-                      onClick={() => playAct(actNumber)}
-                    >
-                      Play Act {actNumber}
-                    </Button>
-                  </div>
-                )}
               </CardContent>
-              <CardFooter className="flex justify-end">
+              <CardFooter className="flex justify-between">
                 <Button
                   variant="outline"
                   className={`border-primary text-primary hover:bg-primary/10 flex items-center justify-center ${isActGenerating(actNumber) ? 'opacity-75' : ''}`}
@@ -297,6 +291,16 @@ export default function GenerateVnForm() {
                     </>
                   )}
                 </Button>
+                
+                {/* Redesigned Play button - now smaller and aligned right */}
+                {isActGenerated(actNumber) && (
+                  <Button 
+                    className="flex items-center"
+                    onClick={() => playAct(actNumber)}
+                  >
+                    <Play className="mr-1 h-4 w-4" /> Play
+                  </Button>
+                )}
               </CardFooter>
             </Card>
           ))}
