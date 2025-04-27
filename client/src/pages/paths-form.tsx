@@ -27,7 +27,7 @@ import { Route } from "@/types/vn";
 export default function PathsForm() {
   const [, setLocation] = useLocation();
   const { projectData, setPathsData, goToStep } = useVnContext();
-  const { generatePathData, isGenerating, cancelGeneration } = useVnData();
+  const { generatePathData, generateMultiplePathsData, isGenerating, cancelGeneration } = useVnData();
 
   // Form state
   const [routes, setRoutes] = useState<Route[]>([
@@ -162,48 +162,34 @@ export default function PathsForm() {
     console.log("Setting generating path index to -1");
 
     try {
-      // Generate each path one by one
-      for (let i = 0; i < allRoutes.length; i++) {
-        console.log(`Starting generation for path ${i + 1}`);
+      // Create templates with only basic info for each path
+      const pathTemplates = allRoutes.map(route => ({
+        title: route.title,
+        loveInterest: route.loveInterest
+      }));
 
-        // Update UI to show which path we're generating
-        setGeneratingPathIndex(i);
-
-        // Allow some time for UI to update
-        await new Promise((resolve) => setTimeout(resolve, 100));
-
-        try {
-          // Call the OpenAI API for this path
-          if (!projectData) {
-            console.error("Missing project data");
-            continue;
-          }
-
-          // Make the API call
-          console.log(`Generating path ${i + 1}...`);
-
-          const generatedPath = await generatePathData(i, allRoutes[i]);
-
-          if (generatedPath) {
-            allRoutes[i] = {
-              ...allRoutes[i],
-              ...generatedPath,
-            };
-            setRoutes(allRoutes);
-
-            // Update the project context after each path generation
-            setPathsData({
-              routes: allRoutes,
-            });
-            await new Promise((resolve) => setTimeout(resolve, 0));
-
-            console.log(`Generated path ${i + 1}:`, generatedPath);
-            console.log(`Updated project context with path ${i + 1} data`);
-          }
-        } catch (pathError) {
-          console.error(`Error generating path ${i + 1}:`, pathError);
-          // Continue with the next path even if this one fails
-        }
+      console.log(`Generating ${pathTemplates.length} paths at once...`);
+      
+      // Generate all paths in one API call
+      const generatedPaths = await generateMultiplePathsData(pathTemplates);
+      
+      if (generatedPaths && Array.isArray(generatedPaths)) {
+        // Merge the generated paths with existing path data
+        const updatedRoutes = allRoutes.map((route, idx) => ({
+          ...route,
+          ...generatedPaths[idx]
+        }));
+        
+        // Update state and project context
+        setRoutes(updatedRoutes);
+        setPathsData({
+          routes: updatedRoutes
+        });
+        
+        console.log("Successfully generated all paths at once");
+        console.log("Updated project context with all path data");
+      } else {
+        console.error("Failed to generate paths bundle");
       }
     } catch (error) {
       console.error("Error in handleGenerateAllPaths:", error);

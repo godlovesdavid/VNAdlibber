@@ -20,7 +20,7 @@ import { Character } from "@/types/vn";
 export default function CharactersForm() {
   const [, setLocation] = useLocation();
   const { projectData, setCharactersData, goToStep } = useVnContext();
-  const { generateCharacterData, isGenerating, cancelGeneration } = useVnData();
+  const { generateCharacterData, generateMultipleCharactersData, isGenerating, cancelGeneration } = useVnData();
 
   // Form state
   const [characters, setCharacters] = useState<Character[]>([
@@ -156,63 +156,59 @@ export default function CharactersForm() {
     console.log("Setting generating character index to -1");
 
     try {
-      // Generate each character one by one without using the hooks directly
-      for (let i = 0; i < allCharacters.length; i++) {
-        console.log(`Starting generation for character ${i + 1}`);
-
-        // Update UI to show which character we're generating
-        setGeneratingCharacterIndex(i);
-
-        // Skip if this character is the protagonist and is already complete
-        if (
-          i === 0 &&
-          allCharacters[i].personality &&
-          allCharacters[i].goals &&
-          allCharacters[i].appearance
-        ) {
-          console.log("Skipping protagonist as it's already complete");
-          continue;
+      // Skip completed protagonist in batch generation
+      const characterTemplates = allCharacters.map((char, idx) => {
+        if (idx === 0 && char.personality && char.goals && char.appearance) {
+          console.log("Keeping existing protagonist data");
+          return {
+            name: char.name,
+            role: char.role,
+            gender: char.gender,
+            age: char.age,
+            appearance: char.appearance,
+            personality: char.personality,
+            goals: char.goals,
+            relationshipPotential: char.relationshipPotential,
+            conflict: char.conflict
+          };
         }
+        return {
+          name: char.name,
+          role: char.role,
+          gender: char.gender,
+          age: char.age
+        };
+      });
 
-        // Allow some time for UI to update
-        await new Promise((resolve) => setTimeout(resolve, 100));
-
-        try {
-          // Call the OpenAI API directly for this character
-          if (!projectData) {
-            console.error("Missing project data");
-            continue;
+      console.log(`Generating ${characterTemplates.length} characters at once...`);
+      
+      // Generate all characters in one API call
+      const generatedCharacters = await generateMultipleCharactersData(characterTemplates);
+      
+      if (generatedCharacters && Array.isArray(generatedCharacters)) {
+        // Merge the generated characters with existing character data
+        const updatedCharacters = allCharacters.map((char, idx) => {
+          // If it's a completed protagonist, don't override it
+          if (idx === 0 && char.personality && char.goals && char.appearance) {
+            return char;
           }
-
-          // Make the API call
-          console.log(`Generating character ${i + 1}...`);
-
-          const generatedCharacter = await generateCharacterData(
-            i,
-            allCharacters[i],
-          );
-
-          if (generatedCharacter) {
-            // Update the specific character with new data
-            allCharacters[i] = {
-              ...allCharacters[i],
-              ...generatedCharacter,
-            };
-            setCharacters(allCharacters);
-
-            // Update the project context after each character generation
-            setCharactersData({
-              characters: allCharacters,
-            });
-
-            await new Promise((resolve) => setTimeout(resolve, 0));
-            console.log(`Successfully generated character ${i + 1}`);
-            console.log(`Updated project context with character ${i + 1} data`);
-          }
-        } catch (charError) {
-          console.error(`Error generating character ${i + 1}:`, charError);
-          // Continue with the next character even if this one fails
-        }
+          // Otherwise use the generated data
+          return {
+            ...char,
+            ...generatedCharacters[idx]
+          };
+        });
+        
+        // Update state and project context
+        setCharacters(updatedCharacters);
+        setCharactersData({
+          characters: updatedCharacters
+        });
+        
+        console.log("Successfully generated all characters at once");
+        console.log("Updated project context with all character data");
+      } else {
+        console.error("Failed to generate characters bundle");
       }
     } catch (error) {
       console.error("Error in handleGenerateAllCharacters:", error);
