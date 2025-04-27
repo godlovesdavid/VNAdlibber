@@ -158,7 +158,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { basicData } = generateConceptSchema.parse(req.body);
 
       // Create prompt for the concept generation
-      const prompt = `Given
+      const prompt = `Given this story context:
         Theme: ${basicData.theme}
         Tone: ${basicData.tone}
         Genre: ${basicData.genre}
@@ -168,7 +168,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           "tagline": "Very short & memorable catchphrase (<10 words and no period)",
           "premise": "Premise & main conflict in < 50 words. Don't name names (designed later)"
         }
-        Be wildly imaginative, original, and surprising — but keep it emotionally resonant. 
+        Be wildly imaginative, original, and surprising — but keep it emotionally resonant.
       `;
 
       // Generate concept using OpenAI
@@ -183,7 +183,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           {
             role: "system",
             content:
-              "You are a creative fiction brainstorming assistant specializing in visual novels.",
+              "You're a VN brainstormer",
           },
           { role: "user", content: prompt },
         ],
@@ -209,41 +209,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { indices, characterTemplates, projectContext } = req.body;
 
       // Create prompt for the character generation
-      const prompt = `Given
+      const prompt = `Given this story context:
         ${JSON.stringify(projectContext, null, 2)}
-        Generate exactly ${indices.length} character${indices.length > 1 ? "s" : ""} as JSON:
+        Generate exactly ${indices.length} character${indices.length > 1 ? "s" : ""} as a JSON:
+        ${indices.length > 1 ?`
         {
           "characters":
-          [
+          [` : ""
+            }
             {
-              "name": "Character name",
-              "role": "${indices.length == 1 ? "Main Protagonist" : "Character role in story"}",
-              "occupation": "Character occupation",
-              "gender": "Character gender",
-              "age": "Character age as a string",
+              "name": "Memorable name",
+              "role": "${indices.length == 1 && indices[0] == 0 ? "Main Protagonist" : "Story role e.g. antagonist"}",
+              "occupation": "Can be unemployed",
+              "gender": "Can be robot/AI",
+              "age": "Age as a string",
               "appearance": "Physical description (<15 words)",
               "personality": "Key personality traits and behaviors (<40 words)",
               "goals": "Primary motivations and objectives (<40 words)",
-              "relationshipPotential": "Relationship potential with main protagonist. Lovers must be opposite gender. (<15 words)",
+              "relationshipPotential": "${indices.length == 1 && indices[0] == 0 ? "(Leave blank)" : "Relationship potential with main protagonist. Lovers must be opposite gender. (<15 words)"}",
               "conflict": "Their primary internal or external struggle (<40 words)"
-            }
+            } ${indices.length > 1 ? `
           ]
-        }
+        }` : ""}
+        ${indices.length == 1 ? "" : `
         Ensure unique characters with varying strengths, flaws, and motivations, and fit story concept
-        Character one is the main protagonist
+        Character one is the main protagonist`}
       `;
-
+      console.log("Prompt:", prompt);
       // Generate characters using OpenAI
       const response = await openai.chat.completions.create({
         model: "gpt-4.1-nano",
-        temperature: 0.7,
+        temperature: 1.0,
         frequency_penalty: 0.1,
-        presence_penalty: 0.1,
+        presence_penalty: 0.2,
         top_p: 0.9,
         messages: [
           {
             role: "system",
-            content: "You're' a creative visual novel brainstorming assistant",
+            content: "You're a VN brainstormer",
           },
           { role: "user", content: prompt },
         ],
@@ -254,12 +257,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Got:", response.choices[0].message.content);
 
       // Parse response
-      if (response.choices[0].message.content == "{}") 
-        throw "Empty response";
+      if (response.choices[0].message.content == "{}") throw "Empty response";
       const parsed = JSON.parse(response.choices[0].message.content || "{}");
 
       // Return array of characters
-      res.json(parsed.characters);
+      res.json('characters' in parsed ? parsed.characters : [parsed]);
     } catch (error) {
       console.error("Error generating characters:", error);
       res.status(500).json({
@@ -338,7 +340,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { indices, pathTemplates, projectContext } = req.body;
 
       // Create prompt for the path generation
-      const prompt = `Given
+      const prompt = `Given this story context:
         ${JSON.stringify(projectContext, null, 2)}
         Generate exactly ${indices.length} plot arc${indices.length > 1 ? "s" : ""} as JSON:
         {
@@ -361,16 +363,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Generate paths using OpenAI
       const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        temperature: 0.7, 
+        model: "gpt-4.1-nano",
+        temperature: 1.0,
         frequency_penalty: 0.1,
-        presence_penalty: 0.1,
-        top_p: 0.9,
+        presence_penalty: 0.2,
+        top_p: 1.0,
         messages: [
           {
             role: "system",
-            content:
-              "You are a creative visual novel brainstorming assistant",
+            content: "You're a VN brainstormer",
           },
           { role: "user", content: prompt },
         ],
@@ -381,15 +382,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Got:", response.choices[0].message.content);
 
       // Parse
-      if (response.choices[0].message.content == "{}")
-        throw "Empty response"
+      if (response.choices[0].message.content == "{}") throw "Empty response";
       const parsed = JSON.parse(response.choices[0].message.content || "{}");
 
       // Return array of paths (not wrapped in an object)
       res.json(parsed.paths);
-    } 
-    catch (error) 
-    {
+    } catch (error) {
       console.error("Error generating paths:", error);
       res.status(500).json({ message: "Failed to generate paths" });
     }
@@ -462,7 +460,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { projectContext } = generatePlotSchema.parse(req.body);
 
       // Create prompt for the plot generation
-      const prompt = `Given
+      const prompt = `Given this story context:
         ${JSON.stringify(projectContext, null, 2)}
         Generate the master plot outline in a JSON as structured
         {
@@ -490,7 +488,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           {
             role: "system",
             content:
-              "You are a creative fiction brainstorming assistant specializing in visual novels.",
+              "You're a VN brainstormer",
           },
           { role: "user", content: prompt },
         ],
@@ -520,10 +518,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         generateActSchema.parse(req.body);
 
       // Create prompt for the act generation
-      const prompt = `Create scenes for Act ${actNumber} of a visual novel with the following context
+      const prompt = `Create scenes for Act ${actNumber} of a visual novel with the following context:
         ${JSON.stringify(projectContext, null, 2)}
-        Create approximately ${scenesCount} scenes for this act following the structure from the plot outline
-        Generate a JSON as structured
+        Create approximately ${scenesCount} scenes for this act following the structure from the plot outline:
+        Generate a JSON as structured:
         {
           "meta": {
             "theme": "theme from context",
@@ -565,12 +563,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ]
         }
         IMPORTANT
-        Make sure scene IDs are sequential and use format "${actNumber}-1", "${actNumber}-2" etc
-        Include branching paths based on choices
-        Some choices may have conditions that check player relationship values
-        The final scene of the act should have choices set to null
-        Include meaningful "delta" values for relationships, inventory items or skills
-        Make sure the "next" property always points to a valid scene ID
+        -Make sure scene IDs are sequential and use format "${actNumber}-1", "${actNumber}-2" etc.
+        -Include branching paths based on choices.
+        -Some choices may have conditions that check player relationship values.
+        -The final scene of the act should have choices set to null.
+        -Include meaningful "delta" values for relationships, inventory items or skills.
+        -Make sure the "next" property always points to a valid scene ID.
       `;
 
       // Generate act using OpenAI
@@ -581,7 +579,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           {
             role: "system",
             content:
-              "You are a creative fiction brainstorming assistant specializing in visual novels.",
+              "You're a VN brainstormer",
           },
           { role: "user", content: prompt },
         ],

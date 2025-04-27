@@ -1,11 +1,8 @@
 // Basic settings for the visual novel
 export interface BasicData {
   theme: string;
-  customTheme?: string;
   tone: string;
-  customTone?: string;
   genre: string;
-  customGeneric?: string;
 }
 
 // Concept information for the visual novel

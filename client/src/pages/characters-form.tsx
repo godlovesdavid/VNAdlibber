@@ -200,10 +200,6 @@ export default function CharactersForm() {
       if (generatedCharacters && Array.isArray(generatedCharacters)) {
         // Merge the generated characters with existing character data
         const updatedCharacters = allCharacters.map((char, idx) => {
-          // If it's a completed protagonist, don't override it
-          if (idx === 0 && char.personality && char.goals && char.appearance) {
-            return char;
-          }
           // Otherwise use the generated data
           return {
             ...char,
@@ -212,12 +208,11 @@ export default function CharactersForm() {
         });
 
         // Update state and project context
+        setCharacters(updatedCharacters);
         setCharactersData({
           characters: updatedCharacters,
         });
-        setCharacters(updatedCharacters);
 
-        await new Promise((resolve) => setTimeout(resolve, 0));
         console.log("Successfully generated all characters at once");
         console.log("Updated project context with all character data");
       } else {
