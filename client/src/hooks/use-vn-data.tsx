@@ -116,7 +116,8 @@ export function useVnData() {
   // Generate path details using AI
   const generatePathData = useCallback(async (
     index: number, 
-    partialPath: any
+    partialPath: any,
+    existingPaths?: any[]
   ) => {
     if (!vnContext.projectData) {
       toast({
@@ -132,14 +133,24 @@ export function useVnData() {
       const controller = new AbortController();
       setAbortController(controller);
       
+      // Create a project context that includes the latest data
+      const projectContext: any = {
+        basicData: vnContext.projectData.basicData,
+        conceptData: vnContext.projectData.conceptData,
+        charactersData: vnContext.projectData.charactersData,
+      };
+      
+      // If we have existing paths (for batch generation), include them in the context
+      if (existingPaths) {
+        projectContext.pathsData = {
+          routes: existingPaths
+        };
+      }
+      
       const pathData = await generatePath(
         index,
         partialPath,
-        {
-          basicData: vnContext.projectData.basicData,
-          conceptData: vnContext.projectData.conceptData,
-          charactersData: vnContext.projectData.charactersData,
-        },
+        projectContext,
         controller.signal
       );
       

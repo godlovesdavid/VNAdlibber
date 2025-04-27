@@ -146,8 +146,8 @@ export default function PathsForm() {
       return;
     }
 
-    // Make a copy of the current routes array
-    const allRoutes = [...routes];
+    // Make a copy of the current routes array that we'll update as we go
+    let workingRoutes = [...routes];
 
     // Set state for UI feedback
     setGeneratingPathIndex(-1); // -1 indicates "all"
@@ -155,7 +155,7 @@ export default function PathsForm() {
 
     try {
       // Generate each path one by one
-      for (let i = 0; i < allRoutes.length; i++) {
+      for (let i = 0; i < workingRoutes.length; i++) {
         console.log(`Starting generation for path ${i + 1}`);
 
         // Update UI to show which path we're generating
@@ -171,18 +171,31 @@ export default function PathsForm() {
             continue;
           }
 
-          // Make the API call
+          // Make the API call with the current state of all routes
           console.log(`Generating path ${i + 1}...`);
 
-          const generatedPath = await generatePathData(i, allRoutes[i]);
+          const generatedPath = await generatePathData(
+            i, 
+            workingRoutes[i],
+            workingRoutes // Pass the current state of all paths
+          );
 
           if (generatedPath) {
-            allRoutes[i] = {
-              ...allRoutes[i],
-              ...generatedPath,
-            };
-            setRoutes(allRoutes);
-            await new Promise((resolve) => setTimeout(resolve, 0));
+            // Update our working copy with the newly generated path
+            workingRoutes = workingRoutes.map((route, idx) => {
+              if (idx === i) {
+                return { ...route, ...generatedPath };
+              }
+              return route;
+            });
+            
+            // Update the UI
+            setRoutes([...workingRoutes]);
+            
+            // Save this path immediately to the context for persistent storage
+            setPathsData({
+              routes: workingRoutes
+            });
 
             console.log(`Successfully generated path ${i + 1}`);
           }
