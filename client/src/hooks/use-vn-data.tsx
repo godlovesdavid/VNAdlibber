@@ -272,7 +272,7 @@ export function useVnData() {
     }
   }, [vnContext.projectData, toast]);
   
-  // Generate plot outline using AI
+  // Generate plot outline using AI (with two-step validation)
   const generatePlotData = useCallback(async () => {
     if (!vnContext.projectData) {
       toast({
@@ -288,30 +288,68 @@ export function useVnData() {
       const controller = new AbortController();
       setAbortController(controller);
       
-      const result = await generatePlot(
-        {
-          basicData: vnContext.projectData.basicData,
-          conceptData: vnContext.projectData.conceptData,
-          charactersData: vnContext.projectData.charactersData,
-          pathsData: vnContext.projectData.pathsData,
-        },
+      // Create the project context object used for both validation and generation
+      const projectContext = {
+        basicData: vnContext.projectData.basicData,
+        conceptData: vnContext.projectData.conceptData,
+        charactersData: vnContext.projectData.charactersData,
+        pathsData: vnContext.projectData.pathsData,
+      };
+      
+      // STEP 1: Validate the content first
+      console.log("🔍 Validating plot context before generation...");
+      const validationResponse = await apiRequest(
+        "POST",
+        "/api/validate/plot",
+        { projectContext },
         controller.signal
       );
       
-      setAbortController(null);
-      
-      // Check for validation errors from AI
-      if (result && result.error) {
-        toast({
-          title: "Content Validation Failed",
-          description: result.error,
-          variant: "destructive",
-          duration: 60000,
-        });
+      // Check if the validation controller was aborted
+      if (controller.signal.aborted) {
+        console.log("Plot validation was cancelled by user");
         return null;
       }
       
-      return result.data;
+      const validationResult = await validationResponse.json();
+      
+      // If validation failed, show error and stop
+      if (!validationResult.valid || validationResult.message) {
+        const errorMessage = validationResult.message || "Content validation failed";
+        toast({
+          title: "Content Validation Failed",
+          description: errorMessage,
+          variant: "destructive",
+          duration: 60000,
+        });
+        setIsGenerating(false);
+        setAbortController(null);
+        return null;
+      }
+      
+      console.log("✅ Plot context validated successfully, proceeding to generation");
+      
+      // STEP 2: Generate the plot after validation passes
+      // Use the API directly instead of the wrapper function
+      const generationResponse = await apiRequest(
+        "POST",
+        "/api/generate/plot",
+        { projectContext },
+        controller.signal
+      );
+      
+      // Check if the generation controller was aborted
+      if (controller.signal.aborted) {
+        console.log("Plot generation was cancelled by user");
+        return null;
+      }
+      
+      const result = await generationResponse.json();
+      console.log("🔥 Generated plot outline:", result);
+      
+      setAbortController(null);
+      
+      return result;
     } catch (error: any) {
       if ((error as Error).name !== 'AbortError') {
         // Try to extract error message from the error response if it exists
@@ -334,12 +372,12 @@ export function useVnData() {
         }
         
         toast({
-          title: "Content Validation Failed",
+          title: "Generation Failed",
           description: errorMsg,
           variant: "destructive",
           duration: 60000,
         });
-        console.error("Error generating plot:", error);
+        console.error("Error in two-step plot generation:", error);
       }
       return null;
     } finally {
@@ -347,7 +385,7 @@ export function useVnData() {
     }
   }, [vnContext.projectData, toast]);
   
-  // Generate act scenes using AI
+  // Generate act scenes using AI (with two-step validation)
   const generateActData = useCallback(async (
     actNumber: number, 
     scenesCount: number
@@ -366,34 +404,74 @@ export function useVnData() {
       const controller = new AbortController();
       setAbortController(controller);
       
-      const result = await generateAct(
-        actNumber,
-        scenesCount,
+      // Create the project context object used for both validation and generation
+      const projectContext = {
+        basicData: vnContext.projectData.basicData,
+        conceptData: vnContext.projectData.conceptData,
+        charactersData: vnContext.projectData.charactersData,
+        pathsData: vnContext.projectData.pathsData,
+        plotData: vnContext.projectData.plotData,
+        playerData: vnContext.playerData,
+      };
+      
+      // STEP 1: Validate the content first
+      console.log(`🔍 Validating Act ${actNumber} content before generation...`);
+      const validationResponse = await apiRequest(
+        "POST",
+        "/api/validate/act",
+        { projectContext },
+        controller.signal
+      );
+      
+      // Check if the validation controller was aborted
+      if (controller.signal.aborted) {
+        console.log(`Act ${actNumber} validation was cancelled by user`);
+        return null;
+      }
+      
+      const validationResult = await validationResponse.json();
+      
+      // If validation failed, show error and stop
+      if (!validationResult.valid || validationResult.message) {
+        const errorMessage = validationResult.message || "Content validation failed";
+        toast({
+          title: "Content Validation Failed",
+          description: errorMessage,
+          variant: "destructive",
+          duration: 60000,
+        });
+        setIsGenerating(false);
+        setAbortController(null);
+        return { error: errorMessage } as GenerationResult<any>;
+      }
+      
+      console.log(`✅ Act ${actNumber} content validated successfully, proceeding to generation`);
+      
+      // STEP 2: Generate the act after validation passes
+      // Use the API directly instead of the wrapper function
+      const generationResponse = await apiRequest(
+        "POST",
+        "/api/generate/act",
         {
-          basicData: vnContext.projectData.basicData,
-          conceptData: vnContext.projectData.conceptData,
-          charactersData: vnContext.projectData.charactersData,
-          pathsData: vnContext.projectData.pathsData,
-          plotData: vnContext.projectData.plotData,
-          playerData: vnContext.playerData,
+          actNumber,
+          scenesCount,
+          projectContext
         },
         controller.signal
       );
       
-      setAbortController(null);
-      
-      // Check for validation errors from AI
-      if (result && result.error) {
-        toast({
-          title: "Content Validation Failed",
-          description: result.error,
-          variant: "destructive",
-          duration: 60000,
-        });
-        return { error: result.error } as GenerationResult<any>;
+      // Check if the generation controller was aborted
+      if (controller.signal.aborted) {
+        console.log(`Act ${actNumber} generation was cancelled by user`);
+        return null;
       }
       
-      return result && result.data ? { data: result.data } as GenerationResult<any> : null;
+      const result = await generationResponse.json();
+      console.log(`🔥 Generated Act ${actNumber}:`, result);
+      
+      setAbortController(null);
+      
+      return { data: result } as GenerationResult<any>;
     } catch (error: any) {
       if ((error as Error).name !== 'AbortError') {
         // Try to extract error message from the error response if it exists
@@ -416,12 +494,12 @@ export function useVnData() {
         }
         
         toast({
-          title: "Content Validation Failed",
+          title: "Generation Failed",
           description: errorMsg,
           variant: "destructive",
           duration: 60000,
         });
-        console.error(`Error generating Act ${actNumber}:`, error);
+        console.error(`Error in two-step Act ${actNumber} generation:`, error);
       }
       return null;
     } finally {

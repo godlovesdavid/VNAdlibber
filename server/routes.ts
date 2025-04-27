@@ -20,9 +20,10 @@ function checkResponseForError(parsedResponse: any, res: any): boolean {
 
 // Standard system prompt for content validation
 const standardValidationInstructions =
-  'Return a JSON based on the given story context. If story context is plot-conflicting, incoherent, sexually explicit, or offensive, then instead return a JSON with an error key explaining the issue like this: { "error": "Brief description of why the content is invalid." }';
+  'Return a JSON based on the given story context. ';
 
 // Explicit validation system prompt that prevents "looks good" errors
+//If story context is plot-conflicting, incoherent, sexually explicit, or offensive, then instead return a JSON with an error key explaining the issue like this: { "error": "Brief description of why the content is invalid." }
 const validationSystemPrompt = `You are a content validation system for a visual novel generator app.
 Your ONLY job is to validate the provided content for a visual novel and return errors if any exist.
 
@@ -553,6 +554,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Plot validation endpoint
+  app.post("/api/validate/plot", async (req, res) => {
+    try {
+      const { projectContext } = req.body;
+
+      // Create prompt for validation
+      const validationPrompt = `Please validate this story context for a visual novel plot outline:
+        ${JSON.stringify(projectContext, null, 2)}
+      `;
+
+      // Validate using OpenAI with explicit validation system prompt
+      const validationResponse = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        temperature: 0.2, // Lower temperature for more consistent validation
+        messages: [
+          {
+            role: "system",
+            content: validationSystemPrompt,
+          },
+          { role: "user", content: validationPrompt },
+        ],
+        response_format: { type: "json_object" },
+      });
+
+      console.log("Plot validation result:", validationResponse.choices[0].message.content);
+      
+      // Parse validation response
+      const validationResult = JSON.parse(
+        validationResponse.choices[0].message.content || "{}"
+      );
+
+      // If validation failed, return the error
+      if (validationResult.error) {
+        return res.status(400).json({ message: validationResult.error });
+      }
+
+      // If validation passed, return success
+      res.json({ valid: true });
+    } catch (error) {
+      console.error("Error validating plot:", error);
+      res.status(500).json({ message: "Failed to validate plot" });
+    }
+  });
+
   app.post("/api/generate/plot", async (req, res) => {
     try {
       const { projectContext } = generatePlotSchema.parse(req.body);
@@ -579,15 +624,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         Structure the plot into 5 acts: Introduction, Rising Action, Midpoint Twist, Escalating Conflict, Resolution/Endings
       `;
-      console.log("Prompt:", prompt);
+      console.log("Plot generation prompt:", prompt);
 
+      // Generate plot using OpenAI WITHOUT validation instruction
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
-          {
-            role: "system",
-            content: standardValidationInstructions,
-          },
+          // No system validation message - just generate
           { role: "user", content: prompt },
         ],
         response_format: { type: "json_object" },
@@ -604,15 +647,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
         response.choices[0].message.content || "{}",
       );
 
-      // Check if the response contains an error and return early if it does
-      if (checkResponseForError(generatedPlot, res)) {
-        return;
-      }
-
       res.json(generatedPlot);
     } catch (error) {
       console.error("Error generating plot:", error);
       res.status(500).json({ message: "Failed to generate plot" });
+    }
+  });
+
+  // Act validation endpoint
+  app.post("/api/validate/act", async (req, res) => {
+    try {
+      const { projectContext } = req.body;
+
+      // Create prompt for validation
+      const validationPrompt = `Please validate this story context for a visual novel act generation:
+        ${JSON.stringify(projectContext, null, 2)}
+      `;
+
+      // Validate using OpenAI with explicit validation system prompt
+      const validationResponse = await openai.chat.completions.create({
+        model: "gpt-4.1-mini",
+        temperature: 0.2, // Lower temperature for more consistent validation
+        messages: [
+          {
+            role: "system",
+            content: validationSystemPrompt,
+          },
+          { role: "user", content: validationPrompt },
+        ],
+        response_format: { type: "json_object" },
+      });
+
+      console.log("Act validation result:", validationResponse.choices[0].message.content);
+      
+      // Parse validation response
+      const validationResult = JSON.parse(
+        validationResponse.choices[0].message.content || "{}"
+      );
+
+      // If validation failed, return the error
+      if (validationResult.error) {
+        return res.status(400).json({ message: validationResult.error });
+      }
+
+      // If validation passed, return success
+      res.json({ valid: true });
+    } catch (error) {
+      console.error("Error validating act:", error);
+      res.status(500).json({ message: "Failed to validate act" });
     }
   });
 
@@ -673,19 +755,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         -The final scene of the act should have choices set to null.
         -Include meaningful "delta" values for relationships, inventory items or skills.
         -Make sure the "next" property always points to a valid scene ID.
-        -Review for plot conflicts, incoherence, or offensive content before finalizing.
+        -Generate high quality, coherent content without validation concerns.
       `;
-      console.log("Prompt:", prompt);
+      console.log("Act generation prompt:", prompt);
 
-      // Generate act using OpenAI
+      // Generate act using OpenAI WITHOUT validation instruction
       const response = await openai.chat.completions.create({
         model: "gpt-4.1-mini",
         temperature: 0.7,
         messages: [
-          {
-            role: "system",
-            content: standardValidationInstructions,
-          },
+          // No system validation message - just generate
           { role: "user", content: prompt },
         ],
         response_format: { type: "json_object" },
@@ -702,11 +781,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const generatedAct = JSON.parse(
         response.choices[0].message.content || "{}",
       );
-
-      // Check if the response contains an error and return early if it does
-      if (checkResponseForError(generatedAct, res)) {
-        return;
-      }
 
       res.json(generatedAct);
     } catch (error) {
