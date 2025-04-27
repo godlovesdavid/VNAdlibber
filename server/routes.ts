@@ -193,10 +193,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Log the generated response for debugging
       console.log("Generated concept:", response.choices[0].message.content);
 
-      // Parse and return the generated concept
+      // Parse the generated concept
       const generatedConcept = JSON.parse(
         response.choices[0].message.content || "{}",
       );
+      
+      // Check if the response contains an error
+      if ('error' in generatedConcept) {
+        console.error("AI validation error:", generatedConcept.error);
+        return res.status(400).json({ message: generatedConcept.error });
+      }
+      
       res.json(generatedConcept);
     } catch (error) {
       console.error("Error generating concept:", error);
@@ -259,7 +266,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Parse response
       if (response.choices[0].message.content == "{}") throw "Empty response";
       const parsed = JSON.parse(response.choices[0].message.content || "{}");
-
+      
+      // Check if the response contains an error
+      if ('error' in parsed) {
+        console.error("AI validation error:", parsed.error);
+        return res.status(400).json({ message: parsed.error });
+      }
+      
       // Return array of characters
       res.json('characters' in parsed ? parsed.characters : [parsed]);
     } catch (error) {
