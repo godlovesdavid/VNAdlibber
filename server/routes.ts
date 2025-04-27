@@ -136,10 +136,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { basicData } = generateConceptSchema.parse(req.body);
 
       // Create prompt for the concept generation
-      const prompt = `Theme: ${basicData.theme}
+      const prompt = `Given
+        Theme: ${basicData.theme}
         Tone: ${basicData.tone}
         Genre: ${basicData.genre}
-        Generate a JSON object with the following structure
+        Generate a story concept in a JSON as structured
         {
           "title": "Intriguing title",
           "tagline": "Very short & memorable catchphrase (<10 words and no period)",
@@ -191,25 +192,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // ${JSON.stringify(partialCharacter, null, 2)}
       const prompt = `Given 
       ${JSON.stringify(projectContext, null, 2)}
-        Generate a JSON object with the following structure
+        Generate a JSON as structured
         {
-          "name": ${partialCharacter.name || "Character name"}",
-          "role": ${partialCharacter.role || "Character role"}",
-          "gender": ${partialCharacter.gender || "Character gender"}",
-          "age": ${partialCharacter.age || "Character age as a string"}",
-          "appearance": ${partialCharacter.appearance || "Physical description (<15 words)"}",
-          "personality": ${partialCharacter.personality || "Key personality traits and behaviors (<40 words)"}",
-          "goals": ${partialCharacter.goals || "Primary motivations and objectives (<40 words)"}",
-          "relationshipPotential":  ${partialCharacter.relationshipPotential || "Relationship potential with main protagonist. (<15 words)"}",
-          "conflict": ${partialCharacter.conflict || "Their primary internal or external struggle (<40 words)"}"
+          "name": "Character name",
+          "role": "Character role",
+          "gender": "Character gender",
+          "age": "Character age as a string",
+          "appearance": "Physical description (<15 words)",
+          "personality": Key personality traits and behaviors (<40 words)",
+          "goals": "Primary motivations and objectives (<40 words)",
+          "relationshipPotential": "(optional) Relationship potential with main protagonist. Lovers must be opposite gender. (<15 words)",
+          "conflict": "Their primary internal or external struggle (<40 words)",
         }
         Be wildly imaginative, original, and surprising — but keep it emotionally resonant. 
       `;
 
       // Generate character using OpenAI
       const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        temperature: 1.0,
+        model: "gpt-4.1-nano",
+        temperature: 1.2,
         frequency_penalty: 0.2,
         presence_penalty: 0.5,
         top_p: 1.0,
@@ -224,7 +225,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ],
         response_format: { type: "json_object" },
       });
-
       // Log the generated response for debugging
       console.log("Generated character:", response.choices[0].message.content);
 
@@ -246,21 +246,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
 
       // Create prompt for the path generation
-      const prompt = `Create a detailed story path for a visual novel with the following parameters
+      const prompt = `Given
         ${JSON.stringify(projectContext, null, 2)}
-        Partial path information
-        ${JSON.stringify(partialPath, null, 2)}
-        This is path #${index + 1} in the story
-        Generate a JSON object with the following structure
+        Generate a plot path/arc in a JSON as structured
         {
-          "title": "${partialPath.title || "Path title"}",
-          "loveInterest": ${partialPath.loveInterest ? `"${partialPath.loveInterest}"` : "null"},
+          "title": "Path title"}",
+          "loveInterest": "(optional; at most 50% chance) One of the opposite-gender characters otherwise write None - Not romance focused"},
           "keyChoices": ["Critical player decision 1", "Critical player decision 2", "Critical player decision 3"],
-          "beginning": "Description of how this route begins",
-          "middle": "Description of conflict escalation and unexpected twists",
-          "climax": "Description of the highest tension moment of this path",
-          "goodEnding": "Description of positive resolution",
-          "badEnding": "Description of negative outcome"
+          "beginning": "Description of how this route begins (< 30 words)",
+          "middle": "Description of conflict escalation and unexpected twists (< 30 words)",
+          "climax": "Description of the highest tension moment of this path (< 30 words)",
+          "goodEnding": "Description of positive resolution (< 20 words)",
+          "badEnding": "Description of negative outcome (< 20 words)"
         }
       `;
 
@@ -283,6 +280,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         response_format: { type: "json_object" },
       });
 
+      console.log('Sent:', JSON.stringify(projectContext, null, 2));
+      
       // Log the generated response for debugging
       console.log("Generated path:", response.choices[0].message.content);
 
@@ -302,10 +301,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { projectContext } = generatePlotSchema.parse(req.body);
 
       // Create prompt for the plot generation
-      const prompt = `Create a master plot outline for a visual novel with the following parameters
+      const prompt = `Given
         ${JSON.stringify(projectContext, null, 2)}
-        Structure the plot into 5 acts: Introduction, Rising Action, Midpoint Twist, Escalating Conflict, Resolution/Endings
-        Generate a JSON object with the following structure
+        Generate a master plot outline in a JSON as structured
         {
           "plotOutline": {
             "act1": {
@@ -322,6 +320,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             "act5": {...}
           }
         }
+        Structure the plot into 5 acts: Introduction, Rising Action, Midpoint Twist, Escalating Conflict, Resolution/Endings
       `;
 
       const response = await openai.chat.completions.create({
@@ -363,7 +362,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const prompt = `Create scenes for Act ${actNumber} of a visual novel with the following context
         ${JSON.stringify(projectContext, null, 2)}
         Create ${scenesCount} scenes for this act following the structure from the plot outline
-        Generate a JSON object with the following structure:
+        Generate a JSON as structured
         {
           "meta": {
             "theme": "theme from context",
