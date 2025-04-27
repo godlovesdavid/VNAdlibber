@@ -101,18 +101,15 @@ export default function PathsForm() {
     setRoutes(updatedRoutes);
   };
 
-  // Update key choice at specific index
-  const updateKeyChoice = (
+  // Update key choices string
+  const updateKeyChoices = (
     pathIndex: number,
-    choiceIndex: number,
     value: string,
   ) => {
     const updatedRoutes = [...routes];
-    const updatedChoices = [...updatedRoutes[pathIndex].keyChoices];
-    updatedChoices[choiceIndex] = value;
     updatedRoutes[pathIndex] = {
       ...updatedRoutes[pathIndex],
-      keyChoices: updatedChoices,
+      keyChoices: value,
     };
     setRoutes(updatedRoutes);
   };
@@ -210,7 +207,7 @@ export default function PathsForm() {
     const isValid = routes.every(
       (route) =>
         route.title &&
-        route.keyChoices.filter((choice) => choice.trim()).length > 0 &&
+        route.keyChoices.trim() &&
         route.beginning &&
         route.middle &&
         route.climax &&
@@ -343,20 +340,17 @@ export default function PathsForm() {
                         Critical player decisions that shape this route
                       </p>
                       <div className="space-y-2">
-                        {route.keyChoices.map((choice, choiceIndex) => (
-                          <Input
-                            key={choiceIndex}
-                            placeholder={`Choice ${choiceIndex + 1}`}
-                            value={choice}
-                            onChange={(e) =>
-                              updateKeyChoice(
-                                index,
-                                choiceIndex,
-                                e.target.value,
-                              )
-                            }
-                          />
-                        ))}
+                        <Textarea
+                          rows={3}
+                          placeholder="Comma-separated list of key choices that alter the story path"
+                          value={route.keyChoices}
+                          onChange={(e) =>
+                            updateKeyChoices(
+                              index,
+                              e.target.value,
+                            )
+                          }
+                        />
                       </div>
                     </div>
 
