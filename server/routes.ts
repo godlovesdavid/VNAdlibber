@@ -193,15 +193,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ${JSON.stringify(projectContext, null, 2)}
         Generate a JSON object with the following structure
         {
-          "name": ""Character name"}",
-          "role": ""Character role"}",
-          "gender": ""Character gender"}",
-          "age": ""Character age"}",
-          "appearance": "Physical description (<15 words)",
-          "personality": "Key personality traits and behaviors (<40 words)",
-          "goals": "Primary motivations and objectives (<40 words)",
-          "relationshipPotential": "Relationship potential with main protagonist. (<15 words)",
-          "conflict": "Their primary internal or external struggle (<40 words)"
+          "name": ${partialCharacter.name || "Character name"}",
+          "role": ${partialCharacter.role || "Character role"}",
+          "gender": ${partialCharacter.gender || "Character gender"}",
+          "age": ${partialCharacter.age || "Character age as a string"}",
+          "appearance": ${partialCharacter.appearance || "Physical description (<15 words)"}",
+          "personality": ${partialCharacter.personality || "Key personality traits and behaviors (<40 words)"}",
+          "goals": ${partialCharacter.goals || "Primary motivations and objectives (<40 words)"}",
+          "relationshipPotential":  ${partialCharacter.relationshipPotential || "Relationship potential with main protagonist. (<15 words)"}",
+          "conflict": ${partialCharacter.conflict || "Their primary internal or external struggle (<40 words)"}"
         }
         Be wildly imaginative, original, and surprising — but keep it emotionally resonant. 
       `;
@@ -209,7 +209,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate character using OpenAI
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",
-        temperature: 1.4,
+        temperature: 1.0,
         frequency_penalty: 0.2,
         presence_penalty: 0.5,
         top_p: 1.0,

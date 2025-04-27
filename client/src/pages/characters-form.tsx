@@ -8,18 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { 
-  Card, 
+  Card,
   CardContent,
   CardHeader,
   CardTitle,
-  CardFooter
+  CardFooter,
 } from "@/components/ui/card";
 import { Wand2, Trash, Plus } from "lucide-react";
 import { Character } from "@/types/vn";
@@ -28,7 +21,7 @@ export default function CharactersForm() {
   const [, setLocation] = useLocation();
   const { projectData, setCharactersData, goToStep } = useVnContext();
   const { generateCharacterData, isGenerating, cancelGeneration } = useVnData();
-  
+
   // Form state
   const [characters, setCharacters] = useState<Character[]>([
     {
@@ -40,26 +33,31 @@ export default function CharactersForm() {
       personality: "",
       goals: "",
       relationshipPotential: "",
-      conflict: ""
-    }
+      conflict: "",
+    },
   ]);
-  
-  const [generatingCharacterIndex, setGeneratingCharacterIndex] = useState<number | null>(null);
-  
+
+  const [generatingCharacterIndex, setGeneratingCharacterIndex] = useState<
+    number | null
+  >(null);
+
   // Load existing data if available
   useEffect(() => {
-    if (projectData?.charactersData?.characters && projectData.charactersData.characters.length > 0) {
+    if (
+      projectData?.charactersData?.characters &&
+      projectData.charactersData.characters.length > 0
+    ) {
       setCharacters(projectData.charactersData.characters);
     }
   }, [projectData]);
-  
+
   // Add a new character card
   const addCharacter = () => {
     if (characters.length >= 5) {
       alert("You can only create up to 5 characters.");
       return;
     }
-    
+
     setCharacters([
       ...characters,
       {
@@ -71,149 +69,186 @@ export default function CharactersForm() {
         personality: "",
         goals: "",
         relationshipPotential: "",
-        conflict: ""
-      }
+        conflict: "",
+      },
     ]);
   };
-  
+
   // Remove a character
   const removeCharacter = (index: number) => {
     if (characters.length <= 1) {
       alert("You must have at least one character.");
       return;
     }
-    
+
     const updatedCharacters = [...characters];
     updatedCharacters.splice(index, 1);
     setCharacters(updatedCharacters);
   };
-  
+
   // Update character field
-  const updateCharacter = (index: number, field: keyof Character, value: string) => {
+  const updateCharacter = (
+    index: number,
+    field: keyof Character,
+    value: string,
+  ) => {
     const updatedCharacters = [...characters];
     updatedCharacters[index] = {
       ...updatedCharacters[index],
-      [field]: value
+      [field]: value,
     };
     setCharacters(updatedCharacters);
   };
-  
+
   // Generate character details using AI
   const handleGenerateCharacter = async (index: number) => {
     setGeneratingCharacterIndex(index);
-    
+
     const partialCharacter = {
       name: characters[index].name,
       role: characters[index].role,
       gender: characters[index].gender,
-      age: characters[index].age
+      age: typeof characters[index].age === 'number' ? String(characters[index].age) : characters[index].age, // Ensure age is a string
+      appearance: characters[index].appearance,
+      personality: characters[index].personality,
+      goals: characters[index].goals,
+      relationshipPotential: characters[index].relationshipPotential,
+      conflict: characters[index].conflict,
     };
-    
-    const generatedCharacter = await generateCharacterData(index, partialCharacter);
-    
+
+    const generatedCharacter = await generateCharacterData(
+      index,
+      partialCharacter,
+    );
+
     if (generatedCharacter) {
       const updatedCharacters = [...characters];
       updatedCharacters[index] = {
         ...updatedCharacters[index],
-        ...generatedCharacter
+        ...generatedCharacter,
       };
       setCharacters(updatedCharacters);
-      
+
       // Log generation to console
       console.log(`Generated character ${index + 1}:`, generatedCharacter);
     }
-    
+
     setGeneratingCharacterIndex(null);
   };
-  
+
   // Generate all characters
   const handleGenerateAllCharacters = async () => {
     // Only generate for existing characters
     if (characters.length === 0) return;
-    
+
     setGeneratingCharacterIndex(-1); // -1 indicates "all"
-    
+
     // Generate for each character sequentially
     for (let i = 0; i < characters.length; i++) {
       // Skip generation if we're canceled
       if (generatingCharacterIndex === null) break;
-      
+
       setGeneratingCharacterIndex(i);
-      
+
       // Create partial character data
       const partialCharacter = {
         name: characters[i].name,
         role: characters[i].role,
         gender: characters[i].gender,
-        age: characters[i].age
+        age: typeof characters[i].age === 'number' ? String(characters[i].age) : characters[i].age, // Ensure age is a string
+        appearance: characters[i].appearance,
+        personality: characters[i].personality,
+        goals: characters[i].goals,
+        relationshipPotential: characters[i].relationshipPotential,
+        conflict: characters[i].conflict,
       };
-      
+
       // Generate character data
-      const generatedCharacter = await generateCharacterData(i, partialCharacter);
-      
+      const generatedCharacter = await generateCharacterData(
+        i,
+        partialCharacter,
+      );
+
       if (generatedCharacter) {
         const updatedCharacters = [...characters];
         updatedCharacters[i] = {
           ...updatedCharacters[i],
-          ...generatedCharacter
+          ...generatedCharacter,
         };
         setCharacters(updatedCharacters);
-        
+
         // Log generation to console
         console.log(`Generated character ${i + 1}:`, generatedCharacter);
       }
     }
-    
+
     setGeneratingCharacterIndex(null);
   };
-  
+
   // Go back to previous step
   const handleBack = () => {
     goToStep(2);
   };
-  
+
   // Proceed to next step
   const handleNext = () => {
     // Validate characters
-    const isValid = characters.every(char => 
-      char.name && char.role && char.gender && char.appearance && 
-      char.personality && char.goals && char.relationshipPotential && char.conflict
+    const isValid = characters.every(
+      (char) =>
+        char.name &&
+        char.role &&
+        char.gender &&
+        char.appearance &&
+        char.personality &&
+        char.goals &&
+        char.relationshipPotential &&
+        char.conflict,
     );
-    
+
     if (!isValid) {
       alert("Please fill in all required fields for each character");
       return;
     }
-    
+
     // Save data
     setCharactersData({
-      characters
+      characters,
     });
-    
+
     // Navigate to next step
     setLocation("/create/paths");
   };
-  
+
   return (
     <>
       <NavBar />
       <CreationProgress currentStep={3} />
-      
+
       <div className="pt-16">
         <div className="creation-container max-w-4xl mx-auto p-6">
           <div className="mb-6">
-            <h2 className="text-2xl font-semibold text-gray-800">Step 3: Characters</h2>
-            <p className="text-gray-600">Create the characters who will bring your story to life. You can add up to 5 characters.</p>
+            <h2 className="text-2xl font-semibold text-gray-800">
+              Step 3: Characters
+            </h2>
+            <p className="text-gray-600">
+              Create the characters who will bring your story to life. You can
+              add up to 5 characters.
+            </p>
           </div>
-          
+
           <div className="space-y-6">
             {characters.map((character, index) => (
-              <Card key={index} className="shadow-sm hover:border-primary transition-all">
+              <Card
+                key={index}
+                className="shadow-sm hover:border-primary transition-all"
+              >
                 <CardHeader className="pb-3">
                   <div className="flex justify-between items-center">
                     <CardTitle className="text-lg font-semibold text-gray-800">
-                      Character {index + 1} 
-                      {index === 0 && <span className="text-primary ml-1">(Protagonist)</span>}
+                      Character {index + 1}
+                      {index === 0 && (
+                        <span className="text-primary ml-1">(Protagonist)</span>
+                      )}
                     </CardTitle>
                     <Button
                       variant="ghost"
@@ -226,22 +261,28 @@ export default function CharactersForm() {
                     </Button>
                   </div>
                 </CardHeader>
-                
+
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Basic Info */}
                     <div className="space-y-3">
                       <div className="form-group">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Name
+                        </label>
                         <Input
                           placeholder="Character's name"
                           value={character.name}
-                          onChange={(e) => updateCharacter(index, "name", e.target.value)}
+                          onChange={(e) =>
+                            updateCharacter(index, "name", e.target.value)
+                          }
                         />
                       </div>
-                      
+
                       <div className="form-group">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Role
+                        </label>
                         {index === 0 ? (
                           <Input
                             placeholder="Protagonist"
@@ -250,104 +291,102 @@ export default function CharactersForm() {
                             className="bg-gray-100 text-gray-500"
                           />
                         ) : (
-                          <Select 
-                            value={character.role} 
-                            onValueChange={(value) => updateCharacter(index, "role", value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select role" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="antagonist">Antagonist</SelectItem>
-                              <SelectItem value="rival">Rival</SelectItem>
-                              <SelectItem value="mentor">Mentor</SelectItem>
-                              <SelectItem value="sidekick">Sidekick</SelectItem>
-                              <SelectItem value="love_interest">Love Interest</SelectItem>
-                              <SelectItem value="childhood_friend">Childhood Friend</SelectItem>
-                              <SelectItem value="parent">Parent</SelectItem>
-                              <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )}
-                      </div>
-                      
-                      <div className="form-group">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-                        {index === 0 ? (
                           <Input
-                            placeholder="Character's gender (e.g., Male, Female, Non-binary)"
-                            value={character.gender}
-                            onChange={(e) => updateCharacter(index, "gender", e.target.value)}
+                            value={character.role}
+                            onChange={(e) =>
+                              updateCharacter(index, "role", e.target.value)
+                            }
                           />
-                        ) : (
-                          <Select 
-                            value={character.gender} 
-                            onValueChange={(value) => updateCharacter(index, "gender", value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select gender" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="male">Male</SelectItem>
-                              <SelectItem value="female">Female</SelectItem>
-                              <SelectItem value="non-binary">Non-binary</SelectItem>
-                              <SelectItem value="robot">Robot/AI</SelectItem>
-                              <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                          </Select>
                         )}
                       </div>
-                      
+
                       <div className="form-group">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Gender
+                        </label>
+                        <Input
+                          placeholder="Character's gender (e.g., Male, Female, Non-binary, Robot/AI, etc.)"
+                          value={character.gender}
+                          onChange={(e) =>
+                            updateCharacter(index, "gender", e.target.value)
+                          }
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Age
+                        </label>
                         <Input
                           placeholder="Character's age"
                           value={character.age}
-                          onChange={(e) => updateCharacter(index, "age", e.target.value)}
+                          onChange={(e) =>
+                            updateCharacter(index, "age", e.target.value)
+                          }
                         />
                       </div>
                     </div>
-                    
+
                     {/* Character Details */}
                     <div className="space-y-3">
                       <div className="form-group">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Appearance</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Appearance
+                        </label>
                         <Textarea
                           rows={2}
                           placeholder="Brief physical description"
                           value={character.appearance}
-                          onChange={(e) => updateCharacter(index, "appearance", e.target.value)}
+                          onChange={(e) =>
+                            updateCharacter(index, "appearance", e.target.value)
+                          }
                         />
                       </div>
-                      
+
                       <div className="form-group">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Personality</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Personality
+                        </label>
                         <Textarea
                           rows={2}
                           placeholder="Key traits and behaviors"
                           value={character.personality}
-                          onChange={(e) => updateCharacter(index, "personality", e.target.value)}
+                          onChange={(e) =>
+                            updateCharacter(
+                              index,
+                              "personality",
+                              e.target.value,
+                            )
+                          }
                         />
                       </div>
-                      
+
                       <div className="form-group">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Goals</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Goals
+                        </label>
                         <Textarea
                           rows={2}
                           placeholder="Primary motivations and objectives"
                           value={character.goals}
-                          onChange={(e) => updateCharacter(index, "goals", e.target.value)}
+                          onChange={(e) =>
+                            updateCharacter(index, "goals", e.target.value)
+                          }
                         />
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Additional Info */}
                   <div className="mt-4 space-y-3">
                     <div className="form-group">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Relationship Potential
-                        {index === 0 && <span className="text-xs text-gray-500 ml-1">(N/A for protagonist)</span>}
+                        {index === 0 && (
+                          <span className="text-xs text-gray-500 ml-1">
+                            (N/A for protagonist)
+                          </span>
+                        )}
                       </label>
                       {index === 0 ? (
                         <Textarea
@@ -362,23 +401,33 @@ export default function CharactersForm() {
                           rows={2}
                           placeholder="How they might connect with the protagonist"
                           value={character.relationshipPotential}
-                          onChange={(e) => updateCharacter(index, "relationshipPotential", e.target.value)}
+                          onChange={(e) =>
+                            updateCharacter(
+                              index,
+                              "relationshipPotential",
+                              e.target.value,
+                            )
+                          }
                         />
                       )}
                     </div>
-                    
+
                     <div className="form-group">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Conflict</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Conflict
+                      </label>
                       <Textarea
                         rows={2}
                         placeholder="Their primary internal or external struggle"
                         value={character.conflict}
-                        onChange={(e) => updateCharacter(index, "conflict", e.target.value)}
+                        onChange={(e) =>
+                          updateCharacter(index, "conflict", e.target.value)
+                        }
                       />
                     </div>
                   </div>
                 </CardContent>
-                
+
                 <CardFooter className="flex justify-end">
                   <Button
                     variant="ghost"
@@ -388,9 +437,25 @@ export default function CharactersForm() {
                   >
                     {generatingCharacterIndex === index && isGenerating ? (
                       <>
-                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg
+                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
                         </svg>
                         Generating...
                       </>
@@ -403,7 +468,7 @@ export default function CharactersForm() {
                 </CardFooter>
               </Card>
             ))}
-            
+
             <div className="pt-6 flex flex-col space-y-4">
               <div className="flex justify-center gap-4">
                 <Button
@@ -414,19 +479,35 @@ export default function CharactersForm() {
                 >
                   <Plus className="mr-1 h-4 w-4" /> Add Character
                 </Button>
-                
+
                 <Button
                   onClick={handleGenerateAllCharacters}
                   variant="secondary"
                   className="flex items-center text-primary border-primary hover:bg-primary/10"
                   disabled={isGenerating || characters.length === 0}
                 >
-                  <Wand2 className="mr-1 h-4 w-4" /> 
+                  <Wand2 className="mr-1 h-4 w-4" />
                   {generatingCharacterIndex === -1 && isGenerating ? (
                     <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
                       </svg>
                       Generating All...
                     </>
@@ -436,18 +517,13 @@ export default function CharactersForm() {
                 </Button>
               </div>
               <div className="flex justify-between">
-                <Button
-                  variant="outline"
-                  onClick={handleBack}
-                >
+                <Button variant="outline" onClick={handleBack}>
                   Back
                 </Button>
-                <Button onClick={handleNext}>
-                  Next: Paths
-                </Button>
+                <Button onClick={handleNext}>Next: Paths</Button>
               </div>
             </div>
-            
+
             {isGenerating && generatingCharacterIndex !== null && (
               <div className="pt-3 flex justify-end">
                 <Button
