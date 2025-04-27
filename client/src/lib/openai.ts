@@ -213,13 +213,19 @@ export async function generatePlot(
   }
 }
 
+// Interface for generation result with error validation
+interface GenerationResult<T> {
+  data?: T;
+  error?: string;
+}
+
 // Function to generate visual novel act
 export async function generateAct(
   actNumber: number,
   scenesCount: number,
   projectContext: any,
   signal?: AbortSignal
-): Promise<{
+): Promise<GenerationResult<{
   meta: {
     theme: string;
     relationshipVars: string[];
@@ -238,17 +244,30 @@ export async function generateAct(
       failNext?: string;
     }> | null;
   }>;
-}> {
+}>> {
   try {
     const response = await apiRequest(
       "POST",
       "/api/generate/act",
-      { actNumber, scenesCount, projectContext },
+      { 
+        actNumber, 
+        scenesCount, 
+        projectContext,
+        validate: true // Add validation flag to check for inconsistencies
+      },
       signal
     );
-    return await response.json();
+    
+    const result = await response.json();
+    
+    // Check if the API returned an error
+    if (result.error) {
+      return { error: result.error };
+    }
+    
+    return { data: result };
   } catch (error) {
     console.error(`Error generating act ${actNumber}:`, error);
-    throw error;
+    return { error: `Failed to generate Act ${actNumber}. Please try again.` };
   }
 }

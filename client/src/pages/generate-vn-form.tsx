@@ -26,15 +26,6 @@ import { Input } from "@/components/ui/input";
 import { Download, Wand2, Play } from "lucide-react";
 import { PlayerData, GeneratedAct } from "@/types/vn";
 import { ConfirmationModal } from "@/components/modals/confirmation-modal";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 export default function GenerateVnForm() {
   const [, setLocation] = useLocation();
@@ -59,8 +50,7 @@ export default function GenerateVnForm() {
   const [currentGeneratingAct, setCurrentGeneratingAct] = useState<number | null>(null);
   const [regenerateConfirmOpen, setRegenerateConfirmOpen] = useState(false);
   const [actToRegenerate, setActToRegenerate] = useState<number | null>(null);
-  const [showBackWarning, setShowBackWarning] = useState(false);
-  const [suppressBackWarning, setSuppressBackWarning] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
   
   // Player data editing state
   const [editablePlayerData, setEditablePlayerData] = useState<PlayerData>({
@@ -159,20 +149,9 @@ export default function GenerateVnForm() {
     return currentGeneratingAct === actNumber && isGenerating;
   };
   
-  // Show warning when going back
+  // Go back to previous step
   const handleBack = () => {
-    // Skip warning if user has chosen to suppress it
-    if (suppressBackWarning) {
-      goToStep(5);
-    } else {
-      setShowBackWarning(true);
-    }
-  };
-  
-  // Confirm going back
-  const confirmGoBack = () => {
     goToStep(5);
-    setShowBackWarning(false);
   };
   
   // Handle export actions
@@ -270,6 +249,19 @@ export default function GenerateVnForm() {
                 )}
               </CardContent>
               <CardFooter className="flex justify-between">
+                {/* Play button moved to left */}
+                {isActGenerated(actNumber) && (
+                  <Button 
+                    className="flex items-center"
+                    onClick={() => playAct(actNumber)}
+                  >
+                    <Play className="mr-1 h-4 w-4" /> Play
+                  </Button>
+                )}
+                
+                {/* If act is not generated, we still need a placeholder div for spacing */}
+                {!isActGenerated(actNumber) && <div />}
+                
                 <Button
                   variant="outline"
                   className={`border-primary text-primary hover:bg-primary/10 flex items-center justify-center ${isActGenerating(actNumber) ? 'opacity-75' : ''}`}
@@ -291,16 +283,6 @@ export default function GenerateVnForm() {
                     </>
                   )}
                 </Button>
-                
-                {/* Redesigned Play button - now smaller and aligned right */}
-                {isActGenerated(actNumber) && (
-                  <Button 
-                    className="flex items-center"
-                    onClick={() => playAct(actNumber)}
-                  >
-                    <Play className="mr-1 h-4 w-4" /> Play
-                  </Button>
-                )}
               </CardFooter>
             </Card>
           ))}
@@ -408,46 +390,29 @@ export default function GenerateVnForm() {
         onConfirm={confirmRegeneration}
       />
       
-      {/* Back Navigation Warning Modal with Checkbox */}
-      <Dialog open={showBackWarning} onOpenChange={setShowBackWarning}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-destructive">Warning: Going Back</DialogTitle>
-            <DialogDescription>
-              Editing previous steps might destroy continuity with your generated content. Are you sure you want to go back?
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex items-center space-x-2 py-2">
-            <Checkbox 
-              id="dont-show-again" 
-              checked={suppressBackWarning}
-              onCheckedChange={(checked) => setSuppressBackWarning(checked === true)}
-            />
-            <label
-              htmlFor="dont-show-again"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Don't show this message again
-            </label>
-          </div>
-          <DialogFooter className="sm:justify-end">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => setShowBackWarning(false)}
-            >
-              Stay Here
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={confirmGoBack}
-            >
-              Yes, Go Back
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Validation Error Alert */}
+      {validationError && (
+        <div className="fixed bottom-6 right-6 z-50 max-w-md">
+          <Card className="border border-red-300 bg-red-50 shadow-lg">
+            <CardHeader className="py-3">
+              <CardTitle className="text-red-600 text-base">Content Validation Error</CardTitle>
+            </CardHeader>
+            <CardContent className="py-2">
+              <p className="text-sm text-red-800">{validationError}</p>
+            </CardContent>
+            <CardFooter className="py-2 flex justify-end">
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-red-600 border-red-300 hover:bg-red-100"
+                onClick={() => setValidationError(null)}
+              >
+                Dismiss
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+      )}
     </>
   );
 }
