@@ -34,13 +34,24 @@ export function useVnData() {
       setAbortController(controller);
       
       const { theme, tone, genre } = vnContext.projectData.basicData;
-      const conceptData = await generateConcept(
+      const result = await generateConcept(
         { theme, tone, genre }, 
         controller.signal
       );
       
       setAbortController(null);
-      return conceptData;
+      
+      // Check for validation errors from AI
+      if (result && result.error) {
+        toast({
+          title: "Content Validation Failed",
+          description: result.error,
+          variant: "destructive",
+        });
+        return null;
+      }
+      
+      return result.data;
     } catch (error) {
       if ((error as Error).name !== 'AbortError') {
         toast({
@@ -181,7 +192,7 @@ export function useVnData() {
       const controller = new AbortController();
       setAbortController(controller);
       
-      const plotData = await generatePlot(
+      const result = await generatePlot(
         {
           basicData: vnContext.projectData.basicData,
           conceptData: vnContext.projectData.conceptData,
@@ -192,7 +203,18 @@ export function useVnData() {
       );
       
       setAbortController(null);
-      return plotData;
+      
+      // Check for validation errors from AI
+      if (result && result.error) {
+        toast({
+          title: "Content Validation Failed",
+          description: result.error,
+          variant: "destructive",
+        });
+        return null;
+      }
+      
+      return result.data;
     } catch (error) {
       if ((error as Error).name !== 'AbortError') {
         toast({

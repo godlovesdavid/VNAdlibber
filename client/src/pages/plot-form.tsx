@@ -56,7 +56,7 @@ export default function PlotForm() {
   const handleGeneratePlot = async () => {
     const generatedPlot = await generatePlotData();
     
-    if (generatedPlot) {
+    if (generatedPlot && generatedPlot.plotOutline) {
       setPlotOutline(generatedPlot.plotOutline);
       
       // Expand the first act after generation
