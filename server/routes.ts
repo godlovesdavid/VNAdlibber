@@ -8,6 +8,20 @@ import { insertVnProjectSchema, insertVnStorySchema } from "@shared/schema";
 // Initialize OpenAI
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "" });
 
+// Helper function to check for error in OpenAI responses
+function checkResponseForError(parsedResponse: any, res: any): boolean {
+  if ('error' in parsedResponse) {
+    console.error("AI validation error:", parsedResponse.error);
+    res.status(400).json({ message: parsedResponse.error });
+    return true;
+  }
+  return false;
+}
+
+// Standard system prompt for content validation
+const standardValidationInstructions = 
+  "You're a VN brainstormer. If the requested content is plot-conflicting, incoherent, or offensive, instead of generating content, return a JSON with an error key explaining the issue like: { \"error\": \"Brief description of why the content is invalid.\" }";
+
 // Schema for generation requests
 const generateConceptSchema = z.object({
   basicData: z.object({
@@ -182,8 +196,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         messages: [
           {
             role: "system",
-            content:
-              "You're a VN brainstormer. If the requested content is plot-conflicting, incoherent, or offensive, instead of generating content, return a JSON with an error key explaining the issue like: { \"error\": \"Brief description of why the concept is invalid.\" }",
+            content: standardValidationInstructions,
           },
           { role: "user", content: prompt },
         ],
@@ -198,10 +211,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         response.choices[0].message.content || "{}",
       );
       
-      // Check if the response contains an error
-      if ('error' in generatedConcept) {
-        console.error("AI validation error:", generatedConcept.error);
-        return res.status(400).json({ message: generatedConcept.error });
+      // Check if the response contains an error and return early if it does
+      if (checkResponseForError(generatedConcept, res)) {
+        return;
       }
       
       res.json(generatedConcept);
@@ -253,7 +265,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         messages: [
           {
             role: "system",
-            content: "You're a VN brainstormer. If the requested content is plot-conflicting, incoherent, or offensive, instead of generating content, return a JSON with an error key explaining the issue like: { \"error\": \"Brief description of why the characters are invalid.\" }",
+            content: standardValidationInstructions,
           },
           { role: "user", content: prompt },
         ],
@@ -267,10 +279,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (response.choices[0].message.content == "{}") throw "Empty response";
       const parsed = JSON.parse(response.choices[0].message.content || "{}");
       
-      // Check if the response contains an error
-      if ('error' in parsed) {
-        console.error("AI validation error:", parsed.error);
-        return res.status(400).json({ message: parsed.error });
+      // Check if the response contains an error and return early if it does
+      if (checkResponseForError(parsed, res)) {
+        return;
       }
       
       // Return array of characters
@@ -384,7 +395,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         messages: [
           {
             role: "system",
-            content: "You're a VN brainstormer. If the requested content is plot-conflicting, incoherent, or offensive, instead of generating content, return a JSON with an error key explaining the issue like: { \"error\": \"Brief description of why the paths are invalid.\" }",
+            content: "You're a VN brainstormer. If the story context is plot-conflicting, incoherent, or offensive, instead of generating content, return a JSON with an error key explaining the issue like: { \"error\": \"Brief description of why the paths are invalid.\" }",
           },
           { role: "user", content: prompt },
         ],
@@ -507,7 +518,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           {
             role: "system",
             content:
-              "You're a VN brainstormer. If the requested content is plot-conflicting, incoherent, or offensive, instead of generating content, return a JSON with an error key explaining the issue like: { \"error\": \"Brief description of why the plot is invalid.\" }",
+              "You're a VN brainstormer. If the story context is plot-conflicting, incoherent, or offensive, instead of generating content, return a JSON with an error key explaining the issue like: { \"error\": \"Brief description of why the plot is invalid.\" }",
           },
           { role: "user", content: prompt },
         ],
@@ -650,7 +661,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           {
             role: "system",
             content:
-              "You're a VN brainstormer. If the requested content is plot-conflicting, incoherent, or offensive, instead of generating content, return a JSON with an error key explaining the issue like: { \"error\": \"Brief description of why the act generation is invalid.\" }",
+              "You're a VN brainstormer. If the story context is plot-conflicting, incoherent, or offensive, instead of generating content, return a JSON with an error key explaining the issue like: { \"error\": \"Brief description of why the act generation is invalid.\" }",
           },
           { role: "user", content: prompt },
         ],
