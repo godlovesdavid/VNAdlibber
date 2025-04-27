@@ -174,38 +174,69 @@ export function useVnData() {
       const controller = new AbortController();
       setAbortController(controller);
       
-      // Use our unified paths endpoint
-      const response = await apiRequest(
+      // Create the project context object used for both validation and generation
+      const projectContext = {
+        basicData: vnContext.projectData.basicData,
+        conceptData: vnContext.projectData.conceptData,
+        charactersData: vnContext.projectData.charactersData,
+      };
+      
+      // STEP 1: Validate the content first
+      console.log("🔍 Validating content before generation...");
+      const validationResponse = await apiRequest(
         "POST",
-        "/api/generate/paths",
-        {
-          indices: [index],
-          pathTemplates: [partialPath],
-          projectContext: {
-            basicData: vnContext.projectData.basicData,
-            conceptData: vnContext.projectData.conceptData,
-            charactersData: vnContext.projectData.charactersData,
-          }
-        },
+        "/api/validate/paths",
+        { projectContext },
         controller.signal
       );
       
-      // Capture the response data regardless of status code
-      const result = await response.json();
+      // Check if the validation controller was aborted
+      if (controller.signal.aborted) {
+        console.log("Validation was cancelled by user");
+        return null;
+      }
       
-      setAbortController(null);
+      const validationResult = await validationResponse.json();
       
-      // Check if the API returned an error in any form
-      if (result.error || result.message) {
-        const errorMessage = result.error || result.message;
+      // If validation failed, show error and stop
+      if (!validationResult.valid || validationResult.message) {
+        const errorMessage = validationResult.message || "Content validation failed";
         toast({
           title: "Content Validation Failed",
           description: errorMessage,
           variant: "destructive",
           duration: 60000,
         });
+        setIsGenerating(false);
+        setAbortController(null);
         return null;
       }
+      
+      console.log("✅ Content validated successfully, proceeding to generation");
+      
+      // STEP 2: Generate the path after validation passes
+      // Use our unified paths endpoint (without validation)
+      const generationResponse = await apiRequest(
+        "POST",
+        "/api/generate/paths",
+        {
+          indices: [index],
+          pathTemplates: [partialPath],
+          projectContext
+        },
+        controller.signal
+      );
+      
+      // Check if the generation controller was aborted
+      if (controller.signal.aborted) {
+        console.log("Generation was cancelled by user");
+        return null;
+      }
+      
+      const result = await generationResponse.json();
+      console.log("🔥 Generated path:", result);
+      
+      setAbortController(null);
       
       // Return just the first path since we only requested one
       return Array.isArray(result) && result.length > 0 ? result[0] : null;
@@ -233,7 +264,7 @@ export function useVnData() {
           description: errorMsg,
           variant: "destructive",
         });
-        console.error("Error generating path:", error);
+        console.error("Error in two-step path generation:", error);
       }
       return null;
     } finally {
@@ -510,41 +541,72 @@ export function useVnData() {
       const controller = new AbortController();
       setAbortController(controller);
       
-      // Create indices based on the number of templates
-      const indices = Array.from({ length: pathTemplates.length }, (_, i) => i);
+      // Create the project context object used for both validation and generation
+      const projectContext = {
+        basicData: vnContext.projectData.basicData,
+        conceptData: vnContext.projectData.conceptData,
+        charactersData: vnContext.projectData.charactersData,
+      };
       
-      // Use our unified paths endpoint
-      const response = await apiRequest(
+      // STEP 1: Validate the content first
+      console.log("🔍 Validating content before generation...");
+      const validationResponse = await apiRequest(
         "POST",
-        "/api/generate/paths",
-        {
-          indices,
-          pathTemplates,
-          projectContext: {
-            basicData: vnContext.projectData.basicData,
-            conceptData: vnContext.projectData.conceptData,
-            charactersData: vnContext.projectData.charactersData,
-          }
-        },
+        "/api/validate/paths",
+        { projectContext },
         controller.signal
       );
       
-      const result = await response.json();
-      console.log("Received paths response:", result);
+      // Check if the validation controller was aborted
+      if (controller.signal.aborted) {
+        console.log("Validation was cancelled by user");
+        return null;
+      }
       
-      setAbortController(null);
+      const validationResult = await validationResponse.json();
       
-      // Check if the API returned an error
-      if (result.error || result.message) {
-        const errorMessage = result.error || result.message;
+      // If validation failed, show error and stop
+      if (!validationResult.valid || validationResult.message) {
+        const errorMessage = validationResult.message || "Content validation failed";
         toast({
           title: "Content Validation Failed",
           description: errorMessage,
           variant: "destructive",
           duration: 60000,
         });
+        setIsGenerating(false);
+        setAbortController(null);
         return null;
       }
+      
+      console.log("✅ Content validated successfully, proceeding to generation");
+      
+      // STEP 2: Generate the paths after validation passes
+      // Create indices based on the number of templates
+      const indices = Array.from({ length: pathTemplates.length }, (_, i) => i);
+      
+      // Use our unified paths endpoint (without validation)
+      const generationResponse = await apiRequest(
+        "POST",
+        "/api/generate/paths",
+        {
+          indices,
+          pathTemplates,
+          projectContext
+        },
+        controller.signal
+      );
+      
+      // Check if the generation controller was aborted
+      if (controller.signal.aborted) {
+        console.log("Generation was cancelled by user");
+        return null;
+      }
+      
+      const result = await generationResponse.json();
+      console.log("🔥 Generated paths:", result);
+      
+      setAbortController(null);
       
       // Just return the array directly
       if (Array.isArray(result)) {
@@ -575,12 +637,12 @@ export function useVnData() {
         }
         
         toast({
-          title: "Content Validation Failed",
+          title: "Generation Failed",
           description: errorMsg,
           variant: "destructive",
           duration: 60000,
         });
-        console.error("Error generating multiple paths:", error);
+        console.error("Error in two-step path generation:", error);
       }
       return null;
     } finally {
