@@ -84,59 +84,31 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   
   // Create a new project
   const createNewProject = () => {
-    // The most aggressive approach: Clear everything in localStorage
+    console.log("Creating new project - aggressive reset approach");
+    
+    // The most aggressive approach: Clear everything in localStorage and sessionStorage
     try {
       localStorage.clear();
+      sessionStorage.clear();
+      
+      // Set flag for new project in sessionStorage
+      sessionStorage.setItem('vn_fresh_project', 'true');
     } catch (e) {
-      console.error("Error clearing localStorage:", e);
+      console.error("Error clearing storage:", e);
     }
     
     // Set project data to null first to trigger cleanup
     setProjectData(null);
     
-    // Force a reload of the entire application
-    // This is the most reliable way to reset all state
-    if (typeof window !== 'undefined') {
-      // Create a flag in sessionStorage so we know we're doing a reset
-      sessionStorage.setItem('vn_fresh_project', 'true');
-      
-      // Small timeout to ensure UI updates before reload
-      setTimeout(() => {
-        // Reset project to initial state with empty values
-        const newProject = {
-          title: "Untitled Project",
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          basicData: {
-            theme: "",
-            tone: "",
-            genre: "",
-          },
-          // Clear all data from previous steps explicitly
-          conceptData: undefined,
-          charactersData: undefined,
-          pathsData: undefined,
-          plotData: undefined,
-          generatedActs: undefined,
-          currentStep: 1,
-        };
-        
-        // Set the project data
-        setProjectData(newProject);
-        
-        // Reset player data
-        resetPlayerData();
-        
-        // Navigate to the first step
-        setLocation("/create/basic");
-        
-        // Show confirmation toast
-        toast({
-          title: "New Project Created",
-          description: "Starting with a fresh project",
-        });
-      }, 100);
-    }
+    // Force a page reload - most reliable way to reset everything
+    window.location.href = "/create/basic";
+    
+    // Show confirmation toast
+    toast({
+      title: "New Project Created",
+      description: "Starting with a fresh project",
+      duration: 3000,
+    });
   };
   
   // Step data setters

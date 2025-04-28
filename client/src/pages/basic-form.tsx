@@ -15,43 +15,31 @@ import { Input } from "@/components/ui/input";
 
 export default function BasicForm() {
   const [, setLocation] = useLocation();
-  const { projectData, setBasicData, createNewProject } = useVnContext();
+  const { projectData, setBasicData } = useVnContext();
   
-  // Use state with string default values to avoid TypeScript errors
+  // Use state with empty default values
   const [theme, setTheme] = useState("");
   const [tone, setTone] = useState("");
   const [genre, setGenre] = useState("");
   
-  // Add manual reset debug function
-  const handleManualReset = () => {
-    console.log("Manual reset requested");
-    
-    // Clear all browser storage
-    localStorage.clear();
-    sessionStorage.clear();
-    
-    // Clear form state
+  // Function to reset the form
+  const resetForm = () => {
+    console.log("Resetting form values");
     setTheme("");
     setTone("");
     setGenre("");
-    
-    // Reload the page completely
-    window.location.href = "/";
   };
   
-  // This runs once when the component mounts
+  // Load or reset form values based on projectData
   useEffect(() => {
-    console.log("BasicForm component mounted");
+    console.log("Project data changed:", projectData?.basicData);
     
-    // Check if we need to clear on mount
+    // Check if we need to reset (flag from createNewProject)
     const isNewProject = sessionStorage.getItem("vn_fresh_project") === "true";
-    
     if (isNewProject) {
-      console.log("Found new project flag, clearing form");
+      console.log("New project flag found, resetting form");
       sessionStorage.removeItem("vn_fresh_project");
-      setTheme("");
-      setTone("");
-      setGenre("");
+      resetForm();
       return;
     }
     
@@ -63,10 +51,8 @@ export default function BasicForm() {
       setGenre(projectData.basicData.genre || "");
     } else {
       // Otherwise clear the form
-      console.log("No project data found, clearing form");
-      setTheme("");
-      setTone("");
-      setGenre("");
+      console.log("No project data found, resetting form");
+      resetForm();
     }
   }, [projectData?.basicData]);
   
@@ -75,29 +61,42 @@ export default function BasicForm() {
     setLocation("/");
   };
   
+  // Manual reset for debugging
+  const handleManualReset = () => {
+    console.log("Manual reset requested");
+    
+    // Clear all browser storage
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Clear form state
+    resetForm();
+    
+    // Show confirmation
+    window.alert("Form values manually reset. The page will now refresh.");
+    
+    // Force a complete refresh of the page
+    window.location.href = "/";
+  };
+  
   // Proceed to next step
   const handleNext = () => {
     // Validate form
-    if (!getThemeValue() || !getToneValue() || !getGenreValue()) {
+    if (!theme || !tone || !genre) {
       alert("Please fill in all required fields");
       return;
     }
     
     // Save data
     setBasicData({
-      theme: theme,
-      tone: tone,
-      genre: genre,
+      theme,
+      tone,
+      genre,
     });
     
     // Navigate to next step
     setLocation("/create/concept");
   };
-  
-  // Helper functions to get actual values
-  const getThemeValue = () => theme;
-  const getToneValue = () => tone;
-  const getGenreValue = () => genre;
   
   return (
     <>
@@ -115,10 +114,8 @@ export default function BasicForm() {
               <label htmlFor="theme" className="block text-sm font-medium text-gray-700 mb-1">Theme</label>
               <p className="text-xs text-gray-500 mb-2">The central ideas explored in your story</p>
               <Select 
-                key={`theme-${forceUpdateKey}`} 
-                value={theme || ""} 
+                value={theme} 
                 onValueChange={setTheme}
-                defaultValue=""
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a theme" />
@@ -136,7 +133,6 @@ export default function BasicForm() {
                   <SelectItem value="legacy">Legacy</SelectItem>
                 </SelectContent>
               </Select>
-              
             </div>
             
             {/* Tone Selection */}
@@ -144,10 +140,8 @@ export default function BasicForm() {
               <label htmlFor="tone" className="block text-sm font-medium text-gray-700 mb-1">Tone</label>
               <p className="text-xs text-gray-500 mb-2">The emotional atmosphere of your story</p>
               <Select 
-                key={`tone-${forceUpdateKey}`} 
-                value={tone || ""} 
+                value={tone} 
                 onValueChange={setTone}
-                defaultValue=""
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a tone" />
@@ -165,7 +159,6 @@ export default function BasicForm() {
                   <SelectItem value="gritty">Gritty</SelectItem>
                 </SelectContent>
               </Select>
-              
             </div>
             
             {/* Genre Selection */}
@@ -173,10 +166,8 @@ export default function BasicForm() {
               <label htmlFor="genre" className="block text-sm font-medium text-gray-700 mb-1">Genre</label>
               <p className="text-xs text-gray-500 mb-2">The category or style of your story</p>
               <Select 
-                key={`genre-${forceUpdateKey}`} 
-                value={genre || ""} 
+                value={genre} 
                 onValueChange={setGenre}
-                defaultValue=""
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a genre" />
@@ -195,7 +186,6 @@ export default function BasicForm() {
                   <SelectItem value="drama">Drama</SelectItem>
                 </SelectContent>
               </Select>
-              
             </div>
             
             <div className="pt-6 flex justify-between">
@@ -209,6 +199,18 @@ export default function BasicForm() {
                 onClick={handleNext}
               >
                 Next: Concept
+              </Button>
+            </div>
+            
+            {/* Debug button - remove in production */}
+            <div className="text-center mt-4">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleManualReset}
+                className="text-xs text-gray-500"
+              >
+                Reset Form (Debug)
               </Button>
             </div>
           </div>
