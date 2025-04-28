@@ -367,7 +367,7 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
             </div>
           )}
           
-          {showChoices && currentScene.choices && (
+          {showChoices && currentScene.choices && Array.isArray(currentScene.choices) && currentScene.choices.length > 0 && (
             <div className={cn(
               "vn-choices mt-8 grid grid-cols-1 md:grid-cols-2 gap-3",
               !clickableContent && "opacity-50 pointer-events-none"
