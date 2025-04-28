@@ -54,10 +54,10 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
   const memoizedProcessScene = useCallback(processScene, [actNumber]);
   
   // Initialize with the first scene once on mount or when actData changes
-  useEffect(() => {
-    console.log("VnPlayer: actData changed, initializing first scene");
-    
-    if (actData?.scenes?.length > 0) {
+  useEffect(() => 
+  {
+    if (actData?.scenes?.length > 0) 
+    {
       // Always reset scene ID when actData changes to force reinitialization
       const firstScene = memoizedProcessScene(actData.scenes[0]);
       
@@ -72,21 +72,17 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
   }, [actData, memoizedProcessScene]); // Remove currentSceneId dependency to avoid loops
   
   // Update current scene when scene ID changes
-  useEffect(() => {
+  useEffect(() => 
+  {
     if (!actData?.scenes || !currentSceneId) return;
     
-    console.log("VnPlayer: Scene ID changed to", currentSceneId);
-    
     const scene = actData.scenes.find(s => s.id === currentSceneId);
-    if (scene) {
-      console.log("VnPlayer: Found scene with ID", currentSceneId);
-      
+    if (scene) 
+    {
       const processedScene = memoizedProcessScene(scene);
       setCurrentScene(processedScene);
       setCurrentDialogueIndex(0);
       setShowChoices(false);
-    } else {
-      console.error("VnPlayer: Scene not found with ID", currentSceneId);
     }
   }, [actData, currentSceneId, memoizedProcessScene]);
   
@@ -209,34 +205,43 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
   }, [playerData, checkConditionMet, updatePlayerData]);
   
   // Typewriter effect for text animation
-  useEffect(() => {
-    if (!dialogueText) {
+  useEffect(() => 
+  {
+    if (!dialogueText) 
+    {
       setDisplayedText("");
       setIsTextFullyTyped(true);
       return;
     }
     
-    // If textSpeed is 100 (instant), display the full text immediately
-    if (textSpeed >= 100) {
+    // If textSpeed is 0, display the full text immediately (instant speed)
+    if (textSpeed === 0) 
+    {
       setDisplayedText(dialogueText);
       setIsTextFullyTyped(true);
       return;
     }
     
+    // Reset state for new text
     setIsTextFullyTyped(false);
     setDisplayedText("");
 
-    // Calculate delay based on text speed (50ms to 10ms range)
-    const delay = 50 - (textSpeed * 0.4);
+    // Calculate delay based on text speed (inverting so higher values = faster)
+    // 1=slowest (100ms delay), 10=fastest (10ms delay)
+    const delay = 110 - (textSpeed * 10);
     
     let currentChar = 0;
     const textLength = dialogueText.length;
     
-    const animationInterval = setInterval(() => {
-      if (currentChar <= textLength) {
+    const animationInterval = setInterval(() => 
+    {
+      if (currentChar <= textLength) 
+      {
         setDisplayedText(dialogueText.slice(0, currentChar));
         currentChar++;
-      } else {
+      } 
+      else 
+      {
         clearInterval(animationInterval);
         setIsTextFullyTyped(true);
       }
@@ -246,34 +251,37 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
   }, [dialogueText, textSpeed]);
   
   // Handle content click
-  const handleContentClick = useCallback(() => {
-    if (!showChoices) {
+  const handleContentClick = useCallback(() => 
+  {
+    if (!showChoices) 
+    {
       // If text is still typing, immediately show full text and stop animation
-      if (!isTextFullyTyped && dialogueText) {
-        console.log("VnPlayer: Text clicked while still typing - displaying full text");
-        
-        // Important: Force immediate display of full text
-        setTextSpeed(100); // Set to instant speed to bypass animation
+      if (!isTextFullyTyped && dialogueText) 
+      {
+        // Important: Force immediate display of full text for CURRENT text only
         setDisplayedText(dialogueText); // Display full text immediately
         setIsTextFullyTyped(true);
-      } else {
-        console.log("VnPlayer: Text clicked after typing complete - advancing dialogue");
+        // Don't change textSpeed so future animations still work properly
+      } 
+      else 
+      {
         advanceDialogue();
       }
-    } else {
-      console.log("VnPlayer: Click ignored - choices are being shown");
     }
-  }, [showChoices, isTextFullyTyped, dialogueText, advanceDialogue, setTextSpeed]);
+  }, [showChoices, isTextFullyTyped, dialogueText, advanceDialogue]);
   
   // Toggle settings panel
-  const toggleSettings = useCallback((e: React.MouseEvent) => {
+  const toggleSettings = useCallback((e: React.MouseEvent) => 
+  {
     e.stopPropagation();
     setShowSettings(prev => !prev);
   }, []);
   
   // Auto-scroll to keep the current dialogue visible
-  useEffect(() => {
-    if (containerRef.current) {
+  useEffect(() => 
+  {
+    if (containerRef.current) 
+    {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
   }, [currentDialogueIndex, showChoices, displayedText]);

@@ -195,63 +195,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI Generation endpoints
-  app.post("/api/generate/concept", async (req, res) => {
-    try {
-      const { basicData } = generateConceptSchema.parse(req.body);
-
-      // Create prompt for the concept generation
-      const prompt = `Given this VN story context:
-        Theme: ${basicData.theme}
-        Tone: ${basicData.tone}
-        Genre: ${basicData.genre}
-        Return a story concept in a JSON as structured:
-        {
-          "title": "Intriguing title",
-          "tagline": "Very short & memorable catchphrase (<10 words and no period)",
-          "premise": "Premise & main conflict. Don't name names (designed later)"
-        }
-        Be wildly imaginative, original, and surprising — but keep it emotionally resonant.
-      `;
-      console.log(prompt);
-      // Generate concept using OpenAI
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        // temperature: 1.2,
-        // frequency_penalty: 0.2,
-        // presence_penalty: 0.5,
-        // top_p: 1.0,
-        stop: null,
-        messages: [
-          // {
-          //   role: "system",
-          //   content: "You're a VN brainstormer",
-          // },
-          { role: "assistant", content: prompt },
-        ],
-        response_format: { type: "json_object" },
-      });
-
-      // Log the generated response for debugging
-      console.log("Generated concept:", response.choices[0].message.content);
-
-      // Parse the generated concept
-      const generatedConcept = JSON.parse(
-        response.choices[0].message.content || "{}",
-      );
-
-      // Check if the response contains an error and return early if it does
-      if (checkResponseForError(generatedConcept, res)) {
-        return;
-      }
-
-      res.json(generatedConcept);
-    } catch (error) {
-      console.error("Error generating concept:", error);
-      res.status(500).json({ message: "Failed to generate concept" });
-    }
-  });
-
   // Unified validation endpoint for all content types
   app.post("/api/validate", async (req, res) => {
     try {
@@ -268,7 +211,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Validate using OpenAI with explicit validation system prompt
       const validationResponse = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model: "gpt-4.1-nano",
         // temperature: 0.0,
         // presence_penalty: 0.0,
         // frequency_penalty: 0.0,
@@ -302,6 +245,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error validating content:", error);
       res.status(500).json({ message: "Failed to validate content" });
+    }
+  });
+  
+  // AI Generation endpoints
+  app.post("/api/generate/concept", async (req, res) => {
+    try {
+      const { basicData } = generateConceptSchema.parse(req.body);
+
+      // Create prompt for the concept generation
+      const prompt = `Given this VN story context:
+        Theme: ${basicData.theme}
+        Tone: ${basicData.tone}
+        Genre: ${basicData.genre}
+        Return a story concept in a JSON as structured:
+        {
+          "title": "Intriguing title",
+          "tagline": "Very short & memorable catchphrase (<10 words and no period)",
+          "premise": "Premise & main conflict. Don't name names (designed later)"
+        }
+        Be wildly imaginative, original, and surprising — but keep it emotionally resonant.
+      `;
+      console.log(prompt);
+      // Generate concept using OpenAI
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        temperature: 1.2,
+        frequency_penalty: 0.2,
+        presence_penalty: 0.5,
+        top_p: 1.0,
+        stop: null,
+        messages: [
+          {
+            role: "system",
+            content: "You're a VN brainstormer",
+          },
+          { role: "assistant", content: prompt },
+        ],
+        response_format: { type: "json_object" },
+      });
+
+      // Log the generated response for debugging
+      console.log("Generated concept:", response.choices[0].message.content);
+
+      // Parse the generated concept
+      const generatedConcept = JSON.parse(
+        response.choices[0].message.content || "{}",
+      );
+
+      // Check if the response contains an error and return early if it does
+      if (checkResponseForError(generatedConcept, res)) {
+        return;
+      }
+
+      res.json(generatedConcept);
+    } catch (error) {
+      console.error("Error generating concept:", error);
+      res.status(500).json({ message: "Failed to generate concept" });
     }
   });
 
@@ -359,15 +359,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate characters using OpenAI
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",
-        // temperature: 0.4,
-        // frequency_penalty: 0.1,
-        // presence_penalty: 0,
-        // top_p: 0.9,
+        temperature: 1.2,
+        frequency_penalty: 0.2,
+        presence_penalty: 0.5,
+        top_p: 1.0,
+        stop: null,
         messages: [
-          // {
-          //   role: "system",
-          //   content: "You're a VN brainstormer",
-          // },
+          {
+            role: "system",
+            content: "You're a wildly imaginative and slightly crazy film brainstormer",
+          },
           { role: "assistant", content: prompt },
         ],
         response_format: { type: "json_object" },

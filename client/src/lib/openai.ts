@@ -13,27 +13,29 @@ export async function generateConcept(
     tone: string;
     genre: string;
   },
-  signal?: AbortSignal
-): Promise<GenerationResult<{
-  title: string;
-  tagline: string;
-  premise: string;
-}>> {
+  signal?: AbortSignal,
+): Promise<
+  GenerationResult<{
+    title: string;
+    tagline: string;
+    premise: string;
+  }>
+> {
   try {
     const response = await apiRequest(
       "POST",
       "/api/generate/concept",
       { basicData },
-      signal
+      signal,
     );
-    
+
     const result = await response.json();
-    
+
     // Check if the API returned an error
     if (result.error) {
       return { error: result.error };
     }
-    
+
     return { data: result };
   } catch (error) {
     console.error("Error generating concept:", error);
@@ -51,52 +53,9 @@ export async function generateCharacter(
     age: string;
   }>,
   projectContext: any,
-  signal?: AbortSignal
-): Promise<GenerationResult<{
-  name: string;
-  role: string;
-  gender: string;
-  age: string;
-  appearance: string;
-  personality: string;
-  goals: string;
-  relationshipPotential: string;
-  conflict: string;
-}>> {
-  try {
-    const response = await apiRequest(
-      "POST",
-      "/api/generate/character",
-      { index, partialCharacter, projectContext },
-      signal
-    );
-    
-    const result = await response.json();
-    
-    // Check if the API returned an error
-    if (result.error) {
-      return { error: result.error };
-    }
-    
-    return { data: result };
-  } catch (error) {
-    console.error("Error generating character:", error);
-    return { error: "Failed to generate character. Please try again." };
-  }
-}
-
-// Function to generate multiple characters at once
-export async function generateMultipleCharacters(
-  characterTemplates: Array<Partial<{
-    name: string;
-    role: string;
-    gender: string;
-    age: string;
-  }>>,
-  projectContext: any,
-  signal?: AbortSignal
-): Promise<GenerationResult<{
-  characters: Array<{
+  signal?: AbortSignal,
+): Promise<
+  GenerationResult<{
     name: string;
     role: string;
     gender: string;
@@ -107,36 +66,26 @@ export async function generateMultipleCharacters(
     relationshipPotential: string;
     conflict: string;
   }>
-} | Array<{
-  name: string;
-  role: string;
-  gender: string;
-  age: string;
-  appearance: string;
-  personality: string;
-  goals: string;
-  relationshipPotential: string;
-  conflict: string;
-}>>> {
+> {
   try {
     const response = await apiRequest(
       "POST",
-      "/api/generate/characters-bundle",
-      { characterTemplates, projectContext },
-      signal
+      "/api/generate/character",
+      { index, partialCharacter, projectContext },
+      signal,
     );
-    
+
     const result = await response.json();
-    
+
     // Check if the API returned an error
     if (result.error) {
       return { error: result.error };
     }
-    
+
     return { data: result };
   } catch (error) {
-    console.error("Error generating multiple characters:", error);
-    return { error: "Failed to generate characters. Please try again." };
+    console.error("Error generating character:", error);
+    return { error: "Failed to generate character. Please try again." };
   }
 }
 
@@ -148,49 +97,9 @@ export async function generatePath(
     loveInterest: string | null;
   }>,
   projectContext: any,
-  signal?: AbortSignal
-): Promise<GenerationResult<{
-  title: string;
-  loveInterest: string | null;
-  keyChoices: string[];
-  beginning: string;
-  middle: string;
-  climax: string;
-  goodEnding: string;
-  badEnding: string;
-}>> {
-  try {
-    const response = await apiRequest(
-      "POST",
-      "/api/generate/path",
-      { index, partialPath, projectContext },
-      signal
-    );
-    
-    const result = await response.json();
-    
-    // Check if the API returned an error
-    if (result.error) {
-      return { error: result.error };
-    }
-    
-    return { data: result };
-  } catch (error) {
-    console.error("Error generating path:", error);
-    return { error: "Failed to generate path. Please try again." };
-  }
-}
-
-// Function to generate multiple paths at once
-export async function generateMultiplePaths(
-  pathTemplates: Array<Partial<{
-    title: string;
-    loveInterest: string | null;
-  }>>,
-  projectContext: any,
-  signal?: AbortSignal
-): Promise<GenerationResult<{
-  paths: Array<{
+  signal?: AbortSignal,
+): Promise<
+  GenerationResult<{
     title: string;
     loveInterest: string | null;
     keyChoices: string[];
@@ -200,31 +109,80 @@ export async function generateMultiplePaths(
     goodEnding: string;
     badEnding: string;
   }>
-} | Array<{
-  title: string;
-  loveInterest: string | null;
-  keyChoices: string[];
-  beginning: string;
-  middle: string;
-  climax: string;
-  goodEnding: string;
-  badEnding: string;
-}>>> {
+> {
+  try {
+    const response = await apiRequest(
+      "POST",
+      "/api/generate/path",
+      { index, partialPath, projectContext },
+      signal,
+    );
+
+    const result = await response.json();
+
+    // Check if the API returned an error
+    if (result.error) {
+      return { error: result.error };
+    }
+
+    return { data: result };
+  } catch (error) {
+    console.error("Error generating path:", error);
+    return { error: "Failed to generate path. Please try again." };
+  }
+}
+
+// Function to generate multiple paths at once
+export async function generateMultiplePaths(
+  pathTemplates: Array<
+    Partial<{
+      title: string;
+      loveInterest: string | null;
+    }>
+  >,
+  projectContext: any,
+  signal?: AbortSignal,
+): Promise<
+  GenerationResult<
+    | {
+        paths: Array<{
+          title: string;
+          loveInterest: string | null;
+          keyChoices: string[];
+          beginning: string;
+          middle: string;
+          climax: string;
+          goodEnding: string;
+          badEnding: string;
+        }>;
+      }
+    | Array<{
+        title: string;
+        loveInterest: string | null;
+        keyChoices: string[];
+        beginning: string;
+        middle: string;
+        climax: string;
+        goodEnding: string;
+        badEnding: string;
+      }>
+  >
+> {
   try {
     const response = await apiRequest(
       "POST",
       "/api/generate/paths-bundle",
       { pathTemplates, projectContext },
-      signal
+      signal,
     );
-    
+
     const result = await response.json();
-    
+
     // Check if the API returned an error
     if (result.error) {
       return { error: result.error };
     }
-    
+
     return { data: result };
   } catch (error) {
     console.error("Error generating multiple paths:", error);
@@ -235,31 +193,33 @@ export async function generateMultiplePaths(
 // Function to generate plot outline
 export async function generatePlot(
   projectContext: any,
-  signal?: AbortSignal
-): Promise<GenerationResult<{
-  plotOutline: {
-    act1: any;
-    act2: any;
-    act3: any;
-    act4: any;
-    act5: any;
-  };
-}>> {
+  signal?: AbortSignal,
+): Promise<
+  GenerationResult<{
+    plotOutline: {
+      act1: any;
+      act2: any;
+      act3: any;
+      act4: any;
+      act5: any;
+    };
+  }>
+> {
   try {
     const response = await apiRequest(
       "POST",
       "/api/generate/plot",
       { projectContext },
-      signal
+      signal,
     );
-    
+
     const result = await response.json();
-    
+
     // Check if the API returned an error
     if (result.error) {
       return { error: result.error };
     }
-    
+
     return { data: result };
   } catch (error) {
     console.error("Error generating plot:", error);
@@ -278,43 +238,45 @@ export async function generateAct(
   actNumber: number,
   scenesCount: number,
   projectContext: any,
-  signal?: AbortSignal
-): Promise<GenerationResult<{
-  scenes: Array<{
-    id: string;
-    setting: string;
-    bg?: string;
-    dialogue: [string, string][];
-    choices: Array<{
+  signal?: AbortSignal,
+): Promise<
+  GenerationResult<{
+    scenes: Array<{
       id: string;
-      text?: string;
-      delta?: Record<string, number>;
-      next: string;
-      condition?: Record<string, number>;
-      failNext?: string;
-    }> | null;
-  }>;
-}>> {
+      setting: string;
+      bg?: string;
+      dialogue: [string, string][];
+      choices: Array<{
+        id: string;
+        text?: string;
+        delta?: Record<string, number>;
+        next: string;
+        condition?: Record<string, number>;
+        failNext?: string;
+      }> | null;
+    }>;
+  }>
+> {
   try {
     const response = await apiRequest(
       "POST",
       "/api/generate/act",
-      { 
-        actNumber, 
-        scenesCount, 
+      {
+        actNumber,
+        scenesCount,
         projectContext,
-        validate: true // Add validation flag to check for inconsistencies
+        validate: true, // Add validation flag to check for inconsistencies
       },
-      signal
+      signal,
     );
-    
+
     const result = await response.json();
-    
+
     // Check if the API returned an error
     if (result.error) {
       return { error: result.error };
     }
-    
+
     return { data: result };
   } catch (error) {
     console.error(`Error generating act ${actNumber}:`, error);

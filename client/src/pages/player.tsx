@@ -14,37 +14,39 @@ export default function Player() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  useEffect(() => {
-    const loadAct = async () => {
+  useEffect(() => 
+  {
+    const loadAct = async () => 
+    {
       setLoading(true);
       setError(null);
       
       // Always reset player data when loading a new act to avoid state persistence issues
       resetPlayerData();
       
-      try {
-        if (actId === "imported") {
+      try 
+      {
+        if (actId === "imported") 
+        {
           // Handle imported story from session storage
           const importedStory = sessionStorage.getItem("current_story");
-          console.log("Player: Loading imported story from session storage");
           
-          if (importedStory) {
+          if (importedStory) 
+          {
             const parsedStory = JSON.parse(importedStory);
-            console.log("Player: Parsed imported story:", parsedStory);
             
             // First reset player data to ensure clean state
             resetPlayerData();
             
             // Handle both old and new export formats
-            if (parsedStory.actData) {
-              console.log("Player: Using old format with actData property");
+            if (parsedStory.actData) 
+            {
               // Old format with actData property
               setActNumber(parsedStory.actNumber || 1);
               
               // IMPORTANT: Initialize player data from export BEFORE setting act data
-              if (parsedStory.actData.__exportInfo?.playerData) {
-                console.log("Player: Setting player data from export info:", 
-                  parsedStory.actData.__exportInfo.playerData);
+              if (parsedStory.actData.__exportInfo?.playerData) 
+              {
                 // Force a synchronous update to player data
                 updatePlayerData(parsedStory.actData.__exportInfo.playerData);
               }
@@ -56,22 +58,23 @@ export default function Player() {
               };
               
               // Small delay to ensure player data is set first
-              setTimeout(() => {
+              setTimeout(() => 
+              {
                 setActData(actDataCopy);
               }, 10);
-            } else {
-              console.log("Player: Using new format, direct act data");
+            } 
+            else 
+            {
               // New format where the imported data is the full act data
               
               // Check for __exportInfo metadata
-              if (parsedStory.__exportInfo) {
-                console.log("Player: Found export info:", parsedStory.__exportInfo);
+              if (parsedStory.__exportInfo) 
+              {
                 setActNumber(parsedStory.__exportInfo.actNumber || 1);
                 
                 // IMPORTANT: Initialize player data from export BEFORE setting act data
-                if (parsedStory.__exportInfo.playerData) {
-                  console.log("Player: Setting player data from export info:", 
-                    parsedStory.__exportInfo.playerData);
+                if (parsedStory.__exportInfo.playerData) 
+                {
                   updatePlayerData(parsedStory.__exportInfo.playerData);
                 }
                 
@@ -83,42 +86,54 @@ export default function Player() {
                 };
                 
                 // Small delay to ensure player data is set first
-                setTimeout(() => {
+                setTimeout(() => 
+                {
                   setActData(actDataCopy);
                 }, 10);
-              } else {
+              } 
+              else 
+              {
                 // Legacy format without __exportInfo
-                console.log("Player: Using legacy format without export info");
                 setActNumber(1);
                 
                 // Small delay to ensure player data is set first
-                setTimeout(() => {
+                setTimeout(() => 
+                {
                   setActData(parsedStory);
                 }, 10);
               }
             }
-          } else {
-            console.error("Player: No imported story found in session storage");
+          } 
+          else 
+          {
             throw new Error("No imported story found");
           }
-        } else {
+        } 
+        else 
+        {
           // Handle act from current project
           const num = parseInt(actId || '0');
-          if (isNaN(num) || num < 1 || num > 5) {
+          if (isNaN(num) || num < 1 || num > 5) 
+          {
             throw new Error("Invalid act number");
           }
           
-          if (!projectData?.generatedActs?.[`act${num}`]) {
+          if (!projectData?.generatedActs?.[`act${num}`]) 
+          {
             throw new Error(`Act ${num} has not been generated yet`);
           }
           
           setActData(projectData.generatedActs[`act${num}`]);
           setActNumber(num);
         }
-      } catch (err) {
+      } 
+      catch (err) 
+      {
         console.error("Error loading act:", err);
         setError(err instanceof Error ? err.message : "Failed to load act");
-      } finally {
+      } 
+      finally 
+      {
         setLoading(false);
       }
     };
@@ -127,15 +142,20 @@ export default function Player() {
   }, [actId, projectData, updatePlayerData, resetPlayerData]);
   
   // Handle return to generator or play selection
-  const handleReturn = () => {
-    if (actId === "imported") {
+  const handleReturn = () => 
+  {
+    if (actId === "imported") 
+    {
       setLocation("/play");
-    } else {
+    } 
+    else 
+    {
       setLocation("/create/generate-vn");
     }
   };
   
-  if (loading) {
+  if (loading) 
+  {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
@@ -149,7 +169,8 @@ export default function Player() {
     );
   }
   
-  if (error) {
+  if (error) 
+  {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center max-w-md">
@@ -180,7 +201,8 @@ export default function Player() {
     );
   }
   
-  if (!actData) {
+  if (!actData) 
+  {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
