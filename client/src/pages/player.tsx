@@ -26,41 +26,79 @@ export default function Player() {
         if (actId === "imported") {
           // Handle imported story from session storage
           const importedStory = sessionStorage.getItem("current_story");
+          console.log("Player: Loading imported story from session storage");
+          
           if (importedStory) {
             const parsedStory = JSON.parse(importedStory);
+            console.log("Player: Parsed imported story:", parsedStory);
+            
+            // First reset player data to ensure clean state
+            resetPlayerData();
             
             // Handle both old and new export formats
             if (parsedStory.actData) {
+              console.log("Player: Using old format with actData property");
               // Old format with actData property
-              setActData(parsedStory.actData);
               setActNumber(parsedStory.actNumber || 1);
               
-              // Initialize player data from the context
-              // This is likely why scene transitions don't work - player state is lost
+              // IMPORTANT: Initialize player data from export BEFORE setting act data
               if (parsedStory.actData.__exportInfo?.playerData) {
+                console.log("Player: Setting player data from export info:", 
+                  parsedStory.actData.__exportInfo.playerData);
+                // Force a synchronous update to player data
                 updatePlayerData(parsedStory.actData.__exportInfo.playerData);
               }
+              
+              // Preserve __exportInfo but don't use it directly to avoid infinite loops
+              const actDataCopy = {
+                ...parsedStory.actData,
+                meta: parsedStory.actData.meta || {}
+              };
+              
+              // Small delay to ensure player data is set first
+              setTimeout(() => {
+                setActData(actDataCopy);
+              }, 10);
             } else {
+              console.log("Player: Using new format, direct act data");
               // New format where the imported data is the full act data
+              
               // Check for __exportInfo metadata
               if (parsedStory.__exportInfo) {
+                console.log("Player: Found export info:", parsedStory.__exportInfo);
                 setActNumber(parsedStory.__exportInfo.actNumber || 1);
                 
-                // Initialize player data from the export
+                // IMPORTANT: Initialize player data from export BEFORE setting act data
                 if (parsedStory.__exportInfo.playerData) {
+                  console.log("Player: Setting player data from export info:", 
+                    parsedStory.__exportInfo.playerData);
                   updatePlayerData(parsedStory.__exportInfo.playerData);
                 }
                 
-                // Remove the metadata before setting act data to avoid issues
-                const { __exportInfo, ...cleanActData } = parsedStory;
-                setActData(cleanActData);
+                // Create a copy of the act data with metadata from __exportInfo
+                const actDataCopy = {
+                  ...parsedStory,
+                  __exportInfo: undefined, // Remove to avoid conflicts
+                  meta: parsedStory.meta || {}
+                };
+                
+                // Small delay to ensure player data is set first
+                setTimeout(() => {
+                  setActData(actDataCopy);
+                }, 10);
               } else {
                 // Legacy format without __exportInfo
-                setActData(parsedStory);
+                console.log("Player: Using legacy format without export info");
                 setActNumber(1);
+                
+                // Small delay to ensure player data is set first
+                setTimeout(() => {
+                  setActData(parsedStory);
+                }, 10);
               }
             }
           } else {
+            console.error("Player: No imported story found in session storage");
             throw new Error("No imported story found");
           }
         } else {

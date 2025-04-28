@@ -55,26 +55,38 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
   
   // Initialize with the first scene once on mount or when actData changes
   useEffect(() => {
+    console.log("VnPlayer: actData changed, initializing first scene");
+    
     if (actData?.scenes?.length > 0) {
-      // Only set initial scene if we don't have a scene ID yet
-      if (!currentSceneId) {
-        const firstScene = memoizedProcessScene(actData.scenes[0]);
-        setCurrentSceneId(firstScene.id); // This will trigger the next useEffect
-        setDialogueLog([]);
-      }
+      // Always reset scene ID when actData changes to force reinitialization
+      const firstScene = memoizedProcessScene(actData.scenes[0]);
+      
+      // Important: Reset all state at once to prevent partial updates
+      setCurrentSceneId(firstScene.id);
+      setCurrentDialogueIndex(0);
+      setShowChoices(false);
+      setDialogueLog([]);
+      setDisplayedText("");
+      setIsTextFullyTyped(false);
     }
-  }, [actData, currentSceneId, memoizedProcessScene]);
+  }, [actData, memoizedProcessScene]); // Remove currentSceneId dependency to avoid loops
   
   // Update current scene when scene ID changes
   useEffect(() => {
     if (!actData?.scenes || !currentSceneId) return;
     
+    console.log("VnPlayer: Scene ID changed to", currentSceneId);
+    
     const scene = actData.scenes.find(s => s.id === currentSceneId);
     if (scene) {
+      console.log("VnPlayer: Found scene with ID", currentSceneId);
+      
       const processedScene = memoizedProcessScene(scene);
       setCurrentScene(processedScene);
       setCurrentDialogueIndex(0);
       setShowChoices(false);
+    } else {
+      console.error("VnPlayer: Scene not found with ID", currentSceneId);
     }
   }, [actData, currentSceneId, memoizedProcessScene]);
   
@@ -237,16 +249,21 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
   const handleContentClick = useCallback(() => {
     if (!showChoices) {
       // If text is still typing, immediately show full text and stop animation
-      if (!isTextFullyTyped) {
-        // Clear any existing animation interval in the useEffect
+      if (!isTextFullyTyped && dialogueText) {
+        console.log("VnPlayer: Text clicked while still typing - displaying full text");
+        
+        // Important: Force immediate display of full text
         setTextSpeed(100); // Set to instant speed to bypass animation
         setDisplayedText(dialogueText); // Display full text immediately
         setIsTextFullyTyped(true);
       } else {
+        console.log("VnPlayer: Text clicked after typing complete - advancing dialogue");
         advanceDialogue();
       }
+    } else {
+      console.log("VnPlayer: Click ignored - choices are being shown");
     }
-  }, [showChoices, isTextFullyTyped, dialogueText, advanceDialogue]);
+  }, [showChoices, isTextFullyTyped, dialogueText, advanceDialogue, setTextSpeed]);
   
   // Toggle settings panel
   const toggleSettings = useCallback((e: React.MouseEvent) => {

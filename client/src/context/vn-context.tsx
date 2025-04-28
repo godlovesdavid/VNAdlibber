@@ -277,8 +277,26 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const loadProject = async (projectId: number) => {
     try {
       setIsLoading(true);
+      console.log("Loading project with ID:", projectId);
+      
       const response = await apiRequest("GET", `/api/projects/${projectId}`);
       const loadedProject = await response.json();
+      
+      console.log("Project loaded from server:", loadedProject);
+      
+      // Make sure the loaded project has all required fields
+      if (!loadedProject.basicData) {
+        loadedProject.basicData = {
+          theme: "",
+          tone: "",
+          genre: ""
+        };
+      }
+      
+      // Force localStorage update with the loaded project
+      localStorage.setItem("current_vn_project", JSON.stringify(loadedProject));
+      
+      // Set project data in state
       setProjectData(loadedProject);
       
       // Set player data if it exists
@@ -288,21 +306,26 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         resetPlayerData();
       }
       
-      // Navigate to appropriate step
-      const stepRoutes = [
-        '/create/basic',
-        '/create/concept',
-        '/create/characters',
-        '/create/paths',
-        '/create/plot',
-        '/create/generate-vn'
-      ];
-      setLocation(stepRoutes[loadedProject.currentStep - 1] || '/create/basic');
-      
-      toast({
-        title: "Success",
-        description: "Project loaded successfully",
-      });
+      // Wait a short timeout to ensure state has been updated
+      setTimeout(() => {
+        // Navigate to appropriate step
+        const stepRoutes = [
+          '/create/basic',
+          '/create/concept',
+          '/create/characters',
+          '/create/paths',
+          '/create/plot',
+          '/create/generate-vn'
+        ];
+        setLocation(stepRoutes[loadedProject.currentStep - 1] || '/create/basic');
+        
+        toast({
+          title: "Success",
+          description: "Project loaded successfully",
+        });
+        
+        setIsLoading(false);
+      }, 100);
     } catch (error) {
       console.error("Error loading project:", error);
       toast({
@@ -310,7 +333,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         description: "Failed to load project",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };
