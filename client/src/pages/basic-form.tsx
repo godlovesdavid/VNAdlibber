@@ -17,25 +17,46 @@ export default function BasicForm() {
   const [, setLocation] = useLocation();
   const { projectData, setBasicData } = useVnContext();
   
-  // Form state
+  // Force re-render key
+  const [forceUpdateKey, setForceUpdateKey] = useState(Date.now());
+  
+  // Form state - use key to force reset
   const [theme, setTheme] = useState("");
   const [tone, setTone] = useState("");
   const [genre, setGenre] = useState("");
   
+  // Reset all form state (called when creating a new project)
+  const resetAllFormState = () => {
+    setTheme("");
+    setTone("");
+    setGenre("");
+    setForceUpdateKey(Date.now()); // Force components to re-render
+  };
+  
   // Load existing data if available or clear form if starting a new project
   useEffect(() => {
-    // If project data exists and has basic data
+    // Force reset on new or missing project data
+    if (!projectData || !projectData.basicData || projectData.basicData.theme === "") {
+      resetAllFormState();
+      return;
+    }
+    
+    // Otherwise load from project data
     if (projectData?.basicData) {
       setTheme(projectData.basicData.theme || "");
       setTone(projectData.basicData.tone || "");
       setGenre(projectData.basicData.genre || "");
-    } else {
-      // Clear form values if no project data or it's a new project
-      setTheme("");
-      setTone("");
-      setGenre("");
     }
-  }, [projectData]);
+  }, [projectData, forceUpdateKey]);
+  
+  // Additional effect to detect new project based on timing
+  useEffect(() => {
+    // Check localStorage directly
+    const savedProject = localStorage.getItem("current_vn_project");
+    if (!savedProject) {
+      resetAllFormState();
+    }
+  }, []);
   
   // Go back to main menu
   const goBack = () => {

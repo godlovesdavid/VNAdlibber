@@ -84,60 +84,59 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   
   // Create a new project
   const createNewProject = () => {
-    // First, set project data to null to trigger useEffect cleanup in all components
-    setProjectData(null);
-    
-    // Remove all project data from localStorage
-    localStorage.removeItem("current_vn_project");
-    
-    // Clear any additional storage items that might contain form data
-    // This helps ensure a completely fresh start
+    // The most aggressive approach: Clear everything in localStorage
     try {
-      // Get all localStorage keys
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        // Clear any VN-related data (customize this pattern as needed)
-        if (key && (key.startsWith('vn_') || key.includes('_form_data') || key.includes('vn'))) {
-          localStorage.removeItem(key);
-        }
-      }
+      localStorage.clear();
     } catch (e) {
-      console.error("Error while clearing localStorage:", e);
+      console.error("Error clearing localStorage:", e);
     }
     
-    // Small timeout to ensure all components have processed the null state
-    setTimeout(() => {
-      // Reset project to initial state with empty values
-      setProjectData({
-        title: "Untitled Project",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        basicData: {
-          theme: "",
-          tone: "",
-          genre: "",
-        },
-        // Clear all data from previous steps explicitly
-        conceptData: undefined,
-        charactersData: undefined,
-        pathsData: undefined,
-        plotData: undefined,
-        generatedActs: undefined,
-        currentStep: 1,
-      });
+    // Set project data to null first to trigger cleanup
+    setProjectData(null);
+    
+    // Force a reload of the entire application
+    // This is the most reliable way to reset all state
+    if (typeof window !== 'undefined') {
+      // Create a flag in sessionStorage so we know we're doing a reset
+      sessionStorage.setItem('vn_fresh_project', 'true');
       
-      // Reset player data
-      resetPlayerData();
-      
-      // Navigate to the first step
-      setLocation("/create/basic");
-      
-      // Show confirmation toast
-      toast({
-        title: "New Project Created",
-        description: "Starting with a fresh project",
-      });
-    }, 50);
+      // Small timeout to ensure UI updates before reload
+      setTimeout(() => {
+        // Reset project to initial state with empty values
+        const newProject = {
+          title: "Untitled Project",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          basicData: {
+            theme: "",
+            tone: "",
+            genre: "",
+          },
+          // Clear all data from previous steps explicitly
+          conceptData: undefined,
+          charactersData: undefined,
+          pathsData: undefined,
+          plotData: undefined,
+          generatedActs: undefined,
+          currentStep: 1,
+        };
+        
+        // Set the project data
+        setProjectData(newProject);
+        
+        // Reset player data
+        resetPlayerData();
+        
+        // Navigate to the first step
+        setLocation("/create/basic");
+        
+        // Show confirmation toast
+        toast({
+          title: "New Project Created",
+          description: "Starting with a fresh project",
+        });
+      }, 100);
+    }
   };
   
   // Step data setters
