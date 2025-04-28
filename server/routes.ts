@@ -56,7 +56,17 @@ async function generateWithGemini(
 
     // Extract the text from the response
     if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
-      return data.candidates[0].content.parts[0].text;
+      let responseText = data.candidates[0].content.parts[0].text;
+      
+      // Clean response text of markdown code blocks if present
+      if (responseText.startsWith("```")) {
+        // Strip opening code block markers (```json or just ```)
+        responseText = responseText.replace(/^```(?:json|javascript)?\s*\n/, "");
+        // Strip closing code block markers
+        responseText = responseText.replace(/\n```\s*$/, "");
+      }
+      
+      return responseText;
     } else {
       throw new Error("Unexpected Gemini API response format");
     }
