@@ -5,14 +5,18 @@ import { z } from "zod";
 import { insertVnProjectSchema, insertVnStorySchema } from "@shared/schema";
 
 // Use Google's Gemini API instead of OpenAI
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+const GEMINI_API_URL =
+  "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent";
 const GEMINI_API_KEY = process.env.OPENAI_API_KEY || "";
 
 // Helper function for Gemini API calls
-async function generateWithGemini(prompt: string, systemPrompt: string | null = null, responseFormat = "JSON") 
-{
-  try 
-  {
+async function generateWithGemini(
+  prompt: string,
+  systemPrompt: string | null = null,
+  responseFormat = "JSON",
+  maxOutputTokens = 8192,
+) {
+  try {
     const headers = {
       "Content-Type": "application/json",
       "x-goog-api-key": GEMINI_API_KEY,
@@ -21,15 +25,18 @@ async function generateWithGemini(prompt: string, systemPrompt: string | null = 
     // Construct the request body
     const requestBody = {
       contents: [
-        ...(systemPrompt ? [{ role: "user", parts: [{ text: systemPrompt }] }] : []),
+        ...(systemPrompt
+          ? [{ role: "user", parts: [{ text: systemPrompt }] }]
+          : []),
         { role: "user", parts: [{ text: prompt }] },
       ],
       generationConfig: {
         temperature: 0.4,
         topP: 0.95,
         topK: 64,
-        maxOutputTokens: 8192,
-        responseMimeType: responseFormat === "JSON" ? "application/json" : "text/plain",
+        maxOutputTokens: maxOutputTokens,
+        responseMimeType:
+          responseFormat === "JSON" ? "application/json" : "text/plain",
       },
     };
 
@@ -39,27 +46,23 @@ async function generateWithGemini(prompt: string, systemPrompt: string | null = 
       body: JSON.stringify(requestBody),
     });
 
-    if (!response.ok) 
-    {
+    if (!response.ok) {
       const errorData = await response.json();
       console.error("Gemini API error:", errorData);
-      throw new Error(`Gemini API error: ${errorData.error?.message || "Unknown error"}`);
+      throw new Error(
+        `Gemini API error: ${errorData.error?.message || "Unknown error"}`,
+      );
     }
 
     const data = await response.json();
-    
+
     // Extract the text from the response
-    if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) 
-    {
+    if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
       return data.candidates[0].content.parts[0].text;
-    } 
-    else 
-    {
+    } else {
       throw new Error("Unexpected Gemini API response format");
     }
-  } 
-  catch (error) 
-  {
+  } catch (error) {
     console.error("Error calling Gemini API:", error);
     throw error;
   }
@@ -253,10 +256,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Unified validation endpoint for all content types
-  app.post("/api/validate", async (req, res) => 
-  {
-    try 
-    {
+  app.post("/api/validate", async (req, res) => {
+    try {
       const { projectContext, contentType } = req.body;
 
       // Create prompt for validation based on content type
@@ -275,45 +276,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
         If story context is plot-conflicting, incoherent, sexually explicit, or offensive, then respond with a JSON with an error key explaining the issue like this: 
         { "error": "Brief description of why the content is invalid." }
       `;
-      
+
       // Log validation request details
       console.log(`${contentType.toUpperCase()} validation request received`);
 
       // Validate using Gemini
-      const responseContent = await generateWithGemini(validationPrompt, validationSystemPrompt);
+      const responseContent = await generateWithGemini(
+        validationPrompt,
+        validationSystemPrompt,
+      );
 
-      console.log(`${contentType.toUpperCase()} validation result:`, responseContent);
+      console.log(
+        `${contentType.toUpperCase()} validation result:`,
+        responseContent,
+      );
 
       // Parse validation response
       const validationResult = JSON.parse(responseContent || "{}");
 
       // If validation failed, return the error
-      if (!validationResult.valid && validationResult.issues)
-      {
+      if (!validationResult.valid && validationResult.issues) {
         return res.status(400).json({ message: validationResult.issues });
       }
-      
+
       // If there's an explicit error, return it
-      if (validationResult.error)
-      {
+      if (validationResult.error) {
         return res.status(400).json({ message: validationResult.error });
       }
 
       // If validation passed, return success
       res.json(validationResult);
-    } 
-    catch (error) 
-    {
+    } catch (error) {
       console.error("Error validating content:", error);
       res.status(500).json({ message: "Failed to validate content" });
     }
   });
-  
+
   // AI Generation endpoints
-  app.post("/api/generate/concept", async (req, res) => 
-  {
-    try 
-    {
+  app.post("/api/generate/concept", async (req, res) => {
+    try {
       const { basicData } = generateConceptSchema.parse(req.body);
 
       // Create prompt for the concept generation
@@ -330,26 +331,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         Be wildly imaginative, original, and surprising — but keep it emotionally resonant.
       `;
       console.log("Concept generation prompt:", prompt);
-      
+
       // Use Gemini to generate the concept
-      const systemPrompt = "You're a visual novel brainstormer with wildly creative ideas";
+      const systemPrompt =
+        "You're a visual novel brainstormer with wildly creative ideas";
       const responseContent = await generateWithGemini(prompt, systemPrompt);
-      
+
       console.log("Generated concept:", responseContent);
 
       // Parse the generated concept
       const generatedConcept = JSON.parse(responseContent || "{}");
 
       // Check if the response contains an error and return early if it does
-      if (checkResponseForError(generatedConcept, res)) 
-      {
+      if (checkResponseForError(generatedConcept, res)) {
         return;
       }
 
       res.json(generatedConcept);
-    } 
-    catch (error) 
-    {
+    } catch (error) {
       console.error("Error generating concept:", error);
       res.status(500).json({ message: "Failed to generate concept" });
     }
@@ -406,30 +405,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       `;
       console.log("Generating character prompt:", prompt);
 
-      // Generate characters using OpenAI
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        temperature: 1.2,
-        frequency_penalty: 0.2,
-        presence_penalty: 0.5,
-        top_p: 1.0,
-        stop: null,
-        messages: [
-          {
-            role: "system",
-            content: "You're a wildly imaginative and slightly crazy film brainstormer",
-          },
-          { role: "assistant", content: prompt },
-        ],
-        response_format: { type: "json_object" },
-      });
-
+      // Generate characters using Gemini
+      const systemPrompt = "You're a wildly imaginative and slightly crazy film brainstormer creating characters for a visual novel";
+      const responseContent = await generateWithGemini(prompt, systemPrompt);
+      
       console.log(`Generating ${indices.length} characters at once`);
-      console.log("Got:", response.choices[0].message.content);
+      console.log("Got:", responseContent);
 
       // Parse response
-      if (response.choices[0].message.content == "{}") throw "Empty response";
-      const parsed = JSON.parse(response.choices[0].message.content || "{}");
+      if (responseContent === "{}") throw "Empty response";
+      const parsed = JSON.parse(responseContent || "{}");
 
       // Check if the response contains an error and return early if it does
       if (checkResponseForError(parsed, res)) {
@@ -476,29 +461,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       `;
       console.log("Generating paths prompt:", prompt);
 
-      // Generate paths using OpenAI WITHOUT validation instruction
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        // temperature: 0.4,
-        // frequency_penalty: 0.1,
-        // presence_penalty: 0,
-        // top_p: 0.9,
-        messages: [
-          // {
-          //   role: "system",
-          //   content: "You're a VN brainstormer",
-          // },
-          { role: "assistant", content: prompt },
-        ],
-        response_format: { type: "json_object" },
-      });
-
+      // Generate paths using Gemini
+      const systemPrompt = "You're a visual novel brainstormer creating plot paths";
+      const responseContent = await generateWithGemini(prompt, systemPrompt);
+      
       console.log(`Generating ${indices.length} paths at once`);
-      console.log("Got:", response.choices[0].message.content);
+      console.log("Got:", responseContent);
 
       // Parse
-      if (response.choices[0].message.content == "{}") throw "Empty response";
-      const parsed = JSON.parse(response.choices[0].message.content || "{}");
+      if (responseContent === "{}") throw "Empty response";
+      const parsed = JSON.parse(responseContent || "{}");
 
       // Return array of paths directly (not wrapped in an object)
       res.json(parsed.paths);
@@ -537,29 +509,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       `;
       console.log("Plot generation prompt:", prompt);
 
-      // Generate plot using OpenAI WITHOUT validation instruction
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          // {
-          //   role: "system",
-          //   content: "You're a VN brainstormer",
-          // },
-          { role: "assistant", content: prompt },
-        ],
-        response_format: { type: "json_object" },
-      });
-
+      // Generate plot using Gemini
+      const systemPrompt = "You're a visual novel brainstormer creating a comprehensive plot outline";
+      const responseContent = await generateWithGemini(prompt, systemPrompt);
+      
       // Log the generated response for debugging
-      console.log(
-        "Generated plot outline:",
-        response.choices[0].message.content,
-      );
+      console.log("Generated plot outline:", responseContent);
 
       // Parse the generated plot
-      const generatedPlot = JSON.parse(
-        response.choices[0].message.content || "{}",
-      );
+      const generatedPlot = JSON.parse(responseContent || "{}");
 
       res.json(generatedPlot);
     } catch (error) {
@@ -666,34 +624,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       `;
       console.log("Act generation prompt:", prompt);
 
-      // Generate act using OpenAI WITHOUT validation instruction
-      const response = await openai.chat.completions.create({
-        model: "gpt-4.1-mini",
-        // temperature: 0.4,
-        // frequency_penalty: 0.1,
-        // presence_penalty: 0,
-        // top_p: 0.9,
-        max_tokens: 16384,
-        messages: [
-          {
-            role: "system",
-            content: "You're a VN brainstormer",
-          },
-          { role: "assistant", content: prompt },
-        ],
-        response_format: { type: "json_object" },
-      });
-
+      // Generate act using Gemini
+      const systemPrompt = "You're a visual novel brainstormer creating detailed scenes with dialogue and choices";
+      // Set longer maxOutputTokens for act generation which requires more tokens
+      const responseContent = await generateWithGemini(prompt, systemPrompt, "JSON", 16384);
+      
       // Log the generated response for debugging
       console.log(
         `Generated Act ${actNumber}:`,
-        response.choices[0].message.content?.substring(0, 200) + "...",
+        responseContent?.substring(0, 200) + "..."
       );
 
       // Parse the generated act
-      const generatedAct = JSON.parse(
-        response.choices[0].message.content || "{}",
-      );
+      const generatedAct = JSON.parse(responseContent || "{}");
 
       res.json(generatedAct);
     } catch (error) {

@@ -230,9 +230,27 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog }: Pl
                 <div className="space-y-2">
                   <h3 className="text-sm font-medium">Text Speed</h3>
                   <div className="grid grid-cols-3 gap-2">
-                    <Button variant="outline" size="sm">Slow</Button>
-                    <Button variant="default" size="sm">Normal</Button>
-                    <Button variant="outline" size="sm">Fast</Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => window.dispatchEvent(new CustomEvent('vnSetTextSpeed', { detail: 1 }))}
+                    >
+                      Slow
+                    </Button>
+                    <Button 
+                      variant="default" 
+                      size="sm"
+                      onClick={() => window.dispatchEvent(new CustomEvent('vnSetTextSpeed', { detail: 5 }))}
+                    >
+                      Normal
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => window.dispatchEvent(new CustomEvent('vnSetTextSpeed', { detail: 10 }))}
+                    >
+                      Fast
+                    </Button>
                   </div>
                 </div>
                 

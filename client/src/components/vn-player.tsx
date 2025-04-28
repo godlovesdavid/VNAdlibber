@@ -25,10 +25,26 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
   const [clickableContent, setClickableContent] = useState(true);
   
   // Text animation states
-  const [textSpeed, setTextSpeed] = useState(50); // 0-100 scale (0: slow, 100: instant)
+  const [textSpeed, setTextSpeed] = useState(5); // 1-10 scale (1: slow, 5: normal, 10: fast)
   const [displayedText, setDisplayedText] = useState("");
   const [isTextFullyTyped, setIsTextFullyTyped] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  
+  // Listen for text speed change events
+  useEffect(() => 
+  {
+    const handleSetTextSpeed = (event: CustomEvent) => 
+    {
+      setTextSpeed(event.detail);
+    };
+    
+    window.addEventListener('vnSetTextSpeed', handleSetTextSpeed as EventListener);
+    
+    return () => 
+    {
+      window.removeEventListener('vnSetTextSpeed', handleSetTextSpeed as EventListener);
+    };
+  }, []);
   
   const containerRef = useRef<HTMLDivElement>(null);
   const dialogueText = currentScene?.dialogue[currentDialogueIndex]?.[1] || "";
@@ -212,8 +228,8 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
       return;
     }
     
-    // If textSpeed is 0, display the full text immediately (instant speed)
-    if (textSpeed === 0) {
+    // If textSpeed is 10 (fastest), display the full text immediately
+    if (textSpeed >= 10) {
       setDisplayedText(dialogueText);
       setIsTextFullyTyped(true);
       return;
