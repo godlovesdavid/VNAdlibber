@@ -53,40 +53,43 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
   // Memoize the processScene function to avoid recreating it on every render
   const memoizedProcessScene = useCallback(processScene, [actNumber]);
   
-  // Initialize with the first scene
+  // Initialize with the first scene once on mount or when actData changes
   useEffect(() => {
-    if (actData && actData.scenes && actData.scenes.length > 0) {
-      const firstScene = memoizedProcessScene(actData.scenes[0]);
-      setCurrentSceneId(firstScene.id);
-      setCurrentScene(firstScene);
-      setCurrentDialogueIndex(0);
-      setShowChoices(false);
-      setDialogueLog([]);
+    if (actData?.scenes?.length > 0) {
+      // Only set initial scene if we don't have a scene ID yet
+      if (!currentSceneId) {
+        const firstScene = memoizedProcessScene(actData.scenes[0]);
+        setCurrentSceneId(firstScene.id); // This will trigger the next useEffect
+        setDialogueLog([]);
+      }
     }
-  }, [actData, memoizedProcessScene]);
+  }, [actData, currentSceneId, memoizedProcessScene]);
   
   // Update current scene when scene ID changes
   useEffect(() => {
-    if (actData && currentSceneId) {
-      const scene = actData.scenes.find((s: Scene) => s.id === currentSceneId);
-      if (scene) {
-        const processedScene = memoizedProcessScene(scene);
-        setCurrentScene(processedScene);
-        setCurrentDialogueIndex(0);
-        setShowChoices(false);
-      }
+    if (!actData?.scenes || !currentSceneId) return;
+    
+    const scene = actData.scenes.find(s => s.id === currentSceneId);
+    if (scene) {
+      const processedScene = memoizedProcessScene(scene);
+      setCurrentScene(processedScene);
+      setCurrentDialogueIndex(0);
+      setShowChoices(false);
     }
   }, [actData, currentSceneId, memoizedProcessScene]);
   
   // Handle restart
   const handleRestart = useCallback(() => {
-    if (actData && actData.scenes && actData.scenes.length > 0) {
-      const firstScene = memoizedProcessScene(actData.scenes[0]);
-      setCurrentSceneId(firstScene.id);
-      setCurrentScene(firstScene);
-      setCurrentDialogueIndex(0);
-      setShowChoices(false);
-      setDialogueLog([]);
+    if (actData?.scenes?.length > 0) {
+      // Simply reset the currentSceneId to trigger the scene loading effect
+      setCurrentSceneId(""); // Clear scene ID first
+      
+      // Use setTimeout to ensure state updates are processed before setting the new ID
+      setTimeout(() => {
+        const firstScene = memoizedProcessScene(actData.scenes[0]);
+        setCurrentSceneId(firstScene.id); // This will trigger the scene loading effect
+        setDialogueLog([]);
+      }, 0);
     }
   }, [actData, memoizedProcessScene]);
   
