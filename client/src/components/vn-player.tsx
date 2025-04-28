@@ -214,8 +214,11 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
       return;
     }
     
-    // Instant speed (no animation) when textSpeed is 10
-    if (textSpeed === 10) 
+    // Use the 3-speed settings (0=slow, 1=medium, 2=fast)
+    // Convert textSpeed to delay: 0->100ms, 1->50ms, 2->20ms, 3->instant
+    
+    // Instant speed (no animation) when textSpeed is 3
+    if (textSpeed === 3) 
     {
       setDisplayedText(dialogueText);
       setIsTextFullyTyped(true);
@@ -226,9 +229,9 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
     setIsTextFullyTyped(false);
     setDisplayedText("");
 
-    // Calculate delay based on text speed (1=slowest at 100ms, 9=fastest at 20ms)
-    // We use a range of 100ms to 20ms for better readability control
-    const delay = 110 - (textSpeed * 10);
+    // Calculate delay based on text speed setting
+    const delays = [100, 50, 20]; // Slow, Medium, Fast
+    const delay = delays[textSpeed];
     
     let currentChar = 0;
     const textLength = dialogueText.length;
