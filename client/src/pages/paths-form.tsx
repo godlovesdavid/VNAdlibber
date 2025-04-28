@@ -27,7 +27,12 @@ import { Route } from "@/types/vn";
 export default function PathsForm() {
   const [, setLocation] = useLocation();
   const { projectData, setPathsData, goToStep } = useVnContext();
-  const { generatePathData, generateMultiplePathsData, isGenerating, cancelGeneration } = useVnData();
+  const {
+    generatePathData,
+    generateMultiplePathsData,
+    isGenerating,
+    cancelGeneration,
+  } = useVnData();
 
   // Form state
   const [routes, setRoutes] = useState<Route[]>([
@@ -102,10 +107,7 @@ export default function PathsForm() {
   };
 
   // Update key choices string
-  const updateKeyChoices = (
-    pathIndex: number,
-    value: string,
-  ) => {
+  const updateKeyChoices = (pathIndex: number, value: string) => {
     const updatedRoutes = [...routes];
     updatedRoutes[pathIndex] = {
       ...updatedRoutes[pathIndex],
@@ -160,29 +162,29 @@ export default function PathsForm() {
 
     try {
       // Create templates with only basic info for each path
-      const pathTemplates = allRoutes.map(route => ({
+      const pathTemplates = allRoutes.map((route) => ({
         title: route.title,
-        loveInterest: route.loveInterest
+        loveInterest: route.loveInterest,
       }));
 
       console.log(`Generating ${pathTemplates.length} paths at once...`);
-      
+
       // Generate all paths in one API call
       const generatedPaths = await generateMultiplePathsData(pathTemplates);
-      
+
       if (generatedPaths && Array.isArray(generatedPaths)) {
         // Merge the generated paths with existing path data
         const updatedRoutes = allRoutes.map((route, idx) => ({
           ...route,
-          ...generatedPaths[idx]
+          ...generatedPaths[idx],
         }));
-        
+
         // Update state and project context
         setRoutes(updatedRoutes);
         setPathsData({
-          routes: updatedRoutes
+          routes: updatedRoutes,
         });
-        
+
         console.log("Successfully generated all paths at once");
         console.log("Updated project context with all path data");
       } else {
@@ -203,17 +205,17 @@ export default function PathsForm() {
 
   // Proceed to next step
   const handleNext = () => {
-    // Validate paths
-    const isValid = routes.every(
-      (route) =>
-        route.title &&
-        route.keyChoices.trim() &&
-        route.beginning &&
-        route.middle &&
-        route.climax &&
-        route.goodEnding &&
-        route.badEnding,
-    );
+    // // Validate paths
+    // const isValid = routes.every(
+    //   (route) =>
+    //     route.title &&
+    //     route.keyChoices.trim() &&
+    //     route.beginning &&
+    //     route.middle &&
+    //     route.climax &&
+    //     route.goodEnding &&
+    //     route.badEnding,
+    // );
 
     // if (!isValid) {
     //   alert("Please fill in all required fields for each path");
@@ -345,10 +347,7 @@ export default function PathsForm() {
                           placeholder="Comma-separated list of key choices that alter the story path"
                           value={route.keyChoices}
                           onChange={(e) =>
-                            updateKeyChoices(
-                              index,
-                              e.target.value,
-                            )
+                            updateKeyChoices(index, e.target.value)
                           }
                         />
                       </div>

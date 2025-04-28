@@ -100,11 +100,19 @@ export default function PlotForm() {
   const handleValidate = async () => {
     // Set validating state
     setIsValidating(true);
-
+    if (!projectData)
+      throw "Empty project data";
+    
     try {
       // Call validate endpoint
       const validationResponse = await apiRequest("POST", "/api/validate", {
-        projectContext: projectData,
+        projectContext: {
+          basicData: projectData.basicData,
+          conceptData: projectData.conceptData,
+          charactersData: projectData.charactersData,
+          pathsData: projectData.pathsData,
+          plotData: projectData.plotData,
+        },
         contentType: "plot",
       });
       const validationResult = await validationResponse.json();
@@ -128,18 +136,21 @@ export default function PlotForm() {
       }
     } catch (error: any) {
       console.error("Validation error:", error);
-      
+
       // Try to extract the actual validation message from the error
-      let errorMessage = "An error occurred during validation. Please try again.";
-      
+      let errorMessage =
+        "An error occurred during validation. Please try again.";
+
       try {
         // Check if the error has data with a message
         if (error.data && error.data.message) {
           errorMessage = error.data.message;
-        } 
+        }
         // Check if it's a response object that we can parse
         else if (error.status === 400 && error.response) {
-          const errorData = error.response.json ? await error.response.json() : error.response;
+          const errorData = error.response.json
+            ? await error.response.json()
+            : error.response;
           if (errorData && errorData.message) {
             errorMessage = errorData.message;
           }
@@ -151,7 +162,7 @@ export default function PlotForm() {
       } catch (parseError) {
         console.error("Failed to parse error response:", parseError);
       }
-      
+
       toast({
         title: "Validation Failed",
         description: errorMessage,

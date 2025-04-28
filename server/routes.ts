@@ -20,7 +20,7 @@ function checkResponseForError(parsedResponse: any, res: any): boolean {
 
 // Standard system prompt for content validation
 const standardValidationInstructions =
-  'Return a JSON based on the given story context. ';
+  "Return a JSON based on the given story context. ";
 
 // Explicit validation system prompt that prevents "looks good" errors
 //If story context is plot-conflicting, incoherent, sexually explicit, or offensive, then instead return a JSON with an error key explaining the issue like this: { "error": "Brief description of why the content is invalid." }
@@ -201,7 +201,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { basicData } = generateConceptSchema.parse(req.body);
 
       // Create prompt for the concept generation
-      const prompt = `Given this story context:
+      const prompt = `Given this VN story context:
         Theme: ${basicData.theme}
         Tone: ${basicData.tone}
         Genre: ${basicData.genre}
@@ -209,7 +209,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         {
           "title": "Intriguing title",
           "tagline": "Very short & memorable catchphrase (<10 words and no period)",
-          "premise": "Premise & main conflict in < 50 words. Don't name names (designed later)"
+          "premise": "Premise & main conflict. Don't name names (designed later)"
         }
         Be wildly imaginative, original, and surprising — but keep it emotionally resonant.
       `;
@@ -217,16 +217,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate concept using OpenAI
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",
-        temperature: 1.0,
-        frequency_penalty: 0.2,
-        presence_penalty: 0.5,
-        top_p: 1.0,
+        // temperature: 1.2,
+        // frequency_penalty: 0.2,
+        // presence_penalty: 0.5,
+        // top_p: 1.0,
         stop: null,
         messages: [
-          // {
-          //   role: "system",
-          //   content: standardValidationInstructions,
-          // },
+          {
+            role: "system",
+            content: "You're a VN brainstormer",
+          },
           { role: "user", content: prompt },
         ],
         response_format: { type: "json_object" },
@@ -252,8 +252,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-
-
   // Unified validation endpoint for all content types
   app.post("/api/validate", async (req, res) => {
     try {
@@ -263,10 +261,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validationPrompt = `Please validate this story context for a visual novel ${contentType}:
         ${JSON.stringify(projectContext, null, 2)}
       `;
-      
+      console.log(validationPrompt);
+
       // Log validation request details
       console.log(`${contentType.toUpperCase()} validation request received`);
-      
+
       // Validate using OpenAI with explicit validation system prompt
       const validationResponse = await openai.chat.completions.create({
         model: "gpt-4.1-nano",
@@ -284,17 +283,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         response_format: { type: "json_object" },
       });
 
-      console.log(`${contentType.toUpperCase()} validation result:`, validationResponse.choices[0].message.content);
+      console.log(
+        `${contentType.toUpperCase()} validation result:`,
+        validationResponse.choices[0].message.content,
+      );
 
       // Parse validation response
       const validationResult = JSON.parse(
-        validationResponse.choices[0].message.content || "{}"
+        validationResponse.choices[0].message.content || "{}",
       );
 
       // If validation failed, return the error
-      if (!validationResult.valid) 
+      if (!validationResult.valid)
         return res.status(400).json({ message: validationResult.issues });
-      
+
       // If validation passed, return success
       res.json(validationResult);
     } catch (error) {
@@ -302,8 +304,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to validate content" });
     }
   });
-  
-  // Character generation endpoint - renamed from characters-bundle to character
+
+  // Character generation endpoint
   app.post("/api/generate/character", async (req, res) => {
     try {
       const { characterTemplates, projectContext } = req.body;
@@ -332,11 +334,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
               "occupation": "Can be unemployed",
               "gender": "Can be robot/AI",
               "age": "Age as a string",
-              "appearance": "Physical description (<15 words)",
-              "personality": "Key personality traits and behaviors (<50 words)",
-              "goals": "Primary motivations and objectives (<50 words)",
-              "relationshipPotential": "${indices.length == 1 && indices[0] == 0 ? "(Leave blank)" : "Relationship potential with main protagonist. Lovers must be opposite gender. (<20 words)"}",
-              "conflict": "Their primary internal or external struggle (<50 words)"
+              "appearance": "Physical description",
+              "personality": "Key personality traits and behaviors",
+              "goals": "Primary motivations and objectives",
+              "relationshipPotential": "${indices.length == 1 && indices[0] == 0 ? "(Leave blank)" : "Relationship potential with main protagonist. Lovers must be opposite gender."}",
+              "conflict": "Their primary internal or external struggle"
             } ${
               indices.length > 1
                 ? `
@@ -348,21 +350,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
           indices.length == 1
             ? ""
             : `
-        Ensure unique characters with varying strengths, flaws, and motivations, and fit story concept.
-        Ensure emotional depth: highlight subtle inner conflicts, irony, longing, and unresolved tension.
+        Ensure unique characters with varying strengths, flaws, and motivations, and fit story concept. 
         Character one is the main protagonist.`
         }
       `;
       console.log("Generating character prompt:", prompt);
-      
+
       // Generate characters using OpenAI
       const response = await openai.chat.completions.create({
-        model: "gpt-4.1-nano",
-        temperature: 1.0,
-        frequency_penalty: 0.1,
-        presence_penalty: 0.2,
-        top_p: 1.0,
+        model: "gpt-4o-mini",
+        // temperature: 0.4,
+        // frequency_penalty: 0.1,
+        // presence_penalty: 0,
+        // top_p: 0.9,
         messages: [
+          {
+            role: "system",
+            content: "You're a VN brainstormer",
+          },
           { role: "user", content: prompt },
         ],
         response_format: { type: "json_object" },
@@ -409,27 +414,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
               "title": "Path title",
               "loveInterest": "(optional) One of the opposite-gender characters otherwise leave as null",
               "keyChoices": "Comma-separated choices that alter the course of story",
-              "beginning": "Description of how this route begins (< 30 words)",
-              "middle": "Description of conflict escalation and unexpected twists (< 30 words)",
-              "climax": "Description of the highest tension moment of this path (< 30 words)",
-              "goodEnding": "Description of positive resolution (< 20 words)",
-              "badEnding": "Description of negative outcome (< 20 words)"
+              "beginning": "Description of how this route begins",
+              "middle": "Description of conflict escalation and unexpected twists",
+              "climax": "Description of the highest tension moment of this path",
+              "goodEnding": "Description of positive resolution",
+              "badEnding": "Description of negative outcome"
             }
           ]
         }
-        Ensure unique + distinct paths. Ensure emotional depth: highlight subtle inner conflicts, irony, longing, and unresolved tension..
       `;
       console.log("Generating paths prompt:", prompt);
 
       // Generate paths using OpenAI WITHOUT validation instruction
       const response = await openai.chat.completions.create({
-        model: "gpt-4.1-nano",
-        temperature: 0.7,
-        frequency_penalty: 0.0,
-        presence_penalty: 0.0,
-        top_p: 1.0,
+        model: "gpt-4o-mini",
+        // temperature: 0.4,
+        // frequency_penalty: 0.1,
+        // presence_penalty: 0,
+        // top_p: 0.9,
         messages: [
-          // No system message for validation - just generate
+          {
+            role: "system",
+            content: "You're a VN brainstormer",
+          },
           { role: "user", content: prompt },
         ],
         response_format: { type: "json_object" },
@@ -449,7 +456,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to generate paths" });
     }
   });
-
 
   app.post("/api/generate/plot", async (req, res) => {
     try {
@@ -475,7 +481,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             "act5": {...}
           }
         }
-        Structure the plot into 5 acts: Introduction, Rising Action, Midpoint Twist, Escalating Conflict, Resolution/Endings
+        Structure the plot into 5 acts: Introduction, Rising Action, Midpoint Twist, Escalating Conflict, Resolution/Endings.
+        Be descriptive and inventive about events in order to flesh out the story.
       `;
       console.log("Plot generation prompt:", prompt);
 
@@ -483,7 +490,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
-          // No system validation message - just generate
+          {
+            role: "system",
+            content: "You're a VN brainstormer",
+          },
           { role: "user", content: prompt },
         ],
         response_format: { type: "json_object" },
@@ -513,9 +523,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         generateActSchema.parse(req.body);
 
       // Create prompt for the act generation
-      const prompt = `Create scenes for Act ${actNumber} of a visual novel with the following context:
+      const prompt = `Given the following story context:
         ${JSON.stringify(projectContext, null, 2)}
-        Create approximately ${scenesCount} scenes for this act following the structure from the plot outline:
+        Create approximately ${scenesCount} scenes for Act ${actNumber} of the plot outline.
         Return a JSON as structured:
         {
           "meta": {
@@ -530,13 +540,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
               "dialogue": [
                 ["Character Name", "Dialogue text"],
                 ["Another Character", "Response text"]
+                ["Another Character", "Response text"]
               ],
               "choices": [
                 {
                   "id": "choice1",
                   "text": "Choice text displayed to player",
                   "delta": {"relationshipVar": 1},
-                  "next": "${actNumber}-2a" //can also be 
+                  "next": "${actNumber}-2a"
                 },
                 {
                   "id": "choice2",
@@ -557,27 +568,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           ]
         }
-        IMPORTANT
-        -Make sure scene IDs are sequential and use format "${actNumber}-1", "${actNumber}-2" etc.
+        Note:
+        -Make sure scene IDs are sequential and use format <Act#>-<Scene#>.
         -Include branching paths based on choices.
         -Some choices may have conditions that check player relationship values.
         -The final scene of the act should have choices set to null.
         -Include meaningful "delta" values for relationships, inventory items or skills.
-        -Make sure the "next" property always points to a valid scene ID.
-        -Generate high quality, coherent content without validation concerns.
+        -Pack each scene with ample dialogue to express the story.
+        -Ensure emotional depth: highlight subtle inner conflicts, irony, longing, and unresolved tension.
+        -Use of a narrator is encouraged to explain the scene or provide context.
       `;
       console.log("Act generation prompt:", prompt);
 
       // Generate act using OpenAI WITHOUT validation instruction
       const response = await openai.chat.completions.create({
         model: "gpt-4.1-mini",
-        temperature: 0.7,
+        // temperature: 0.4,
+        // frequency_penalty: 0.1,
+        // presence_penalty: 0,
+        // top_p: 0.9,
+        max_tokens: 16384,
         messages: [
-          // No system validation message - just generate
+          {
+            role: "system",
+            content: "You're a VN brainstormer",
+          },
           { role: "user", content: prompt },
         ],
         response_format: { type: "json_object" },
-        max_tokens: 32768,
       });
 
       // Log the generated response for debugging
