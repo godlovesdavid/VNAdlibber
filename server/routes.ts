@@ -2,68 +2,11 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
+import OpenAI from "openai";
 import { insertVnProjectSchema, insertVnStorySchema } from "@shared/schema";
 
-// Use Google's Gemini API instead of OpenAI
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
-const GEMINI_API_KEY = process.env.OPENAI_API_KEY || "";
-
-// Helper function for Gemini API calls
-async function generateWithGemini(prompt, systemPrompt = null, responseFormat = "JSON") 
-{
-  try 
-  {
-    const headers = {
-      "Content-Type": "application/json",
-      "x-goog-api-key": GEMINI_API_KEY,
-    };
-
-    // Construct the request body
-    const requestBody = {
-      contents: [
-        ...(systemPrompt ? [{ role: "user", parts: [{ text: systemPrompt }] }] : []),
-        { role: "user", parts: [{ text: prompt }] },
-      ],
-      generationConfig: {
-        temperature: 0.4,
-        topP: 0.95,
-        topK: 64,
-        maxOutputTokens: 8192,
-        responseMimeType: responseFormat === "JSON" ? "application/json" : "text/plain",
-      },
-    };
-
-    const response = await fetch(GEMINI_API_URL, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(requestBody),
-    });
-
-    if (!response.ok) 
-    {
-      const errorData = await response.json();
-      console.error("Gemini API error:", errorData);
-      throw new Error(`Gemini API error: ${errorData.error?.message || "Unknown error"}`);
-    }
-
-    const data = await response.json();
-    
-    // Extract the text from the response
-    if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) 
-    {
-      return data.candidates[0].content.parts[0].text;
-    } 
-    else 
-    {
-      throw new Error("Unexpected Gemini API response format");
-    }
-  } 
-  catch (error) 
-  {
-    console.error("Error calling Gemini API:", error);
-    throw error;
-  }
-}
+// Initialize OpenAI
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "" });
 
 // Helper function to check for error in OpenAI responses
 function checkResponseForError(parsedResponse: any, res: any): boolean {
