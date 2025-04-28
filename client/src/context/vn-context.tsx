@@ -84,21 +84,21 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   
   // Create a new project
   const createNewProject = () => {
-    console.log("Creating new project - aggressive reset approach");
+    console.log("Creating new project - less aggressive reset approach");
     
-    // The most aggressive approach: Clear everything in localStorage and sessionStorage
+    // Only remove current project data, not all localStorage
     try {
-      localStorage.clear();
-      sessionStorage.clear();
+      // Only remove specific VN project keys, not everything
+      localStorage.removeItem("current_vn_project");
       
       // Set flag for new project in sessionStorage
       sessionStorage.setItem('vn_fresh_project', 'true');
     } catch (e) {
-      console.error("Error clearing storage:", e);
+      console.error("Error clearing project data:", e);
     }
     
     // Initialize a minimal basic structure to prevent "basic data missing" errors
-    const initialProject = {
+    const initialProject: VnProjectData = {
       title: "Untitled Project",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -110,6 +110,10 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       currentStep: 1
     };
     
+    // Update state with the new project data
+    setProjectData(initialProject);
+    setPlayerData(defaultPlayerData);
+    
     // Set initial project data in localStorage so it's available on the form when it loads
     try {
       localStorage.setItem("current_vn_project", JSON.stringify(initialProject));
@@ -117,11 +121,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       console.error("Error setting initial project:", e);
     }
     
-    // Update state and redirect to form
-    setProjectData(initialProject);
-    
-    // Force a page reload - most reliable way to reset everything
-    window.location.href = "/create/basic";
+    // Navigate to the first step (don't use location.href as it causes full page reload)
+    setLocation("/create/basic");
     
     // Show confirmation toast
     toast({

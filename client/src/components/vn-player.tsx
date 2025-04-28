@@ -236,9 +236,11 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
   // Handle content click
   const handleContentClick = useCallback(() => {
     if (!showChoices) {
-      // If text is still typing, show full text
+      // If text is still typing, immediately show full text and stop animation
       if (!isTextFullyTyped) {
-        setDisplayedText(dialogueText);
+        // Clear any existing animation interval in the useEffect
+        setTextSpeed(100); // Set to instant speed to bypass animation
+        setDisplayedText(dialogueText); // Display full text immediately
         setIsTextFullyTyped(true);
       } else {
         advanceDialogue();
@@ -305,63 +307,7 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
           className="vn-text-area h-[35%] bg-neutral-800 bg-opacity-90 text-white p-5 relative overflow-y-auto"
           onClick={handleContentClick}
         >
-          {/* Settings button */}
-          <button 
-            className="absolute top-2 right-2 p-2 bg-neutral-700 rounded-full z-10 hover:bg-neutral-600 transition-colors"
-            onClick={toggleSettings}
-          >
-            <Settings2 className="h-5 w-5 text-white" />
-          </button>
-          
-          {/* Settings panel */}
-          {showSettings && (
-            <div 
-              className="absolute top-12 right-2 bg-neutral-800 border border-neutral-600 rounded-md p-4 z-20 w-72 shadow-lg"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3 className="text-white font-semibold mb-3">Text Speed</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-neutral-400">Slow</span>
-                  <span className="text-sm text-neutral-400">Instant</span>
-                </div>
-                <Slider
-                  value={[textSpeed]}
-                  min={0}
-                  max={100}
-                  step={10}
-                  onValueChange={(values) => setTextSpeed(values[0])}
-                  className="w-full"
-                />
-                <div className="w-full flex justify-between">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setTextSpeed(0)}
-                    className={cn(textSpeed === 0 && "bg-primary/30")}
-                  >
-                    Slow
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setTextSpeed(50)}
-                    className={cn(textSpeed === 50 && "bg-primary/30")}
-                  >
-                    Medium
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setTextSpeed(100)}
-                    className={cn(textSpeed === 100 && "bg-primary/30")}
-                  >
-                    Instant
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* No settings button or panel, as it's already in the toolbar */}
           
           {/* Dialogue text */}
           {currentScene.dialogue.length > 0 && currentDialogueIndex < currentScene.dialogue.length && (
