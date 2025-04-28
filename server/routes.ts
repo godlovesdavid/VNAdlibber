@@ -523,18 +523,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         generateActSchema.parse(req.body);
 
       // Create prompt for the act generation
-      const prompt = `Given the following story context:
+      const prompt = `You are tasked with bringing this story to life:
         ${JSON.stringify(projectContext, null, 2)}
         Create approximately ${scenesCount} scenes for Act ${actNumber} of the plot outline.
         Return a JSON as structured:
         {
-          "meta": {
-            "theme": "theme from context",
-            "relationshipVars": ["character1", "character2", "etc"]
-          },
           "scenes": [
             {
-              "id": "${actNumber}.1",
+              "id": "${actNumber}-1",
               "setting": "Name of the location",
               "bg": "Detailed background description for image generation",
               "dialogue": [
@@ -548,24 +544,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   "text": "Choice text displayed to player",
                   "description": "Optional: brief description of choice consequences",
                   "delta": {"character1": 1, "character2": -1},
-                  "next": "${actNumber}.1.a"
+                  "next": "${actNumber}-1a"
                 },
                 {
                   "id": "choice2",
                   "text": "Alternative choice text",
                   "delta": {"character2": 1},
-                  "next": "${actNumber}.1.b"
+                  "next": "${actNumber}-1b"
                 }
                 {
                   "id": "choice3",
                   "text": "Alternative choice text",
-                  "next": "${actNumber}.2"
+                  "next": "${actNumber}-2"
                 }
-                
               ]
             },
             {
-              "id": "${actNumber}.final",
+              "id": "${actNumber}-final",
               "setting": "Final location",
               "dialogue": [
                 ["Character", "Final dialogue for this act"]
@@ -581,11 +576,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         - Relationships, inventory items, or skills can be added or subtracted by "delta" values.
         - Pack each scene with ample dialogue to express the story (5-15+ lines). Be inventive about event details, while ensuring consistency with the plot outline.
         - Use of a narrator is encouraged to explain the scene or provide context.
+        - Main protagonist may think in parentheses.
         - Unknown characters are named "???" until revealed.
-        - Maintain the emotional tone consistent with the story context (e.g., lighthearted, suspenseful, tragic, romantic).
+        - Maintain the given tone (${projectContext.basicData.tone}) consistent with the story context.
         - You may optionally include [emotion] or [action] tags before dialogue when it enhances the scene.
         - If a choice increases or decreases a relationship, reflect it subtly in the dialogue tone.
-        - Keep branching manageable (preferably 1–2 minor sub-branches before returning to the main story flow).
         - Some choices may succeed or fail based on condition of relationship values, items, or skills. To do this, add a "condition" value in the choice (see below).
         Here is a sample scene that blocks paths based on relationship requirements. Player tries to enter the engine room, but cannot due to his relationship value with Bruno being less than 2. If player has at least 2 points with Bruno, they proceed to the "failNext" scene 2-5a. Otherwise, they proceed to "next" scene 2-5b. 
         {
@@ -629,10 +624,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // top_p: 0.9,
         max_tokens: 16384,
         messages: [
-          // {
-          //   role: "system",
-          //   content: "You're a VN brainstormer",
-          // },
+          {
+            role: "system",
+            content: "You're a VN brainstormer",
+          },
           { role: "assistant", content: prompt },
         ],
         response_format: { type: "json_object" },

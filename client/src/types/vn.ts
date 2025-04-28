@@ -89,15 +89,6 @@ export interface Scene {
   choices: SceneChoice[] | null;
 }
 
-// Generated act structure
-export interface GeneratedAct {
-  meta: {
-    theme: string;
-    relationshipVars: string[];
-  };
-  scenes: Scene[];
-}
-
 // Player data structure for tracking relationships, inventory, and skills
 export interface PlayerData {
   relationships: Record<string, number>;
@@ -116,7 +107,7 @@ export interface VnProjectData {
   charactersData?: CharactersData;
   pathsData?: PathsData;
   plotData?: PlotData;
-  generatedActs?: Record<string, GeneratedAct>;
+  generatedActs?: Record<string, any>; // Fixed GeneratedAct reference
   playerData?: PlayerData;
   currentStep: number;
 }

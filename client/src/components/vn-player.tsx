@@ -1,10 +1,20 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useVnContext } from "@/context/vn-context";
 import { cn } from "@/lib/utils";
 import { PlayerNavbar } from "@/components/player-navbar";
 import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
-import { Scene, SceneChoice, GeneratedAct } from "@/types/vn";
+import { Slider } from "@/components/ui/slider";
+import { ChevronDown, Settings2 } from "lucide-react";
+import { Scene, SceneChoice } from "@/types/vn";
+
+// Declare GeneratedAct interface if not defined in vn.ts
+interface GeneratedAct {
+  meta: {
+    theme: string;
+    relationshipVars: string[];
+  };
+  scenes: Scene[];
+}
 
 interface VnPlayerProps {
   actData: GeneratedAct;
@@ -21,7 +31,14 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
   const [dialogueLog, setDialogueLog] = useState<Array<{speaker: string, text: string}>>([]);
   const [clickableContent, setClickableContent] = useState(true);
   
+  // Text animation states
+  const [textSpeed, setTextSpeed] = useState(50); // 0-100 scale (0: slow, 100: instant)
+  const [displayedText, setDisplayedText] = useState("");
+  const [isTextFullyTyped, setIsTextFullyTyped] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  
   const containerRef = useRef<HTMLDivElement>(null);
+  const dialogueText = currentScene?.dialogue[currentDialogueIndex]?.[1] || "";
   
   // Add end of act message to the last scene
   const processScene = (scene: Scene): Scene => {
@@ -55,7 +72,7 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
   // Update current scene when scene ID changes
   useEffect(() => {
     if (actData && currentSceneId) {
-      const scene = actData.scenes.find(s => s.id === currentSceneId);
+      const scene = actData.scenes.find((s: Scene) => s.id === currentSceneId);
       if (scene) {
         const processedScene = processScene(scene);
         setCurrentScene(processedScene);
@@ -180,11 +197,60 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
     setCurrentSceneId(choice.next);
   };
   
+  // Typewriter effect for text animation
+  useEffect(() => {
+    if (!dialogueText) {
+      setDisplayedText("");
+      setIsTextFullyTyped(true);
+      return;
+    }
+    
+    // If textSpeed is 100 (instant), display the full text immediately
+    if (textSpeed >= 100) {
+      setDisplayedText(dialogueText);
+      setIsTextFullyTyped(true);
+      return;
+    }
+    
+    setIsTextFullyTyped(false);
+    setDisplayedText("");
+
+    // Calculate delay based on text speed (50ms to 10ms range)
+    const delay = 50 - (textSpeed * 0.4);
+    
+    let currentChar = 0;
+    const textLength = dialogueText.length;
+    
+    const animationInterval = setInterval(() => {
+      if (currentChar <= textLength) {
+        setDisplayedText(dialogueText.slice(0, currentChar));
+        currentChar++;
+      } else {
+        clearInterval(animationInterval);
+        setIsTextFullyTyped(true);
+      }
+    }, delay);
+    
+    return () => clearInterval(animationInterval);
+  }, [dialogueText, textSpeed]);
+  
   // Handle content click
   const handleContentClick = () => {
     if (!showChoices) {
-      advanceDialogue();
+      // If text is still typing, show full text
+      if (!isTextFullyTyped) {
+        setDisplayedText(dialogueText);
+        setIsTextFullyTyped(true);
+      } else {
+        advanceDialogue();
+      }
     }
+  };
+  
+  // Toggle settings panel
+  const toggleSettings = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowSettings(!showSettings);
   };
   
   // Auto-scroll to keep the current dialogue visible
@@ -192,7 +258,7 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
     if (containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
-  }, [currentDialogueIndex, showChoices]);
+  }, [currentDialogueIndex, showChoices, displayedText]);
   
   if (!currentScene) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
@@ -240,13 +306,73 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
           className="vn-text-area h-[35%] bg-neutral-800 bg-opacity-90 text-white p-5 relative overflow-y-auto"
           onClick={handleContentClick}
         >
+          {/* Settings button */}
+          <button 
+            className="absolute top-2 right-2 p-2 bg-neutral-700 rounded-full z-10 hover:bg-neutral-600 transition-colors"
+            onClick={toggleSettings}
+          >
+            <Settings2 className="h-5 w-5 text-white" />
+          </button>
+          
+          {/* Settings panel */}
+          {showSettings && (
+            <div 
+              className="absolute top-12 right-2 bg-neutral-800 border border-neutral-600 rounded-md p-4 z-20 w-72 shadow-lg"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-white font-semibold mb-3">Text Speed</h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-neutral-400">Slow</span>
+                  <span className="text-sm text-neutral-400">Instant</span>
+                </div>
+                <Slider
+                  value={[textSpeed]}
+                  min={0}
+                  max={100}
+                  step={10}
+                  onValueChange={(values) => setTextSpeed(values[0])}
+                  className="w-full"
+                />
+                <div className="w-full flex justify-between">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setTextSpeed(0)}
+                    className={cn(textSpeed === 0 && "bg-primary/30")}
+                  >
+                    Slow
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setTextSpeed(50)}
+                    className={cn(textSpeed === 50 && "bg-primary/30")}
+                  >
+                    Medium
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setTextSpeed(100)}
+                    className={cn(textSpeed === 100 && "bg-primary/30")}
+                  >
+                    Instant
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Dialogue text */}
           {currentScene.dialogue.length > 0 && currentDialogueIndex < currentScene.dialogue.length && (
             <div className="vn-dialogue">
               <p className="character-name text-primary-300 font-semibold mb-2">
                 {currentScene.dialogue[currentDialogueIndex][0]}
               </p>
-              <p className="text-white text-lg">
-                {currentScene.dialogue[currentDialogueIndex][1]}
+              <p className="text-white text-lg whitespace-pre-line">
+                {displayedText || " "} {/* Display animated text */}
+                {!isTextFullyTyped && <span className="inline-block w-2 h-4 bg-white opacity-75 ml-1 animate-pulse"></span>}
               </p>
             </div>
           )}
@@ -266,7 +392,7 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
                     key={index}
                     variant="outline"
                     className={cn(
-                      "px-4 py-2 rounded-md text-left transition-colors h-auto relative",
+                      "px-4 py-3 rounded-md text-center transition-colors h-auto relative w-full",
                       // Base style
                       "bg-neutral-800 hover:bg-primary/70 text-white",
                       // Condition styles
@@ -283,13 +409,13 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
                         conditionMet ? "bg-green-500" : "bg-red-500"
                       )} />
                     )}
-                    <div>
+                    <div className="flex flex-col items-center">
                       {/* Main choice text */}
-                      <div>{choice.text || `Option ${index + 1}`}</div>
+                      <div className="text-center break-words">{choice.text || `Option ${index + 1}`}</div>
                       
                       {/* Description text (if present) */}
                       {choice.description && (
-                        <div className="text-sm text-neutral-400 mt-1 italic">
+                        <div className="text-sm text-neutral-400 mt-1 italic text-center break-words max-w-full">
                           {choice.description}
                         </div>
                       )}

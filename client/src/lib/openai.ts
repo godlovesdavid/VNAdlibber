@@ -280,10 +280,6 @@ export async function generateAct(
   projectContext: any,
   signal?: AbortSignal
 ): Promise<GenerationResult<{
-  meta: {
-    theme: string;
-    relationshipVars: string[];
-  };
   scenes: Array<{
     id: string;
     setting: string;
