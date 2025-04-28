@@ -2,11 +2,68 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
-import OpenAI from "openai";
 import { insertVnProjectSchema, insertVnStorySchema } from "@shared/schema";
 
-// Initialize OpenAI
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || "" });
+// Use Google's Gemini API instead of OpenAI
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+const GEMINI_API_KEY = process.env.OPENAI_API_KEY || "";
+
+// Helper function for Gemini API calls
+async function generateWithGemini(prompt: string, systemPrompt: string | null = null, responseFormat = "JSON") 
+{
+  try 
+  {
+    const headers = {
+      "Content-Type": "application/json",
+      "x-goog-api-key": GEMINI_API_KEY,
+    };
+
+    // Construct the request body
+    const requestBody = {
+      contents: [
+        ...(systemPrompt ? [{ role: "user", parts: [{ text: systemPrompt }] }] : []),
+        { role: "user", parts: [{ text: prompt }] },
+      ],
+      generationConfig: {
+        temperature: 0.4,
+        topP: 0.95,
+        topK: 64,
+        maxOutputTokens: 8192,
+        responseMimeType: responseFormat === "JSON" ? "application/json" : "text/plain",
+      },
+    };
+
+    const response = await fetch(GEMINI_API_URL, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) 
+    {
+      const errorData = await response.json();
+      console.error("Gemini API error:", errorData);
+      throw new Error(`Gemini API error: ${errorData.error?.message || "Unknown error"}`);
+    }
+
+    const data = await response.json();
+    
+    // Extract the text from the response
+    if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) 
+    {
+      return data.candidates[0].content.parts[0].text;
+    } 
+    else 
+    {
+      throw new Error("Unexpected Gemini API response format");
+    }
+  } 
+  catch (error) 
+  {
+    console.error("Error calling Gemini API:", error);
+    throw error;
+  }
+}
 
 // Helper function to check for error in OpenAI responses
 function checkResponseForError(parsedResponse: any, res: any): boolean {
@@ -196,61 +253,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Unified validation endpoint for all content types
-  app.post("/api/validate", async (req, res) => {
-    try {
+  app.post("/api/validate", async (req, res) => 
+  {
+    try 
+    {
       const { projectContext, contentType } = req.body;
 
       // Create prompt for validation based on content type
       const validationPrompt = `Please validate this story context for a visual novel ${contentType}:
         ${JSON.stringify(projectContext, null, 2)}
+        
+        If the data is valid, respond with:
+        { "valid": true }
+        
+        If there are problems, respond with:
+        {
+          "valid": false,
+          "issues": "list issues here"
+        }
+        
+        If story context is plot-conflicting, incoherent, sexually explicit, or offensive, then respond with a JSON with an error key explaining the issue like this: 
+        { "error": "Brief description of why the content is invalid." }
       `;
-      console.log(validationPrompt);
-
+      
       // Log validation request details
       console.log(`${contentType.toUpperCase()} validation request received`);
 
-      // Validate using OpenAI with explicit validation system prompt
-      const validationResponse = await openai.chat.completions.create({
-        model: "gpt-4.1-nano",
-        // temperature: 0.0,
-        // presence_penalty: 0.0,
-        // frequency_penalty: 0.0,
-        // top_p: 1.0,
-        messages: [
-          // {
-          //   role: "system",
-          //   content: validationSystemPrompt,
-          // },
-          { role: "user", content: validationPrompt },
-        ],
-        response_format: { type: "json_object" },
-      });
+      // Validate using Gemini
+      const responseContent = await generateWithGemini(validationPrompt, validationSystemPrompt);
 
-      console.log(
-        `${contentType.toUpperCase()} validation result:`,
-        validationResponse.choices[0].message.content,
-      );
+      console.log(`${contentType.toUpperCase()} validation result:`, responseContent);
 
       // Parse validation response
-      const validationResult = JSON.parse(
-        validationResponse.choices[0].message.content || "{}",
-      );
+      const validationResult = JSON.parse(responseContent || "{}");
 
       // If validation failed, return the error
-      if (!validationResult.valid)
+      if (!validationResult.valid && validationResult.issues)
+      {
         return res.status(400).json({ message: validationResult.issues });
+      }
+      
+      // If there's an explicit error, return it
+      if (validationResult.error)
+      {
+        return res.status(400).json({ message: validationResult.error });
+      }
 
       // If validation passed, return success
       res.json(validationResult);
-    } catch (error) {
+    } 
+    catch (error) 
+    {
       console.error("Error validating content:", error);
       res.status(500).json({ message: "Failed to validate content" });
     }
   });
   
   // AI Generation endpoints
-  app.post("/api/generate/concept", async (req, res) => {
-    try {
+  app.post("/api/generate/concept", async (req, res) => 
+  {
+    try 
+    {
       const { basicData } = generateConceptSchema.parse(req.body);
 
       // Create prompt for the concept generation
@@ -266,40 +329,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         Be wildly imaginative, original, and surprising — but keep it emotionally resonant.
       `;
-      console.log(prompt);
-      // Generate concept using OpenAI
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        temperature: 1.2,
-        frequency_penalty: 0.2,
-        presence_penalty: 0.5,
-        top_p: 1.0,
-        stop: null,
-        messages: [
-          {
-            role: "system",
-            content: "You're a VN brainstormer",
-          },
-          { role: "assistant", content: prompt },
-        ],
-        response_format: { type: "json_object" },
-      });
-
-      // Log the generated response for debugging
-      console.log("Generated concept:", response.choices[0].message.content);
+      console.log("Concept generation prompt:", prompt);
+      
+      // Use Gemini to generate the concept
+      const systemPrompt = "You're a visual novel brainstormer with wildly creative ideas";
+      const responseContent = await generateWithGemini(prompt, systemPrompt);
+      
+      console.log("Generated concept:", responseContent);
 
       // Parse the generated concept
-      const generatedConcept = JSON.parse(
-        response.choices[0].message.content || "{}",
-      );
+      const generatedConcept = JSON.parse(responseContent || "{}");
 
       // Check if the response contains an error and return early if it does
-      if (checkResponseForError(generatedConcept, res)) {
+      if (checkResponseForError(generatedConcept, res)) 
+      {
         return;
       }
 
       res.json(generatedConcept);
-    } catch (error) {
+    } 
+    catch (error) 
+    {
       console.error("Error generating concept:", error);
       res.status(500).json({ message: "Failed to generate concept" });
     }

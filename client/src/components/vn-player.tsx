@@ -205,21 +205,15 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
   }, [playerData, checkConditionMet, updatePlayerData]);
   
   // Typewriter effect for text animation
-  useEffect(() => 
-  {
-    if (!dialogueText) 
-    {
+  useEffect(() => {
+    if (!dialogueText) {
       setDisplayedText("");
       setIsTextFullyTyped(true);
       return;
     }
     
-    // Use the 3-speed settings (0=slow, 1=medium, 2=fast)
-    // Convert textSpeed to delay: 0->100ms, 1->50ms, 2->20ms, 3->instant
-    
-    // Instant speed (no animation) when textSpeed is 3
-    if (textSpeed === 3) 
-    {
+    // If textSpeed is 0, display the full text immediately (instant speed)
+    if (textSpeed === 0) {
       setDisplayedText(dialogueText);
       setIsTextFullyTyped(true);
       return;
@@ -229,22 +223,18 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
     setIsTextFullyTyped(false);
     setDisplayedText("");
 
-    // Calculate delay based on text speed setting
-    const delays = [100, 50, 20]; // Slow, Medium, Fast
-    const delay = delays[textSpeed];
+    // Calculate delay based on text speed (inverting so higher values = faster)
+    // 1=slowest (100ms delay), 10=fastest (10ms delay)
+    const delay = 110 - (textSpeed * 10);
     
     let currentChar = 0;
     const textLength = dialogueText.length;
     
-    const animationInterval = setInterval(() => 
-    {
-      if (currentChar <= textLength) 
-      {
+    const animationInterval = setInterval(() => {
+      if (currentChar <= textLength) {
         setDisplayedText(dialogueText.slice(0, currentChar));
         currentChar++;
-      } 
-      else 
-      {
+      } else {
         clearInterval(animationInterval);
         setIsTextFullyTyped(true);
       }
