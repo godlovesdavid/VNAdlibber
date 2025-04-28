@@ -58,13 +58,8 @@ async function generateWithGemini(
     if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
       let responseText = data.candidates[0].content.parts[0].text;
       
-      // Clean response text of markdown code blocks if present
-      if (responseText.startsWith("```")) {
-        // Strip opening code block markers (```json or just ```)
-        responseText = responseText.replace(/^```(?:json|javascript)?\s*\n/, "");
-        // Strip closing code block markers
-        responseText = responseText.replace(/\n```\s*$/, "");
-      }
+      // Clean response text of potential issues
+      responseText = cleanResponseText(responseText);
       
       return responseText;
     } else {
@@ -84,6 +79,27 @@ function checkResponseForError(parsedResponse: any, res: any): boolean {
     return true;
   }
   return false;
+}
+
+// Helper function to clean response text of common issues before parsing
+function cleanResponseText(text: string): string {
+  // Strip markdown code blocks if present
+  if (text.startsWith("```")) {
+    // Strip opening code block markers (```json or just ```)
+    text = text.replace(/^```(?:json|javascript)?\s*\n/, "");
+    // Strip closing code block markers
+    text = text.replace(/\n```\s*$/, "");
+  }
+  
+  // Replace JavaScript string concatenation in JSON with plain text
+  // e.g., "name": "Geargrind " + "Cogsworth" becomes "name": "Geargrind Cogsworth"
+  text = text.replace(/"([^"]+)" \+ "([^"]+)"/g, '"$1$2"');
+
+  // Remove any JS-style comments
+  text = text.replace(/\/\/.*$/gm, "");
+  text = text.replace(/\/\*[\s\S]*?\*\//g, "");
+  
+  return text;
 }
 
 // Standard system prompt for content validation
@@ -420,17 +436,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Generating ${indices.length} characters at once`);
       console.log("Got:", responseContent);
 
-      // Parse response
-      if (responseContent === "{}") throw "Empty response";
-      const parsed = JSON.parse(responseContent || "{}");
+      // Try to parse response
+      try {
+        if (responseContent === "{}") throw new Error("Empty response");
+        
+        console.log("Cleaned response:", responseContent);
+        const parsed = JSON.parse(responseContent);
 
-      // Check if the response contains an error and return early if it does
-      if (checkResponseForError(parsed, res)) {
-        return;
+        // Check if the response contains an error and return early if it does
+        if (checkResponseForError(parsed, res)) {
+          return;
+        }
+
+        // Return array of characters directly (not wrapped in an object)
+        res.json("characters" in parsed ? parsed.characters : [parsed]);
+      } catch (parseError: any) {
+        console.error("JSON parse error:", parseError);
+        console.error("Problematic JSON:", responseContent);
+        throw new Error(`Failed to parse response: ${parseError.message}`);
       }
-
-      // Return array of characters directly (not wrapped in an object)
-      res.json("characters" in parsed ? parsed.characters : [parsed]);
     } catch (error) {
       console.error("Error generating characters:", error);
       res.status(500).json({
@@ -476,12 +500,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Generating ${indices.length} paths at once`);
       console.log("Got:", responseContent);
 
-      // Parse
-      if (responseContent === "{}") throw "Empty response";
-      const parsed = JSON.parse(responseContent || "{}");
+      // Try to parse response
+      try {
+        if (responseContent === "{}") throw new Error("Empty response");
+        
+        console.log("Cleaned response:", responseContent);
+        const parsed = JSON.parse(responseContent);
 
-      // Return array of paths directly (not wrapped in an object)
-      res.json(parsed.paths);
+        // Check if the response contains an error and return early if it does
+        if (checkResponseForError(parsed, res)) {
+          return;
+        }
+
+        // Return array of paths directly (not wrapped in an object)
+        res.json(parsed.paths);
+      } catch (parseError: any) {
+        console.error("JSON parse error:", parseError);
+        console.error("Problematic JSON:", responseContent);
+        throw new Error(`Failed to parse response: ${parseError.message}`);
+      }
     } catch (error) {
       console.error("Error generating paths:", error);
       res.status(500).json({ message: "Failed to generate paths" });
@@ -524,10 +561,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Log the generated response for debugging
       console.log("Generated plot outline:", responseContent);
 
-      // Parse the generated plot
-      const generatedPlot = JSON.parse(responseContent || "{}");
+      // Try to parse response
+      try {
+        if (responseContent === "{}") throw new Error("Empty response");
+        
+        console.log("Cleaned response:", responseContent);
+        const generatedPlot = JSON.parse(responseContent);
 
-      res.json(generatedPlot);
+        // Check if the response contains an error and return early if it does
+        if (checkResponseForError(generatedPlot, res)) {
+          return;
+        }
+
+        res.json(generatedPlot);
+      } catch (parseError: any) {
+        console.error("JSON parse error:", parseError);
+        console.error("Problematic JSON:", responseContent);
+        throw new Error(`Failed to parse response: ${parseError.message}`);
+      }
     } catch (error) {
       console.error("Error generating plot:", error);
       res.status(500).json({ message: "Failed to generate plot" });
@@ -643,10 +694,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         responseContent?.substring(0, 200) + "..."
       );
 
-      // Parse the generated act
-      const generatedAct = JSON.parse(responseContent || "{}");
+      // Try to parse response
+      try {
+        if (responseContent === "{}") throw new Error("Empty response");
+        
+        console.log("Cleaned response for act:", responseContent.substring(0, 200) + "...");
+        const generatedAct = JSON.parse(responseContent);
 
-      res.json(generatedAct);
+        // Check if the response contains an error and return early if it does
+        if (checkResponseForError(generatedAct, res)) {
+          return;
+        }
+
+        res.json(generatedAct);
+      } catch (parseError: any) {
+        console.error("JSON parse error:", parseError);
+        console.error("Problematic JSON (first 200 chars):", responseContent.substring(0, 200) + "...");
+        throw new Error(`Failed to parse response: ${parseError.message}`);
+      }
     } catch (error) {
       console.error("Error generating act:", error);
       res.status(500).json({ message: "Failed to generate act" });
