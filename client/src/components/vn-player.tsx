@@ -172,18 +172,24 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
   
   // Handle choice selection
   const handleChoiceSelect = useCallback((choice: SceneChoice) => {
+    // Guard: if not clickable, do nothing
+    if (!clickableContent) return;
+    
+    // Disable interactions during transition
+    setClickableContent(false);
+    
     // Check if there's a condition and if it's met
     const conditionMet = checkConditionMet(choice);
     
     // If condition not met and there's a failNext path, go to that scene
     if (!conditionMet && choice.failNext) {
-      // Add a tiny visual feedback that the condition failed (optional)
-      setClickableContent(false);
+      // Visual feedback that the condition failed - longer delay for visibility
       setTimeout(() => {
         // Make sure failNext is a valid string before setting it as the current scene ID
         if (choice.failNext) {
           setCurrentSceneId(choice.failNext);
         }
+        // Re-enable interactions after transition
         setClickableContent(true);
       }, 300);
       return;
@@ -216,9 +222,14 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
       });
     }
     
-    // Move to the next scene
-    setCurrentSceneId(choice.next);
-  }, [playerData, checkConditionMet, updatePlayerData]);
+    // Short delay before moving to next scene for better user experience
+    setTimeout(() => {
+      // Move to the next scene
+      setCurrentSceneId(choice.next);
+      // Re-enable interactions after transition
+      setClickableContent(true);
+    }, 100);
+  }, [playerData, checkConditionMet, updatePlayerData, clickableContent, setClickableContent, setCurrentSceneId]);
   
   // Typewriter effect for text animation
   useEffect(() => {
@@ -372,20 +383,29 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
                     variant="outline"
                     className={cn(
                       "px-4 py-3 rounded-md text-center transition-colors h-auto relative w-full",
-                      // Base style
-                      "bg-neutral-800 hover:bg-primary/70 text-white",
-                      // Condition styles
-                      hasCondition && !conditionMet && "bg-red-900/40 hover:bg-red-900/60 border-red-700",
-                      hasCondition && conditionMet && "bg-green-900/20 hover:bg-green-900/40 border-green-700"
+                      // Base style for all buttons
+                      "bg-neutral-800 text-white border-neutral-600",
+                      // Add hover effect only when not showing condition colors
+                      !hasCondition && "hover:bg-primary/70 hover:border-primary",
+                      // Condition-specific styles with more opacity for visibility
+                      hasCondition && !conditionMet && "bg-red-900/30 border-red-700/70 hover:bg-red-900/50",
+                      hasCondition && conditionMet && "bg-green-900/30 border-green-700/70 hover:bg-green-900/50"
                     )}
-                    onClick={() => handleChoiceSelect(choice)}
-                    disabled={false} // We handle condition failure in the click handler
+                    onClick={() => {
+                      if (clickableContent) {
+                        handleChoiceSelect(choice);
+                      }
+                    }}
+                    disabled={!clickableContent} // Disable when not clickable
                   >
                     {/* Indicator for choices with conditions */}
                     {hasCondition && (
                       <span className={cn(
-                        "absolute top-1 right-1 w-2 h-2 rounded-full",
-                        conditionMet ? "bg-green-500" : "bg-red-500"
+                        "absolute top-2 right-2 flex items-center justify-center",
+                        "w-4 h-4 rounded-full border",
+                        conditionMet 
+                          ? "bg-green-600 border-green-400" 
+                          : "bg-red-600 border-red-400"
                       )} />
                     )}
                     <div className="flex flex-col items-center">
