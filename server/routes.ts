@@ -554,19 +554,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Plot validation endpoint
-  app.post("/api/validate/plot", async (req, res) => {
+  // Unified content validation endpoint 
+  app.post("/api/validate", async (req, res) => {
     try {
-      const { projectContext } = req.body;
+      const { projectContext, contentType = "general" } = req.body;
 
       // Create prompt for validation
-      const validationPrompt = `Please validate this story context for a visual novel plot outline:
+      const validationPrompt = `Please validate this story context for a visual novel ${contentType} generation:
         ${JSON.stringify(projectContext, null, 2)}
       `;
 
+      // Determine model based on content type
+      const model = contentType === "act" ? "gpt-4.1-mini" : "gpt-4o-mini";
+
       // Validate using OpenAI with explicit validation system prompt
       const validationResponse = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+        model,
         temperature: 0.2, // Lower temperature for more consistent validation
         messages: [
           {
@@ -578,7 +581,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         response_format: { type: "json_object" },
       });
 
-      console.log("Plot validation result:", validationResponse.choices[0].message.content);
+      console.log(`${contentType.toUpperCase()} validation result:`, validationResponse.choices[0].message.content);
       
       // Parse validation response
       const validationResult = JSON.parse(
@@ -593,11 +596,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If validation passed, return success
       res.json({ valid: true });
     } catch (error) {
-      console.error("Error validating plot:", error);
-      res.status(500).json({ message: "Failed to validate plot" });
+      console.error(`Error validating ${req.body.contentType || 'content'}:`, error);
+      res.status(500).json({ message: `Failed to validate ${req.body.contentType || 'content'}` });
     }
   });
 
+  // Plot generation endpoint
   app.post("/api/generate/plot", async (req, res) => {
     try {
       const { projectContext } = generatePlotSchema.parse(req.body);
@@ -654,50 +658,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Act validation endpoint
-  app.post("/api/validate/act", async (req, res) => {
-    try {
-      const { projectContext } = req.body;
-
-      // Create prompt for validation
-      const validationPrompt = `Please validate this story context for a visual novel act generation:
-        ${JSON.stringify(projectContext, null, 2)}
-      `;
-
-      // Validate using OpenAI with explicit validation system prompt
-      const validationResponse = await openai.chat.completions.create({
-        model: "gpt-4.1-mini",
-        temperature: 0.2, // Lower temperature for more consistent validation
-        messages: [
-          {
-            role: "system",
-            content: validationSystemPrompt,
-          },
-          { role: "user", content: validationPrompt },
-        ],
-        response_format: { type: "json_object" },
-      });
-
-      console.log("Act validation result:", validationResponse.choices[0].message.content);
-      
-      // Parse validation response
-      const validationResult = JSON.parse(
-        validationResponse.choices[0].message.content || "{}"
-      );
-
-      // If validation failed, return the error
-      if (validationResult.error) {
-        return res.status(400).json({ message: validationResult.error });
-      }
-
-      // If validation passed, return success
-      res.json({ valid: true });
-    } catch (error) {
-      console.error("Error validating act:", error);
-      res.status(500).json({ message: "Failed to validate act" });
-    }
-  });
-
+  // Act generation endpoint
   app.post("/api/generate/act", async (req, res) => {
     try {
       const { actNumber, scenesCount, projectContext } =
