@@ -15,48 +15,60 @@ import { Input } from "@/components/ui/input";
 
 export default function BasicForm() {
   const [, setLocation] = useLocation();
-  const { projectData, setBasicData } = useVnContext();
+  const { projectData, setBasicData, createNewProject } = useVnContext();
   
-  // Force re-render key
-  const [forceUpdateKey, setForceUpdateKey] = useState(Date.now());
-  
-  // Form state - use key to force reset
+  // Use state with string default values to avoid TypeScript errors
   const [theme, setTheme] = useState("");
   const [tone, setTone] = useState("");
   const [genre, setGenre] = useState("");
   
-  // Reset all form state (called when creating a new project)
-  const resetAllFormState = () => {
+  // Add manual reset debug function
+  const handleManualReset = () => {
+    console.log("Manual reset requested");
+    
+    // Clear all browser storage
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Clear form state
     setTheme("");
     setTone("");
     setGenre("");
-    setForceUpdateKey(Date.now()); // Force components to re-render
+    
+    // Reload the page completely
+    window.location.href = "/";
   };
   
-  // Load existing data if available or clear form if starting a new project
+  // This runs once when the component mounts
   useEffect(() => {
-    // Force reset on new or missing project data
-    if (!projectData || !projectData.basicData || projectData.basicData.theme === "") {
-      resetAllFormState();
+    console.log("BasicForm component mounted");
+    
+    // Check if we need to clear on mount
+    const isNewProject = sessionStorage.getItem("vn_fresh_project") === "true";
+    
+    if (isNewProject) {
+      console.log("Found new project flag, clearing form");
+      sessionStorage.removeItem("vn_fresh_project");
+      setTheme("");
+      setTone("");
+      setGenre("");
       return;
     }
     
-    // Otherwise load from project data
+    // If we have project data, use it
     if (projectData?.basicData) {
+      console.log("Loading existing project data", projectData.basicData);
       setTheme(projectData.basicData.theme || "");
       setTone(projectData.basicData.tone || "");
       setGenre(projectData.basicData.genre || "");
+    } else {
+      // Otherwise clear the form
+      console.log("No project data found, clearing form");
+      setTheme("");
+      setTone("");
+      setGenre("");
     }
-  }, [projectData, forceUpdateKey]);
-  
-  // Additional effect to detect new project based on timing
-  useEffect(() => {
-    // Check localStorage directly
-    const savedProject = localStorage.getItem("current_vn_project");
-    if (!savedProject) {
-      resetAllFormState();
-    }
-  }, []);
+  }, [projectData?.basicData]);
   
   // Go back to main menu
   const goBack = () => {
@@ -102,7 +114,12 @@ export default function BasicForm() {
             <div className="form-group">
               <label htmlFor="theme" className="block text-sm font-medium text-gray-700 mb-1">Theme</label>
               <p className="text-xs text-gray-500 mb-2">The central ideas explored in your story</p>
-              <Select value={theme} onValueChange={setTheme}>
+              <Select 
+                key={`theme-${forceUpdateKey}`} 
+                value={theme || ""} 
+                onValueChange={setTheme}
+                defaultValue=""
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a theme" />
                 </SelectTrigger>
@@ -126,7 +143,12 @@ export default function BasicForm() {
             <div className="form-group">
               <label htmlFor="tone" className="block text-sm font-medium text-gray-700 mb-1">Tone</label>
               <p className="text-xs text-gray-500 mb-2">The emotional atmosphere of your story</p>
-              <Select value={tone} onValueChange={setTone}>
+              <Select 
+                key={`tone-${forceUpdateKey}`} 
+                value={tone || ""} 
+                onValueChange={setTone}
+                defaultValue=""
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a tone" />
                 </SelectTrigger>
@@ -150,7 +172,12 @@ export default function BasicForm() {
             <div className="form-group">
               <label htmlFor="genre" className="block text-sm font-medium text-gray-700 mb-1">Genre</label>
               <p className="text-xs text-gray-500 mb-2">The category or style of your story</p>
-              <Select value={genre} onValueChange={setGenre}>
+              <Select 
+                key={`genre-${forceUpdateKey}`} 
+                value={genre || ""} 
+                onValueChange={setGenre}
+                defaultValue=""
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a genre" />
                 </SelectTrigger>
