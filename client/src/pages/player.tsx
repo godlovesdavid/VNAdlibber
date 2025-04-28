@@ -8,7 +8,7 @@ import { GeneratedAct } from "@/types/vn";
 export default function Player() {
   const { actId } = useParams();
   const [, setLocation] = useLocation();
-  const { projectData } = useVnContext();
+  const { projectData, updatePlayerData, resetPlayerData } = useVnContext();
   const [actData, setActData] = useState<GeneratedAct | null>(null);
   const [actNumber, setActNumber] = useState<number>(1);
   const [loading, setLoading] = useState(true);
@@ -19,14 +19,47 @@ export default function Player() {
       setLoading(true);
       setError(null);
       
+      // Always reset player data when loading a new act to avoid state persistence issues
+      resetPlayerData();
+      
       try {
         if (actId === "imported") {
           // Handle imported story from session storage
           const importedStory = sessionStorage.getItem("current_story");
           if (importedStory) {
             const parsedStory = JSON.parse(importedStory);
-            setActData(parsedStory.actData);
-            setActNumber(parsedStory.actNumber || 1);
+            
+            // Handle both old and new export formats
+            if (parsedStory.actData) {
+              // Old format with actData property
+              setActData(parsedStory.actData);
+              setActNumber(parsedStory.actNumber || 1);
+              
+              // Initialize player data from the context
+              // This is likely why scene transitions don't work - player state is lost
+              if (parsedStory.actData.__exportInfo?.playerData) {
+                updatePlayerData(parsedStory.actData.__exportInfo.playerData);
+              }
+            } else {
+              // New format where the imported data is the full act data
+              // Check for __exportInfo metadata
+              if (parsedStory.__exportInfo) {
+                setActNumber(parsedStory.__exportInfo.actNumber || 1);
+                
+                // Initialize player data from the export
+                if (parsedStory.__exportInfo.playerData) {
+                  updatePlayerData(parsedStory.__exportInfo.playerData);
+                }
+                
+                // Remove the metadata before setting act data to avoid issues
+                const { __exportInfo, ...cleanActData } = parsedStory;
+                setActData(cleanActData);
+              } else {
+                // Legacy format without __exportInfo
+                setActData(parsedStory);
+                setActNumber(1);
+              }
+            }
           } else {
             throw new Error("No imported story found");
           }
@@ -53,7 +86,7 @@ export default function Player() {
     };
     
     loadAct();
-  }, [actId, projectData]);
+  }, [actId, projectData, updatePlayerData, resetPlayerData]);
   
   // Handle return to generator or play selection
   const handleReturn = () => {
