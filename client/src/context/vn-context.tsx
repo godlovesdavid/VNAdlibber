@@ -97,8 +97,28 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       console.error("Error clearing storage:", e);
     }
     
-    // Set project data to null first to trigger cleanup
-    setProjectData(null);
+    // Initialize a minimal basic structure to prevent "basic data missing" errors
+    const initialProject = {
+      title: "Untitled Project",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      basicData: {
+        theme: "",
+        tone: "",
+        genre: "",
+      },
+      currentStep: 1
+    };
+    
+    // Set initial project data in localStorage so it's available on the form when it loads
+    try {
+      localStorage.setItem("current_vn_project", JSON.stringify(initialProject));
+    } catch (e) {
+      console.error("Error setting initial project:", e);
+    }
+    
+    // Update state and redirect to form
+    setProjectData(initialProject);
     
     // Force a page reload - most reliable way to reset everything
     window.location.href = "/create/basic";
