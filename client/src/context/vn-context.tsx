@@ -83,21 +83,9 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   }, [projectData]);
   
   // Create a new project
-  const createNewProject = () => {
-    console.log("Creating new project - less aggressive reset approach");
-    
-    // Only remove current project data, not all localStorage
-    try {
-      // Only remove specific VN project keys, not everything
-      localStorage.removeItem("current_vn_project");
-      
-      // Set flag for new project in sessionStorage
-      sessionStorage.setItem('vn_fresh_project', 'true');
-    } catch (e) {
-      console.error("Error clearing project data:", e);
-    }
-    
-    // Initialize a minimal basic structure to prevent "basic data missing" errors
+  const createNewProject = () => 
+  {
+    // First create a clean minimal basic structure
     const initialProject: VnProjectData = {
       title: "Untitled Project",
       createdAt: new Date().toISOString(),
@@ -110,18 +98,33 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       currentStep: 1
     };
     
-    // Update state with the new project data
-    setProjectData(initialProject);
-    setPlayerData(defaultPlayerData);
-    
-    // Set initial project data in localStorage so it's available on the form when it loads
-    try {
+    // Clear any existing project data
+    try 
+    {
+      // Remove old data from storage
+      localStorage.removeItem("current_vn_project");
+      sessionStorage.removeItem('vn_fresh_project');
+      
+      // Important: Set the new project data in localStorage FIRST, before updating state
       localStorage.setItem("current_vn_project", JSON.stringify(initialProject));
-    } catch (e) {
-      console.error("Error setting initial project:", e);
+    } 
+    catch (e) 
+    {
+      // Show error toast if localStorage operations fail
+      toast({
+        title: "Error",
+        description: "Failed to create new project storage",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
     }
     
-    // Navigate to the first step (don't use location.href as it causes full page reload)
+    // IMPORTANT: Update state AFTER storage is updated
+    setProjectData(initialProject);
+    resetPlayerData();
+    
+    // Navigate to the first step
     setLocation("/create/basic");
     
     // Show confirmation toast
@@ -274,18 +277,18 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   };
   
   // Load project from server
-  const loadProject = async (projectId: number) => {
-    try {
+  const loadProject = async (projectId: number) => 
+  {
+    try 
+    {
       setIsLoading(true);
-      console.log("Loading project with ID:", projectId);
       
       const response = await apiRequest("GET", `/api/projects/${projectId}`);
       const loadedProject = await response.json();
       
-      console.log("Project loaded from server:", loadedProject);
-      
       // Make sure the loaded project has all required fields
-      if (!loadedProject.basicData) {
+      if (!loadedProject.basicData) 
+      {
         loadedProject.basicData = {
           theme: "",
           tone: "",
@@ -293,46 +296,52 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         };
       }
       
-      // Force localStorage update with the loaded project
+      // IMPORTANT: Force localStorage update with the loaded project FIRST
       localStorage.setItem("current_vn_project", JSON.stringify(loadedProject));
+      
+      // Clear any "fresh project" flags
+      sessionStorage.removeItem('vn_fresh_project');
       
       // Set project data in state
       setProjectData(loadedProject);
       
       // Set player data if it exists
-      if (loadedProject.playerData) {
+      if (loadedProject.playerData) 
+      {
         setPlayerData(loadedProject.playerData);
-      } else {
+      } 
+      else 
+      {
         resetPlayerData();
       }
       
-      // Wait a short timeout to ensure state has been updated
-      setTimeout(() => {
-        // Navigate to appropriate step
-        const stepRoutes = [
-          '/create/basic',
-          '/create/concept',
-          '/create/characters',
-          '/create/paths',
-          '/create/plot',
-          '/create/generate-vn'
-        ];
-        setLocation(stepRoutes[loadedProject.currentStep - 1] || '/create/basic');
-        
-        toast({
-          title: "Success",
-          description: "Project loaded successfully",
-        });
-        
-        setIsLoading(false);
-      }, 100);
-    } catch (error) {
-      console.error("Error loading project:", error);
+      // Navigate to appropriate step
+      const stepRoutes = [
+        '/create/basic',
+        '/create/concept',
+        '/create/characters',
+        '/create/paths',
+        '/create/plot',
+        '/create/generate-vn'
+      ];
+      
+      setLocation(stepRoutes[loadedProject.currentStep - 1] || '/create/basic');
+      
+      toast({
+        title: "Success",
+        description: "Project loaded successfully",
+      });
+    } 
+    catch (error) 
+    {
       toast({
         title: "Error",
         description: "Failed to load project",
         variant: "destructive",
       });
+    } 
+    finally 
+    {
       setIsLoading(false);
     }
   };

@@ -214,8 +214,8 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
       return;
     }
     
-    // If textSpeed is 0, display the full text immediately (instant speed)
-    if (textSpeed === 0) 
+    // Instant speed (no animation) when textSpeed is 10
+    if (textSpeed === 10) 
     {
       setDisplayedText(dialogueText);
       setIsTextFullyTyped(true);
@@ -226,8 +226,8 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
     setIsTextFullyTyped(false);
     setDisplayedText("");
 
-    // Calculate delay based on text speed (inverting so higher values = faster)
-    // 1=slowest (100ms delay), 10=fastest (10ms delay)
+    // Calculate delay based on text speed (1=slowest at 100ms, 9=fastest at 20ms)
+    // We use a range of 100ms to 20ms for better readability control
     const delay = 110 - (textSpeed * 10);
     
     let currentChar = 0;
