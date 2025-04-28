@@ -7,7 +7,7 @@ import { insertVnProjectSchema, insertVnStorySchema } from "@shared/schema";
 // Use Google's Gemini API instead of OpenAI
 const GEMINI_API_URL =
   "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent";
-const GEMINI_API_KEY = process.env.OPENAI_API_KEY || "";
+const GEMINI_API_KEY = "AIzaSyDE-O9FT4wsie2Cb5SWNUhNVszlQg3dHnU";
 
 // Helper function for Gemini API calls
 async function generateWithGemini(
