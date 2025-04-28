@@ -300,8 +300,8 @@ export function useVnData() {
       console.log("🔍 Validating plot context before generation...");
       const validationResponse = await apiRequest(
         "POST",
-        "/api/validate/plot",
-        { projectContext },
+        "/api/validate",
+        { projectContext, contentType: "plot" },
         controller.signal
       );
       
@@ -418,8 +418,8 @@ export function useVnData() {
       console.log(`🔍 Validating Act ${actNumber} content before generation...`);
       const validationResponse = await apiRequest(
         "POST",
-        "/api/validate/act",
-        { projectContext },
+        "/api/validate",
+        { projectContext, contentType: "act" },
         controller.signal
       );
       
