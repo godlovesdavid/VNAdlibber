@@ -24,25 +24,32 @@ const standardValidationInstructions =
 
 // Explicit validation system prompt that prevents "looks good" errors
 //If story context is plot-conflicting, incoherent, sexually explicit, or offensive, then instead return a JSON with an error key explaining the issue like this: { "error": "Brief description of why the content is invalid." }
-const validationSystemPrompt = `You are a content validation system for a visual novel generator app.
-Your ONLY job is to validate the provided content for a visual novel and return errors if any exist.
+const validationSystemPrompt = `You are a strict validation assistant for Visual Novel (VN) project data.
 
-You should ONLY check for:
-1. Plot inconsistencies or logical flaws
-2. Offensive or inappropriate content
-3. Incoherent character motivations
-4. Conflicting story elements
+You will receive JSON input containing:
+- "basicData": an object containing story theme, tone, and genre
+- "conceptData": an object describing the central concept
+- "characterData": an object describing characters
+- "pathsData": an object describing plot arcs
 
-IMPORTANT: ONLY return a JSON with an 'error' key if there's a genuine issue.
-If the content is valid, return {"valid": true} ONLY. Never include praise, suggestions, or confirmation messages.
+Your job is to validate the following:
+1. Every major character must appear meaningfully in the plot.
+2. Each character's "role" and "goals" must logically align with the plot's story.
+3. The plot's beginning, middle, climax, and endings must make sense based on the provided characters.
 
-DO NOT return errors like:
-- "No issues detected"
-- "The content looks good"
-- "Content is coherent and appropriate"
-- Any other positive assessments
-
-These are NOT errors and will break the app if returned as errors.`;
+Validation Rules:
+- If the data is fully consistent and complete, reply exactly with:
+  { "valid": true }
+- If there are problems, reply with:
+  {
+    "valid": false,
+    "issues": "list issues here"
+  }
+  IMPORTANT:
+  Do NOT invent missing information.
+  Do NOT suggest fixes.
+  ONLY report validation status.
+`;
 
 // Schema for generation requests
 const generateConceptSchema = z.object({
@@ -268,10 +275,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
               "gender": "Can be robot/AI",
               "age": "Age as a string",
               "appearance": "Physical description (<15 words)",
-              "personality": "Key personality traits and behaviors (<40 words)",
-              "goals": "Primary motivations and objectives (<40 words)",
-              "relationshipPotential": "${indices.length == 1 && indices[0] == 0 ? "(Leave blank)" : "Relationship potential with main protagonist. Lovers must be opposite gender. (<15 words)"}",
-              "conflict": "Their primary internal or external struggle (<40 words)"
+              "personality": "Key personality traits and behaviors (<50 words)",
+              "goals": "Primary motivations and objectives (<50 words)",
+              "relationshipPotential": "${indices.length == 1 && indices[0] == 0 ? "(Leave blank)" : "Relationship potential with main protagonist. Lovers must be opposite gender. (<20 words)"}",
+              "conflict": "Their primary internal or external struggle (<50 words)"
             } ${
               indices.length > 1
                 ? `
@@ -327,6 +334,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Plot validation endpoint
+  app.post("/api/validate", async (req, res) => {
+    try {
+      const { projectContext } = req.body;
+
+      // Create prompt for validation
+      const validationPrompt = `Please validate this story context for a visual novel plot outline:
+        ${JSON.stringify(projectContext, null, 2)}
+      `;
+      console.log(validationPrompt)
+      
+      // Validate using OpenAI with explicit validation system prompt
+      const validationResponse = await openai.chat.completions.create({
+        model: "gpt-4.1-nano",
+        temperature: 0.0,
+        presence_penalty: 0.0,
+        frequency_penalty: 0.0,
+        top_p: 1.0,
+        messages: [
+          {
+            role: "system",
+            content: validationSystemPrompt,
+          },
+          { role: "user", content: validationPrompt },
+        ],
+        response_format: { type: "json_object" },
+      });
+
+      console.log("Plot validation result:", validationResponse.choices[0].message.content);
+
+      // Parse validation response
+      const validationResult = JSON.parse(
+        validationResponse.choices[0].message.content || "{}"
+      );
+
+      // If validation failed, return the error
+      if (!validationResult.valid) 
+        return res.status(400).json({ message: validationResult.issues });
+      
+
+      // If validation passed, return success
+      res.json(validationResult);
+    } catch (error) {
+      console.error("Error validating plot:", error);
+      res.status(500).json({ message: "Failed to validate plot" });
+    }
+  });
+  
   // For backward compatibility, redirecting old endpoints to new unified one
   app.post("/api/generate/character", async (req, res) => {
     try {
@@ -391,50 +446,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to generate characters bundle" });
     }
   });
-
-  // Add a new validation endpoint
-  // app.post("/api/validate/paths", async (req, res) => {
-  //   try {
-  //     const { projectContext } = req.body;
-
-  //     // Create prompt for validation
-  //     const validationPrompt = `Please validate this story context for a visual novel plot arc:
-  //       ${JSON.stringify(projectContext, null, 2)}
-  //     `;
-
-  //     // Validate using OpenAI with explicit validation system prompt
-  //     const validationResponse = await openai.chat.completions.create({
-  //       model: "gpt-4.1-nano",
-  //       temperature: 0.2, // Lower temperature for more consistent validation
-  //       messages: [
-  //         {
-  //           role: "system",
-  //           content: validationSystemPrompt,
-  //         },
-  //         { role: "user", content: validationPrompt },
-  //       ],
-  //       response_format: { type: "json_object" },
-  //     });
-
-  //     console.log("Validation result:", validationResponse.choices[0].message.content);
-      
-  //     // Parse validation response
-  //     const validationResult = JSON.parse(
-  //       validationResponse.choices[0].message.content || "{}"
-  //     );
-
-  //     // If validation failed, return the error
-  //     if (validationResult.error) {
-  //       return res.status(400).json({ message: validationResult.error });
-  //     }
-
-  //     // If validation passed, return success
-  //     res.json({ valid: true });
-  //   } catch (error) {
-  //     console.error("Error validating paths:", error);
-  //     res.status(500).json({ message: "Failed to validate paths" });
-  //   }
-  // });
 
   app.post("/api/generate/paths", async (req, res) => {
     try {
@@ -554,54 +565,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Unified content validation endpoint 
-  app.post("/api/validate", async (req, res) => {
-    try {
-      const { projectContext, contentType = "general" } = req.body;
 
-      // Create prompt for validation
-      const validationPrompt = `Please validate this story context for a visual novel ${contentType} generation:
-        ${JSON.stringify(projectContext, null, 2)}
-      `;
-
-      // Determine model based on content type
-      const model = contentType === "act" ? "gpt-4.1-mini" : "gpt-4o-mini";
-
-      // Validate using OpenAI with explicit validation system prompt
-      const validationResponse = await openai.chat.completions.create({
-        model,
-        temperature: 0.2, // Lower temperature for more consistent validation
-        messages: [
-          {
-            role: "system",
-            content: validationSystemPrompt,
-          },
-          { role: "user", content: validationPrompt },
-        ],
-        response_format: { type: "json_object" },
-      });
-
-      console.log(`${contentType.toUpperCase()} validation result:`, validationResponse.choices[0].message.content);
-      
-      // Parse validation response
-      const validationResult = JSON.parse(
-        validationResponse.choices[0].message.content || "{}"
-      );
-
-      // If validation failed, return the error
-      if (validationResult.error) {
-        return res.status(400).json({ message: validationResult.error });
-      }
-
-      // If validation passed, return success
-      res.json({ valid: true });
-    } catch (error) {
-      console.error(`Error validating ${req.body.contentType || 'content'}:`, error);
-      res.status(500).json({ message: `Failed to validate ${req.body.contentType || 'content'}` });
-    }
-  });
-
-  // Plot generation endpoint
   app.post("/api/generate/plot", async (req, res) => {
     try {
       const { projectContext } = generatePlotSchema.parse(req.body);
@@ -658,7 +622,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Act generation endpoint
   app.post("/api/generate/act", async (req, res) => {
     try {
       const { actNumber, scenesCount, projectContext } =

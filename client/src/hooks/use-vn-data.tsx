@@ -59,6 +59,7 @@ export function useVnData() {
           title: "Generation Failed",
           description: "Failed to generate concept. Please try again.",
           variant: "destructive",
+          duration: 60000,
         });
         console.error("Error generating concept:", error);
       }
@@ -263,6 +264,7 @@ export function useVnData() {
           title: "Generation Failed",
           description: errorMsg,
           variant: "destructive",
+          duration: 60000,
         });
         console.error("Error in two-step path generation:", error);
       }
@@ -296,38 +298,38 @@ export function useVnData() {
         pathsData: vnContext.projectData.pathsData,
       };
       
-      // STEP 1: Validate the content first
-      console.log("🔍 Validating plot context before generation...");
-      const validationResponse = await apiRequest(
-        "POST",
-        "/api/validate",
-        { projectContext, contentType: "plot" },
-        controller.signal
-      );
+      // // STEP 1: Validate the content first
+      // console.log("🔍 Validating plot context before generation...");
+      // const validationResponse = await apiRequest(
+      //   "POST",
+      //   "/api/validate",
+      //   { projectContext, contentType: "plot" },
+      //   controller.signal
+      // );
       
-      // Check if the validation controller was aborted
-      if (controller.signal.aborted) {
-        console.log("Plot validation was cancelled by user");
-        return null;
-      }
+      // // Check if the validation controller was aborted
+      // if (controller.signal.aborted) {
+      //   console.log("Plot validation was cancelled by user");
+      //   return null;
+      // }
       
-      const validationResult = await validationResponse.json();
+      // const validationResult = await validationResponse.json();
       
-      // If validation failed, show error and stop
-      if (!validationResult.valid || validationResult.message) {
-        const errorMessage = validationResult.message || "Content validation failed";
-        toast({
-          title: "Content Validation Failed",
-          description: errorMessage,
-          variant: "destructive",
-          duration: 60000,
-        });
-        setIsGenerating(false);
-        setAbortController(null);
-        return null;
-      }
+      // // If validation failed, show error and stop
+      // if (!validationResult.valid || validationResult.message) {
+      //   const errorMessage = validationResult.message || "Content validation failed";
+      //   toast({
+      //     title: "Content Validation Failed",
+      //     description: errorMessage,
+      //     variant: "destructive",
+      //     duration: 60000,
+      //   });
+      //   setIsGenerating(false);
+      //   setAbortController(null);
+      //   return null;
+      // }
       
-      console.log("✅ Plot context validated successfully, proceeding to generation");
+      // console.log("✅ Plot context validated successfully, proceeding to generation");
       
       // STEP 2: Generate the plot after validation passes
       // Use the API directly instead of the wrapper function
@@ -414,38 +416,38 @@ export function useVnData() {
         playerData: vnContext.playerData,
       };
       
-      // STEP 1: Validate the content first
-      console.log(`🔍 Validating Act ${actNumber} content before generation...`);
-      const validationResponse = await apiRequest(
-        "POST",
-        "/api/validate",
-        { projectContext, contentType: "act" },
-        controller.signal
-      );
+      // // STEP 1: Validate the content first
+      // console.log(`🔍 Validating Act ${actNumber} content before generation...`);
+      // const validationResponse = await apiRequest(
+      //   "POST",
+      //   "/api/validate",
+      //   { projectContext, contentType: "act" },
+      //   controller.signal
+      // );
       
-      // Check if the validation controller was aborted
-      if (controller.signal.aborted) {
-        console.log(`Act ${actNumber} validation was cancelled by user`);
-        return null;
-      }
+      // // Check if the validation controller was aborted
+      // if (controller.signal.aborted) {
+      //   console.log(`Act ${actNumber} validation was cancelled by user`);
+      //   return null;
+      // }
       
-      const validationResult = await validationResponse.json();
+      // const validationResult = await validationResponse.json();
       
-      // If validation failed, show error and stop
-      if (!validationResult.valid || validationResult.message) {
-        const errorMessage = validationResult.message || "Content validation failed";
-        toast({
-          title: "Content Validation Failed",
-          description: errorMessage,
-          variant: "destructive",
-          duration: 60000,
-        });
-        setIsGenerating(false);
-        setAbortController(null);
-        return { error: errorMessage } as GenerationResult<any>;
-      }
+      // // If validation failed, show error and stop
+      // if (!validationResult.valid || validationResult.message) {
+      //   const errorMessage = validationResult.message || "Content validation failed";
+      //   toast({
+      //     title: "Content Validation Failed",
+      //     description: errorMessage,
+      //     variant: "destructive",
+      //     duration: 60000,
+      //   });
+      //   setIsGenerating(false);
+      //   setAbortController(null);
+      //   return { error: errorMessage } as GenerationResult<any>;
+      // }
       
-      console.log(`✅ Act ${actNumber} content validated successfully, proceeding to generation`);
+      // console.log(`✅ Act ${actNumber} content validated successfully, proceeding to generation`);
       
       // STEP 2: Generate the act after validation passes
       // Use the API directly instead of the wrapper function
@@ -516,6 +518,7 @@ export function useVnData() {
         title: "Error",
         description: "Missing project data",
         variant: "destructive",
+        duration: 60000,
       });
       return null;
     }
@@ -592,6 +595,7 @@ export function useVnData() {
           title: "Generation Failed",
           description: errorMsg,
           variant: "destructive",
+          duration: 60000,
         });
         console.error("Error generating multiple characters:", error);
       }
@@ -626,38 +630,38 @@ export function useVnData() {
         charactersData: vnContext.projectData.charactersData,
       };
       
-      // STEP 1: Validate the content first
-      console.log("🔍 Validating content before generation...");
-      const validationResponse = await apiRequest(
-        "POST",
-        "/api/validate",
-        { projectContext, contentType: "paths" },
-        controller.signal
-      );
+      // // STEP 1: Validate the content first
+      // console.log("🔍 Validating content before generation...");
+      // const validationResponse = await apiRequest(
+      //   "POST",
+      //   "/api/validate",
+      //   { projectContext: projectContext, contentType: "paths" },
+      //   controller.signal
+      // );
       
-      // Check if the validation controller was aborted
-      if (controller.signal.aborted) {
-        console.log("Validation was cancelled by user");
-        return null;
-      }
+      // // Check if the validation controller was aborted
+      // if (controller.signal.aborted) {
+      //   console.log("Validation was cancelled by user");
+      //   return null;
+      // }
       
-      const validationResult = await validationResponse.json();
+      // const validationResult = await validationResponse.json();
       
-      // If validation failed, show error and stop
-      if (!validationResult.valid || validationResult.message) {
-        const errorMessage = validationResult.message || "Content validation failed";
-        toast({
-          title: "Content Validation Failed",
-          description: errorMessage,
-          variant: "destructive",
-          duration: 60000,
-        });
-        setIsGenerating(false);
-        setAbortController(null);
-        return null;
-      }
+      // // If validation failed, show error and stop
+      // if (!validationResult.valid || validationResult.message) {
+      //   const errorMessage = validationResult.message || "Content validation failed";
+      //   toast({
+      //     title: "Content Validation Failed",
+      //     description: errorMessage,
+      //     variant: "destructive",
+      //     duration: 60000,
+      //   });
+      //   setIsGenerating(false);
+      //   setAbortController(null);
+      //   return null;
+      // }
       
-      console.log("✅ Content validated successfully, proceeding to generation");
+      // console.log("✅ Content validated successfully, proceeding to generation");
       
       // STEP 2: Generate the paths after validation passes
       // Create indices based on the number of templates
