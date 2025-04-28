@@ -252,87 +252,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/generate/characters", async (req, res) => {
-    try {
-      const { indices, characterTemplates, projectContext } = req.body;
 
-      // Create prompt for the character generation
-      const prompt = `Given this story context:
-        ${JSON.stringify(projectContext, null, 2)}
-        Return exactly ${indices.length} character${indices.length > 1 ? "s" : ""} as a JSON:
-        ${
-          indices.length > 1
-            ? `
-        {
-          "characters":
-          [`
-            : ""
-        }
-            {
-              "name": "Memorable name",
-              "role": "${indices.length == 1 && indices[0] == 0 ? "Main Protagonist" : "Story role e.g. antagonist"}",
-              "occupation": "Can be unemployed",
-              "gender": "Can be robot/AI",
-              "age": "Age as a string",
-              "appearance": "Physical description (<15 words)",
-              "personality": "Key personality traits and behaviors (<50 words)",
-              "goals": "Primary motivations and objectives (<50 words)",
-              "relationshipPotential": "${indices.length == 1 && indices[0] == 0 ? "(Leave blank)" : "Relationship potential with main protagonist. Lovers must be opposite gender. (<20 words)"}",
-              "conflict": "Their primary internal or external struggle (<50 words)"
-            } ${
-              indices.length > 1
-                ? `
-          ]
-        }`
-                : ""
-            }
-        ${
-          indices.length == 1
-            ? ""
-            : `
-        Ensure unique characters with varying strengths, flaws, and motivations, and fit story concept
-        Character one is the main protagonist`
-        }
-      `;
-      console.log("Prompt:", prompt);
-      // Generate characters using OpenAI
-      const response = await openai.chat.completions.create({
-        model: "gpt-4.1-nano",
-        temperature: 1.0,
-        frequency_penalty: 0.1,
-        presence_penalty: 0.2,
-        top_p: 1.0,
-        messages: [
-          // {
-          //   role: "system",
-          //   content: standardValidationInstructions,
-          // },
-          { role: "user", content: prompt },
-        ],
-        response_format: { type: "json_object" },
-      });
-
-      console.log(`Generating ${indices.length} characters at once`);
-      console.log("Got:", response.choices[0].message.content);
-
-      // Parse response
-      if (response.choices[0].message.content == "{}") throw "Empty response";
-      const parsed = JSON.parse(response.choices[0].message.content || "{}");
-
-      // Check if the response contains an error and return early if it does
-      if (checkResponseForError(parsed, res)) {
-        return;
-      }
-
-      // Return array of characters
-      res.json("characters" in parsed ? parsed.characters : [parsed]);
-    } catch (error) {
-      console.error("Error generating characters:", error);
-      res.status(500).json({
-        message: "Failed to generate characters for whatever reason.",
-      });
-    }
-  });
 
   // Unified validation endpoint for all content types
   app.post("/api/validate", async (req, res) => {
@@ -459,8 +379,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return;
       }
 
-      // Return array of characters
-      res.json({ characters: "characters" in parsed ? parsed.characters : [parsed] });
+      // Return array of characters directly (not wrapped in an object)
+      res.json("characters" in parsed ? parsed.characters : [parsed]);
     } catch (error) {
       console.error("Error generating characters:", error);
       res.status(500).json({
@@ -521,8 +441,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (response.choices[0].message.content == "{}") throw "Empty response";
       const parsed = JSON.parse(response.choices[0].message.content || "{}");
 
-      // Return the paths array wrapped in an object
-      res.json({ paths: parsed.paths });
+      // Return array of paths directly (not wrapped in an object)
+      res.json(parsed.paths);
     } catch (error) {
       console.error("Error generating paths:", error);
       res.status(500).json({ message: "Failed to generate paths" });
