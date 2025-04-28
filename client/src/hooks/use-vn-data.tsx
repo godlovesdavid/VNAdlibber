@@ -178,38 +178,38 @@ export function useVnData() {
         charactersData: vnContext.projectData.charactersData,
       };
       
-      // STEP 1: Validate the content first
-      console.log("🔍 Validating content before generation...");
-      const validationResponse = await apiRequest(
-        "POST",
-        "/api/validate",
-        { projectContext, contentType: "paths" },
-        controller.signal
-      );
+      // // STEP 1: Validate the content first
+      // console.log("🔍 Validating content before generation...");
+      // const validationResponse = await apiRequest(
+      //   "POST",
+      //   "/api/validate",
+      //   { projectContext, contentType: "paths" },
+      //   controller.signal
+      // );
       
-      // Check if the validation controller was aborted
-      if (controller.signal.aborted) {
-        console.log("Validation was cancelled by user");
-        return null;
-      }
+      // // Check if the validation controller was aborted
+      // if (controller.signal.aborted) {
+      //   console.log("Validation was cancelled by user");
+      //   return null;
+      // }
       
-      const validationResult = await validationResponse.json();
+      // const validationResult = await validationResponse.json();
       
-      // If validation failed, show error and stop
-      if (!validationResult.valid || validationResult.message) {
-        const errorMessage = validationResult.message || "Content validation failed";
-        toast({
-          title: "Content Validation Failed",
-          description: errorMessage,
-          variant: "destructive",
-          duration: 60000,
-        });
-        setIsGenerating(false);
-        setAbortController(null);
-        return null;
-      }
+      // // If validation failed, show error and stop
+      // if (!validationResult.valid || validationResult.message) {
+      //   const errorMessage = validationResult.message || "Content validation failed";
+      //   toast({
+      //     title: "Content Validation Failed",
+      //     description: errorMessage,
+      //     variant: "destructive",
+      //     duration: 60000,
+      //   });
+      //   setIsGenerating(false);
+      //   setAbortController(null);
+      //   return null;
+      // }
       
-      console.log("✅ Content validated successfully, proceeding to generation");
+      // console.log("✅ Content validated successfully, proceeding to generation");
       
       // STEP 2: Generate the path after validation passes
       // Use our simplified path endpoint

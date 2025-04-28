@@ -348,8 +348,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           indices.length == 1
             ? ""
             : `
-        Ensure unique characters with varying strengths, flaws, and motivations, and fit story concept
-        Character one is the main protagonist`
+        Ensure unique characters with varying strengths, flaws, and motivations, and fit story concept.
+        Ensure emotional depth: highlight subtle inner conflicts, irony, longing, and unresolved tension.
+        Character one is the main protagonist.`
         }
       `;
       console.log("Generating character prompt:", prompt);
@@ -416,7 +417,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           ]
         }
-        Ensure unique + distinct paths
+        Ensure unique + distinct paths. Ensure emotional depth: highlight subtle inner conflicts, irony, longing, and unresolved tension..
       `;
       console.log("Generating paths prompt:", prompt);
 
