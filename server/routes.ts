@@ -334,16 +334,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Plot validation endpoint
+  // Unified validation endpoint for all content types
   app.post("/api/validate", async (req, res) => {
     try {
-      const { projectContext } = req.body;
+      const { projectContext, contentType } = req.body;
 
-      // Create prompt for validation
-      const validationPrompt = `Please validate this story context for a visual novel plot outline:
+      // Create prompt for validation based on content type
+      const validationPrompt = `Please validate this story context for a visual novel ${contentType}:
         ${JSON.stringify(projectContext, null, 2)}
       `;
-      console.log(validationPrompt)
+      
+      // Log validation request details
+      console.log(`${contentType.toUpperCase()} validation request received`);
       
       // Validate using OpenAI with explicit validation system prompt
       const validationResponse = await openai.chat.completions.create({
@@ -362,7 +364,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         response_format: { type: "json_object" },
       });
 
-      console.log("Plot validation result:", validationResponse.choices[0].message.content);
+      console.log(`${contentType.toUpperCase()} validation result:`, validationResponse.choices[0].message.content);
 
       // Parse validation response
       const validationResult = JSON.parse(
@@ -373,46 +375,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!validationResult.valid) 
         return res.status(400).json({ message: validationResult.issues });
       
-
       // If validation passed, return success
       res.json(validationResult);
     } catch (error) {
-      console.error("Error validating plot:", error);
-      res.status(500).json({ message: "Failed to validate plot" });
+      console.error("Error validating content:", error);
+      res.status(500).json({ message: "Failed to validate content" });
     }
   });
   
-  // For backward compatibility, redirecting old endpoints to new unified one
+  // Character generation endpoint - renamed from characters-bundle to character
   app.post("/api/generate/character", async (req, res) => {
-    try {
-      const { index, partialCharacter, projectContext } = req.body;
-
-      // Redirect to the unified endpoint
-      const response = await fetch(
-        `${req.protocol}://${req.get("host")}/api/generate/characters`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            indices: [index],
-            characterTemplates: [partialCharacter],
-            projectContext,
-          }),
-        },
-      );
-
-      const characters = await response.json();
-      // Return just the first character for backward compatibility
-      res.json(characters[0]);
-    } catch (error) {
-      console.error("Error in character redirect:", error);
-      res.status(500).json({ message: "Failed to generate character" });
-    }
-  });
-
-  app.post("/api/generate/characters-bundle", async (req, res) => {
     try {
       const { characterTemplates, projectContext } = req.body;
 
@@ -422,34 +394,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
         (_, i) => i,
       );
 
-      // Redirect to the unified endpoint
-      const response = await fetch(
-        `${req.protocol}://${req.get("host")}/api/generate/characters`,
+      // Create prompt for the character generation
+      const prompt = `Given this story context:
+        ${JSON.stringify(projectContext, null, 2)}
+        Return exactly ${indices.length} character${indices.length > 1 ? "s" : ""} as a JSON:
+        ${
+          indices.length > 1
+            ? `
         {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            indices,
-            characterTemplates,
-            projectContext,
-          }),
-        },
-      );
+          "characters":
+          [`
+            : ""
+        }
+            {
+              "name": "Memorable name",
+              "role": "${indices.length == 1 && indices[0] == 0 ? "Main Protagonist" : "Story role e.g. antagonist"}",
+              "occupation": "Can be unemployed",
+              "gender": "Can be robot/AI",
+              "age": "Age as a string",
+              "appearance": "Physical description (<15 words)",
+              "personality": "Key personality traits and behaviors (<50 words)",
+              "goals": "Primary motivations and objectives (<50 words)",
+              "relationshipPotential": "${indices.length == 1 && indices[0] == 0 ? "(Leave blank)" : "Relationship potential with main protagonist. Lovers must be opposite gender. (<20 words)"}",
+              "conflict": "Their primary internal or external struggle (<50 words)"
+            } ${
+              indices.length > 1
+                ? `
+          ]
+        }`
+                : ""
+            }
+        ${
+          indices.length == 1
+            ? ""
+            : `
+        Ensure unique characters with varying strengths, flaws, and motivations, and fit story concept
+        Character one is the main protagonist`
+        }
+      `;
+      console.log("Generating character prompt:", prompt);
+      
+      // Generate characters using OpenAI
+      const response = await openai.chat.completions.create({
+        model: "gpt-4.1-nano",
+        temperature: 1.0,
+        frequency_penalty: 0.1,
+        presence_penalty: 0.2,
+        top_p: 1.0,
+        messages: [
+          { role: "user", content: prompt },
+        ],
+        response_format: { type: "json_object" },
+      });
 
-      const characters = await response.json();
-      // Wrap in characters object for backward compatibility
-      res.json({ characters });
+      console.log(`Generating ${indices.length} characters at once`);
+      console.log("Got:", response.choices[0].message.content);
+
+      // Parse response
+      if (response.choices[0].message.content == "{}") throw "Empty response";
+      const parsed = JSON.parse(response.choices[0].message.content || "{}");
+
+      // Check if the response contains an error and return early if it does
+      if (checkResponseForError(parsed, res)) {
+        return;
+      }
+
+      // Return array of characters
+      res.json({ characters: "characters" in parsed ? parsed.characters : [parsed] });
     } catch (error) {
-      console.error("Error in characters-bundle redirect:", error);
-      res.status(500).json({ message: "Failed to generate characters bundle" });
+      console.error("Error generating characters:", error);
+      res.status(500).json({
+        message: "Failed to generate characters",
+      });
     }
   });
 
-  app.post("/api/generate/paths", async (req, res) => {
+  // Path generation endpoint - renamed from paths to path
+  app.post("/api/generate/path", async (req, res) => {
     try {
-      const { indices, pathTemplates, projectContext } = req.body;
+      const { pathTemplates, projectContext } = req.body;
+
+      // Create indices array based on the number of templates
+      const indices = Array.from({ length: pathTemplates.length }, (_, i) => i);
 
       // Create prompt for the path generation
       const prompt = `Given this story context:
@@ -495,73 +521,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (response.choices[0].message.content == "{}") throw "Empty response";
       const parsed = JSON.parse(response.choices[0].message.content || "{}");
 
-      // Return array of paths (not wrapped in an object)
-      res.json(parsed.paths);
+      // Return the paths array wrapped in an object
+      res.json({ paths: parsed.paths });
     } catch (error) {
       console.error("Error generating paths:", error);
       res.status(500).json({ message: "Failed to generate paths" });
-    }
-  });
-
-  // For backward compatibility, redirecting old endpoints to new unified one
-  app.post("/api/generate/path", async (req, res) => {
-    try {
-      const { index, partialPath, projectContext } = req.body;
-
-      // Redirect to the unified endpoint
-      const response = await fetch(
-        `${req.protocol}://${req.get("host")}/api/generate/paths`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            indices: [index],
-            pathTemplates: [partialPath],
-            projectContext,
-          }),
-        },
-      );
-
-      const paths = await response.json();
-      // Return just the first path for backward compatibility
-      res.json(paths[0]);
-    } catch (error) {
-      console.error("Error in path redirect:", error);
-      res.status(500).json({ message: "Failed to generate path" });
-    }
-  });
-
-  app.post("/api/generate/paths-bundle", async (req, res) => {
-    try {
-      const { pathTemplates, projectContext } = req.body;
-
-      // Create indices array based on the number of templates
-      const indices = Array.from({ length: pathTemplates.length }, (_, i) => i);
-
-      // Redirect to the unified endpoint
-      const response = await fetch(
-        `${req.protocol}://${req.get("host")}/api/generate/paths`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            indices,
-            pathTemplates,
-            projectContext,
-          }),
-        },
-      );
-
-      const paths = await response.json();
-      // Wrap in paths object for backward compatibility
-      res.json({ paths });
-    } catch (error) {
-      console.error("Error in paths-bundle redirect:", error);
-      res.status(500).json({ message: "Failed to generate paths bundle" });
     }
   });
 

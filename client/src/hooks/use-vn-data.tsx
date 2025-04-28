@@ -667,12 +667,11 @@ export function useVnData() {
       // Create indices based on the number of templates
       const indices = Array.from({ length: pathTemplates.length }, (_, i) => i);
       
-      // Use our unified paths endpoint (without validation)
+      // Use our simplified path endpoint
       const generationResponse = await apiRequest(
         "POST",
-        "/api/generate/paths",
+        "/api/generate/path",
         {
-          indices,
           pathTemplates,
           projectContext
         },
