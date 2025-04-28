@@ -5,16 +5,9 @@ import { PlayerNavbar } from "@/components/player-navbar";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { ChevronDown, Settings2 } from "lucide-react";
-import { Scene, SceneChoice } from "@/types/vn";
+import { Scene, SceneChoice, GeneratedAct } from "@/types/vn";
 
-// Declare GeneratedAct interface if not defined in vn.ts
-interface GeneratedAct {
-  meta: {
-    theme: string;
-    relationshipVars: string[];
-  };
-  scenes: Scene[];
-}
+// Using GeneratedAct from types now
 
 interface VnPlayerProps {
   actData: GeneratedAct;
@@ -98,7 +91,7 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
   }, [actData, memoizedProcessScene]);
   
   // Handle advancing the dialogue
-  const advanceDialogue = () => {
+  const advanceDialogue = useCallback(() => {
     if (!currentScene || !clickableContent) return;
     
     if (currentDialogueIndex < currentScene.dialogue.length - 1) {
@@ -123,7 +116,7 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
         setShowChoices(true);
       }
     }
-  };
+  }, [currentScene, currentDialogueIndex, clickableContent]);
   
   // Check if a choice's condition is met
   const checkConditionMet = useCallback((choice: SceneChoice): boolean => {
@@ -238,7 +231,7 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
   }, [dialogueText, textSpeed]);
   
   // Handle content click
-  const handleContentClick = () => {
+  const handleContentClick = useCallback(() => {
     if (!showChoices) {
       // If text is still typing, show full text
       if (!isTextFullyTyped) {
@@ -248,13 +241,13 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
         advanceDialogue();
       }
     }
-  };
+  }, [showChoices, isTextFullyTyped, dialogueText, advanceDialogue]);
   
   // Toggle settings panel
-  const toggleSettings = (e: React.MouseEvent) => {
+  const toggleSettings = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    setShowSettings(!showSettings);
-  };
+    setShowSettings(prev => !prev);
+  }, []);
   
   // Auto-scroll to keep the current dialogue visible
   useEffect(() => {

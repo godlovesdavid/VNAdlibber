@@ -89,6 +89,22 @@ export interface Scene {
   choices: SceneChoice[] | null;
 }
 
+// Generated act structure - the complete VN act data
+export interface GeneratedAct {
+  meta: {
+    theme: string;
+    relationshipVars: string[];
+  };
+  scenes: Scene[];
+  __exportInfo?: {
+    title: string;
+    actNumber: number;
+    exportedAt: string;
+    playerData: PlayerData;
+    basicData: BasicData;
+  };
+}
+
 // Player data structure for tracking relationships, inventory, and skills
 export interface PlayerData {
   relationships: Record<string, number>;

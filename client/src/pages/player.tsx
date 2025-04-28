@@ -65,7 +65,7 @@ export default function Player() {
           }
         } else {
           // Handle act from current project
-          const num = parseInt(actId);
+          const num = parseInt(actId || '0');
           if (isNaN(num) || num < 1 || num > 5) {
             throw new Error("Invalid act number");
           }
