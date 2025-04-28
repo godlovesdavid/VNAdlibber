@@ -6,7 +6,7 @@ import { insertVnProjectSchema, insertVnStorySchema } from "@shared/schema";
 
 // Use Google's Gemini API instead of OpenAI
 const GEMINI_API_URL =
-  "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 const GEMINI_API_KEY = "AIzaSyDE-O9FT4wsie2Cb5SWNUhNVszlQg3dHnU";
 
 // Helper function for Gemini API calls
@@ -26,7 +26,7 @@ async function generateWithGemini(
     const requestBody = {
       contents: [
         ...(systemPrompt
-          ? [{ role: "user", parts: [{ text: systemPrompt }] }]
+          ? [{ role: "model", parts: [{ text: systemPrompt }] }]
           : []),
         { role: "user", parts: [{ text: prompt }] },
       ],
@@ -35,8 +35,6 @@ async function generateWithGemini(
         topP: 0.95,
         topK: 64,
         maxOutputTokens: maxOutputTokens,
-        responseMimeType:
-          responseFormat === "JSON" ? "application/json" : "text/plain",
       },
     };
 
