@@ -19,12 +19,18 @@ export default function ConceptForm() {
   const [tagline, setTagline] = useState("");
   const [premise, setPremise] = useState("");
 
-  // Load existing data if available
+  // Load existing data if available or clear form if starting a new project
   useEffect(() => {
+    // If project data exists and has concept data
     if (projectData?.conceptData) {
       setTitle(projectData.conceptData.title || "");
       setTagline(projectData.conceptData.tagline || "");
       setPremise(projectData.conceptData.premise || "");
+    } else {
+      // Clear form values if no project data or it's a new project
+      setTitle("");
+      setTagline("");
+      setPremise("");
     }
   }, [projectData]);
 

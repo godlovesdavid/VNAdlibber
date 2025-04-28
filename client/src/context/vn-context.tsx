@@ -84,39 +84,60 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   
   // Create a new project
   const createNewProject = () => {
+    // First, set project data to null to trigger useEffect cleanup in all components
+    setProjectData(null);
+    
     // Remove all project data from localStorage
     localStorage.removeItem("current_vn_project");
     
-    // Reset project to initial state
-    setProjectData({
-      title: "Untitled Project",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      basicData: {
-        theme: "",
-        tone: "",
-        genre: "",
-      },
-      // Clear all data from previous steps
-      conceptData: undefined,
-      charactersData: undefined,
-      pathsData: undefined,
-      plotData: undefined,
-      generatedActs: undefined,
-      currentStep: 1,
-    });
+    // Clear any additional storage items that might contain form data
+    // This helps ensure a completely fresh start
+    try {
+      // Get all localStorage keys
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        // Clear any VN-related data (customize this pattern as needed)
+        if (key && (key.startsWith('vn_') || key.includes('_form_data') || key.includes('vn'))) {
+          localStorage.removeItem(key);
+        }
+      }
+    } catch (e) {
+      console.error("Error while clearing localStorage:", e);
+    }
     
-    // Reset player data
-    resetPlayerData();
-    
-    // Navigate to the first step
-    setLocation("/create/basic");
-    
-    // Show confirmation toast
-    toast({
-      title: "New Project Created",
-      description: "Starting with a fresh project",
-    });
+    // Small timeout to ensure all components have processed the null state
+    setTimeout(() => {
+      // Reset project to initial state with empty values
+      setProjectData({
+        title: "Untitled Project",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        basicData: {
+          theme: "",
+          tone: "",
+          genre: "",
+        },
+        // Clear all data from previous steps explicitly
+        conceptData: undefined,
+        charactersData: undefined,
+        pathsData: undefined,
+        plotData: undefined,
+        generatedActs: undefined,
+        currentStep: 1,
+      });
+      
+      // Reset player data
+      resetPlayerData();
+      
+      // Navigate to the first step
+      setLocation("/create/basic");
+      
+      // Show confirmation toast
+      toast({
+        title: "New Project Created",
+        description: "Starting with a fresh project",
+      });
+    }, 50);
   };
   
   // Step data setters

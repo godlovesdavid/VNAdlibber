@@ -22,12 +22,18 @@ export default function BasicForm() {
   const [tone, setTone] = useState("");
   const [genre, setGenre] = useState("");
   
-  // Load existing data if available
+  // Load existing data if available or clear form if starting a new project
   useEffect(() => {
+    // If project data exists and has basic data
     if (projectData?.basicData) {
       setTheme(projectData.basicData.theme || "");
       setTone(projectData.basicData.tone || "");
       setGenre(projectData.basicData.genre || "");
+    } else {
+      // Clear form values if no project data or it's a new project
+      setTheme("");
+      setTone("");
+      setGenre("");
     }
   }, [projectData]);
   
