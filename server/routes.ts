@@ -393,48 +393,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Add a new validation endpoint
-  app.post("/api/validate/paths", async (req, res) => {
-    try {
-      const { projectContext } = req.body;
+  // app.post("/api/validate/paths", async (req, res) => {
+  //   try {
+  //     const { projectContext } = req.body;
 
-      // Create prompt for validation
-      const validationPrompt = `Please validate this story context for a visual novel plot arc:
-        ${JSON.stringify(projectContext, null, 2)}
-      `;
+  //     // Create prompt for validation
+  //     const validationPrompt = `Please validate this story context for a visual novel plot arc:
+  //       ${JSON.stringify(projectContext, null, 2)}
+  //     `;
 
-      // Validate using OpenAI with explicit validation system prompt
-      const validationResponse = await openai.chat.completions.create({
-        model: "gpt-4.1-nano",
-        temperature: 0.2, // Lower temperature for more consistent validation
-        messages: [
-          {
-            role: "system",
-            content: validationSystemPrompt,
-          },
-          { role: "user", content: validationPrompt },
-        ],
-        response_format: { type: "json_object" },
-      });
+  //     // Validate using OpenAI with explicit validation system prompt
+  //     const validationResponse = await openai.chat.completions.create({
+  //       model: "gpt-4.1-nano",
+  //       temperature: 0.2, // Lower temperature for more consistent validation
+  //       messages: [
+  //         {
+  //           role: "system",
+  //           content: validationSystemPrompt,
+  //         },
+  //         { role: "user", content: validationPrompt },
+  //       ],
+  //       response_format: { type: "json_object" },
+  //     });
 
-      console.log("Validation result:", validationResponse.choices[0].message.content);
+  //     console.log("Validation result:", validationResponse.choices[0].message.content);
       
-      // Parse validation response
-      const validationResult = JSON.parse(
-        validationResponse.choices[0].message.content || "{}"
-      );
+  //     // Parse validation response
+  //     const validationResult = JSON.parse(
+  //       validationResponse.choices[0].message.content || "{}"
+  //     );
 
-      // If validation failed, return the error
-      if (validationResult.error) {
-        return res.status(400).json({ message: validationResult.error });
-      }
+  //     // If validation failed, return the error
+  //     if (validationResult.error) {
+  //       return res.status(400).json({ message: validationResult.error });
+  //     }
 
-      // If validation passed, return success
-      res.json({ valid: true });
-    } catch (error) {
-      console.error("Error validating paths:", error);
-      res.status(500).json({ message: "Failed to validate paths" });
-    }
-  });
+  //     // If validation passed, return success
+  //     res.json({ valid: true });
+  //   } catch (error) {
+  //     console.error("Error validating paths:", error);
+  //     res.status(500).json({ message: "Failed to validate paths" });
+  //   }
+  // });
 
   app.post("/api/generate/paths", async (req, res) => {
     try {
