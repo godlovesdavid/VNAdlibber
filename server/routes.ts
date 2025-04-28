@@ -6,7 +6,7 @@ import { insertVnProjectSchema, insertVnStorySchema } from "@shared/schema";
 
 // Use Google's Gemini API instead of OpenAI
 const GEMINI_API_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+  "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent";
 const GEMINI_API_KEY = "AIzaSyDE-O9FT4wsie2Cb5SWNUhNVszlQg3dHnU";
 
 // Helper function for Gemini API calls
@@ -98,6 +98,24 @@ function cleanResponseText(text: string): string {
   // Remove any JS-style comments
   text = text.replace(/\/\/.*$/gm, "");
   text = text.replace(/\/\*[\s\S]*?\*\//g, "");
+  
+  // Fix common JSON syntax errors
+  
+  // Fix missing quotes around property names
+  text = text.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
+  
+  // Fix trailing commas in arrays and objects
+  text = text.replace(/,(\s*[\]}])/g, '$1');
+  
+  // Fix missing commas between array elements or object properties
+  text = text.replace(/([}\]"'0-9])\s*\n\s*([{\["a-zA-Z0-9_])/g, '$1,\n$2');
+  
+  // Ensure proper quoting of string values
+  text = text.replace(/:\s*([a-zA-Z][a-zA-Z0-9_]*)\s*([,\n\r}])/g, ': "$1"$2');
+  
+  // Add missing quotes to property values that look like unquoted strings
+  // This could be risky but might help in some cases
+  text = text.replace(/:\s*([a-zA-Z][a-zA-Z0-9_\s]*[a-zA-Z0-9_])(\s*[,\n\r}])/g, ': "$1"$2');
   
   return text;
 }
@@ -699,7 +717,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (responseContent === "{}") throw new Error("Empty response");
         
         console.log("Cleaned response for act:", responseContent.substring(0, 200) + "...");
-        const generatedAct = JSON.parse(responseContent);
+        
+        // Try standard JSON parsing first
+        let generatedAct;
+        try {
+          generatedAct = JSON.parse(responseContent);
+        } catch (initialParseError) {
+          console.log("Initial JSON parse failed, attempting more aggressive cleanup...");
+          
+          // More aggressive cleanup for complex Act data
+          let cleanedContent = responseContent;
+          
+          // Try to isolate just the scenes array if we can find the pattern
+          const scenesMatch = cleanedContent.match(/\{\s*"scenes"\s*:\s*\[[\s\S]*\]\s*\}/);
+          if (scenesMatch) {
+            cleanedContent = scenesMatch[0];
+            console.log("Found scenes block, isolating it...");
+          }
+          
+          // Additional fix for common issues in the act JSON
+          // Fix missing commas in arrays between objects
+          cleanedContent = cleanedContent.replace(/}(\s*){/g, '},\n{');
+          
+          // Fix missing commas between dialogue array elements
+          cleanedContent = cleanedContent.replace(/\](\s*)\[/g, '],\n[');
+          
+          // Fix any trailing commas before closing brackets
+          cleanedContent = cleanedContent.replace(/,(\s*[\]}])/g, '$1');
+          
+          // Special fix for the bg property missing quotes
+          cleanedContent = cleanedContent.replace(/"bg":([^,"\{\}\[\]]*),/g, '"bg":"$1",');
+          
+          console.log("Applied aggressive cleanup, attempting to parse again...");
+          generatedAct = JSON.parse(cleanedContent);
+        }
 
         // Check if the response contains an error and return early if it does
         if (checkResponseForError(generatedAct, res)) {
