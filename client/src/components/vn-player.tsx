@@ -57,42 +57,45 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
     return processedScene;
   };
   
+  // Memoize the processScene function to avoid recreating it on every render
+  const memoizedProcessScene = useCallback(processScene, [actNumber]);
+  
   // Initialize with the first scene
   useEffect(() => {
     if (actData && actData.scenes && actData.scenes.length > 0) {
-      const firstScene = processScene(actData.scenes[0]);
+      const firstScene = memoizedProcessScene(actData.scenes[0]);
       setCurrentSceneId(firstScene.id);
       setCurrentScene(firstScene);
       setCurrentDialogueIndex(0);
       setShowChoices(false);
       setDialogueLog([]);
     }
-  }, [actData, actNumber]);
+  }, [actData, memoizedProcessScene]);
   
   // Update current scene when scene ID changes
   useEffect(() => {
     if (actData && currentSceneId) {
       const scene = actData.scenes.find((s: Scene) => s.id === currentSceneId);
       if (scene) {
-        const processedScene = processScene(scene);
+        const processedScene = memoizedProcessScene(scene);
         setCurrentScene(processedScene);
         setCurrentDialogueIndex(0);
         setShowChoices(false);
       }
     }
-  }, [actData, currentSceneId, actNumber]);
+  }, [actData, currentSceneId, memoizedProcessScene]);
   
   // Handle restart
-  const handleRestart = () => {
+  const handleRestart = useCallback(() => {
     if (actData && actData.scenes && actData.scenes.length > 0) {
-      const firstScene = processScene(actData.scenes[0]);
+      const firstScene = memoizedProcessScene(actData.scenes[0]);
       setCurrentSceneId(firstScene.id);
       setCurrentScene(firstScene);
       setCurrentDialogueIndex(0);
       setShowChoices(false);
       setDialogueLog([]);
     }
-  };
+  }, [actData, memoizedProcessScene]);
   
   // Handle advancing the dialogue
   const advanceDialogue = () => {
@@ -123,7 +126,7 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
   };
   
   // Check if a choice's condition is met
-  const checkConditionMet = (choice: SceneChoice): boolean => {
+  const checkConditionMet = useCallback((choice: SceneChoice): boolean => {
     if (!choice.condition) return true;
     
     for (const [key, value] of Object.entries(choice.condition)) {
@@ -145,10 +148,10 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
     }
     
     return true;
-  };
+  }, [playerData]);
   
   // Handle choice selection
-  const handleChoiceSelect = (choice: SceneChoice) => {
+  const handleChoiceSelect = useCallback((choice: SceneChoice) => {
     // Check if there's a condition and if it's met
     const conditionMet = checkConditionMet(choice);
     
@@ -195,7 +198,7 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
     
     // Move to the next scene
     setCurrentSceneId(choice.next);
-  };
+  }, [playerData, checkConditionMet, updatePlayerData]);
   
   // Typewriter effect for text animation
   useEffect(() => {
