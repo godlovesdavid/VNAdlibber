@@ -88,17 +88,13 @@ export function useVnData() {
       const controller = new AbortController();
       setAbortController(controller);
       
-      // Use our unified characters endpoint
+      // Use our simplified character endpoint
       const response = await apiRequest(
         "POST",
-        "/api/generate/characters",
+        "/api/generate/character",
         {
-          indices: [index],
           characterTemplates: [partialCharacter],
-          projectContext: {
-            basicData: vnContext.projectData.basicData,
-            conceptData: vnContext.projectData.conceptData,
-          }
+          projectContext: vnContext.projectData
         },
         controller.signal
       );
@@ -216,12 +212,11 @@ export function useVnData() {
       console.log("✅ Content validated successfully, proceeding to generation");
       
       // STEP 2: Generate the path after validation passes
-      // Use our unified paths endpoint (without validation)
+      // Use our simplified path endpoint
       const generationResponse = await apiRequest(
         "POST",
-        "/api/generate/paths",
+        "/api/generate/path",
         {
-          indices: [index],
           pathTemplates: [partialPath],
           projectContext
         },
@@ -531,17 +526,13 @@ export function useVnData() {
       // Create indices based on the number of templates
       const indices = Array.from({ length: characterTemplates.length }, (_, i) => i);
       
-      // Use our unified characters endpoint
+      // Use our simplified character endpoint
       const response = await apiRequest(
         "POST",
-        "/api/generate/characters",
+        "/api/generate/character",
         {
-          indices,
           characterTemplates,
-          projectContext: {
-            basicData: vnContext.projectData.basicData,
-            conceptData: vnContext.projectData.conceptData,
-          }
+          projectContext: vnContext.projectData
         },
         controller.signal
       );
