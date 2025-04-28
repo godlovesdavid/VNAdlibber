@@ -105,35 +105,48 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
     }
   };
   
+  // Check if a choice's condition is met
+  const checkConditionMet = (choice: SceneChoice): boolean => {
+    if (!choice.condition) return true;
+    
+    for (const [key, value] of Object.entries(choice.condition)) {
+      // Find which category the key belongs to
+      let currentValue = 0;
+      
+      if (key in playerData.relationships) {
+        currentValue = playerData.relationships[key] || 0;
+      } else if (key in playerData.inventory) {
+        currentValue = playerData.inventory[key] || 0;
+      } else if (key in playerData.skills) {
+        currentValue = playerData.skills[key] || 0;
+      }
+      
+      // If current value is less than required, condition is not met
+      if (currentValue < value) {
+        return false;
+      }
+    }
+    
+    return true;
+  };
+  
   // Handle choice selection
   const handleChoiceSelect = (choice: SceneChoice) => {
     // Check if there's a condition and if it's met
-    if (choice.condition) {
-      let conditionMet = true;
-      
-      for (const [key, value] of Object.entries(choice.condition)) {
-        if (!playerData.relationships[key] && !playerData.inventory[key] && !playerData.skills[key]) {
-          conditionMet = false;
-          break;
+    const conditionMet = checkConditionMet(choice);
+    
+    // If condition not met and there's a failNext path, go to that scene
+    if (!conditionMet && choice.failNext) {
+      // Add a tiny visual feedback that the condition failed (optional)
+      setClickableContent(false);
+      setTimeout(() => {
+        // Make sure failNext is a valid string before setting it as the current scene ID
+        if (choice.failNext) {
+          setCurrentSceneId(choice.failNext);
         }
-        
-        const currentValue = 
-          playerData.relationships[key] || 
-          playerData.inventory[key] || 
-          playerData.skills[key] || 
-          0;
-        
-        if (currentValue < value) {
-          conditionMet = false;
-          break;
-        }
-      }
-      
-      // If condition not met, go to fail scene if specified
-      if (!conditionMet && choice.failNext) {
-        setCurrentSceneId(choice.failNext);
-        return;
-      }
+        setClickableContent(true);
+      }, 300);
+      return;
     }
     
     // Apply delta values to player data
@@ -243,16 +256,47 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
               "vn-choices mt-8 grid grid-cols-1 md:grid-cols-2 gap-3",
               !clickableContent && "opacity-50 pointer-events-none"
             )}>
-              {currentScene.choices.map((choice, index) => (
-                <Button
-                  key={index}
-                  variant="outline"
-                  className="bg-neutral-800 hover:bg-primary/70 text-white px-4 py-2 rounded-md text-left transition-colors h-auto"
-                  onClick={() => handleChoiceSelect(choice)}
-                >
-                  {choice.text || `Option ${index + 1}`}
-                </Button>
-              ))}
+              {currentScene.choices.map((choice, index) => {
+                // Check if this choice has a condition and if it's met
+                const hasCondition = !!choice.condition;
+                const conditionMet = checkConditionMet(choice);
+                
+                return (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    className={cn(
+                      "px-4 py-2 rounded-md text-left transition-colors h-auto relative",
+                      // Base style
+                      "bg-neutral-800 hover:bg-primary/70 text-white",
+                      // Condition styles
+                      hasCondition && !conditionMet && "bg-red-900/40 hover:bg-red-900/60 border-red-700",
+                      hasCondition && conditionMet && "bg-green-900/20 hover:bg-green-900/40 border-green-700"
+                    )}
+                    onClick={() => handleChoiceSelect(choice)}
+                    disabled={false} // We handle condition failure in the click handler
+                  >
+                    {/* Indicator for choices with conditions */}
+                    {hasCondition && (
+                      <span className={cn(
+                        "absolute top-1 right-1 w-2 h-2 rounded-full",
+                        conditionMet ? "bg-green-500" : "bg-red-500"
+                      )} />
+                    )}
+                    <div>
+                      {/* Main choice text */}
+                      <div>{choice.text || `Option ${index + 1}`}</div>
+                      
+                      {/* Description text (if present) */}
+                      {choice.description && (
+                        <div className="text-sm text-neutral-400 mt-1 italic">
+                          {choice.description}
+                        </div>
+                      )}
+                    </div>
+                  </Button>
+                );
+              })}
             </div>
           )}
           

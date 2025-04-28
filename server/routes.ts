@@ -213,7 +213,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         Be wildly imaginative, original, and surprising — but keep it emotionally resonant.
       `;
-
+      console.log(prompt);
       // Generate concept using OpenAI
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",
@@ -223,11 +223,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // top_p: 1.0,
         stop: null,
         messages: [
-          {
-            role: "system",
-            content: "You're a VN brainstormer",
-          },
-          { role: "user", content: prompt },
+          // {
+          //   role: "system",
+          //   content: "You're a VN brainstormer",
+          // },
+          { role: "assistant", content: prompt },
         ],
         response_format: { type: "json_object" },
       });
@@ -268,16 +268,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Validate using OpenAI with explicit validation system prompt
       const validationResponse = await openai.chat.completions.create({
-        model: "gpt-4.1-nano",
-        temperature: 0.0,
-        presence_penalty: 0.0,
-        frequency_penalty: 0.0,
-        top_p: 1.0,
+        model: "gpt-4o-mini",
+        // temperature: 0.0,
+        // presence_penalty: 0.0,
+        // frequency_penalty: 0.0,
+        // top_p: 1.0,
         messages: [
-          {
-            role: "system",
-            content: validationSystemPrompt,
-          },
+          // {
+          //   role: "system",
+          //   content: validationSystemPrompt,
+          // },
           { role: "user", content: validationPrompt },
         ],
         response_format: { type: "json_object" },
@@ -364,11 +364,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // presence_penalty: 0,
         // top_p: 0.9,
         messages: [
-          {
-            role: "system",
-            content: "You're a VN brainstormer",
-          },
-          { role: "user", content: prompt },
+          // {
+          //   role: "system",
+          //   content: "You're a VN brainstormer",
+          // },
+          { role: "assistant", content: prompt },
         ],
         response_format: { type: "json_object" },
       });
@@ -433,11 +433,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // presence_penalty: 0,
         // top_p: 0.9,
         messages: [
-          {
-            role: "system",
-            content: "You're a VN brainstormer",
-          },
-          { role: "user", content: prompt },
+          // {
+          //   role: "system",
+          //   content: "You're a VN brainstormer",
+          // },
+          { role: "assistant", content: prompt },
         ],
         response_format: { type: "json_object" },
       });
@@ -490,11 +490,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
-          {
-            role: "system",
-            content: "You're a VN brainstormer",
-          },
-          { role: "user", content: prompt },
+          // {
+          //   role: "system",
+          //   content: "You're a VN brainstormer",
+          // },
+          { role: "assistant", content: prompt },
         ],
         response_format: { type: "json_object" },
       });
@@ -534,32 +534,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
           },
           "scenes": [
             {
-              "id": "${actNumber}-1",
+              "id": "${actNumber}.1",
               "setting": "Name of the location",
               "bg": "Detailed background description for image generation",
               "dialogue": [
-                ["Character Name", "Dialogue text"],
-                ["Another Character", "Response text"]
-                ["Another Character", "Response text"]
+                ["Narrator", "text"]
+                ["Character Name", "text"],
+                ["Another Character", "text"]
               ],
               "choices": [
                 {
                   "id": "choice1",
                   "text": "Choice text displayed to player",
-                  "delta": {"relationshipVar": 1},
-                  "next": "${actNumber}-2a"
+                  "description": "Optional: brief description of choice consequences",
+                  "delta": {"character1": 1, "character2": -1},
+                  "next": "${actNumber}.1.a"
                 },
                 {
                   "id": "choice2",
                   "text": "Alternative choice text",
-                  "delta": {"relationshipVar": -1},
-                  "next": "${actNumber}-2b"
+                  "delta": {"character2": 1},
+                  "next": "${actNumber}.1.b"
                 }
+                {
+                  "id": "choice3",
+                  "text": "Alternative choice text",
+                  "next": "${actNumber}.2"
+                }
+                
               ]
             },
-            ... more scenes ...
             {
-              "id": "${actNumber}-final",
+              "id": "${actNumber}.final",
               "setting": "Final location",
               "dialogue": [
                 ["Character", "Final dialogue for this act"]
@@ -568,15 +574,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           ]
         }
-        Note:
-        -Make sure scene IDs are sequential and use format <Act#>-<Scene#>.
-        -Include branching paths based on choices.
-        -Some choices may have conditions that check player relationship values.
-        -The final scene of the act should have choices set to null.
-        -Include meaningful "delta" values for relationships, inventory items or skills.
-        -Pack each scene with ample dialogue to express the story.
-        -Ensure emotional depth: highlight subtle inner conflicts, irony, longing, and unresolved tension.
-        -Use of a narrator is encouraged to explain the scene or provide context.
+        Notes:
+        - Scene ids have format <Act#>-<Scene#>. 
+        - Include branching paths based on 2-4 choices. Choices that don't take you to another scene have letters e.g. <Act#>-<Scene#>b, where they continue the dialogue conversation.
+        - Final scene of act should have choices set to null.
+        - Relationships, inventory items, or skills can be added or subtracted by "delta" values.
+        - Pack each scene with ample dialogue to express the story (5-15+ lines). Be inventive about event details, while ensuring consistency with the plot outline.
+        - Use of a narrator is encouraged to explain the scene or provide context.
+        - Unknown characters are named "???" until revealed.
+        - Maintain the emotional tone consistent with the story context (e.g., lighthearted, suspenseful, tragic, romantic).
+        - You may optionally include [emotion] or [action] tags before dialogue when it enhances the scene.
+        - If a choice increases or decreases a relationship, reflect it subtly in the dialogue tone.
+        - Keep branching manageable (preferably 1–2 minor sub-branches before returning to the main story flow).
+        - Some choices may succeed or fail based on condition of relationship values, items, or skills. To do this, add a "condition" value in the choice (see below).
+        Here is a sample scene that blocks paths based on relationship requirements. Player tries to enter the engine room, but cannot due to his relationship value with Bruno being less than 2. If player has at least 2 points with Bruno, they proceed to the "failNext" scene 2-5a. Otherwise, they proceed to "next" scene 2-5b. 
+        {
+          "id": "2-5",
+          "setting": "Engine Room",
+          "bg":"dimly lit engine room, flickering valves, massive pressure dials, creaking pipes overhead"
+          "dialogue": [
+          ["Bruno", "Only someone I trust can see this."]
+          ],
+          "choices": [
+          {
+            "id": "enter_room",
+            "text": "Try to enter the engine room",
+            "condition": { "bruno": 2 },
+            "next": "2-5a",
+            "failNext": "2-5b" 
+          },
+          {
+            "id": "ask_trust",
+            "text": "Ask how to earn his trust",
+            "next": "2-5c"
+          }
+          ]
+        },
+        {
+          "id": "2-5b",
+          "bg": "door blocked",
+          "dialogue": [
+          ["Bruno", "Not yet. You're not ready."]
+          ]
+        }
       `;
       console.log("Act generation prompt:", prompt);
 
@@ -589,11 +629,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // top_p: 0.9,
         max_tokens: 16384,
         messages: [
-          {
-            role: "system",
-            content: "You're a VN brainstormer",
-          },
-          { role: "user", content: prompt },
+          // {
+          //   role: "system",
+          //   content: "You're a VN brainstormer",
+          // },
+          { role: "assistant", content: prompt },
         ],
         response_format: { type: "json_object" },
       });
