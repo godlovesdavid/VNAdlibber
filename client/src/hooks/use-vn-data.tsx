@@ -185,8 +185,8 @@ export function useVnData() {
       console.log("🔍 Validating content before generation...");
       const validationResponse = await apiRequest(
         "POST",
-        "/api/validate/paths",
-        { projectContext },
+        "/api/validate",
+        { projectContext, contentType: "paths" },
         controller.signal
       );
       
@@ -630,8 +630,8 @@ export function useVnData() {
       console.log("🔍 Validating content before generation...");
       const validationResponse = await apiRequest(
         "POST",
-        "/api/validate/paths",
-        { projectContext },
+        "/api/validate",
+        { projectContext, contentType: "paths" },
         controller.signal
       );
       
