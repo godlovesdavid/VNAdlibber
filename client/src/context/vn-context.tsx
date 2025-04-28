@@ -84,6 +84,10 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   
   // Create a new project
   const createNewProject = () => {
+    // Remove all project data from localStorage
+    localStorage.removeItem("current_vn_project");
+    
+    // Reset project to initial state
     setProjectData({
       title: "Untitled Project",
       createdAt: new Date().toISOString(),
@@ -93,10 +97,26 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         tone: "",
         genre: "",
       },
+      // Clear all data from previous steps
+      conceptData: undefined,
+      charactersData: undefined,
+      pathsData: undefined,
+      plotData: undefined,
+      generatedActs: undefined,
       currentStep: 1,
     });
+    
+    // Reset player data
     resetPlayerData();
+    
+    // Navigate to the first step
     setLocation("/create/basic");
+    
+    // Show confirmation toast
+    toast({
+      title: "New Project Created",
+      description: "Starting with a fresh project",
+    });
   };
   
   // Step data setters
