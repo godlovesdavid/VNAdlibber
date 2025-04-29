@@ -9,6 +9,91 @@ import { useImageGeneration } from "@/hooks/use-image-generation";
 import { setCachedImageUrl } from "@/lib/image-generator";
 import { useToast } from "@/hooks/use-toast";
 
+// Dedicated component for handling scene backgrounds with fallbacks
+interface SceneBackgroundProps {
+  imageUrl: string;
+  sceneId: string;
+  isGenerated?: boolean;
+}
+
+function SceneBackground({ imageUrl, sceneId, isGenerated = false }: SceneBackgroundProps) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [actualUrl, setActualUrl] = useState(imageUrl);
+  
+  // Fallback URL in case of loading failures
+  const fallbackUrl = "https://via.placeholder.com/1024x768/333333/ffffff?text=Scene+Background";
+  
+  useEffect(() => {
+    // Reset states when URL changes
+    setIsLoading(true);
+    setHasError(false);
+    setActualUrl(imageUrl);
+  }, [imageUrl]);
+  
+  // Generate a color from the scene ID for consistent display when needed
+  const getSceneColor = (id: string) => {
+    // Generate a consistent color based on scene ID
+    const hash = Array.from(id).reduce((acc, char) => char.charCodeAt(0) + acc, 0);
+    const hue = hash % 360;
+    return `hsl(${hue}, 70%, 40%)`;
+  };
+  
+  const handleImageError = () => {
+    console.error(`Image failed to load: ${imageUrl}`);
+    setHasError(true);
+    setIsLoading(false);
+    // Use fallback URL
+    setActualUrl(fallbackUrl);
+  };
+  
+  const handleImageLoad = () => {
+    console.log(`Image loaded successfully: ${imageUrl}`);
+    setIsLoading(false);
+    setHasError(false);
+  };
+  
+  return (
+    <div 
+      className="w-full h-full absolute inset-0" 
+      style={{ 
+        backgroundColor: getSceneColor(sceneId),
+        transition: 'background-color 0.5s ease'
+      }}
+    >
+      {/* Show placeholder immediately while image loads */}
+      <div className="absolute inset-0 flex items-center justify-center text-white">
+        {isLoading && (
+          <div className="text-center">
+            <RefreshCw className="h-10 w-10 animate-spin mx-auto mb-2" />
+            <p>Loading scene background...</p>
+          </div>
+        )}
+      </div>
+      
+      {/* Actual image with appropriate handling */}
+      <img 
+        key={`img-${actualUrl}`}
+        src={actualUrl} 
+        alt={`Scene ${sceneId} Background`}
+        className={cn(
+          "w-full h-full object-cover transition-opacity duration-500",
+          isLoading ? "opacity-0" : "opacity-100"
+        )}
+        style={{ position: 'absolute', zIndex: 0 }}
+        onLoad={handleImageLoad}
+        onError={handleImageError}
+      />
+      
+      {/* Debug info overlay */}
+      <div className="absolute bottom-4 right-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded text-xs z-20">
+        {isGenerated ? "Generated" : "Original"} | Scene: {sceneId}
+        {hasError && " | Using fallback"}
+      </div>
+    </div>
+  );
+}
+
 interface VnPlayerProps {
   actData: GeneratedAct;
   actNumber: number;
@@ -574,43 +659,21 @@ export function VnPlayer({
             </Button>
           </div>
           
-          {/* Background image display - using an actual img element for better debugging */}
+          {/* Background image display with SceneBackground component */}
           {imageUrl ? (
-            // Display generated image with fade-in animation
-            <div 
-              key={`bg-${imageUrl}`} // Add key to force re-render when URL changes
-              className="w-full h-full absolute inset-0 bg-black"
-            >
-              {/* Use an img element instead of background-image */}
-              <img 
-                src={imageUrl}
-                alt="Scene Background" 
-                className="w-full h-full object-cover animate-fadeIn"
-                style={{ position: 'absolute', zIndex: 0 }} 
-                onLoad={() => console.log("Image loaded successfully:", imageUrl)}
-                onError={(e) => console.error("Image failed to load:", e.currentTarget.src)}
-              />
-              
-              {/* Debug overlay to show image is loaded */}
-              <div className="absolute bottom-4 left-4 bg-black bg-opacity-70 text-green-400 px-3 py-1 rounded text-xs z-20">
-                Image URL: {imageUrl.substring(0, 30)}...
-              </div>
-            </div>
+            // Display generated image with reliable placeholder fallback
+            <SceneBackground 
+              imageUrl={imageUrl} 
+              sceneId={currentScene.id}
+              isGenerated={true}
+            />
           ) : currentScene.bg ? (
             // Display scene's existing background image
-            <div 
-              className="w-full h-full absolute inset-0 bg-black"
-            >
-              {/* Use an img element for consistent display with the generated images */}
-              <img 
-                src={currentScene.bg}
-                alt="Scene Background" 
-                className="w-full h-full object-cover"
-                style={{ position: 'absolute', zIndex: 0 }} 
-                onLoad={() => console.log("Scene bg loaded successfully:", currentScene.bg)}
-                onError={(e) => console.error("Scene bg failed to load:", e.currentTarget.src)}
-              />
-            </div>
+            <SceneBackground 
+              imageUrl={currentScene.bg} 
+              sceneId={currentScene.id}
+              isGenerated={false}
+            />
           ) : (
             // Display placeholder when no image is available
             <div className="text-white text-center z-0">
