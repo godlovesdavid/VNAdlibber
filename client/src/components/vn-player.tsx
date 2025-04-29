@@ -587,8 +587,8 @@ export function VnPlayer({
         dialogueLog={dialogueLog}
       />
 
-      <div className="vn-reader h-[calc(100vh-34px)] flex flex-col pt-[34px]">
-        <div className="vn-image-area h-[65%] bg-neutral-800 flex items-center justify-center relative">
+      <div className="vn-reader h-[calc(100vh-34px)] flex flex-col pt-[34px] relative">
+        <div className="vn-image-area absolute inset-0 bg-neutral-800 flex items-center justify-center">
           {/* Setting name overlay */}
           <div className="absolute top-4 left-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded text-sm">
             {currentScene.setting}
@@ -822,7 +822,7 @@ export function VnPlayer({
 
         <div
           ref={containerRef}
-          className="vn-text-area h-[35%] bg-neutral-800 bg-opacity-60 text-white p-5 absolute bottom-0 left-0 right-0 overflow-y-auto z-10"
+          className="vn-text-area h-[35%] bg-black/60 text-white p-5 absolute bottom-0 left-0 right-0 overflow-y-auto z-10"
           onClick={handleContentClick}
         >
           {/* Dialogue text */}
