@@ -55,8 +55,8 @@ export async function generateSceneBackgroundImage(
       prompt: prompt,
       n: 1, // Generate one image
       size: "512x512", // Smaller, faster images
-      quality: "standard", // Standard quality (HD only available for DALL-E 3)
-      style: "natural", // Natural style works best for backgrounds
+      // Note: 'quality' parameter is only available for DALL-E 3, not for DALL-E 2
+      // 'style' parameter is only available for DALL-E 3, removing it for DALL-E 2
     });
     
     console.log("- OpenAI API response received");
