@@ -23,6 +23,22 @@ async function throwIfResNotOk(res: Response) {
     error.status = res.status;
     error.response = res.clone(); // Make response available for further processing
     error.data = errorResponse;
+    
+    // Pass through special error properties for toast handler
+    if (errorResponse) {
+      // Infinite duration for critical validation errors
+      if (errorResponse.duration === 'infinite') {
+        error.duration = Infinity;
+      } else if (errorResponse.duration) {
+        error.duration = errorResponse.duration;
+      }
+      
+      // Pass error type for specialized handling
+      if (errorResponse.errorType) {
+        error.errorType = errorResponse.errorType;
+      }
+    }
+    
     throw error;
   }
 }

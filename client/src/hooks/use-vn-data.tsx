@@ -47,7 +47,8 @@ export function useVnData() {
           title: "Content Validation Failed",
           description: result.error,
           variant: "destructive",
-          duration: 60000,
+          // Use infinite duration for validation errors to ensure user sees them
+          duration: Infinity,
         });
         return null;
       }
@@ -121,11 +122,25 @@ export function useVnData() {
       if ((error as Error).name !== 'AbortError') {
         // Try to extract error message from the error response if it exists
         let errorMsg = "Failed to generate character details. Please try again.";
+        let duration = 60000; // Default duration
+        let title = "Generation Failed";
         
         try {
           // If error has a data property with message
           if (error.data && (error.data.message || error.data.error)) {
             errorMsg = error.data.message || error.data.error;
+            
+            // Check for special properties passed through from the server
+            if (error.errorType === 'validation_error' || error.errorType === 'validation_issue') {
+              title = "Content Validation Failed";
+            }
+            
+            // Check for infinite duration marker
+            if (error.duration === Infinity || error.data.duration === 'infinite') {
+              duration = Infinity;
+            } else if (error.duration) {
+              duration = error.duration;
+            }
           } 
           // If error has detailed message in the error string
           else if (error.message && error.message.includes(':')) {
@@ -139,10 +154,10 @@ export function useVnData() {
         }
         
         toast({
-          title: "Content Validation Failed",
+          title: title,
           description: errorMsg,
           variant: "destructive",
-          duration: 60000,
+          duration: duration,
         });
         console.error("Error generating character:", error);
       }
@@ -240,13 +255,41 @@ export function useVnData() {
       if ((error as Error).name !== 'AbortError') {
         // Try to extract error message from the error response if it exists
         let errorMsg = "Failed to generate path details. Please try again.";
+        let duration = 60000; // Default duration
+        let title = "Generation Failed";
         
         try {
-          // If error has a response property (fetch error), try to parse it
-          if (error.response) {
+          // If error has a data property with message
+          if (error.data && (error.data.message || error.data.error)) {
+            errorMsg = error.data.message || error.data.error;
+            
+            // Check for special properties passed through from the server
+            if (error.errorType === 'validation_error' || error.errorType === 'validation_issue') {
+              title = "Content Validation Failed";
+            }
+            
+            // Check for infinite duration marker
+            if (error.duration === Infinity || error.data.duration === 'infinite') {
+              duration = Infinity;
+            } else if (error.duration) {
+              duration = error.duration;
+            }
+          } 
+          // If error has a response property (fetch error), try to parse it 
+          else if (error.response) {
             const errorData = await error.response.json();
             if (errorData.message || errorData.error) {
               errorMsg = errorData.message || errorData.error;
+              
+              if (errorData.errorType === 'validation_error' || errorData.errorType === 'validation_issue') {
+                title = "Content Validation Failed";
+              }
+              
+              if (errorData.duration === 'infinite') {
+                duration = Infinity;
+              } else if (errorData.duration) {
+                duration = errorData.duration;
+              }
             }
           } else if (error.message) {
             errorMsg = error.message;
@@ -256,10 +299,10 @@ export function useVnData() {
         }
         
         toast({
-          title: "Generation Failed",
+          title: title,
           description: errorMsg,
           variant: "destructive",
-          duration: 60000,
+          duration: duration,
         });
         console.error("Error in two-step path generation:", error);
       }
