@@ -53,27 +53,17 @@ export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRest
     return processed;
   }, [actNumber]);
   
-  // Initialize with first scene on mount or when actData changes
+  // Initialize with first scene on mount - simplest approach is often best
   useEffect(() => {
-    // Reset initialization if actData has changed
-    if (actData && actData.scenes?.length > 0) {
-      // Always initialize when actData changes - this is essential for imported stories
-      initialized.current = false;
-    }
+    if (!actData?.scenes?.length || initialized.current) return;
     
-    if (!actData?.scenes?.length) return;
-    
-    // Only initialize once per actData change
-    if (initialized.current) return;
-    
-    // Mark as initialized to prevent multiple initializations for same actData
+    // Mark as initialized to prevent re-initialization
     initialized.current = true;
     
     // Set initial scene
     const firstScene = processScene(actData.scenes[0]);
     console.log('Initializing VN Player with first scene:', firstScene.id);
     
-    // Reset all state
     setCurrentScene(firstScene);
     setCurrentSceneId(firstScene.id);
     setCurrentDialogueIndex(0);

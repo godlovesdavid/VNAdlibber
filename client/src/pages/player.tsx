@@ -33,7 +33,31 @@ export default function Player() {
           throw new Error(`Act ${num} has not been generated yet`);
         }
         
-        setActData(projectData.generatedActs[`act${num}`]);
+        // Make a deep copy to avoid reference issues (same as import flow)
+        const actKey = `act${num}`;
+        const stringCopy = JSON.stringify(projectData.generatedActs[actKey]);
+        const actDataCopy = JSON.parse(stringCopy);
+        
+        // Ensure it has meta property
+        if (!actDataCopy.meta) {
+          actDataCopy.meta = {
+            theme: projectData.basicData?.theme || "Generated story",
+            relationshipVars: []
+          };
+        }
+        
+        // Fix any "null" string issues
+        if (actDataCopy.scenes) {
+          actDataCopy.scenes = actDataCopy.scenes.map((scene: any) => {
+            if (scene.choices === "null") {
+              return { ...scene, choices: null };
+            }
+            return scene;
+          });
+        }
+        
+        // Set the data and number
+        setActData(actDataCopy);
         setActNumber(num);
         setLoading(false);
       } catch (err) {
@@ -52,129 +76,87 @@ export default function Player() {
       setError(null);
       
       try {
-        // Handle imported story from local storage with fallback to backup
-        let importedStory = localStorage.getItem("imported_story");
-        let parsedStory;
+        // Handle imported story from localStorage
+        const importedStory = localStorage.getItem("imported_story");
         
         if (!importedStory) {
-          // Try to use backup if main story import failed
-          const backupStory = localStorage.getItem("imported_story_backup");
-          if (!backupStory) {
-            throw new Error("No imported story found");
-          }
-          
-          // Use the backup (simpler format)
-          parsedStory = { actData: JSON.parse(backupStory) };
-        } else {
-          parsedStory = JSON.parse(importedStory);
+          throw new Error("No imported story found");
         }
         
-        // Look for player data that was separately stored
-        const playerDataJson = localStorage.getItem("imported_story_player_data");
-        if (playerDataJson) {
-          const playerDataFromStorage = JSON.parse(playerDataJson);
-          resetPlayerData(); // Start fresh
-          updatePlayerData(playerDataFromStorage); // Apply stored player data
-        }
+        const parsedStory = JSON.parse(importedStory);
         
-        // Handle both old and new export formats
+        // Reset player data first (one time only)
+        resetPlayerData();
+        
+        // Handle old format with actData property (which is what we use)
         if (parsedStory.actData) {
-          // Old format with actData property
+          // Set act number
           setActNumber(parsedStory.actNumber || 1);
           
-          // Initialize player data from export BEFORE setting act data
+          // Apply player data if present in export info
           if (parsedStory.actData.__exportInfo?.playerData) {
-            // Reset player data ONCE before applying the imported data
-            resetPlayerData();
-            
-            // Update with imported player data immediately - no delay
             updatePlayerData(parsedStory.actData.__exportInfo.playerData);
-            
-            // Clean copy of act data to avoid loops
-            const actDataCopy = {
-              ...parsedStory.actData,
-              meta: parsedStory.actData.meta || {}
-            };
-            
-            setActData(actDataCopy);
-            setLoading(false);
-          } else {
-            // If no player data, just set the act data directly
-            const actDataCopy = {
-              ...parsedStory.actData,
-              meta: parsedStory.actData.meta || {}
-            };
-            
-            setActData(actDataCopy);
-            setLoading(false);
           }
-        } else {
-          // New format where the imported data is the full act data
           
-          // Check for __exportInfo metadata
-          if (parsedStory.__exportInfo) {
-            setActNumber(parsedStory.__exportInfo.actNumber || 1);
-            
-            // Initialize player data from export BEFORE setting act data
-            if (parsedStory.__exportInfo.playerData) {
-              // Reset player data ONCE before applying the imported data
-              resetPlayerData();
-              
-              // Update with imported player data immediately - no delay
-              updatePlayerData(parsedStory.__exportInfo.playerData);
-              
-              // Clean copy of act data to avoid loops
-              const actDataCopy = {
-                ...parsedStory,
-                __exportInfo: undefined, // Remove to avoid conflicts
-                meta: parsedStory.meta || {}
-              };
-              
-              setActData(actDataCopy);
-              setLoading(false);
-            } else {
-              // If no player data, just set the act data directly
-              const actDataCopy = {
-                ...parsedStory,
-                __exportInfo: undefined,
-                meta: parsedStory.meta || {}
-              };
-              
-              setActData(actDataCopy);
-              setLoading(false);
-            }
-          } else {
-            // Legacy format without __exportInfo
-            setActNumber(1);
-            
-            // Clean up imported story data for compatibility
-            const cleanedStory = { ...parsedStory };
-            
-            // Fix for scenes with choices as strings instead of objects/arrays/null
-            if (cleanedStory.scenes) {
-              cleanedStory.scenes = cleanedStory.scenes.map((scene: any) => {
-                const cleanScene = { ...scene };
-                
-                // Fix choices that might be string "null"
-                if (cleanScene.choices === "null") {
-                  cleanScene.choices = null;
-                }
-                
-                return cleanScene;
-              });
-            }
-            
-            // Add missing meta property if needed
-            if (!cleanedStory.meta) {
-              cleanedStory.meta = {
-                theme: "Imported story",
-                relationshipVars: []
-              };
-            }
-            
-            setActData(cleanedStory);
-            setLoading(false);
+          // Make a deep copy of act data to avoid reference issues
+          const stringCopy = JSON.stringify(parsedStory.actData);
+          const actDataCopy = JSON.parse(stringCopy);
+          
+          // Ensure meta property exists
+          if (!actDataCopy.meta) {
+            actDataCopy.meta = {
+              theme: "Imported story",
+              relationshipVars: []
+            };
           }
+          
+          // Fix 'choices: "null"' issue in older exports
+          if (actDataCopy.scenes) {
+            actDataCopy.scenes = actDataCopy.scenes.map((scene: any) => {
+              if (scene.choices === "null") {
+                return { ...scene, choices: null };
+              }
+              return scene;
+            });
+          }
+          
+          // Set act data
+          setActData(actDataCopy);
+          setLoading(false);
+        } else {
+          // Direct data format (less common)
+          setActNumber(1);
+          
+          // Apply player data if present in export info
+          if (parsedStory.__exportInfo?.playerData) {
+            updatePlayerData(parsedStory.__exportInfo.playerData);
+          }
+          
+          // Make a deep copy to avoid reference issues
+          const stringCopy = JSON.stringify(parsedStory);
+          const actDataCopy = JSON.parse(stringCopy);
+          
+          // Fix 'choices: "null"' issue in older exports
+          if (actDataCopy.scenes) {
+            actDataCopy.scenes = actDataCopy.scenes.map((scene: any) => {
+              if (scene.choices === "null") {
+                return { ...scene, choices: null };
+              }
+              return scene;
+            });
+          }
+          
+          // Ensure meta property exists
+          if (!actDataCopy.meta) {
+            actDataCopy.meta = {
+              theme: "Imported story",
+              relationshipVars: []
+            };
+          }
+          
+          // Set act data
+          setActData(actDataCopy);
+          setLoading(false);
         }
       } catch (err) {
         console.error("Error loading imported act:", err);
