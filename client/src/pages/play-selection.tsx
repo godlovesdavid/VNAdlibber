@@ -94,8 +94,8 @@ export default function PlaySelection() {
     // For imported stories
     const story = importedStories.find(s => s.id === storyId);
     if (story) {
-      // Store the story in session storage for the player to access
-      sessionStorage.setItem('current_story', JSON.stringify(story));
+      // Store the story in localStorage instead of sessionStorage for persistence
+      localStorage.setItem('imported_story', JSON.stringify(story));
       setLocation(`/player/imported`);
       return;
     }

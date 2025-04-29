@@ -52,8 +52,8 @@ export default function Player() {
       setError(null);
       
       try {
-        // Handle imported story from session storage
-        const importedStory = sessionStorage.getItem("current_story");
+        // Handle imported story from local storage (more persistent than session storage)
+        const importedStory = localStorage.getItem("imported_story");
         
         if (!importedStory) {
           throw new Error("No imported story found");
