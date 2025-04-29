@@ -22,25 +22,32 @@ function isMobileDevice(): boolean {
 // Function to generate a scene background image using RunPod
 export async function generateSceneBackground(
   scene: {
-    setting: string;
+    bg: string;
     id: string;
   },
   theme?: string,
   signal?: AbortSignal,
-  options?: {}
+  options?: {},
 ): Promise<ImageGenerationResult> {
   try {
-    console.log("Generating background for scene:", scene.id, "setting:", scene.setting, "theme:", theme || "none");
-    
-    const requestData = { 
-      scene, 
+    console.log(
+      "Generating background for scene:",
+      scene.id,
+      "setting:",
+      scene.bg,
+      "theme:",
+      theme || "none",
+    );
+
+    const requestData = {
+      scene,
       theme,
-      imageType: "background", 
+      imageType: "background",
       // Include flag to indicate if optimize mode should be used
-      optimizeForMobile: isMobileDevice()
+      optimizeForMobile: isMobileDevice(),
     };
     console.log("Sending request to generate image API:", requestData);
-    
+
     const response = await apiRequest(
       "POST",
       "/api/generate/image",
@@ -50,7 +57,11 @@ export async function generateSceneBackground(
 
     console.log("Received response from image API, status:", response.status);
     const result = await response.json();
-    console.log("Parsed response:", result.url ? "Success (URL hidden)" : "No URL", result.error || "No error");
+    console.log(
+      "Parsed response:",
+      result.url ? "Success (URL hidden)" : "No URL",
+      result.error || "No error",
+    );
 
     // Check if the API returned an error
     if (result.error) {
@@ -60,12 +71,14 @@ export async function generateSceneBackground(
 
     // Skip upscaling for now - as requested by user
     // This will use the original images directly, potentially half-resolution
-    console.log("Skipping upscaling as requested - using original image directly");
+    console.log(
+      "Skipping upscaling as requested - using original image directly",
+    );
 
     console.log("Successfully generated image, returning URL");
     return { url: result.url };
   } catch (error) {
-    if ((error as Error).name === 'AbortError') {
+    if ((error as Error).name === "AbortError") {
       console.log("Image generation was aborted");
       return { error: "Image generation aborted" };
     }
@@ -89,7 +102,7 @@ export function setCachedImageUrl(sceneId: string, url: string): void {
 
 // Function to clear the image cache
 export function clearImageCache(): void {
-  Object.keys(imageCache).forEach(key => {
+  Object.keys(imageCache).forEach((key) => {
     delete imageCache[key];
   });
 }
