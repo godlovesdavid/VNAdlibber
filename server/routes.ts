@@ -103,37 +103,38 @@ function checkResponseForError(parsedResponse: any, res: any): boolean {
   // Check for error in the response
   if ("error" in parsedResponse) {
     console.error("AI validation error:", parsedResponse.error);
-    
+
     // Format the error message for display
-    const errorMessage = typeof parsedResponse.error === 'string' 
-      ? parsedResponse.error 
-      : JSON.stringify(parsedResponse.error);
-    
+    const errorMessage =
+      typeof parsedResponse.error === "string"
+        ? parsedResponse.error
+        : JSON.stringify(parsedResponse.error);
+
     // Return the error with status 400 and infinite duration for the toast
-    res.status(400).json({ 
+    res.status(400).json({
       message: errorMessage,
       errorType: "validation_error",
-      duration: "infinite"  // Signal to the frontend that this error should persist
+      duration: "infinite", // Signal to the frontend that this error should persist
     });
-    
+
     return true;
   }
-  
+
   // For content with other types of validation issues
   if (parsedResponse.validation_issues) {
     console.error("AI validation issues:", parsedResponse.validation_issues);
-    
+
     res.status(400).json({
-      message: Array.isArray(parsedResponse.validation_issues) 
+      message: Array.isArray(parsedResponse.validation_issues)
         ? parsedResponse.validation_issues.join(", ")
         : String(parsedResponse.validation_issues),
       errorType: "validation_issue",
-      duration: "infinite"
+      duration: "infinite",
     });
-    
+
     return true;
   }
-  
+
   return false;
 }
 
@@ -285,41 +286,42 @@ const generateImageSchema = z.object({
 export async function registerRoutes(app: Express): Promise<Server> {
   // Project CRUD operations
   // OpenAI endpoint has been removed in favor of RunPod
-  
+
   // Test RunPod API connectivity
   app.get("/api/test/runpod", async (req, res) => {
     try {
       console.log("Testing RunPod API connectivity...");
-      
+
       const endpointId = process.env.RUNPOD_ENDPOINT_ID || "sdxl";
       const apiKey = process.env.RUNPOD_API_KEY;
-      
+
       if (!apiKey) {
         return res.status(401).json({
           success: false,
-          message: "RunPod API key is missing. Please add RUNPOD_API_KEY to your environment variables."
+          message:
+            "RunPod API key is missing. Please add RUNPOD_API_KEY to your environment variables.",
         });
       }
-      
+
       try {
         // Test the RunPod API by checking endpoint health
         const healthCheckUrl = `https://api.runpod.ai/v2/${endpointId}/health`;
         console.log(`Checking RunPod endpoint health: ${endpointId}`);
-        
+
         const response = await fetch(healthCheckUrl, {
-          method: 'GET',
+          method: "GET",
           headers: {
-            'Authorization': `Bearer ${apiKey}`
-          }
+            Authorization: `Bearer ${apiKey}`,
+          },
         });
-        
+
         if (response.ok) {
           const data = await response.json();
           return res.json({
             success: true,
             message: "RunPod API connection successful",
             response: data,
-            endpoint: endpointId
+            endpoint: endpointId,
           });
         } else {
           const errorText = await response.text();
@@ -327,25 +329,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
             success: false,
             message: `RunPod API error: ${response.status} ${response.statusText}`,
             response: errorText,
-            endpoint: endpointId
+            endpoint: endpointId,
           });
         }
       } catch (apiError) {
         console.error("RunPod API error:", apiError);
         return res.status(500).json({
           success: false,
-          message: apiError instanceof Error ? apiError.message : "Unknown RunPod API error"
+          message:
+            apiError instanceof Error
+              ? apiError.message
+              : "Unknown RunPod API error",
         });
       }
     } catch (error) {
       console.error("Error testing RunPod API:", error);
       res.status(500).json({
         success: false,
-        message: error instanceof Error ? error.message : "Unknown error"
+        message: error instanceof Error ? error.message : "Unknown error",
       });
     }
   });
-  
+
   // DALL-E endpoint has been removed in favor of RunPod
 
   app.get("/api/projects", async (req, res) => {
@@ -472,13 +477,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (checkResponseForError(validationResult, res)) {
         return;
       }
-      
+
       // If validation failed and we have issues, return them with infinite duration
       if (!validationResult.valid && validationResult.issues) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           message: validationResult.issues,
           errorType: "validation_issue",
-          duration: "infinite"
+          duration: "infinite",
         });
       }
 
@@ -891,10 +896,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           cleanedContent = cleanedContent.replace(/,(\s*[\]}])/g, "$1");
 
           // Special fix for the bg property missing quotes
-          cleanedContent = cleanedContent.replace(
-            /"bg":([^,"\{\}\[\]]*),/g,
-            '"bg":"$1",',
-          );
+          // cleanedContent = cleanedContent.replace(
+          //   /"bg":([^,"\{\}\[\]]*),/g,
+          //   '"bg":"$1",',
+          // );
 
           console.log(
             "Applied aggressive cleanup, attempting to parse again...",
@@ -921,45 +926,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to generate act" });
     }
   });
-  
+
   // Image generation endpoint
   app.post("/api/generate/image", async (req, res) => {
     try {
       console.log("Image generation endpoint called with body:", req.body);
-      
+
       // Check if RunPod API key is configured
       if (!process.env.RUNPOD_API_KEY) {
         console.error("RunPod API key is missing");
         return res.status(401).json({
-          error: "RunPod API key is missing. Please add the RUNPOD_API_KEY secret in your environment variables."
+          error:
+            "RunPod API key is missing. Please add the RUNPOD_API_KEY secret in your environment variables.",
         });
       }
-      
-      const { scene, theme, imageType, forceReal, optimizeForMobile } = req.body;
-      
+
+      const { scene, theme, imageType, forceReal, optimizeForMobile } =
+        req.body;
+
       // Parse with the schema, but allow forceReal and optimizeForMobile to pass through
       generateImageSchema.parse({ scene, theme, imageType });
-      
+
       // We no longer need to check for forceReal since we always use RunPod now
-      
+
       // Check if we should use optimized image settings (smaller/cheaper)
       const useOptimizedSettings = optimizeForMobile === true;
-      
-      console.log(`Image generation request received for scene: ${scene.id}, setting: "${scene.setting}", theme: "${theme || 'none'}", type: ${imageType}, optimizeForMobile: ${useOptimizedSettings}`);
-      
+
+      console.log(
+        `Image generation request received for scene: ${scene.id}, setting: "${scene.setting}", theme: "${theme || "none"}", type: ${imageType}, optimizeForMobile: ${useOptimizedSettings}`,
+      );
+
       if (imageType === "background") {
         try {
-          console.log("Calling RunPod SDXL API with API key:", process.env.RUNPOD_API_KEY ? "Present (hidden)" : "Missing");
-          
+          console.log(
+            "Calling RunPod SDXL API with API key:",
+            process.env.RUNPOD_API_KEY ? "Present (hidden)" : "Missing",
+          );
+
           // We're now using RunPod's SDXL endpoint for image generation
           console.log("🎨 USING RUNPOD AI - SDXL credits will be consumed");
-          
+
           // Make sure we have the required API key
           if (!process.env.RUNPOD_API_KEY) {
             console.error("❌ RUNPOD_API_KEY is missing");
-            return res.status(500).json({ error: "RUNPOD_API_KEY is required for image generation" });
+            return res.status(500).json({
+              error: "RUNPOD_API_KEY is required for image generation",
+            });
           }
-          
+
           // Check if endpoint ID is specified (optional)
           const endpointId = process.env.RUNPOD_ENDPOINT_ID;
           if (endpointId) {
@@ -967,49 +981,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
           } else {
             console.log("- Using default RunPod SDXL endpoint");
           }
-          
-          const result = await generateSceneBackgroundImage(scene.id, scene.setting, theme);
-          
+
+          const result = await generateSceneBackgroundImage(
+            scene.id,
+            scene.bg,
+            theme,
+          );
+
           // No environment variables to reset since we've removed DALL-E
-          
-          console.log(`Background image generated for scene ${scene.id}:`, result.url ? "Success (URL hidden for privacy)" : "No URL returned");
-          
+
+          console.log(
+            `Background image generated for scene ${scene.id}:`,
+            result.url ? "Success (URL hidden for privacy)" : "No URL returned",
+          );
+
           // Log the actual URL for debugging (truncated for data URLs)
           if (result.url) {
-            const logUrl = result.url.startsWith('data:') 
-              ? `${result.url.substring(0, 30)}...` 
+            const logUrl = result.url.startsWith("data:")
+              ? `${result.url.substring(0, 30)}...`
               : result.url;
             console.log(`🎨 RUNPOD AI IMAGE: ${logUrl}`);
           }
-          
+
           // Include optimization information in the response
           res.json({
             ...result,
-            isOptimized: useOptimizedSettings
+            isOptimized: useOptimizedSettings,
           });
         } catch (generateError) {
           console.error("Error generating image with RunPod:", generateError);
-          
-          const errorMessage = generateError instanceof Error 
-            ? generateError.message 
-            : "Unknown error during image generation";
-            
+
+          const errorMessage =
+            generateError instanceof Error
+              ? generateError.message
+              : "Unknown error during image generation";
+
           console.log("Returning error to client:", errorMessage);
-            
-          res.status(500).json({ 
-            error: errorMessage.includes("RunPod API") 
+
+          res.status(500).json({
+            error: errorMessage.includes("RunPod API")
               ? "Error connecting to RunPod API. Please check your API key and endpoint ID."
-              : errorMessage
+              : errorMessage,
           });
         }
       } else {
         // Future extension point for character images
-        console.log("Character image generation requested but not implemented yet");
-        res.status(400).json({ error: "Character image generation not implemented yet" });
+        console.log(
+          "Character image generation requested but not implemented yet",
+        );
+        res
+          .status(400)
+          .json({ error: "Character image generation not implemented yet" });
       }
     } catch (error) {
       console.error("Error processing image generation request:", error);
-      res.status(500).json({ error: "Failed to process image generation request" });
+      res
+        .status(500)
+        .json({ error: "Failed to process image generation request" });
     }
   });
 
