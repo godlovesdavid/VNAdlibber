@@ -94,9 +94,35 @@ export default function PlaySelection() {
     // For imported stories
     const story = importedStories.find(s => s.id === storyId);
     if (story) {
-      // Store the story in localStorage instead of sessionStorage for persistence
-      localStorage.setItem('imported_story', JSON.stringify(story));
-      setLocation(`/player/imported`);
+      try {
+        // Deep clone the story data to break any reference issues
+        const storyToStore = {
+          id: story.id,
+          title: story.title,
+          actNumber: story.actNumber,
+          createdAt: story.createdAt,
+          // Convert to string and back to ensure deep cloning
+          actData: JSON.parse(JSON.stringify(story.actData))
+        };
+        
+        // Store the story in localStorage instead of sessionStorage for persistence
+        localStorage.setItem('imported_story', JSON.stringify(storyToStore));
+        
+        // Create an extra backup of the raw story data in case the Player has trouble parsing
+        localStorage.setItem('imported_story_backup', JSON.stringify(story.actData));
+        
+        // Clear any previous player data to prevent conflicts
+        if (story.actData.__exportInfo?.playerData) {
+          // Create a copy of the player data for the component to use
+          localStorage.setItem('imported_story_player_data', 
+            JSON.stringify(story.actData.__exportInfo.playerData));
+        }
+        
+        setLocation(`/player/imported`);
+      } catch (error) {
+        console.error("Error preparing story for import:", error);
+        alert("There was a problem preparing the story for playback. Please try again.");
+      }
       return;
     }
     

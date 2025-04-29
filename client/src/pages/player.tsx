@@ -52,14 +52,30 @@ export default function Player() {
       setError(null);
       
       try {
-        // Handle imported story from local storage (more persistent than session storage)
-        const importedStory = localStorage.getItem("imported_story");
+        // Handle imported story from local storage with fallback to backup
+        let importedStory = localStorage.getItem("imported_story");
+        let parsedStory;
         
         if (!importedStory) {
-          throw new Error("No imported story found");
+          // Try to use backup if main story import failed
+          const backupStory = localStorage.getItem("imported_story_backup");
+          if (!backupStory) {
+            throw new Error("No imported story found");
+          }
+          
+          // Use the backup (simpler format)
+          parsedStory = { actData: JSON.parse(backupStory) };
+        } else {
+          parsedStory = JSON.parse(importedStory);
         }
         
-        const parsedStory = JSON.parse(importedStory);
+        // Look for player data that was separately stored
+        const playerDataJson = localStorage.getItem("imported_story_player_data");
+        if (playerDataJson) {
+          const playerDataFromStorage = JSON.parse(playerDataJson);
+          resetPlayerData(); // Start fresh
+          updatePlayerData(playerDataFromStorage); // Apply stored player data
+        }
         
         // Handle both old and new export formats
         if (parsedStory.actData) {
