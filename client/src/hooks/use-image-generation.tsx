@@ -61,7 +61,7 @@ export function useImageGeneration(
   }, [logDebug]);
   
   // Generate image function with safety checks
-  const generateImage = useCallback(async (forceGenerate = false, options = {}) => {
+  const generateImage = useCallback(async (forceGenerate = false, options?: { forceReal?: boolean }) => {
     // Don't generate if no scene is available
     if (!scene) {
       logDebug('Cannot generate - no scene provided');
@@ -69,7 +69,7 @@ export function useImageGeneration(
     }
     
     // Extract any custom options
-    const { forceReal = false } = options;
+    const forceReal = options?.forceReal || false;
     
     // Always update current scene ID reference
     currentSceneId.current = scene.id;

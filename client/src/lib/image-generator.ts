@@ -15,6 +15,7 @@ export async function generateSceneBackground(
   },
   theme?: string,
   signal?: AbortSignal,
+  options?: { forceReal?: boolean }
 ): Promise<ImageGenerationResult> {
   try {
     console.log("Generating background for scene:", scene.id, "setting:", scene.setting, "theme:", theme || "none");
@@ -22,7 +23,8 @@ export async function generateSceneBackground(
     const requestData = { 
       scene, 
       theme,
-      imageType: "background" 
+      imageType: "background", 
+      forceReal: options?.forceReal || false
     };
     console.log("Sending request to generate image API:", requestData);
     
