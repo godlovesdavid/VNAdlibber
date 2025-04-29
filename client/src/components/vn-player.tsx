@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, ImageIcon, RefreshCw } from "lucide-react";
 import { Scene, SceneChoice, GeneratedAct } from "@/types/vn";
 import { useImageGeneration } from "@/hooks/use-image-generation";
+import { setCachedImageUrl } from "@/lib/image-generator";
+import { useToast } from "@/hooks/use-toast";
 
 interface VnPlayerProps {
   actData: GeneratedAct;
@@ -23,6 +25,7 @@ export function VnPlayer({
   mode = "generated" 
 }: VnPlayerProps) {
   const { playerData, updatePlayerData } = useVnContext();
+  const { toast } = useToast(); // Initialize toast
   
   // Core scene and dialogue state
   const [currentSceneId, setCurrentSceneId] = useState("");
@@ -458,63 +461,34 @@ export function VnPlayer({
           
           {/* Image generation controls */}
           <div className="absolute top-4 right-4 flex space-x-2">
-            {/* First button: Simple styled button with direct fetch */}
-            <button
-              type="button"
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200 disabled:bg-blue-300"
+            {/* Button: Use the hook's generateImage function */}
+            <Button
+              variant="default"
+              className="bg-blue-500 hover:bg-blue-700 active:bg-blue-800"
               onClick={() => {
-                console.log('Generate image button clicked (direct DOM button)');
-                setIsGenerating(true); // Set loading state
-                
-                // Generate a simple request to our image API to test
-                fetch('/api/generate/image', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    scene: {
-                      id: currentScene?.id || 'test-scene',
-                      setting: currentScene?.setting || 'A beautiful mountain landscape'
-                    },
-                    theme: theme || 'fantasy',
-                    imageType: 'background'
-                  })
-                })
-                .then(response => {
-                  console.log('API Response status:', response.status);
-                  if (!response.ok) {
-                    throw new Error(`Server returned ${response.status}`);
-                  }
-                  return response.json();
-                })
-                .then(data => {
-                  console.log('API Response data:', data);
-                  if (data.url) {
-                    console.log('Got image URL:', data.url.substring(0, 30) + '...');
-                    setImageUrl(data.url);
-                    setImageError(null);
-                  } else if (data.error) {
-                    setImageError(data.error);
-                  }
-                })
-                .catch(error => {
-                  console.error('API Error:', error);
-                  setImageError(error.message);
-                })
-                .finally(() => {
-                  setIsGenerating(false); // Reset loading state
-                });
+                console.log('Generate image button clicked - using hook');
+                // Force true to regenerate even if cached
+                generateImage(true);
               }}
               disabled={isGenerating}
             >
-              {isGenerating ? "Generating..." : "Generate Image (Direct)"}
-            </button>
+              {isGenerating ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                  <span>Generating...</span>
+                </>
+              ) : (
+                <>
+                  <ImageIcon className="h-4 w-4 mr-2" />
+                  <span>Generate Image</span>
+                </>
+              )}
+            </Button>
             
-            {/* Second button: Test OpenAI connection */}
-            <button
-              type="button"
-              className="ml-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700 active:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition-colors duration-200"
+            {/* Button: Test OpenAI connection */}
+            <Button
+              variant="outline"
+              className="ml-2 bg-green-500 text-white hover:bg-green-700 active:bg-green-800"
               onClick={() => {
                 console.log('Testing OpenAI connection');
                 
@@ -522,16 +496,24 @@ export function VnPlayer({
                   .then(response => response.json())
                   .then(data => {
                     console.log('OpenAI test result:', data);
-                    alert(`OpenAI connection test: ${data.success ? 'SUCCESS' : 'FAILED'}\n${data.message}`);
+                    toast({
+                      title: `OpenAI Connection: ${data.success ? 'SUCCESS' : 'FAILED'}`,
+                      description: data.message,
+                      variant: data.success ? "default" : "destructive",
+                    });
                   })
                   .catch(error => {
                     console.error('Test Error:', error);
-                    alert(`OpenAI connection test error: ${error.message}`);
+                    toast({
+                      title: "Connection Test Failed",
+                      description: error instanceof Error ? error.message : "Unknown error",
+                      variant: "destructive",
+                    });
                   });
               }}
             >
               Test OpenAI
-            </button>
+            </Button>
           </div>
           
           {/* Background image display */}
