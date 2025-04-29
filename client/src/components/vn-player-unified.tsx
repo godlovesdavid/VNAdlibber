@@ -396,6 +396,9 @@ export function VnPlayer({
   useEffect(() => {
     const handleTextSpeedChange = (event: CustomEvent<number>) => {
       const speedValue = event.detail;
+      console.log(`Text speed change event received: ${speedValue} in ${mode} mode`);
+      
+      // Update text speed state
       if (speedValue === 1) {
         setTextSpeed('slow');
       } else if (speedValue === 5) {
@@ -403,6 +406,9 @@ export function VnPlayer({
       } else if (speedValue === 10) {
         setTextSpeed('fast');
       }
+      
+      // For debugging - log current text state
+      console.log(`Current animation state - isTextAnimating: ${isTextAnimating}`);
     };
     
     window.addEventListener('vnSetTextSpeed', handleTextSpeedChange as EventListener);
@@ -410,7 +416,7 @@ export function VnPlayer({
     return () => {
       window.removeEventListener('vnSetTextSpeed', handleTextSpeedChange as EventListener);
     };
-  }, []);
+  }, [mode, isTextAnimating]);
   
   // Text speed controls removed - now only using the ones in the options menu
   
