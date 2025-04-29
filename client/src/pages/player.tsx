@@ -14,157 +14,163 @@ export default function Player() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  useEffect(() => 
-  {
-    const loadAct = async () => 
-    {
+  // Separate effect for loading project act vs. imported act 
+  // to avoid unnecessary dependencies that cause loops
+  useEffect(() => {
+    // This effect is only for non-imported acts
+    if (actId !== "imported") {
       setLoading(true);
       setError(null);
       
-      // Always reset player data when loading a new act to avoid state persistence issues
-      resetPlayerData();
+      try {
+        // Handle act from current project
+        const num = parseInt(actId || '0');
+        if (isNaN(num) || num < 1 || num > 5) {
+          throw new Error("Invalid act number");
+        }
+        
+        if (!projectData?.generatedActs?.[`act${num}`]) {
+          throw new Error(`Act ${num} has not been generated yet`);
+        }
+        
+        setActData(projectData.generatedActs[`act${num}`]);
+        setActNumber(num);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error loading project act:", err);
+        setError(err instanceof Error ? err.message : "Failed to load act");
+        setLoading(false);
+      }
+    }
+  }, [actId, projectData]);
+  
+  // Separate effect for imported acts to minimize dependencies
+  useEffect(() => {
+    // Only run for imported acts
+    if (actId === "imported") {
+      setLoading(true);
+      setError(null);
       
-      try 
-      {
-        if (actId === "imported") 
-        {
-          // Handle imported story from session storage
-          const importedStory = sessionStorage.getItem("current_story");
+      try {
+        // Handle imported story from session storage
+        const importedStory = sessionStorage.getItem("current_story");
+        
+        if (!importedStory) {
+          throw new Error("No imported story found");
+        }
+        
+        const parsedStory = JSON.parse(importedStory);
+        
+        // Handle both old and new export formats
+        if (parsedStory.actData) {
+          // Old format with actData property
+          setActNumber(parsedStory.actNumber || 1);
           
-          if (importedStory) 
-          {
-            const parsedStory = JSON.parse(importedStory);
-            
-            // First reset player data to ensure clean state
+          // Initialize player data from export BEFORE setting act data
+          if (parsedStory.actData.__exportInfo?.playerData) {
+            // Reset player data ONCE before applying the imported data
             resetPlayerData();
             
-            // Handle both old and new export formats
-            if (parsedStory.actData) 
-            {
-              // Old format with actData property
-              setActNumber(parsedStory.actNumber || 1);
+            // Wait a moment and then update with imported player data
+            setTimeout(() => {
+              updatePlayerData(parsedStory.actData.__exportInfo.playerData);
               
-              // IMPORTANT: Initialize player data from export BEFORE setting act data
-              if (parsedStory.actData.__exportInfo?.playerData) 
-              {
-                // Force a synchronous update to player data
-                updatePlayerData(parsedStory.actData.__exportInfo.playerData);
-              }
-              
-              // Preserve __exportInfo but don't use it directly to avoid infinite loops
+              // Clean copy of act data to avoid loops
               const actDataCopy = {
                 ...parsedStory.actData,
                 meta: parsedStory.actData.meta || {}
               };
               
-              // Small delay to ensure player data is set first
-              setTimeout(() => 
-              {
-                setActData(actDataCopy);
-              }, 10);
-            } 
-            else 
-            {
-              // New format where the imported data is the full act data
+              setActData(actDataCopy);
+              setLoading(false);
+            }, 50);
+          } else {
+            // If no player data, just set the act data directly
+            const actDataCopy = {
+              ...parsedStory.actData,
+              meta: parsedStory.actData.meta || {}
+            };
+            
+            setActData(actDataCopy);
+            setLoading(false);
+          }
+        } else {
+          // New format where the imported data is the full act data
+          
+          // Check for __exportInfo metadata
+          if (parsedStory.__exportInfo) {
+            setActNumber(parsedStory.__exportInfo.actNumber || 1);
+            
+            // Initialize player data from export BEFORE setting act data
+            if (parsedStory.__exportInfo.playerData) {
+              // Reset player data ONCE before applying the imported data
+              resetPlayerData();
               
-              // Check for __exportInfo metadata
-              if (parsedStory.__exportInfo) 
-              {
-                setActNumber(parsedStory.__exportInfo.actNumber || 1);
+              // Wait a moment and then update with imported player data
+              setTimeout(() => {
+                updatePlayerData(parsedStory.__exportInfo.playerData);
                 
-                // IMPORTANT: Initialize player data from export BEFORE setting act data
-                if (parsedStory.__exportInfo.playerData) 
-                {
-                  updatePlayerData(parsedStory.__exportInfo.playerData);
-                }
-                
-                // Create a copy of the act data with metadata from __exportInfo
+                // Clean copy of act data to avoid loops
                 const actDataCopy = {
                   ...parsedStory,
                   __exportInfo: undefined, // Remove to avoid conflicts
                   meta: parsedStory.meta || {}
                 };
                 
-                // Small delay to ensure player data is set first
-                setTimeout(() => 
-                {
-                  setActData(actDataCopy);
-                }, 10);
-              } 
-              else 
-              {
-                // Legacy format without __exportInfo
-                setActNumber(1);
-                
-                // Clean up imported story data for compatibility
-                const cleanedStory = { ...parsedStory };
-                
-                // Fix for scenes with choices as strings instead of objects/arrays/null
-                if (cleanedStory.scenes) {
-                  cleanedStory.scenes = cleanedStory.scenes.map((scene: any) => {
-                    const cleanScene = { ...scene };
-                    
-                    // Fix choices that might be string "null"
-                    if (cleanScene.choices === "null") {
-                      cleanScene.choices = null;
-                    }
-                    
-                    return cleanScene;
-                  });
-                }
-                
-                // Add missing meta property if needed
-                if (!cleanedStory.meta) {
-                  cleanedStory.meta = {
-                    theme: "Imported story",
-                    relationshipVars: []
-                  };
-                }
-                
-                // Small delay to ensure player data is set first
-                setTimeout(() => 
-                {
-                  setActData(cleanedStory);
-                }, 10);
-              }
+                setActData(actDataCopy);
+                setLoading(false);
+              }, 50);
+            } else {
+              // If no player data, just set the act data directly
+              const actDataCopy = {
+                ...parsedStory,
+                __exportInfo: undefined,
+                meta: parsedStory.meta || {}
+              };
+              
+              setActData(actDataCopy);
+              setLoading(false);
             }
-          } 
-          else 
-          {
-            throw new Error("No imported story found");
+          } else {
+            // Legacy format without __exportInfo
+            setActNumber(1);
+            
+            // Clean up imported story data for compatibility
+            const cleanedStory = { ...parsedStory };
+            
+            // Fix for scenes with choices as strings instead of objects/arrays/null
+            if (cleanedStory.scenes) {
+              cleanedStory.scenes = cleanedStory.scenes.map((scene: any) => {
+                const cleanScene = { ...scene };
+                
+                // Fix choices that might be string "null"
+                if (cleanScene.choices === "null") {
+                  cleanScene.choices = null;
+                }
+                
+                return cleanScene;
+              });
+            }
+            
+            // Add missing meta property if needed
+            if (!cleanedStory.meta) {
+              cleanedStory.meta = {
+                theme: "Imported story",
+                relationshipVars: []
+              };
+            }
+            
+            setActData(cleanedStory);
+            setLoading(false);
           }
-        } 
-        else 
-        {
-          // Handle act from current project
-          const num = parseInt(actId || '0');
-          if (isNaN(num) || num < 1 || num > 5) 
-          {
-            throw new Error("Invalid act number");
-          }
-          
-          if (!projectData?.generatedActs?.[`act${num}`]) 
-          {
-            throw new Error(`Act ${num} has not been generated yet`);
-          }
-          
-          setActData(projectData.generatedActs[`act${num}`]);
-          setActNumber(num);
         }
-      } 
-      catch (err) 
-      {
-        console.error("Error loading act:", err);
-        setError(err instanceof Error ? err.message : "Failed to load act");
-      } 
-      finally 
-      {
+      } catch (err) {
+        console.error("Error loading imported act:", err);
+        setError(err instanceof Error ? err.message : "Failed to load imported act");
         setLoading(false);
       }
-    };
-    
-    loadAct();
-  }, [actId, projectData, updatePlayerData, resetPlayerData]);
+    }
+  }, [actId, resetPlayerData, updatePlayerData]);
   
   // Handle return to generator or play selection
   const handleReturn = () => 
