@@ -577,6 +577,14 @@ export function VnPlayer({
                   forceReal: true
                 };
                 
+                // Show toast to indicate loading
+                toast({
+                  title: "Generating with DALL-E",
+                  description: "Please wait while the image is being generated...",
+                });
+                
+                console.log("Forcing a real DALL-E image generation");
+                
                 fetch('/api/generate/image?force=true', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
@@ -593,9 +601,20 @@ export function VnPlayer({
                       description: "The image URL has been logged to the console"
                     });
                     
-                    // Force a full page reload to see the new image
-                    // This isn't ideal but works for testing purposes
-                    window.location.reload();
+                    // Update the image by forcing a regeneration
+                    // This avoids direct DOM manipulation
+                    generateImage(true);
+                    
+                    // Cache the image URL for future use
+                    if (typeof window !== 'undefined') {
+                      try {
+                        const cacheKey = `vn-bg-${currentScene.id}`;
+                        localStorage.setItem(cacheKey, data.url);
+                        console.log(`Cached image URL for scene ${currentScene.id}`);
+                      } catch (e) {
+                        console.warn('Failed to cache image URL:', e);
+                      }
+                    }
                   } else if (data.error) {
                     console.error("DALL-E Error:", data.error);
                     toast({
