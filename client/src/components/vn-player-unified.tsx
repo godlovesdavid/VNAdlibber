@@ -43,9 +43,15 @@ export function VnPlayer({
   
   // Text animation function
   const animateText = useCallback((text: string) => {
-    // Always skip animation for imported stories or if text speed is fast
-    // This prevents recursive rendering in imported mode
-    if (mode === 'imported' || textSpeed === 'fast') {
+    // Skip animation if text speed is set to fast
+    if (textSpeed === 'fast') {
+      setDisplayedText(text);
+      setIsTextAnimating(false);
+      return;
+    }
+    
+    // Always skip animation only for imported stories (legacy reason)
+    if (mode === 'imported') {
       setDisplayedText(text);
       setIsTextAnimating(false);
       return;
