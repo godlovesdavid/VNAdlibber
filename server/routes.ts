@@ -355,11 +355,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
       } else {
-        // In development mode, just return a test URL
+        // In development mode, just return a reliable test URL
         return res.json({ 
           success: true, 
           message: "DALL-E API key is configured (test mode)",
-          url: "https://images.unsplash.com/photo-1583248369069-9d91f1640fe6?q=80&w=1000"
+          url: "https://via.placeholder.com/1024x1024/f39c12/ffffff?text=DALL-E+Test+Image"
         });
       }
     } catch (error) {

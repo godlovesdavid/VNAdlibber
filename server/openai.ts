@@ -28,13 +28,13 @@ export async function generateSceneBackgroundImage(
       // Create an artificial delay to simulate API request time (500ms)
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // We'll use different test images based on the scene setting to simulate variety
-      // This helps test the image display without consuming API credits
+      // Using placeholder images from placeholder.com - much more reliable for testing
+      // These are reliable test URLs that don't get blocked by CORS
       const testImages = [
-        "https://images.unsplash.com/photo-1572634932035-13fd8a46b53d?q=80&w=1000", // Mountain landscape
-        "https://images.unsplash.com/photo-1546656595-1b48eeb95c64?q=80&w=1000",    // Urban scene
-        "https://images.unsplash.com/photo-1491466424936-e304919aada7?q=80&w=1000", // City plaza
-        "https://images.unsplash.com/photo-1507090960745-b32f65d3113a?q=80&w=1000"  // Castle
+        "https://via.placeholder.com/1024x768/3498db/ffffff?text=Mountain+Landscape", 
+        "https://via.placeholder.com/1024x768/e74c3c/ffffff?text=Urban+Scene",    
+        "https://via.placeholder.com/1024x768/2ecc71/ffffff?text=City+Plaza", 
+        "https://via.placeholder.com/1024x768/9b59b6/ffffff?text=Castle"
       ];
       
       // Choose an image based on the scene ID or setting

@@ -574,33 +574,43 @@ export function VnPlayer({
             </Button>
           </div>
           
-          {/* Background image display */}
+          {/* Background image display - using an actual img element for better debugging */}
           {imageUrl ? (
-            // Display generated image with fade-in animation - z-index -1 to ensure it stays behind content
+            // Display generated image with fade-in animation
             <div 
               key={`bg-${imageUrl}`} // Add key to force re-render when URL changes
-              className="w-full h-full absolute inset-0 bg-cover bg-center animate-fadeIn z-[-1]"
-              style={{ 
-                backgroundImage: `url(${imageUrl})`, 
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }}
+              className="w-full h-full absolute inset-0 bg-black"
             >
+              {/* Use an img element instead of background-image */}
+              <img 
+                src={imageUrl}
+                alt="Scene Background" 
+                className="w-full h-full object-cover animate-fadeIn"
+                style={{ position: 'absolute', zIndex: 0 }} 
+                onLoad={() => console.log("Image loaded successfully:", imageUrl)}
+                onError={(e) => console.error("Image failed to load:", e.currentTarget.src)}
+              />
+              
               {/* Debug overlay to show image is loaded */}
-              <div className="absolute bottom-4 left-4 bg-black bg-opacity-70 text-green-400 px-3 py-1 rounded text-xs">
-                Image loaded
+              <div className="absolute bottom-4 left-4 bg-black bg-opacity-70 text-green-400 px-3 py-1 rounded text-xs z-20">
+                Image URL: {imageUrl.substring(0, 30)}...
               </div>
             </div>
           ) : currentScene.bg ? (
             // Display scene's existing background image
             <div 
-              className="w-full h-full absolute inset-0 bg-cover bg-center z-[-1]"
-              style={{ 
-                backgroundImage: `url(${currentScene.bg})`, 
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }}
-            />
+              className="w-full h-full absolute inset-0 bg-black"
+            >
+              {/* Use an img element for consistent display with the generated images */}
+              <img 
+                src={currentScene.bg}
+                alt="Scene Background" 
+                className="w-full h-full object-cover"
+                style={{ position: 'absolute', zIndex: 0 }} 
+                onLoad={() => console.log("Scene bg loaded successfully:", currentScene.bg)}
+                onError={(e) => console.error("Scene bg failed to load:", e.currentTarget.src)}
+              />
+            </div>
           ) : (
             // Display placeholder when no image is available
             <div className="text-white text-center z-0">
