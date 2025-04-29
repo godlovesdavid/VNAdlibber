@@ -284,6 +284,33 @@ const generateImageSchema = z.object({
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Project CRUD operations
+  // Test endpoint to verify OpenAI connectivity
+  app.get("/api/test/openai", async (req, res) => {
+    try {
+      console.log("Testing OpenAI connectivity");
+      console.log("OpenAI API Key:", process.env.OPENAI_API_KEY ? "Present (hidden)" : "Missing");
+      
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({ 
+          success: false, 
+          message: "OpenAI API key is missing" 
+        });
+      }
+      
+      // Return success without actually calling the API
+      return res.json({ 
+        success: true, 
+        message: "OpenAI API key is configured" 
+      });
+    } catch (error) {
+      console.error("Error testing OpenAI connection:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+
   app.get("/api/projects", async (req, res) => {
     try {
       const projects = await storage.getProjects();

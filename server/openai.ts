@@ -23,9 +23,14 @@ export async function generateSceneBackgroundImage(
     // For testing, let's return a mock image URL to avoid hitting the API constantly
     // This will help debug the client-side image loading
     if (process.env.NODE_ENV === 'development') {
-      console.log("DEV MODE: Returning mock image for testing");
+      console.log("📸 DEV MODE: Using test image instead of calling OpenAI API");
+      
+      // Create an artificial delay to simulate API request time (500ms)
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Fixed test URL for consistent testing results
       return { 
-        url: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxleHBsb3JlLWZlZWR8MXx8fGVufDB8fHx8&w=1000&q=80" 
+        url: "https://images.unsplash.com/photo-1572634932035-13fd8a46b53d?q=80&w=1000" 
       };
     }
     

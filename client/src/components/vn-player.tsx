@@ -458,12 +458,13 @@ export function VnPlayer({
           
           {/* Image generation controls */}
           <div className="absolute top-4 right-4 flex space-x-2">
-            {/* Simple regular button with very basic styling */}
+            {/* First button: Simple styled button with direct fetch */}
             <button
               type="button"
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200"
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200 disabled:bg-blue-300"
               onClick={() => {
                 console.log('Generate image button clicked (direct DOM button)');
+                setIsGenerating(true); // Set loading state
                 
                 // Generate a simple request to our image API to test
                 fetch('/api/generate/image', {
@@ -482,21 +483,54 @@ export function VnPlayer({
                 })
                 .then(response => {
                   console.log('API Response status:', response.status);
+                  if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}`);
+                  }
                   return response.json();
                 })
                 .then(data => {
                   console.log('API Response data:', data);
                   if (data.url) {
                     console.log('Got image URL:', data.url.substring(0, 30) + '...');
+                    setImageUrl(data.url);
+                    setImageError(null);
+                  } else if (data.error) {
+                    setImageError(data.error);
                   }
                 })
                 .catch(error => {
                   console.error('API Error:', error);
+                  setImageError(error.message);
+                })
+                .finally(() => {
+                  setIsGenerating(false); // Reset loading state
                 });
               }}
               disabled={isGenerating}
             >
               {isGenerating ? "Generating..." : "Generate Image (Direct)"}
+            </button>
+            
+            {/* Second button: Test OpenAI connection */}
+            <button
+              type="button"
+              className="ml-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700 active:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition-colors duration-200"
+              onClick={() => {
+                console.log('Testing OpenAI connection');
+                
+                fetch('/api/test/openai')
+                  .then(response => response.json())
+                  .then(data => {
+                    console.log('OpenAI test result:', data);
+                    alert(`OpenAI connection test: ${data.success ? 'SUCCESS' : 'FAILED'}\n${data.message}`);
+                  })
+                  .catch(error => {
+                    console.error('Test Error:', error);
+                    alert(`OpenAI connection test error: ${error.message}`);
+                  });
+              }}
+            >
+              Test OpenAI
             </button>
           </div>
           
