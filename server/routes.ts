@@ -3,8 +3,9 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
 import { insertVnProjectSchema, insertVnStorySchema } from "@shared/schema";
+import { generateSceneBackgroundImage } from "./openai";
 
-// Use Google's Gemini API instead of OpenAI
+// Use Google's Gemini API instead of OpenAI for text generation
 const GEMINI_API_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 const GEMINI_API_KEY = "AIzaSyDE-O9FT4wsie2Cb5SWNUhNVszlQg3dHnU";
@@ -270,6 +271,15 @@ const generateActSchema = z.object({
   actNumber: z.number(),
   scenesCount: z.number(),
   projectContext: z.any(),
+});
+
+const generateImageSchema = z.object({
+  scene: z.object({
+    id: z.string(),
+    setting: z.string(),
+  }),
+  theme: z.string().optional(),
+  imageType: z.enum(["background", "character"]).default("background"),
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
