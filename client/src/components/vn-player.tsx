@@ -68,7 +68,7 @@ export function VnPlayer({
     const totalLength = text.length;
     
     // Determine speed in milliseconds per character
-    const charDelay = textSpeed === 'slow' ? 80 : 30; // slow = 80ms, medium = 30ms (faster than before)
+    const charDelay = textSpeed === 'slow' ? 50 : 30; // slow = 50ms (faster than before), medium = 30ms
     let lastTimeStamp = 0;
     
     const animate = (timestamp: number) => {
