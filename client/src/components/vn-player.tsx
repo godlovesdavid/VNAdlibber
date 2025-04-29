@@ -13,9 +13,10 @@ interface VnPlayerProps {
   actData: GeneratedAct;
   actNumber: number;
   onReturn: () => void;
+  onRestart?: () => void; // Optional external restart handler
 }
 
-export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
+export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRestart }: VnPlayerProps) {
   const { playerData, updatePlayerData } = useVnContext();
   const [currentSceneId, setCurrentSceneId] = useState("");
   const [currentScene, setCurrentScene] = useState<Scene | null>(null);
@@ -81,22 +82,33 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
   const memoizedProcessScene = useCallback(processScene, [actNumber]);
   
   // Initialize with the first scene once on mount or when actData changes
+  // Use a ref to track if this is the first time loading this act data
+  const isFirstLoad = useRef(true);
+  
   useEffect(() => 
   {
-    if (actData?.scenes?.length > 0) 
+    // Only process once per actData change to prevent loops
+    if (actData?.scenes?.length > 0 && isFirstLoad.current) 
     {
-      // Always reset scene ID when actData changes to force reinitialization
+      isFirstLoad.current = false;
+      
+      // Process the first scene
       const firstScene = memoizedProcessScene(actData.scenes[0]);
       
-      // Important: Reset all state at once to prevent partial updates
+      // Reset all state at once to prevent partial updates
       setCurrentSceneId(firstScene.id);
       setCurrentDialogueIndex(0);
       setShowChoices(false);
       setDialogueLog([]);
       setDisplayedText("");
-      setIsTextFullyTyped(false);
+      setIsTextFullyTyped(textSpeed >= 10); // Only fully type if in fast mode
     }
-  }, [actData, memoizedProcessScene]); // Remove currentSceneId dependency to avoid loops
+    
+    // When actData changes, reset the first load tracker
+    return () => {
+      isFirstLoad.current = true;
+    };
+  }, [actData, memoizedProcessScene, textSpeed]);
   
   // Update current scene when scene ID changes
   useEffect(() => 
@@ -116,17 +128,21 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
   // Handle restart
   const handleRestart = useCallback(() => {
     if (actData?.scenes?.length > 0) {
-      // Simply reset the currentSceneId to trigger the scene loading effect
-      setCurrentSceneId(""); // Clear scene ID first
+      // Reset all state in one batch to avoid cascading renders
+      const firstScene = memoizedProcessScene(actData.scenes[0]);
       
-      // Use setTimeout to ensure state updates are processed before setting the new ID
-      setTimeout(() => {
-        const firstScene = memoizedProcessScene(actData.scenes[0]);
-        setCurrentSceneId(firstScene.id); // This will trigger the scene loading effect
-        setDialogueLog([]);
-      }, 0);
+      // Reset all scene state
+      setCurrentScene(firstScene);
+      setCurrentSceneId(firstScene.id);
+      setCurrentDialogueIndex(0);
+      setShowChoices(false);
+      setDialogueLog([]);
+      setDisplayedText("");
+      setIsTextFullyTyped(textSpeed >= 10); // Only fully type if in fast mode
+      
+      // Don't reset player data here as it should be managed by the parent
     }
-  }, [actData, memoizedProcessScene]);
+  }, [actData, memoizedProcessScene, textSpeed]);
   
   // Handle advancing the dialogue
   const advanceDialogue = useCallback(() => {
@@ -325,7 +341,12 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
     <div className="relative h-screen">
       <PlayerNavbar 
         actNumber={actNumber}
-        onRestart={handleRestart}
+        onRestart={() => {
+          // Call local restart to reset scene state
+          handleRestart();
+          // Call external handler if provided to reset player data
+          if (externalRestart) externalRestart();
+        }}
         onReturn={onReturn}
         dialogueLog={dialogueLog}
       />

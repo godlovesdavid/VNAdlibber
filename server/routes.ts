@@ -97,13 +97,42 @@ Example of CORRECT JSON format:
   }
 }
 
-// Helper function to check for error in OpenAI responses
+// Helper function to check for error in AI responses
 function checkResponseForError(parsedResponse: any, res: any): boolean {
+  // Check for error in the response
   if ("error" in parsedResponse) {
     console.error("AI validation error:", parsedResponse.error);
-    res.status(400).json({ message: parsedResponse.error });
+    
+    // Format the error message for display
+    const errorMessage = typeof parsedResponse.error === 'string' 
+      ? parsedResponse.error 
+      : JSON.stringify(parsedResponse.error);
+    
+    // Return the error with status 400 and infinite duration for the toast
+    res.status(400).json({ 
+      message: errorMessage,
+      errorType: "validation_error",
+      duration: "infinite"  // Signal to the frontend that this error should persist
+    });
+    
     return true;
   }
+  
+  // For content with other types of validation issues
+  if (parsedResponse.validation_issues) {
+    console.error("AI validation issues:", parsedResponse.validation_issues);
+    
+    res.status(400).json({
+      message: Array.isArray(parsedResponse.validation_issues) 
+        ? parsedResponse.validation_issues.join(", ")
+        : String(parsedResponse.validation_issues),
+      errorType: "validation_issue",
+      duration: "infinite"
+    });
+    
+    return true;
+  }
+  
   return false;
 }
 
@@ -365,14 +394,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Parse validation response
       const validationResult = JSON.parse(responseContent || "{}");
 
-      // If validation failed, return the error
-      if (!validationResult.valid && validationResult.issues) {
-        return res.status(400).json({ message: validationResult.issues });
+      // Use the standard error checking function for validation errors
+      if (checkResponseForError(validationResult, res)) {
+        return;
       }
-
-      // If there's an explicit error, return it
-      if (validationResult.error) {
-        return res.status(400).json({ message: validationResult.error });
+      
+      // If validation failed and we have issues, return them with infinite duration
+      if (!validationResult.valid && validationResult.issues) {
+        return res.status(400).json({ 
+          message: validationResult.issues,
+          errorType: "validation_issue",
+          duration: "infinite"
+        });
       }
 
       // If validation passed, return success

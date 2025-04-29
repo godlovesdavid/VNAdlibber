@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useParams } from "wouter";
@@ -96,10 +96,35 @@ export default function Player() {
                 // Legacy format without __exportInfo
                 setActNumber(1);
                 
+                // Clean up imported story data for compatibility
+                const cleanedStory = { ...parsedStory };
+                
+                // Fix for scenes with choices as strings instead of objects/arrays/null
+                if (cleanedStory.scenes) {
+                  cleanedStory.scenes = cleanedStory.scenes.map((scene: any) => {
+                    const cleanScene = { ...scene };
+                    
+                    // Fix choices that might be string "null"
+                    if (cleanScene.choices === "null") {
+                      cleanScene.choices = null;
+                    }
+                    
+                    return cleanScene;
+                  });
+                }
+                
+                // Add missing meta property if needed
+                if (!cleanedStory.meta) {
+                  cleanedStory.meta = {
+                    theme: "Imported story",
+                    relationshipVars: []
+                  };
+                }
+                
                 // Small delay to ensure player data is set first
                 setTimeout(() => 
                 {
-                  setActData(parsedStory);
+                  setActData(cleanedStory);
                 }, 10);
               }
             }
@@ -153,6 +178,12 @@ export default function Player() {
       setLocation("/create/generate-vn");
     }
   };
+  
+  // Define a single handleRestart function
+  const handleRestart = useCallback(() => {
+    // Reset player data to initial state
+    resetPlayerData();
+  }, [resetPlayerData]);
   
   if (loading) 
   {
@@ -223,6 +254,7 @@ export default function Player() {
       actData={actData}
       actNumber={actNumber}
       onReturn={handleReturn}
+      onRestart={handleRestart}
     />
   );
 }
