@@ -18,6 +18,8 @@ interface VnPlayerProps {
 
 export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRestart }: VnPlayerProps) {
   const { playerData, updatePlayerData } = useVnContext();
+  
+  // Scene and dialogue state
   const [currentSceneId, setCurrentSceneId] = useState("");
   const [currentScene, setCurrentScene] = useState<Scene | null>(null);
   const [currentDialogueIndex, setCurrentDialogueIndex] = useState(0);
@@ -25,30 +27,26 @@ export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRest
   const [dialogueLog, setDialogueLog] = useState<Array<{speaker: string, text: string}>>([]);
   const [clickableContent, setClickableContent] = useState(true);
   
-  // Text animation states - default to fast for better UX
+  // Text animation states - using fast mode by default
   const [textSpeed, setTextSpeed] = useState(10); // 1-10 scale (1: slow, 5: normal, 10: fast)
   const [displayedText, setDisplayedText] = useState("");
-  const [isTextFullyTyped, setIsTextFullyTyped] = useState(true); // Start with text fully typed
+  const [isTextFullyTyped, setIsTextFullyTyped] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   
-  // Listen for text speed change events
-  useEffect(() => 
-  {
-    const handleSetTextSpeed = (event: CustomEvent) => 
-    {
-      setTextSpeed(event.detail);
-    };
-    
-    window.addEventListener('vnSetTextSpeed', handleSetTextSpeed as EventListener);
-    
-    return () => 
-    {
-      window.removeEventListener('vnSetTextSpeed', handleSetTextSpeed as EventListener);
-    };
-  }, []);
-  
+  // Refs for stability
   const containerRef = useRef<HTMLDivElement>(null);
+  const animationRef = useRef<NodeJS.Timeout | null>(null);
+  const isInitializedRef = useRef(false);
+  
+  // Current dialogue text
   const dialogueText = currentScene?.dialogue[currentDialogueIndex]?.[1] || "";
+  
+  // Handle text speed change events
+  useEffect(() => {
+    const handleSetTextSpeed = (e: CustomEvent) => setTextSpeed(e.detail);
+    window.addEventListener('vnSetTextSpeed', handleSetTextSpeed as EventListener);
+    return () => window.removeEventListener('vnSetTextSpeed', handleSetTextSpeed as EventListener);
+  }, []);
   
   // Add end of act message to the last scene and fix any misformatted choices
   const processScene = (scene: Scene): Scene => {
@@ -81,47 +79,53 @@ export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRest
   // Memoize the processScene function to avoid recreating it on every render
   const memoizedProcessScene = useCallback(processScene, [actNumber]);
   
-  // Initialize with the first scene once on mount or when actData changes
-  // Use a ref to track initialization status
-  const isInitialized = useRef(false);
+  // Use references to avoid dependencies in the effect
+  const actDataRef = useRef(actData);
+  actDataRef.current = actData;
   
-  useEffect(() => 
-  {
-    // Only process once per actData change to prevent loops
-    if (actData?.scenes?.length > 0 && !isInitialized.current) 
-    {
-      // Mark as initialized first to prevent loops
-      isInitialized.current = true;
+  const textSpeedRef = useRef(textSpeed);
+  textSpeedRef.current = textSpeed;
+  
+  // Initialize with the first scene once on mount or when actData changes
+  useEffect(() => {
+    // Only run once on mount
+    if (!actData?.scenes?.length) return;
+    
+    // Process the first scene
+    const firstScene = memoizedProcessScene(actData.scenes[0]);
+    
+    // Batch update all state at once to prevent re-renders
+    const initializeVnPlayer = () => {
+      console.log('Initializing VN Player with first scene:', firstScene.id);
       
-      // Process the first scene
-      const firstScene = memoizedProcessScene(actData.scenes[0]);
-      
-      // Set all initial state synchronously
+      // Set all initial state in one update
       setCurrentScene(firstScene);
       setCurrentSceneId(firstScene.id);
       setCurrentDialogueIndex(0);
       setShowChoices(false);
       setDialogueLog([]);
       
-      // For text, apply the current text speed setting immediately
-      if (textSpeed >= 10) {
-        // For fast mode, show text immediately
+      // For text, apply the current text speed setting
+      const currentTextSpeed = textSpeedRef.current;
+      if (currentTextSpeed >= 10) {
+        // Fast mode - show text immediately
         setDisplayedText(firstScene.dialogue[0]?.[1] || "");
         setIsTextFullyTyped(true);
       } else {
-        // For typing animation mode, start with empty text
+        // Animation mode - start with empty text
         setDisplayedText("");
         setIsTextFullyTyped(false);
       }
-    }
-    
-    // Cleanup on unmount, not on every render
-    return () => {
-      if (actData !== null) {
-        isInitialized.current = false;
-      }
     };
-  }, [actData, memoizedProcessScene, textSpeed]);
+    
+    // Use a timeout to ensure this runs after all other effects
+    const timeoutId = setTimeout(initializeVnPlayer, 0);
+    
+    // Cleanup
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [actData?.scenes, memoizedProcessScene]);  // Minimized dependencies
   
   // Update current scene when scene ID changes
   useEffect(() => 
@@ -138,9 +142,15 @@ export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRest
     }
   }, [actData, currentSceneId, memoizedProcessScene]);
   
-  // Handle restart
+  // Handle restart - with animation cleanup
   const handleRestart = useCallback(() => {
     if (actData?.scenes?.length > 0) {
+      // Stop any ongoing animation
+      if (animationRef.current) {
+        clearTimeout(animationRef.current);
+        animationRef.current = null;
+      }
+      
       // Reset all state in one batch to avoid cascading renders
       const firstScene = memoizedProcessScene(actData.scenes[0]);
       
@@ -150,8 +160,15 @@ export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRest
       setCurrentDialogueIndex(0);
       setShowChoices(false);
       setDialogueLog([]);
-      setDisplayedText("");
-      setIsTextFullyTyped(textSpeed >= 10); // Only fully type if in fast mode
+      
+      // Set text according to current text speed
+      if (textSpeed >= 10) {
+        setDisplayedText(firstScene.dialogue[0]?.[1] || "");
+        setIsTextFullyTyped(true);
+      } else {
+        setDisplayedText("");
+        setIsTextFullyTyped(false);
+      }
       
       // Don't reset player data here as it should be managed by the parent
     }
@@ -271,60 +288,73 @@ export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRest
     }, 100);
   }, [playerData, checkConditionMet, updatePlayerData, clickableContent, setClickableContent, setCurrentSceneId]);
   
-  // Typewriter effect for text animation
+  // Simple typewriter effect - new implementation
   useEffect(() => {
-    if (!dialogueText) {
+    // Clear any existing animation
+    if (animationRef.current) {
+      clearTimeout(animationRef.current);
+      animationRef.current = null;
+    }
+    
+    // Skip animation for empty dialogue
+    if (!dialogueText || !currentScene) {
       setDisplayedText("");
       setIsTextFullyTyped(true);
       return;
     }
     
-    // If textSpeed is 10 (fastest), display the full text immediately
+    // For fast mode (textSpeed >= 10), display text immediately
     if (textSpeed >= 10) {
       setDisplayedText(dialogueText);
       setIsTextFullyTyped(true);
       return;
     }
     
-    // Reset state for new text
-    setIsTextFullyTyped(false);
+    // For animation mode, start fresh
     setDisplayedText("");
-
-    // Calculate delay based on text speed (inverting so higher values = faster)
-    // 1=slowest (100ms delay), 10=fastest (10ms delay)
-    const delay = 110 - (textSpeed * 10);
+    setIsTextFullyTyped(false);
     
-    let currentChar = 0;
-    const textLength = dialogueText.length;
+    // Simple approach: use setTimeout just once with calculated delay
+    // This avoids complex state management in interval callbacks
+    const typingSpeed = 110 - (textSpeed * 10); // 1=slow (100ms), 9=fast (20ms)
+    const totalTypingTime = dialogueText.length * typingSpeed;
     
-    const animationInterval = setInterval(() => {
-      if (currentChar <= textLength) {
-        setDisplayedText(dialogueText.slice(0, currentChar));
-        currentChar++;
-      } else {
-        clearInterval(animationInterval);
-        setIsTextFullyTyped(true);
+    // Use a single timeout instead of an interval
+    animationRef.current = setTimeout(() => {
+      setDisplayedText(dialogueText);
+      setIsTextFullyTyped(true);
+      animationRef.current = null;
+    }, totalTypingTime);
+    
+    return () => {
+      if (animationRef.current) {
+        clearTimeout(animationRef.current);
+        animationRef.current = null;
       }
-    }, delay);
-    
-    return () => clearInterval(animationInterval);
-  }, [dialogueText, textSpeed]);
+    };
+  }, [dialogueText, textSpeed, currentScene, currentDialogueIndex]);
   
-  // Handle content click
+  // Handle content click - properly clean up animation
   const handleContentClick = useCallback(() => 
   {
     if (!showChoices) 
     {
-      // If text is still typing, immediately show full text and stop animation
+      // If text is still typing, immediately show full text and cancel animation
       if (!isTextFullyTyped && dialogueText) 
       {
-        // Important: Force immediate display of full text for CURRENT text only
-        setDisplayedText(dialogueText); // Display full text immediately
+        // Cancel any ongoing animation
+        if (animationRef.current) {
+          clearTimeout(animationRef.current);
+          animationRef.current = null;
+        }
+        
+        // Force immediate display of full text
+        setDisplayedText(dialogueText);
         setIsTextFullyTyped(true);
-        // Don't change textSpeed so future animations still work properly
       } 
       else 
       {
+        // Text is fully displayed, advance to next dialogue line
         advanceDialogue();
       }
     }
