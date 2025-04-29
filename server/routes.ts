@@ -3,8 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
 import { insertVnProjectSchema, insertVnStorySchema } from "@shared/schema";
-import { generateSceneBackgroundImage } from "./openai";
-import OpenAI from "openai";
+import { generateSceneBackgroundImage } from "./image-generator";
 
 // Use Google's Gemini API instead of OpenAI for text generation
 const GEMINI_API_URL =
@@ -335,6 +334,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false, 
         message: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+  
+  // Test RunPod API connectivity
+  app.get("/api/test/runpod", async (req, res) => {
+    try {
+      console.log("Testing RunPod API connectivity...");
+      
+      const endpointId = process.env.RUNPOD_ENDPOINT_ID || "sdxl";
+      const apiKey = process.env.RUNPOD_API_KEY;
+      
+      if (!apiKey) {
+        return res.status(401).json({
+          success: false,
+          message: "RunPod API key is missing. Please add RUNPOD_API_KEY to your environment variables."
+        });
+      }
+      
+      try {
+        // Test the RunPod API by checking endpoint health
+        const healthCheckUrl = `https://api.runpod.ai/v2/${endpointId}/health`;
+        console.log(`Checking RunPod endpoint health: ${endpointId}`);
+        
+        const response = await fetch(healthCheckUrl, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          return res.json({
+            success: true,
+            message: "RunPod API connection successful",
+            response: data,
+            endpoint: endpointId
+          });
+        } else {
+          const errorText = await response.text();
+          return res.status(response.status).json({
+            success: false,
+            message: `RunPod API error: ${response.status} ${response.statusText}`,
+            response: errorText,
+            endpoint: endpointId
+          });
+        }
+      } catch (apiError) {
+        console.error("RunPod API error:", apiError);
+        return res.status(500).json({
+          success: false,
+          message: apiError instanceof Error ? apiError.message : "Unknown RunPod API error"
+        });
+      }
+    } catch (error) {
+      console.error("Error testing RunPod API:", error);
+      res.status(500).json({
+        success: false,
+        message: error instanceof Error ? error.message : "Unknown error"
       });
     }
   });
