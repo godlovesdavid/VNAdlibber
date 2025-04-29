@@ -50,13 +50,13 @@ export async function generateSceneBackgroundImage(
       body: JSON.stringify({
         input: {
           prompt: prompt,
-          // negative_prompt: "blurry, distorted, low quality, text, watermark",
-          // width: width,
-          // height: height,
-          // guidance_scale: guidance_scale,
-          // num_inference_steps: num_inference_steps,
+          negative_prompt: "blurry, distorted, low quality, text, watermark",
+          width: width,
+          height: height,
+          guidance_scale: guidance_scale,
+          num_inference_steps: num_inference_steps,
           // num_outputs: 1,
-          // nsfw: false,
+          nsfw: false,
           // scheduler: "DPMSolverMultistep", // Faster scheduler
           // seed: Math.floor(Math.random() * 1000000), // Random seed
         },
