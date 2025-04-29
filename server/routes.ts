@@ -442,16 +442,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create prompt for validation based on content type
       const validationPrompt = `Please validate this story context for a visual novel ${contentType}:
         ${JSON.stringify(projectContext, null, 2)}
-        
+
         If the data is valid, respond with:
         { "valid": true }
-        
+
         If there are problems, respond with:
         {
           "valid": false,
           "issues": "list issues here"
         }
-        
+
         If story context is plot-conflicting, incoherent, sexually explicit, or offensive, then respond with a JSON with an error key explaining the issue like this: 
         { "error": "Brief description of why the content is invalid." }
       `;
@@ -1004,7 +1004,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
 
           // Include optimization information in the response
-          res.json({
+          res.set({
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }).json({
             ...result,
             isOptimized: useOptimizedSettings,
           });
