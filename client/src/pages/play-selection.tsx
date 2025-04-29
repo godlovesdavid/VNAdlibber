@@ -81,8 +81,8 @@ export default function PlaySelection() {
         // Update state
         setImportedStories(updatedStories);
         
-        // Also save to sessionStorage for persistence
-        sessionStorage.setItem('imported_stories', JSON.stringify(updatedStories));
+        // Also save to localStorage for persistence
+        localStorage.setItem('imported_stories', JSON.stringify(updatedStories));
         
         toast({
           title: "Story Imported",
@@ -120,22 +120,22 @@ export default function PlaySelection() {
           actData: JSON.parse(JSON.stringify(story.actData))
         };
         
-        // Store the story in sessionStorage for persistence
-        sessionStorage.setItem('imported_story', JSON.stringify(storyToStore));
+        // Store the story in localStorage for persistence
+        localStorage.setItem('imported_story', JSON.stringify(storyToStore));
         
         // Create an extra backup of the raw story data in case the Player has trouble parsing
-        sessionStorage.setItem('imported_story_backup', JSON.stringify(story.actData));
+        localStorage.setItem('imported_story_backup', JSON.stringify(story.actData));
         
         // Clear any previous player data to prevent conflicts
         if (story.actData.__exportInfo?.playerData) {
           // Create a copy of the player data for the component to use
-          sessionStorage.setItem('imported_story_player_data', 
+          localStorage.setItem('imported_story_player_data', 
             JSON.stringify(story.actData.__exportInfo.playerData));
         }
         
         // Force a new component mount by adding a timestamp to the URL
         const timestamp = Date.now();
-        sessionStorage.setItem('import_timestamp', timestamp.toString());
+        localStorage.setItem('import_timestamp', timestamp.toString());
         setLocation(`/player/imported?t=${timestamp}`);
       } catch (error) {
         console.error("Error preparing story for import:", error);
