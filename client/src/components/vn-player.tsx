@@ -520,23 +520,81 @@ export function VnPlayer({
             >
               Test OpenAI
             </Button>
+            
+            {/* Button: Test DALL-E API */}
+            <Button
+              variant="outline"
+              className="ml-2 bg-purple-500 text-white hover:bg-purple-700 active:bg-purple-800 cursor-pointer"
+              onClick={(e) => {
+                // Stop propagation to prevent parent elements from capturing the click
+                e.stopPropagation();
+                console.log('Testing DALL-E API');
+                
+                toast({
+                  title: "Testing DALL-E API",
+                  description: "Checking if DALL-E image generation is working...",
+                });
+                
+                fetch('/api/test/dalle')
+                  .then(response => response.json())
+                  .then(data => {
+                    console.log('DALL-E test result:', data);
+                    if (data.success) {
+                      toast({
+                        title: "DALL-E API Success",
+                        description: data.message,
+                        variant: "default",
+                      });
+                      
+                      // Show the test image if one was returned
+                      if (data.url) {
+                        // Open the image in a new window
+                        window.open(data.url, '_blank');
+                      }
+                    } else {
+                      toast({
+                        title: "DALL-E API Failed",
+                        description: data.message,
+                        variant: "destructive",
+                      });
+                    }
+                  })
+                  .catch(error => {
+                    console.error('DALL-E Test Error:', error);
+                    toast({
+                      title: "DALL-E Test Failed",
+                      description: error instanceof Error ? error.message : "Unknown error",
+                      variant: "destructive",
+                    });
+                  });
+              }}
+              style={{ pointerEvents: 'auto' }} // Ensure pointer events are enabled
+            >
+              Test DALL-E
+            </Button>
           </div>
           
           {/* Background image display */}
           {imageUrl ? (
-            // Display generated image with fade-in animation
+            // Display generated image with fade-in animation - z-index -1 to ensure it stays behind content
             <div 
-              className="w-full h-full absolute inset-0 bg-cover bg-center animate-fadeIn"
+              key={`bg-${imageUrl}`} // Add key to force re-render when URL changes
+              className="w-full h-full absolute inset-0 bg-cover bg-center animate-fadeIn z-[-1]"
               style={{ 
                 backgroundImage: `url(${imageUrl})`, 
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
               }}
-            />
+            >
+              {/* Debug overlay to show image is loaded */}
+              <div className="absolute bottom-4 left-4 bg-black bg-opacity-70 text-green-400 px-3 py-1 rounded text-xs">
+                Image loaded
+              </div>
+            </div>
           ) : currentScene.bg ? (
             // Display scene's existing background image
             <div 
-              className="w-full h-full absolute inset-0 bg-cover bg-center"
+              className="w-full h-full absolute inset-0 bg-cover bg-center z-[-1]"
               style={{ 
                 backgroundImage: `url(${currentScene.bg})`, 
                 backgroundSize: 'cover',
@@ -545,7 +603,7 @@ export function VnPlayer({
             />
           ) : (
             // Display placeholder when no image is available
-            <div className="text-white text-center">
+            <div className="text-white text-center z-0">
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
                 className="mx-auto h-16 w-16 mb-2" 

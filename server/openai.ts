@@ -20,17 +20,28 @@ export async function generateSceneBackgroundImage(
     const prompt = generateBackgroundPrompt(sceneSetting, theme);
     console.log("- Generated prompt:", prompt);
     
-    // For testing, let's return a mock image URL to avoid hitting the API constantly
-    // This will help debug the client-side image loading
-    if (process.env.NODE_ENV === 'development') {
+    // Use a test image in development mode to avoid consuming the API quota
+    // This also helps with faster iteration during development
+    if (process.env.NODE_ENV === 'development' && !process.env.FORCE_REAL_API) {
       console.log("📸 DEV MODE: Using test image instead of calling OpenAI API");
       
       // Create an artificial delay to simulate API request time (500ms)
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Fixed test URL for consistent testing results
+      // We'll use different test images based on the scene setting to simulate variety
+      // This helps test the image display without consuming API credits
+      const testImages = [
+        "https://images.unsplash.com/photo-1572634932035-13fd8a46b53d?q=80&w=1000", // Mountain landscape
+        "https://images.unsplash.com/photo-1546656595-1b48eeb95c64?q=80&w=1000",    // Urban scene
+        "https://images.unsplash.com/photo-1491466424936-e304919aada7?q=80&w=1000", // City plaza
+        "https://images.unsplash.com/photo-1507090960745-b32f65d3113a?q=80&w=1000"  // Castle
+      ];
+      
+      // Choose an image based on the scene ID or setting
+      const imageIndex = Math.abs(sceneId.charCodeAt(0) + sceneId.charCodeAt(sceneId.length - 1)) % testImages.length;
+      
       return { 
-        url: "https://images.unsplash.com/photo-1572634932035-13fd8a46b53d?q=80&w=1000" 
+        url: testImages[imageIndex]
       };
     }
     

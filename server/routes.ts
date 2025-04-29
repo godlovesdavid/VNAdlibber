@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { z } from "zod";
 import { insertVnProjectSchema, insertVnStorySchema } from "@shared/schema";
 import { generateSceneBackgroundImage } from "./openai";
+import OpenAI from "openai";
 
 // Use Google's Gemini API instead of OpenAI for text generation
 const GEMINI_API_URL =
@@ -304,6 +305,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Error testing OpenAI connection:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: error instanceof Error ? error.message : "Unknown error" 
+      });
+    }
+  });
+  
+  // Test DALL-E 3 image generation specifically
+  app.get("/api/test/dalle", async (req, res) => {
+    try {
+      console.log("Testing DALL-E API");
+      console.log("OpenAI API Key:", process.env.OPENAI_API_KEY ? "Present (hidden)" : "Missing");
+      
+      if (!process.env.OPENAI_API_KEY) {
+        return res.status(500).json({ 
+          success: false, 
+          message: "OpenAI API key is missing" 
+        });
+      }
+      
+      // Only make a real API call if we're in production or FORCE_REAL_API is set
+      if (process.env.NODE_ENV === 'production' || process.env.FORCE_REAL_API) {
+        console.log("Making actual DALL-E API request...");
+        
+        const openai = new OpenAI({
+          apiKey: process.env.OPENAI_API_KEY,
+        });
+        
+        const response = await openai.images.generate({
+          model: "dall-e-3",
+          prompt: "A simple test image of a blue circle on a white background",
+          n: 1,
+          size: "1024x1024",
+          quality: "standard",
+          style: "natural",
+        });
+        
+        if (response.data && response.data[0]?.url) {
+          return res.json({ 
+            success: true, 
+            message: "Successfully generated DALL-E test image",
+            url: response.data[0].url
+          });
+        } else {
+          return res.status(500).json({ 
+            success: false, 
+            message: "No image URL in DALL-E response" 
+          });
+        }
+      } else {
+        // In development mode, just return a test URL
+        return res.json({ 
+          success: true, 
+          message: "DALL-E API key is configured (test mode)",
+          url: "https://images.unsplash.com/photo-1583248369069-9d91f1640fe6?q=80&w=1000"
+        });
+      }
+    } catch (error) {
+      console.error("Error testing DALL-E API:", error);
       res.status(500).json({ 
         success: false, 
         message: error instanceof Error ? error.message : "Unknown error" 
