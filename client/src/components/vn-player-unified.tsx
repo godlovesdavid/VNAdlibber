@@ -43,8 +43,9 @@ export function VnPlayer({
   
   // Text animation function
   const animateText = useCallback((text: string) => {
-    // Skip animation if text speed is fast
-    if (textSpeed === 'fast') {
+    // Always skip animation for imported stories or if text speed is fast
+    // This prevents recursive rendering in imported mode
+    if (mode === 'imported' || textSpeed === 'fast') {
       setDisplayedText(text);
       setIsTextAnimating(false);
       return;
@@ -91,7 +92,7 @@ export function VnPlayer({
     
     // Start animation
     textAnimationRef.current = window.requestAnimationFrame(animate);
-  }, [textSpeed]);
+  }, [textSpeed, mode]);
   
   // Skip text animation
   const skipTextAnimation = useCallback(() => {
@@ -132,9 +133,10 @@ export function VnPlayer({
     return processed;
   }, [actNumber]);
   
-  // Initialize with first scene on mount - simplest approach is often best
+  // Initialize scenes separately for generated and imported modes to avoid recursion issues
+  // This initialization is only for generated mode
   useEffect(() => {
-    if (!actData?.scenes?.length || initialized.current) return;
+    if (mode !== 'generated' || !actData?.scenes?.length || initialized.current) return;
     
     // Mark as initialized to prevent re-initialization
     initialized.current = true;
@@ -156,9 +158,34 @@ export function VnPlayer({
     }
   }, [actData, processScene, animateText, mode]);
   
-  // Update current scene when scene ID changes
+  // Separate initialization for imported mode
   useEffect(() => {
-    if (!actData?.scenes || !currentSceneId) return;
+    if (mode !== 'imported' || !actData?.scenes?.length || initialized.current) return;
+    
+    // Mark as initialized to prevent re-initialization
+    initialized.current = true;
+    
+    // Set initial scene - using direct JSON copy to avoid any reference issues
+    const firstSceneRaw = JSON.parse(JSON.stringify(actData.scenes[0]));
+    const firstScene = processScene(firstSceneRaw);
+    console.log(`Initializing VN Player (${mode} mode) with first scene:`, firstScene.id);
+    
+    // Set all initial state directly (without animation)
+    setCurrentScene(firstScene);
+    setCurrentSceneId(firstScene.id);
+    setCurrentDialogueIndex(0);
+    setShowChoices(false);
+    setDialogueLog([]);
+    
+    // For imported mode, directly set the full text without animation
+    if (firstScene.dialogue && firstScene.dialogue.length > 0) {
+      setDisplayedText(firstScene.dialogue[0][1]);
+    }
+  }, [actData, processScene, mode]);
+  
+  // Update current scene when scene ID changes - for generated mode
+  useEffect(() => {
+    if (mode !== 'generated' || !actData?.scenes || !currentSceneId) return;
     
     const scene = actData.scenes.find(s => s.id === currentSceneId);
     if (scene) {
@@ -173,26 +200,58 @@ export function VnPlayer({
         animateText(processedScene.dialogue[0][1]);
       }
     }
-  }, [actData, currentSceneId, processScene, animateText]);
+  }, [actData, currentSceneId, processScene, animateText, mode]);
+  
+  // Update current scene when scene ID changes - for imported mode (no animation)
+  useEffect(() => {
+    if (mode !== 'imported' || !actData?.scenes || !currentSceneId) return;
+    
+    const scene = actData.scenes.find(s => s.id === currentSceneId);
+    if (scene) {
+      // Use deep copy to prevent any reference issues
+      const sceneCopy = JSON.parse(JSON.stringify(scene));
+      const processedScene = processScene(sceneCopy);
+      
+      setCurrentScene(processedScene);
+      setCurrentDialogueIndex(0);
+      setShowChoices(false);
+      
+      // For imported mode, set text immediately without animation
+      if (processedScene.dialogue && processedScene.dialogue.length > 0) {
+        setDisplayedText(processedScene.dialogue[0][1]);
+      }
+    }
+  }, [actData, currentSceneId, processScene, mode]);
   
   // Handle restart
   const handleRestart = useCallback(() => {
     if (!actData?.scenes?.length) return;
     
-    // Reset to first scene
-    const firstScene = processScene(actData.scenes[0]);
+    // Reset to first scene - using deep copy to avoid reference issues
+    const firstSceneRaw = JSON.parse(JSON.stringify(actData.scenes[0]));
+    const firstScene = processScene(firstSceneRaw);
+    
+    // Reset all the state
     setCurrentScene(firstScene);
     setCurrentSceneId(firstScene.id);
     setCurrentDialogueIndex(0);
     setShowChoices(false);
     setDialogueLog([]);
     
-    // Start text animation for the first dialogue line
-    if (firstScene.dialogue && firstScene.dialogue.length > 0) {
-      setDisplayedText(""); // Clear any previous text
-      animateText(firstScene.dialogue[0][1]);
+    // Handle different modes for text display
+    if (mode === 'imported') {
+      // For imported mode, just set the text directly without animation
+      if (firstScene.dialogue && firstScene.dialogue.length > 0) {
+        setDisplayedText(firstScene.dialogue[0][1]);
+      }
+    } else {
+      // For generated mode, use animation
+      if (firstScene.dialogue && firstScene.dialogue.length > 0) {
+        setDisplayedText(""); // Clear any previous text
+        animateText(firstScene.dialogue[0][1]);
+      }
     }
-  }, [actData, processScene, animateText]);
+  }, [actData, processScene, animateText, mode]);
   
   // Handle advancing to next dialogue or showing choices
   const advanceDialogue = useCallback(() => {
@@ -206,12 +265,18 @@ export function VnPlayer({
       // Advance to next dialogue line
       setCurrentDialogueIndex(prev => prev + 1);
       
-      // Reset displayed text for animation
-      setDisplayedText("");
-      
-      // Start animating the next dialogue
-      if (currentScene.dialogue[currentDialogueIndex + 1]) {
-        animateText(currentScene.dialogue[currentDialogueIndex + 1][1]);
+      // Handle next dialogue display based on mode
+      if (mode === 'imported') {
+        // For imported mode: no animation, just set the full text immediately
+        if (currentScene.dialogue[currentDialogueIndex + 1]) {
+          setDisplayedText(currentScene.dialogue[currentDialogueIndex + 1][1]);
+        }
+      } else {
+        // For generated mode: use animation
+        setDisplayedText(""); // Clear any previous text
+        if (currentScene.dialogue[currentDialogueIndex + 1]) {
+          animateText(currentScene.dialogue[currentDialogueIndex + 1][1]);
+        }
       }
     } else {
       // Add final dialogue to log
@@ -223,7 +288,7 @@ export function VnPlayer({
       // Show choices if there are any, otherwise this is the end
       setShowChoices(true);
     }
-  }, [currentScene, currentDialogueIndex, clickableContent, animateText]);
+  }, [currentScene, currentDialogueIndex, clickableContent, animateText, mode]);
   
   // Check if a choice's condition is met
   const checkConditionMet = useCallback((choice: SceneChoice): boolean => {
@@ -324,40 +389,56 @@ export function VnPlayer({
   // Text speed controls UI
   const renderTextSpeedControls = () => {
     return (
-      <div className="absolute bottom-4 left-4 flex items-center space-x-2 bg-black bg-opacity-60 rounded-md p-1">
-        <Button 
-          size="sm" 
-          variant="ghost"
-          className={cn(
-            "text-xs px-2 py-1 h-auto", 
-            textSpeed === 'slow' ? "bg-primary text-white" : "text-gray-300"
-          )}
-          onClick={() => setTextSpeed('slow')}
-        >
-          Slow
-        </Button>
-        <Button 
-          size="sm" 
-          variant="ghost"
-          className={cn(
-            "text-xs px-2 py-1 h-auto", 
-            textSpeed === 'medium' ? "bg-primary text-white" : "text-gray-300"
-          )}
-          onClick={() => setTextSpeed('medium')}
-        >
-          Medium
-        </Button>
-        <Button 
-          size="sm" 
-          variant="ghost"
-          className={cn(
-            "text-xs px-2 py-1 h-auto", 
-            textSpeed === 'fast' ? "bg-primary text-white" : "text-gray-300"
-          )}
-          onClick={() => setTextSpeed('fast')}
-        >
-          Fast
-        </Button>
+      <div className="absolute bottom-4 left-4 flex flex-col space-y-1">
+        {/* Text speed controls */}
+        <div className="flex items-center space-x-2 bg-black bg-opacity-60 rounded-md p-1">
+          <Button 
+            size="sm" 
+            variant="ghost"
+            className={cn(
+              "text-xs px-2 py-1 h-auto", 
+              textSpeed === 'slow' ? "bg-primary text-white" : "text-gray-300",
+              mode === 'imported' && "opacity-50 cursor-not-allowed"
+            )}
+            onClick={() => setTextSpeed('slow')}
+            disabled={mode === 'imported'}
+          >
+            Slow
+          </Button>
+          <Button 
+            size="sm" 
+            variant="ghost"
+            className={cn(
+              "text-xs px-2 py-1 h-auto", 
+              textSpeed === 'medium' ? "bg-primary text-white" : "text-gray-300",
+              mode === 'imported' && "opacity-50 cursor-not-allowed"
+            )}
+            onClick={() => setTextSpeed('medium')}
+            disabled={mode === 'imported'}
+          >
+            Medium
+          </Button>
+          <Button 
+            size="sm" 
+            variant="ghost"
+            className={cn(
+              "text-xs px-2 py-1 h-auto", 
+              textSpeed === 'fast' ? "bg-primary text-white" : "text-gray-300",
+              mode === 'imported' && "opacity-50 cursor-not-allowed"
+            )}
+            onClick={() => setTextSpeed('fast')}
+            disabled={mode === 'imported'}
+          >
+            Fast
+          </Button>
+        </div>
+        
+        {/* Information about disabled animations in imported mode */}
+        {mode === 'imported' && (
+          <div className="text-xs text-white bg-black bg-opacity-60 rounded-md p-1 px-2">
+            Animations disabled in imported mode
+          </div>
+        )}
       </div>
     );
   };
