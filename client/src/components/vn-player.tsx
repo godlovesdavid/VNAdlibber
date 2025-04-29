@@ -450,7 +450,15 @@ export function VnPlayer({
               variant="outline"
               size="sm"
               className="bg-black bg-opacity-70 text-white border-neutral-600 hover:bg-black hover:bg-opacity-90"
-              onClick={() => generateImage()}
+              onClick={() => {
+                console.log('Generate image button clicked');
+                if (currentScene) {
+                  console.log('Current scene:', currentScene);
+                  generateImage(true);
+                } else {
+                  console.error('No current scene available');
+                }
+              }}
               disabled={isGenerating}
             >
               {isGenerating ? (
