@@ -8,7 +8,7 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { Upload, Play, ArrowLeft } from "lucide-react";
+import { Upload, Play, ArrowLeft, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { GeneratedAct } from "@/types/vn";
 
@@ -42,6 +42,25 @@ export default function PlaySelection() {
     }
   };
   
+  // Handle removing imported story
+  const handleRemoveImportedStory = (storyId: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering play action
+    
+    // Filter out the story to remove
+    const updatedStories = importedStories.filter(story => story.id !== storyId);
+    
+    // Update state
+    setImportedStories(updatedStories);
+    
+    // Update localStorage
+    localStorage.setItem('imported_stories', JSON.stringify(updatedStories));
+    
+    toast({
+      title: "Story Removed",
+      description: "The imported story has been removed.",
+    });
+  };
+
   // Process imported file
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -241,7 +260,18 @@ export default function PlaySelection() {
             
             {/* Imported Stories */}
             {importedStories.map((story) => (
-              <Card key={story.id} className="overflow-hidden">
+              <Card key={story.id} className="overflow-hidden relative">
+                {/* Delete button */}
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="absolute top-2 right-2 bg-black bg-opacity-50 rounded-full w-6 h-6 p-0 z-10 text-white hover:bg-red-600 hover:text-white"
+                  onClick={(e) => handleRemoveImportedStory(story.id, e)}
+                  title="Remove imported story"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+                
                 <div className="h-32 bg-neutral-800 flex items-center justify-center">
                   <div className="text-white text-center">
                     <svg 
