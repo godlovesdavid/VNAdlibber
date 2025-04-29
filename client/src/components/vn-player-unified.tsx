@@ -406,62 +406,7 @@ export function VnPlayer({
     };
   }, []);
   
-  // Text speed controls UI
-  const renderTextSpeedControls = () => {
-    return (
-      <div className="absolute bottom-4 left-4 flex flex-col space-y-1">
-        {/* Text speed controls */}
-        <div className="flex items-center space-x-2 bg-black bg-opacity-60 rounded-md p-1">
-          <Button 
-            size="sm" 
-            variant="ghost"
-            className={cn(
-              "text-xs px-2 py-1 h-auto", 
-              textSpeed === 'slow' ? "bg-primary text-white" : "text-gray-300",
-              mode === 'imported' && "opacity-50 cursor-not-allowed"
-            )}
-            onClick={() => setTextSpeed('slow')}
-            disabled={mode === 'imported'}
-          >
-            Slow
-          </Button>
-          <Button 
-            size="sm" 
-            variant="ghost"
-            className={cn(
-              "text-xs px-2 py-1 h-auto", 
-              textSpeed === 'medium' ? "bg-primary text-white" : "text-gray-300",
-              mode === 'imported' && "opacity-50 cursor-not-allowed"
-            )}
-            onClick={() => setTextSpeed('medium')}
-            disabled={mode === 'imported'}
-          >
-            Medium
-          </Button>
-          <Button 
-            size="sm" 
-            variant="ghost"
-            className={cn(
-              "text-xs px-2 py-1 h-auto", 
-              textSpeed === 'fast' ? "bg-primary text-white" : "text-gray-300",
-              mode === 'imported' && "opacity-50 cursor-not-allowed"
-            )}
-            onClick={() => setTextSpeed('fast')}
-            disabled={mode === 'imported'}
-          >
-            Fast
-          </Button>
-        </div>
-        
-        {/* Information about disabled animations in imported mode */}
-        {mode === 'imported' && (
-          <div className="text-xs text-white bg-black bg-opacity-60 rounded-md p-1 px-2">
-            Animations disabled in imported mode
-          </div>
-        )}
-      </div>
-    );
-  };
+  // Text speed controls removed - now only using the ones in the options menu
   
   // Show loading while no scene is available
   if (!currentScene) {
@@ -513,8 +458,7 @@ export function VnPlayer({
             <p className="text-sm text-neutral-400 mt-1">Image generation disabled</p>
           </div>
           
-          {/* Text speed controls */}
-          {renderTextSpeedControls()}
+          {/* Text speed controls removed - now only using the ones in the options menu */}
         </div>
         
         <div 

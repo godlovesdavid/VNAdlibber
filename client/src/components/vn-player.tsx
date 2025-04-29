@@ -421,42 +421,7 @@ export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRest
             <p className="text-sm text-neutral-400 mt-1">Image generation disabled</p>
           </div>
           
-          {/* Text speed controls */}
-          <div className="absolute bottom-4 left-4 flex items-center space-x-2 bg-black bg-opacity-60 rounded-md p-1">
-            <Button 
-              size="sm" 
-              variant="ghost"
-              className={cn(
-                "text-xs px-2 py-1 h-auto", 
-                textSpeed === 'slow' ? "bg-primary text-white" : "text-gray-300"
-              )}
-              onClick={() => setTextSpeed('slow')}
-            >
-              Slow
-            </Button>
-            <Button 
-              size="sm" 
-              variant="ghost"
-              className={cn(
-                "text-xs px-2 py-1 h-auto", 
-                textSpeed === 'medium' ? "bg-primary text-white" : "text-gray-300"
-              )}
-              onClick={() => setTextSpeed('medium')}
-            >
-              Medium
-            </Button>
-            <Button 
-              size="sm" 
-              variant="ghost"
-              className={cn(
-                "text-xs px-2 py-1 h-auto", 
-                textSpeed === 'fast' ? "bg-primary text-white" : "text-gray-300"
-              )}
-              onClick={() => setTextSpeed('fast')}
-            >
-              Fast
-            </Button>
-          </div>
+          {/* Text speed controls removed - now only using the ones in the options menu */}
         </div>
         
         <div 
