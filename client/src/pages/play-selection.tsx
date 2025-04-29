@@ -118,7 +118,10 @@ export default function PlaySelection() {
             JSON.stringify(story.actData.__exportInfo.playerData));
         }
         
-        setLocation(`/player/imported`);
+        // Force a new component mount by adding a timestamp to the URL
+        const timestamp = Date.now();
+        localStorage.setItem('import_timestamp', timestamp.toString());
+        setLocation(`/player/imported?t=${timestamp}`);
       } catch (error) {
         console.error("Error preparing story for import:", error);
         alert("There was a problem preparing the story for playback. Please try again.");
