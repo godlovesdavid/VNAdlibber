@@ -19,7 +19,7 @@ function isMobileDevice(): boolean {
   return window.innerWidth <= 768;
 }
 
-// Function to generate a scene background image using DALL-E
+// Function to generate a scene background image using RunPod
 export async function generateSceneBackground(
   scene: {
     setting: string;
@@ -27,7 +27,7 @@ export async function generateSceneBackground(
   },
   theme?: string,
   signal?: AbortSignal,
-  options?: { forceReal?: boolean }
+  options?: {}
 ): Promise<ImageGenerationResult> {
   try {
     console.log("Generating background for scene:", scene.id, "setting:", scene.setting, "theme:", theme || "none");
@@ -36,7 +36,6 @@ export async function generateSceneBackground(
       scene, 
       theme,
       imageType: "background", 
-      forceReal: options?.forceReal || false,
       // Include flag to indicate if optimize mode should be used
       optimizeForMobile: isMobileDevice()
     };

@@ -61,15 +61,12 @@ export function useImageGeneration(
   }, [logDebug]);
   
   // Generate image function with safety checks
-  const generateImage = useCallback(async (forceGenerate = false, options?: { forceReal?: boolean }) => {
+  const generateImage = useCallback(async (forceGenerate = false, options?: {}) => {
     // Don't generate if no scene is available
     if (!scene) {
       logDebug('Cannot generate - no scene provided');
       return;
     }
-    
-    // Extract any custom options
-    const forceReal = options?.forceReal || false;
     
     // Always update current scene ID reference
     currentSceneId.current = scene.id;
@@ -118,7 +115,7 @@ export function useImageGeneration(
           { id: scene.id, setting: scene.setting },
           theme,
           abortController.current.signal,
-          { forceReal } // Pass the forceReal flag to the API call
+          {} // No options needed since we're using RunPod
         );
         
         // Only update state if this is still the current scene
