@@ -1017,15 +1017,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (imageType === "background") {
         try {
-          console.log("Calling OpenAI DALL-E API with API key:", process.env.OPENAI_API_KEY ? "Present (hidden)" : "Missing");
+          console.log("Calling Stability AI SDXL API with API key:", process.env.STABILITY_API_KEY ? "Present (hidden)" : "Missing");
           
-          // Always force real API and optimization for our speed test
-          console.log("🔴 FORCING REAL API USAGE - DALL-E credits will be consumed");
-          process.env.FORCE_REAL_API = 'true';
+          // We're now using Stability AI's SDXL model instead of DALL-E
+          console.log("🎨 USING STABILITY AI - SDXL credits will be consumed");
           
-          // Always use optimization settings for faster generation
-          console.log("⚡ SPEED TEST - Using DALL-E 2 with 512x512 resolution");
-          process.env.OPTIMIZE_DALL_E = 'true';
+          // Make sure we have the required API key
+          if (!process.env.STABILITY_API_KEY) {
+            console.error("❌ STABILITY_API_KEY is missing");
+            return res.status(500).json({ error: "STABILITY_API_KEY is required for image generation" });
+          }
           
           const result = await generateSceneBackgroundImage(scene.id, scene.setting, theme);
           
@@ -1035,9 +1036,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           console.log(`Background image generated for scene ${scene.id}:`, result.url ? "Success (URL hidden for privacy)" : "No URL returned");
           
-          // Log the actual URL for debugging
+          // Log the actual URL for debugging (truncated for data URLs)
           if (result.url) {
-            console.log(`🔴 REAL DALL-E URL: ${result.url}`);
+            const logUrl = result.url.startsWith('data:') 
+              ? `${result.url.substring(0, 30)}...` 
+              : result.url;
+            console.log(`🎨 STABILITY AI IMAGE: ${logUrl}`);
           }
           
           // Include optimization information in the response
@@ -1046,7 +1050,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             isOptimized: useOptimizedSettings
           });
         } catch (generateError) {
-          console.error("Error generating image with DALL-E:", generateError);
+          console.error("Error generating image with Stability AI:", generateError);
           
           const errorMessage = generateError instanceof Error 
             ? generateError.message 
@@ -1055,8 +1059,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log("Returning error to client:", errorMessage);
             
           res.status(500).json({ 
-            error: errorMessage.includes("OpenAI API") 
-              ? "Error connecting to OpenAI API. Please check your API key."
+            error: errorMessage.includes("Stability AI API") 
+              ? "Error connecting to Stability AI API. Please check your API key."
               : errorMessage
           });
         }

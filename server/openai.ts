@@ -1,11 +1,6 @@
-import OpenAI from "openai";
+import fetch from "node-fetch";
 
-// Initialize the OpenAI API client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-// Generate a background image for a scene using DALL-E
+// Generate a background image for a scene using Stability AI's SDXL model
 export async function generateSceneBackgroundImage(
   sceneId: string,
   sceneSetting: string,
@@ -14,62 +9,80 @@ export async function generateSceneBackgroundImage(
   try {
     console.log("🎨 START: Generating image background for scene:", sceneId);
     console.log("- Settings:", { sceneSetting, theme });
-    console.log("- OpenAI API Key:", process.env.OPENAI_API_KEY ? "Present (hidden)" : "MISSING");
+    console.log("- Stability API Key:", process.env.STABILITY_API_KEY ? "Present (hidden)" : "MISSING");
+    
+    // Make sure we have an API key
+    if (!process.env.STABILITY_API_KEY) {
+      throw new Error("STABILITY_API_KEY is required for image generation");
+    }
     
     // Create a rich, detailed prompt for the image generation
     const prompt = generateBackgroundPrompt(sceneSetting, theme);
     console.log("- Generated prompt:", prompt);
     
-    // Always use real DALL-E for this speed test
-    process.env.FORCE_REAL_API = 'true';
+    // Configure Stability AI parameters
+    const width = 512;
+    const height = 512;
+    const cfgScale = 7;   // How strictly to follow the prompt (higher = more faithful)
+    const steps = 30;     // Number of diffusion steps (higher = more detail but slower)
+    const engineId = "stable-diffusion-xl-1-0";  // SDXL model
     
-    console.log("- Making OpenAI API request...");
+    console.log(`- Using Stability AI SDXL with resolution ${width}x${height}`);
+    console.log(`- Parameters: cfg_scale=${cfgScale}, steps=${steps}`);
     
-    // Call the OpenAI API to generate the image
-    // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+    // Stability AI API endpoint for text-to-image generation
+    const apiEndpoint = `https://api.stability.ai/v1/generation/${engineId}/text-to-image`;
     
-    // TEMPORARY: Always use half resolution for speed testing
-    // We'll use DALL-E 2 with 512x512 resolution for faster generation
-    
-    // For DALL-E 3, the available sizes are:
-    // - 1024x1024
-    // - 1024x1792
-    // - 1792x1024
-    
-    // For DALL-E 2, the available sizes are:
-    // - 256x256 (cheapest & fastest)
-    // - 512x512 (good balance)
-    // - 1024x1024 (highest quality)
-    
-    // Force smaller images for speed test
-    const imageSize = "512x512";
-    const imageModel = "dall-e-2";
-    
-    console.log(`- Using DALL-E 2 with half resolution for speed testing`);
-    console.log(`- Image size: ${imageSize}, model: ${imageModel}`);
-    
-    // Force DALL-E 2 with 512x512 resolution for speed testing
-    const response = await openai.images.generate({
-      model: "dall-e-2", // DALL-E 2 is faster than DALL-E 3
-      prompt: prompt,
-      n: 1, // Generate one image
-      size: "512x512", // Smaller, faster images
-      // Note: 'quality' parameter is only available for DALL-E 3, not for DALL-E 2
-      // 'style' parameter is only available for DALL-E 3, removing it for DALL-E 2
+    // Make the API request
+    console.log("- Making Stability AI API request...");
+    const response = await fetch(apiEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${process.env.STABILITY_API_KEY}`,
+      },
+      body: JSON.stringify({
+        text_prompts: [
+          {
+            text: prompt,
+            weight: 1.0
+          }
+        ],
+        cfg_scale: cfgScale,
+        height: height,
+        width: width,
+        steps: steps,
+        samples: 1,
+      }),
     });
     
-    console.log("- OpenAI API response received");
+    console.log(`- Stability AI response status: ${response.status}`);
     
-    // Extract and return the URL
-    if (response.data && response.data[0]?.url) {
-      console.log("- Image URL found in response (hidden for privacy)");
-      return { url: response.data[0].url };
+    // Check for API errors
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("- Stability AI API error:", errorText);
+      throw new Error(`Stability AI API error: ${response.status} ${response.statusText}`);
+    }
+    
+    // Parse the response
+    const data = await response.json();
+    console.log("- Stability AI API response received successfully");
+    
+    // The response contains base64-encoded images
+    if (data && data.artifacts && data.artifacts.length > 0) {
+      const base64Image = data.artifacts[0].base64;
+      const imageUrl = `data:image/png;base64,${base64Image}`;
+      
+      console.log("- Image data found in response");
+      return { url: imageUrl };
     } else {
-      console.error("- No image URL found in the OpenAI response");
-      throw new Error("No image URL found in the OpenAI response");
+      console.error("- No image data found in the Stability AI response");
+      throw new Error("No image data found in the Stability AI response");
     }
   } catch (error) {
-    console.error("❌ Error generating image with DALL-E:", error);
+    console.error("❌ Error generating image with Stability AI:", error);
     throw error;
   }
 }
