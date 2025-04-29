@@ -857,6 +857,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to generate act" });
     }
   });
+  
+  // Image generation endpoint
+  app.post("/api/generate/image", async (req, res) => {
+    try {
+      const { scene, theme, imageType } = generateImageSchema.parse(req.body);
+      
+      console.log(`Image generation request received for scene: ${scene.id}`);
+      
+      if (imageType === "background") {
+        try {
+          const result = await generateSceneBackgroundImage(scene.id, scene.setting, theme);
+          
+          console.log(`Background image generated for scene ${scene.id}: ${result.url.substring(0, 50)}...`);
+          
+          res.json(result);
+        } catch (generateError) {
+          console.error("Error generating image with DALL-E:", generateError);
+          
+          const errorMessage = generateError instanceof Error 
+            ? generateError.message 
+            : "Unknown error during image generation";
+            
+          res.status(500).json({ 
+            error: errorMessage.includes("OpenAI API") 
+              ? "Error connecting to OpenAI API. Please check your API key."
+              : errorMessage
+          });
+        }
+      } else {
+        // Future extension point for character images
+        res.status(400).json({ error: "Character image generation not implemented yet" });
+      }
+    } catch (error) {
+      console.error("Error processing image generation request:", error);
+      res.status(500).json({ error: "Failed to process image generation request" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;

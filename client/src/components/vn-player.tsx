@@ -3,8 +3,9 @@ import { useVnContext } from "@/context/vn-context";
 import { cn } from "@/lib/utils";
 import { PlayerNavbar } from "@/components/player-navbar";
 import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ImageIcon, RefreshCw } from "lucide-react";
 import { Scene, SceneChoice, GeneratedAct } from "@/types/vn";
+import { useImageGeneration } from "@/hooks/use-image-generation";
 
 interface VnPlayerProps {
   actData: GeneratedAct;
@@ -399,6 +400,18 @@ export function VnPlayer({
     };
   }, [mode, isTextAnimating]);
   
+  // Use image generation hook
+  const theme = actData?.meta?.theme || "";
+  const { 
+    imageUrl, 
+    isGenerating, 
+    error: imageError, 
+    generateImage 
+  } = useImageGeneration(currentScene, theme, {
+    autoGenerate: false,
+    debug: true,
+  });
+  
   // Text speed controls removed - now only using the ones in the options menu
   
   // Show loading while no scene is available
@@ -431,27 +444,79 @@ export function VnPlayer({
             {currentScene.setting}
           </div>
           
-          {/* Placeholder for background image */}
-          <div className="text-white text-center">
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              className="mx-auto h-16 w-16 mb-2" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor"
+          {/* Image generation controls */}
+          <div className="absolute top-4 right-4 flex space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-black bg-opacity-70 text-white border-neutral-600 hover:bg-black hover:bg-opacity-90"
+              onClick={() => generateImage()}
+              disabled={isGenerating}
             >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" 
-              />
-            </svg>
-            <p>Background Image Placeholder</p>
-            <p className="text-sm text-neutral-400 mt-1">Image generation disabled</p>
+              {isGenerating ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <ImageIcon className="h-4 w-4" />
+              )}
+              <span className="ml-2">{isGenerating ? "Generating..." : "Generate Image"}</span>
+            </Button>
           </div>
           
-          {/* Text speed controls removed - now only using the ones in the options menu */}
+          {/* Background image display */}
+          {imageUrl ? (
+            // Display generated image with fade-in animation
+            <div 
+              className="w-full h-full absolute inset-0 bg-cover bg-center animate-fadeIn"
+              style={{ 
+                backgroundImage: `url(${imageUrl})`, 
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            />
+          ) : currentScene.bg ? (
+            // Display scene's existing background image
+            <div 
+              className="w-full h-full absolute inset-0 bg-cover bg-center"
+              style={{ 
+                backgroundImage: `url(${currentScene.bg})`, 
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            />
+          ) : (
+            // Display placeholder when no image is available
+            <div className="text-white text-center">
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                className="mx-auto h-16 w-16 mb-2" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" 
+                />
+              </svg>
+              <p>No background image available</p>
+              <p className="text-sm text-neutral-400 mt-1">
+                {imageError ? `Error: ${imageError}` : "Click 'Generate Image' to create one"}
+              </p>
+            </div>
+          )}
+          
+          {/* Loading overlay */}
+          {isGenerating && (
+            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
+              <div className="text-white text-center">
+                <RefreshCw className="h-12 w-12 animate-spin mx-auto mb-4" />
+                <p className="text-xl">Generating Image...</p>
+                <p className="text-sm opacity-75 mt-2">Please wait while DALL-E creates a background for this scene</p>
+              </div>
+            </div>
+          )}
         </div>
         
         <div 
