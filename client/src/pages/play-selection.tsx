@@ -23,9 +23,9 @@ export default function PlaySelection() {
     createdAt: string;
     actData: GeneratedAct;
   }>>(() => {
-    // Initialize from sessionStorage on component mount
+    // Initialize from localStorage on component mount
     try {
-      const stored = sessionStorage.getItem('imported_stories');
+      const stored = localStorage.getItem('imported_stories');
       return stored ? JSON.parse(stored) : [];
     } catch (e) {
       console.error("Error loading imported stories:", e);
