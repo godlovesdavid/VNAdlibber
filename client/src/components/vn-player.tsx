@@ -459,18 +459,21 @@ export function VnPlayer({
             {currentScene.setting}
           </div>
           
-          {/* Image generation controls */}
-          <div className="absolute top-4 right-4 flex space-x-2">
+          {/* Image generation controls - Increased z-index to ensure it's clickable */}
+          <div className="absolute top-4 right-4 flex space-x-2 z-20">
             {/* Button: Use the hook's generateImage function */}
             <Button
               variant="default"
-              className="bg-blue-500 hover:bg-blue-700 active:bg-blue-800"
-              onClick={() => {
+              className="bg-blue-500 hover:bg-blue-700 active:bg-blue-800 cursor-pointer"
+              onClick={(e) => {
+                // Stop propagation to prevent parent elements from capturing the click
+                e.stopPropagation();
                 console.log('Generate image button clicked - using hook');
                 // Force true to regenerate even if cached
                 generateImage(true);
               }}
               disabled={isGenerating}
+              style={{ pointerEvents: 'auto' }} // Ensure pointer events are enabled
             >
               {isGenerating ? (
                 <>
@@ -488,8 +491,10 @@ export function VnPlayer({
             {/* Button: Test OpenAI connection */}
             <Button
               variant="outline"
-              className="ml-2 bg-green-500 text-white hover:bg-green-700 active:bg-green-800"
-              onClick={() => {
+              className="ml-2 bg-green-500 text-white hover:bg-green-700 active:bg-green-800 cursor-pointer"
+              onClick={(e) => {
+                // Stop propagation to prevent parent elements from capturing the click
+                e.stopPropagation();
                 console.log('Testing OpenAI connection');
                 
                 fetch('/api/test/openai')
@@ -511,6 +516,7 @@ export function VnPlayer({
                     });
                   });
               }}
+              style={{ pointerEvents: 'auto' }} // Ensure pointer events are enabled
             >
               Test OpenAI
             </Button>
