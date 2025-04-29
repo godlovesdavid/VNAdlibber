@@ -355,11 +355,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
       } else {
-        // In development mode, just return a reliable test URL
+        // In development mode, return an inline SVG data URL
         return res.json({ 
           success: true, 
           message: "DALL-E API key is configured (test mode)",
-          url: "https://via.placeholder.com/1024x1024/f39c12/ffffff?text=DALL-E+Test+Image"
+          url: "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221024%22%20height%3D%221024%22%20viewBox%3D%220%200%201024%201024%22%20preserveAspectRatio%3D%22none%22%3E%3Cg%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23f39c12%22%3E%3C%2Frect%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20font-size%3D%2264%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20font-family%3D%22Arial%2C%20sans-serif%22%20fill%3D%22white%22%3EDALL-E%20Test%20Image%3C%2Ftext%3E%3Ccircle%20cx%3D%22512%22%20cy%3D%22700%22%20r%3D%22100%22%20fill%3D%22white%22%20%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"
         });
       }
     } catch (error) {

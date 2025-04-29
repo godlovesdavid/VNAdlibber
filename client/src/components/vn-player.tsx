@@ -21,8 +21,8 @@ function SceneBackground({ imageUrl, sceneId, isGenerated = false }: SceneBackgr
   const [hasError, setHasError] = useState(false);
   const [actualUrl, setActualUrl] = useState(imageUrl);
   
-  // Fallback URL in case of loading failures
-  const fallbackUrl = "https://via.placeholder.com/1024x768/333333/ffffff?text=Scene+Background";
+  // Fallback URL in case of loading failures - using data URI for guaranteed compatibility
+  const fallbackUrl = `data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221024%22%20height%3D%22768%22%20viewBox%3D%220%200%201024%20768%22%20preserveAspectRatio%3D%22none%22%3E%3Cg%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23333333%22%3E%3C%2Frect%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20font-size%3D%2248%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20font-family%3D%22Arial%2C%20sans-serif%22%20fill%3D%22white%22%3EFallback%20Background%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fsvg%3E`;
   
   useEffect(() => {
     // Reset states when URL changes
