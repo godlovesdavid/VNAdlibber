@@ -141,7 +141,13 @@ export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRest
     setCurrentDialogueIndex(0);
     setShowChoices(false);
     setDialogueLog([]);
-  }, [actData, processScene]);
+    
+    // Start text animation for the first dialogue line
+    if (firstScene.dialogue && firstScene.dialogue.length > 0) {
+      setDisplayedText(""); // Clear any previous text
+      animateText(firstScene.dialogue[0][1]);
+    }
+  }, [actData, processScene, animateText]);
   
   // Update current scene when scene ID changes
   useEffect(() => {
@@ -153,8 +159,14 @@ export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRest
       setCurrentScene(processedScene);
       setCurrentDialogueIndex(0);
       setShowChoices(false);
+      
+      // Start text animation for the first dialogue line
+      if (processedScene.dialogue && processedScene.dialogue.length > 0) {
+        setDisplayedText(""); // Clear any previous text
+        animateText(processedScene.dialogue[0][1]);
+      }
     }
-  }, [actData, currentSceneId, processScene]);
+  }, [actData, currentSceneId, processScene, animateText]);
   
   // Handle restart
   const handleRestart = useCallback(() => {
@@ -167,7 +179,13 @@ export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRest
     setCurrentDialogueIndex(0);
     setShowChoices(false);
     setDialogueLog([]);
-  }, [actData, processScene]);
+    
+    // Start text animation for the first dialogue line
+    if (firstScene.dialogue && firstScene.dialogue.length > 0) {
+      setDisplayedText(""); // Clear any previous text
+      animateText(firstScene.dialogue[0][1]);
+    }
+  }, [actData, processScene, animateText]);
   
   // Handle advancing to next dialogue or showing choices
   const advanceDialogue = useCallback(() => {
@@ -301,8 +319,9 @@ export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRest
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
   
-  // Get current dialogue text
-  const dialogueText = currentScene?.dialogue[currentDialogueIndex]?.[1] || "";
+  // Get current dialogue text (using either the animated display text or the full original text)
+  const originalDialogueText = currentScene?.dialogue[currentDialogueIndex]?.[1] || "";
+  const dialogueText = isTextAnimating ? displayedText : originalDialogueText;
   
   return (
     <div className="relative h-screen">
@@ -343,6 +362,43 @@ export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRest
             </svg>
             <p>Background Image Placeholder</p>
             <p className="text-sm text-neutral-400 mt-1">Image generation disabled</p>
+          </div>
+          
+          {/* Text speed controls */}
+          <div className="absolute bottom-4 left-4 flex items-center space-x-2 bg-black bg-opacity-60 rounded-md p-1">
+            <Button 
+              size="sm" 
+              variant="ghost"
+              className={cn(
+                "text-xs px-2 py-1 h-auto", 
+                textSpeed === 'slow' ? "bg-primary text-white" : "text-gray-300"
+              )}
+              onClick={() => setTextSpeed('slow')}
+            >
+              Slow
+            </Button>
+            <Button 
+              size="sm" 
+              variant="ghost"
+              className={cn(
+                "text-xs px-2 py-1 h-auto", 
+                textSpeed === 'medium' ? "bg-primary text-white" : "text-gray-300"
+              )}
+              onClick={() => setTextSpeed('medium')}
+            >
+              Medium
+            </Button>
+            <Button 
+              size="sm" 
+              variant="ghost"
+              className={cn(
+                "text-xs px-2 py-1 h-auto", 
+                textSpeed === 'fast' ? "bg-primary text-white" : "text-gray-300"
+              )}
+              onClick={() => setTextSpeed('fast')}
+            >
+              Fast
+            </Button>
           </div>
         </div>
         
@@ -423,7 +479,7 @@ export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRest
           )}
           
           {/* Bounce indicator for continuing dialogue */}
-          {!showChoices && currentScene.dialogue.length > 0 && (
+          {!showChoices && currentScene.dialogue.length > 0 && !isTextAnimating && (
             <div className="absolute bottom-4 right-4 animate-bounce text-white">
               <ChevronDown className="h-6 w-6" />
             </div>
