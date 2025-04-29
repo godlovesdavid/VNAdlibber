@@ -1002,24 +1002,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      const { scene, theme, imageType, forceReal } = req.body;
+      const { scene, theme, imageType, forceReal, optimizeForMobile } = req.body;
       
-      // Parse with the schema, but allow forceReal to pass through
+      // Parse with the schema, but allow forceReal and optimizeForMobile to pass through
       generateImageSchema.parse({ scene, theme, imageType });
       
       // Check if we should force using the real API
       const useRealApi = forceReal === true || req.query.force === 'true';
       
-      console.log(`Image generation request received for scene: ${scene.id}, setting: "${scene.setting}", theme: "${theme || 'none'}", type: ${imageType}, forceReal: ${useRealApi}`);
+      // Check if we should use optimized image settings (smaller/cheaper)
+      const useOptimizedSettings = optimizeForMobile === true;
+      
+      console.log(`Image generation request received for scene: ${scene.id}, setting: "${scene.setting}", theme: "${theme || 'none'}", type: ${imageType}, forceReal: ${useRealApi}, optimizeForMobile: ${useOptimizedSettings}`);
       
       if (imageType === "background") {
         try {
           console.log("Calling OpenAI DALL-E API with API key:", process.env.OPENAI_API_KEY ? "Present (hidden)" : "Missing");
           
-          // Set an environment variable temporarily to force real API usage if requested
+          // Set environment variables for this request
           if (useRealApi) {
             console.log("🔴 FORCING REAL API USAGE - DALL-E credits will be consumed");
             process.env.FORCE_REAL_API = 'true';
+          }
+          
+          // Set optimization flag if requested
+          if (useOptimizedSettings) {
+            console.log("📱 OPTIMIZED IMAGE REQUESTED - Using smaller image size");
+            process.env.OPTIMIZE_DALL_E = 'true';
           }
           
           const result = await generateSceneBackgroundImage(scene.id, scene.setting, theme);
@@ -1036,7 +1045,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log(`🔴 REAL DALL-E URL: ${result.url}`);
           }
           
-          res.json(result);
+          // Clean up the optimization flag
+          if (useOptimizedSettings) {
+            delete process.env.OPTIMIZE_DALL_E;
+          }
+          
+          // Include optimization information in the response
+          res.json({
+            ...result,
+            isOptimized: useOptimizedSettings
+          });
         } catch (generateError) {
           console.error("Error generating image with DALL-E:", generateError);
           
