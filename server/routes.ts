@@ -1017,15 +1017,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (imageType === "background") {
         try {
-          console.log("Calling Stability AI SDXL API with API key:", process.env.STABILITY_API_KEY ? "Present (hidden)" : "Missing");
+          console.log("Calling RunPod SDXL API with API key:", process.env.RUNPOD_API_KEY ? "Present (hidden)" : "Missing");
           
-          // We're now using Stability AI's SDXL model instead of DALL-E
-          console.log("🎨 USING STABILITY AI - SDXL credits will be consumed");
+          // We're now using RunPod's SDXL endpoint for image generation
+          console.log("🎨 USING RUNPOD AI - SDXL credits will be consumed");
           
           // Make sure we have the required API key
-          if (!process.env.STABILITY_API_KEY) {
-            console.error("❌ STABILITY_API_KEY is missing");
-            return res.status(500).json({ error: "STABILITY_API_KEY is required for image generation" });
+          if (!process.env.RUNPOD_API_KEY) {
+            console.error("❌ RUNPOD_API_KEY is missing");
+            return res.status(500).json({ error: "RUNPOD_API_KEY is required for image generation" });
+          }
+          
+          // Check if endpoint ID is specified (optional)
+          const endpointId = process.env.RUNPOD_ENDPOINT_ID;
+          if (endpointId) {
+            console.log(`- Using RunPod endpoint ID: ${endpointId}`);
+          } else {
+            console.log("- Using default RunPod SDXL endpoint");
           }
           
           const result = await generateSceneBackgroundImage(scene.id, scene.setting, theme);
@@ -1041,7 +1049,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const logUrl = result.url.startsWith('data:') 
               ? `${result.url.substring(0, 30)}...` 
               : result.url;
-            console.log(`🎨 STABILITY AI IMAGE: ${logUrl}`);
+            console.log(`🎨 RUNPOD AI IMAGE: ${logUrl}`);
           }
           
           // Include optimization information in the response
@@ -1050,7 +1058,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             isOptimized: useOptimizedSettings
           });
         } catch (generateError) {
-          console.error("Error generating image with Stability AI:", generateError);
+          console.error("Error generating image with RunPod:", generateError);
           
           const errorMessage = generateError instanceof Error 
             ? generateError.message 
@@ -1059,8 +1067,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log("Returning error to client:", errorMessage);
             
           res.status(500).json({ 
-            error: errorMessage.includes("Stability AI API") 
-              ? "Error connecting to Stability AI API. Please check your API key."
+            error: errorMessage.includes("RunPod API") 
+              ? "Error connecting to RunPod API. Please check your API key and endpoint ID."
               : errorMessage
           });
         }

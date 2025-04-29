@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 
-// Generate a background image for a scene using Stability AI's SDXL model
+// Generate a background image for a scene using RunPod's SDXL Endpoint
 export async function generateSceneBackgroundImage(
   sceneId: string,
   sceneSetting: string,
@@ -9,80 +9,155 @@ export async function generateSceneBackgroundImage(
   try {
     console.log("🎨 START: Generating image background for scene:", sceneId);
     console.log("- Settings:", { sceneSetting, theme });
-    console.log("- Stability API Key:", process.env.STABILITY_API_KEY ? "Present (hidden)" : "MISSING");
+    console.log("- RunPod API Key:", process.env.RUNPOD_API_KEY ? "Present (hidden)" : "MISSING");
     
     // Make sure we have an API key
-    if (!process.env.STABILITY_API_KEY) {
-      throw new Error("STABILITY_API_KEY is required for image generation");
+    if (!process.env.RUNPOD_API_KEY) {
+      throw new Error("RUNPOD_API_KEY is required for image generation");
     }
     
     // Create a rich, detailed prompt for the image generation
     const prompt = generateBackgroundPrompt(sceneSetting, theme);
     console.log("- Generated prompt:", prompt);
     
-    // Configure Stability AI parameters
+    // Configure RunPod SDXL parameters
     const width = 512;
     const height = 512;
-    const cfgScale = 7;   // How strictly to follow the prompt (higher = more faithful)
-    const steps = 30;     // Number of diffusion steps (higher = more detail but slower)
-    const engineId = "stable-diffusion-xl-1-0";  // SDXL model
+    const guidance_scale = 7.5;  // How strictly to follow the prompt (higher = more faithful)
+    const num_inference_steps = 30;  // Number of diffusion steps (higher = more detail but slower)
     
-    console.log(`- Using Stability AI SDXL with resolution ${width}x${height}`);
-    console.log(`- Parameters: cfg_scale=${cfgScale}, steps=${steps}`);
+    console.log(`- Using RunPod SDXL with resolution ${width}x${height}`);
+    console.log(`- Parameters: guidance_scale=${guidance_scale}, steps=${num_inference_steps}`);
     
-    // Stability AI API endpoint for text-to-image generation
-    const apiEndpoint = `https://api.stability.ai/v1/generation/${engineId}/text-to-image`;
+    // RunPod AI API endpoint for SDXL
+    // Note: This might need to be adjusted based on your specific RunPod endpoint ID
+    const runpodEndpointId = process.env.RUNPOD_ENDPOINT_ID || "sdxl";
+    const apiEndpoint = `https://api.runpod.ai/v2/${runpodEndpointId}/run`;
     
-    // Make the API request
-    console.log("- Making Stability AI API request...");
+    // Make the API request to RunPod
+    console.log("- Making RunPod API request...");
     const response = await fetch(apiEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${process.env.STABILITY_API_KEY}`,
+        'Authorization': `Bearer ${process.env.RUNPOD_API_KEY}`,
       },
       body: JSON.stringify({
-        text_prompts: [
-          {
-            text: prompt,
-            weight: 1.0
-          }
-        ],
-        cfg_scale: cfgScale,
-        height: height,
-        width: width,
-        steps: steps,
-        samples: 1,
+        input: {
+          prompt: prompt,
+          negative_prompt: "blurry, distorted, low quality, text, watermark",
+          width: width,
+          height: height,
+          guidance_scale: guidance_scale,
+          num_inference_steps: num_inference_steps,
+          num_outputs: 1,
+          scheduler: "DPMSolverMultistep", // Faster scheduler
+          seed: Math.floor(Math.random() * 1000000), // Random seed
+        }
       }),
     });
     
-    console.log(`- Stability AI response status: ${response.status}`);
+    console.log(`- RunPod response status: ${response.status}`);
     
     // Check for API errors
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("- Stability AI API error:", errorText);
-      throw new Error(`Stability AI API error: ${response.status} ${response.statusText}`);
+      console.error("- RunPod API error:", errorText);
+      throw new Error(`RunPod API error: ${response.status} ${response.statusText}`);
     }
     
-    // Parse the response
-    const data = await response.json();
-    console.log("- Stability AI API response received successfully");
+    // Parse the initial response which will have a job ID
+    const initialData = await response.json() as { id: string };
+    console.log("- RunPod job initiated, ID:", initialData.id);
     
-    // The response contains base64-encoded images
-    if (data && data.artifacts && data.artifacts.length > 0) {
-      const base64Image = data.artifacts[0].base64;
-      const imageUrl = `data:image/png;base64,${base64Image}`;
+    if (!initialData.id) {
+      throw new Error("No job ID returned from RunPod");
+    }
+    
+    // Poll for the job completion
+    const statusEndpoint = `https://api.runpod.ai/v2/${runpodEndpointId}/status/${initialData.id}`;
+    let isCompleted = false;
+    let resultData = null;
+    let attempts = 0;
+    const maxAttempts = 30; // Maximum number of polling attempts
+    
+    console.log("- Waiting for RunPod job completion...");
+    
+    // Poll until the job is completed or max attempts reached
+    while (!isCompleted && attempts < maxAttempts) {
+      attempts++;
       
-      console.log("- Image data found in response");
-      return { url: imageUrl };
-    } else {
-      console.error("- No image data found in the Stability AI response");
-      throw new Error("No image data found in the Stability AI response");
+      // Wait for 2 seconds between polling attempts
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Check the job status
+      const statusResponse = await fetch(statusEndpoint, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${process.env.RUNPOD_API_KEY}`,
+        }
+      });
+      
+      if (!statusResponse.ok) {
+        console.error(`- Error checking job status: ${statusResponse.status}`);
+        continue;
+      }
+      
+      const statusData = await statusResponse.json() as { 
+        status: string; 
+        output?: any; 
+        error?: any;
+      };
+      console.log(`- Job status (attempt ${attempts}): ${statusData.status}`);
+      
+      if (statusData.status === 'COMPLETED') {
+        isCompleted = true;
+        resultData = statusData.output;
+        break;
+      } else if (statusData.status === 'FAILED') {
+        throw new Error(`RunPod job failed: ${JSON.stringify(statusData.error)}`);
+      }
     }
+    
+    if (!isCompleted) {
+      throw new Error(`RunPod job did not complete after ${maxAttempts} polling attempts`);
+    }
+    
+    console.log("- RunPod job completed successfully");
+    
+    // Define RunPod response structure types
+    interface RunPodImageResult {
+      images: Array<string | {base64?: string, image_url?: string}>;
+    }
+    
+    // The result contains image data - typically URLs to the generated images
+    if (resultData && (resultData as RunPodImageResult).images && (resultData as RunPodImageResult).images.length > 0) {
+      const images = (resultData as RunPodImageResult).images;
+      
+      // If RunPod returns image URLs directly as strings
+      if (typeof images[0] === 'string') {
+        console.log("- Image URL found in response");
+        return { url: images[0] as string };
+      }
+      // If RunPod returns base64-encoded images
+      else if ((images[0] as {base64?: string}).base64) {
+        const base64Image = (images[0] as {base64: string}).base64;
+        const imageUrl = `data:image/png;base64,${base64Image}`;
+        console.log("- Base64 image data found in response");
+        return { url: imageUrl };
+      }
+      // If RunPod returns an object with an image_url property
+      else if ((images[0] as {image_url?: string}).image_url) {
+        console.log("- Image URL found in response object");
+        return { url: (images[0] as {image_url: string}).image_url };
+      }
+    }
+    
+    // If we reached here, no valid image data was found
+    console.error("- No valid image data found in the RunPod response:", resultData);
+    throw new Error("No valid image data found in the RunPod response");
   } catch (error) {
-    console.error("❌ Error generating image with Stability AI:", error);
+    console.error("❌ Error generating image with RunPod:", error);
     throw error;
   }
 }
