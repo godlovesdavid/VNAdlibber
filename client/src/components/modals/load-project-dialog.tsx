@@ -47,7 +47,7 @@ export function LoadProjectDialog({ open, onOpenChange }: LoadProjectDialogProps
   const [projectToDelete, setProjectToDelete] = useState<number | null>(null);
   
   // Fetch projects
-  const { data: projects, isLoading, error, refetch } = useQuery({
+  const { data: projects = [], isLoading, error, refetch } = useQuery<any[]>({
     queryKey: ['/api/projects'],
     enabled: open, // Only fetch when dialog is open
   });
