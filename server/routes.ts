@@ -861,15 +861,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Image generation endpoint
   app.post("/api/generate/image", async (req, res) => {
     try {
+      console.log("Image generation endpoint called with body:", req.body);
+      
       const { scene, theme, imageType } = generateImageSchema.parse(req.body);
       
-      console.log(`Image generation request received for scene: ${scene.id}`);
+      console.log(`Image generation request received for scene: ${scene.id}, setting: "${scene.setting}", theme: "${theme || 'none'}", type: ${imageType}`);
       
       if (imageType === "background") {
         try {
+          console.log("Calling OpenAI DALL-E API with API key:", process.env.OPENAI_API_KEY ? "Present (hidden)" : "Missing");
+          
           const result = await generateSceneBackgroundImage(scene.id, scene.setting, theme);
           
-          console.log(`Background image generated for scene ${scene.id}: ${result.url.substring(0, 50)}...`);
+          console.log(`Background image generated for scene ${scene.id}:`, result.url ? "Success (URL hidden for privacy)" : "No URL returned");
           
           res.json(result);
         } catch (generateError) {
@@ -879,6 +883,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ? generateError.message 
             : "Unknown error during image generation";
             
+          console.log("Returning error to client:", errorMessage);
+            
           res.status(500).json({ 
             error: errorMessage.includes("OpenAI API") 
               ? "Error connecting to OpenAI API. Please check your API key."
@@ -887,6 +893,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       } else {
         // Future extension point for character images
+        console.log("Character image generation requested but not implemented yet");
         res.status(400).json({ error: "Character image generation not implemented yet" });
       }
     } catch (error) {

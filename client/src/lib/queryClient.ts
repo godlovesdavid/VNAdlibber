@@ -49,16 +49,25 @@ export async function apiRequest(
   data?: unknown | undefined,
   signal?: AbortSignal | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
-    method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
-    signal
-  });
-
-  await throwIfResNotOk(res);
-  return res;
+  try {
+    console.log(`API Request: ${method} ${url}`, data);
+    
+    const res = await fetch(url, {
+      method,
+      headers: data ? { "Content-Type": "application/json" } : {},
+      body: data ? JSON.stringify(data) : undefined,
+      credentials: "include",
+      signal
+    });
+    
+    console.log(`API Response status: ${res.status}`);
+    
+    await throwIfResNotOk(res);
+    return res;
+  } catch (error) {
+    console.error(`API Request Error (${method} ${url}):`, error);
+    throw error;
+  }
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";

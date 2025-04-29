@@ -400,7 +400,7 @@ export function VnPlayer({
     };
   }, [mode, isTextAnimating]);
   
-  // Use image generation hook
+  // Use image generation hook - make sure to update when scene changes
   const theme = actData?.meta?.theme || "";
   const { 
     imageUrl, 
@@ -410,7 +410,19 @@ export function VnPlayer({
   } = useImageGeneration(currentScene, theme, {
     autoGenerate: false,
     debug: true,
+    generationDelay: 100, // Reduced delay for testing
   });
+  
+  // Log current scene and image state for debugging
+  useEffect(() => {
+    if (currentScene) {
+      console.log(`Current scene updated: ${currentScene.id}, image status:`, {
+        imageUrl: imageUrl ? "Has URL" : "No URL", 
+        isGenerating, 
+        hasError: !!imageError
+      });
+    }
+  }, [currentScene, imageUrl, isGenerating, imageError]);
   
   // Text speed controls removed - now only using the ones in the options menu
   
@@ -449,7 +461,10 @@ export function VnPlayer({
             <Button
               variant="outline"
               size="sm"
-              className="bg-black bg-opacity-70 text-white border-neutral-600 hover:bg-black hover:bg-opacity-90"
+              className="bg-black bg-opacity-70 text-white border-neutral-600 transition-all 
+                hover:bg-primary hover:bg-opacity-80 hover:border-primary-300 hover:text-white hover:scale-105
+                active:bg-primary-600 active:scale-95 active:shadow-inner
+                focus:ring-2 focus:ring-primary-400 focus:ring-opacity-50"
               onClick={() => {
                 console.log('Generate image button clicked');
                 if (currentScene) {
