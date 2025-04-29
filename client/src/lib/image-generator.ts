@@ -49,14 +49,10 @@ export async function generateSceneBackground(
     console.log("Sending request to generate image API:", requestData);
 
     const response = await apiRequest(
-      "POST", 
+      "POST",
       "/api/generate/image",
       requestData,
       signal,
-      {
-        cache: 'no-store',
-        headers: { 'Cache-Control': 'no-cache' }
-      }
     );
 
     console.log("Received response from image API, status:", response.status);
