@@ -822,7 +822,7 @@ export function VnPlayer({
 
         <div
           ref={containerRef}
-          className="vn-text-area h-[35%] bg-neutral-800 bg-opacity-90 text-white p-5 relative overflow-y-auto"
+          className="vn-text-area h-[35%] bg-neutral-800 bg-opacity-60 text-white p-5 relative overflow-y-auto"
           onClick={handleContentClick}
         >
           {/* Dialogue text */}
