@@ -55,7 +55,7 @@ export function VnPlayerImported({ actData, actNumber, onReturn, onRestart: exte
     const totalLength = text.length;
     
     // Determine speed in milliseconds per character
-    const charDelay = textSpeed === 'slow' ? 80 : 40; // slow = 80ms, medium = 40ms
+    const charDelay = textSpeed === 'slow' ? 80 : 30; // slow = 80ms, medium = 30ms (faster than before)
     let lastTimeStamp = 0;
     
     const animate = (timestamp: number) => {
@@ -292,6 +292,26 @@ export function VnPlayerImported({ actData, actNumber, onReturn, onRestart: exte
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
   }, [currentDialogueIndex, showChoices]);
+  
+  // Listen for text speed change events from the navbar
+  useEffect(() => {
+    const handleTextSpeedChange = (event: CustomEvent<number>) => {
+      const speedValue = event.detail;
+      if (speedValue === 1) {
+        setTextSpeed('slow');
+      } else if (speedValue === 5) {
+        setTextSpeed('medium');
+      } else if (speedValue === 10) {
+        setTextSpeed('fast');
+      }
+    };
+    
+    window.addEventListener('vnSetTextSpeed', handleTextSpeedChange as EventListener);
+    
+    return () => {
+      window.removeEventListener('vnSetTextSpeed', handleTextSpeedChange as EventListener);
+    };
+  }, []);
   
   // Text speed controls UI
   const renderTextSpeedControls = () => {

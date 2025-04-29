@@ -351,6 +351,26 @@ export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRest
     }
   }, [currentDialogueIndex, showChoices]);
   
+  // Listen for text speed change events from the navbar
+  useEffect(() => {
+    const handleTextSpeedChange = (event: CustomEvent<number>) => {
+      const speedValue = event.detail;
+      if (speedValue === 1) {
+        setTextSpeed('slow');
+      } else if (speedValue === 5) {
+        setTextSpeed('medium');
+      } else if (speedValue === 10) {
+        setTextSpeed('fast');
+      }
+    };
+    
+    window.addEventListener('vnSetTextSpeed', handleTextSpeedChange as EventListener);
+    
+    return () => {
+      window.removeEventListener('vnSetTextSpeed', handleTextSpeedChange as EventListener);
+    };
+  }, []);
+  
   // Show loading while no scene is available
   if (!currentScene) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;

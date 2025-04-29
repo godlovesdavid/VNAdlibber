@@ -156,7 +156,7 @@ export function LoadProjectDialog({ open, onOpenChange }: LoadProjectDialogProps
               <div className="text-center py-8 text-destructive">
                 <p>Error loading projects. Please try again.</p>
               </div>
-            ) : projects && projects.length > 0 ? (
+            ) : projects && Array.isArray(projects) && projects.length > 0 ? (
               projects.map((project: any) => (
                 <div 
                   key={project.id}
