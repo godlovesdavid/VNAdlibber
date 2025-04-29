@@ -277,7 +277,7 @@ const generateActSchema = z.object({
 const generateImageSchema = z.object({
   scene: z.object({
     id: z.string(),
-    setting: z.string(),
+    bg: z.string(),
   }),
   theme: z.string().optional(),
   imageType: z.enum(["background", "character"]).default("background"),
@@ -953,7 +953,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const useOptimizedSettings = optimizeForMobile === true;
 
       console.log(
-        `Image generation request received for scene: ${scene.id}, setting: "${scene.setting}", theme: "${theme || "none"}", type: ${imageType}, optimizeForMobile: ${useOptimizedSettings}`,
+        `Image generation request received for scene: ${scene.id}, bg: "${scene.bg}", theme: "${theme || "none"}", type: ${imageType}, optimizeForMobile: ${useOptimizedSettings}`,
       );
 
       if (imageType === "background") {

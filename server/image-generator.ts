@@ -8,7 +8,7 @@ export async function generateSceneBackgroundImage(
 ): Promise<{ url: string }> {
   try {
     console.log("🎨 START: Generating image background for scene:", sceneId);
-    console.log("- Settings:", { bg, theme });
+    console.log("- bg:", { bg, theme });
     console.log(
       "- RunPod API Key:",
       process.env.RUNPOD_API_KEY ? "Present (hidden)" : "MISSING",
@@ -197,9 +197,9 @@ export async function generateSceneBackgroundImage(
 }
 
 // Helper function to create a detailed prompt for image generation
-function generateBackgroundPrompt(setting: string, theme?: string): string {
+function generateBackgroundPrompt(bg: string, theme?: string): string {
   // Base prompt for visual novel backgrounds
-  let prompt = `${setting}.`;
+  let prompt = `${bg}.`;
 
   // Add theme context if provided
   // if (theme) {
