@@ -43,11 +43,10 @@ export async function generateSceneBackgroundImage(
     
     // Force smaller images for speed test
     const imageSize = "512x512";
-    const imageQuality = "standard";
     const imageModel = "dall-e-2";
     
     console.log(`- Using DALL-E 2 with half resolution for speed testing`);
-    console.log(`- Image size: ${imageSize}, quality: ${imageQuality}, model: ${imageModel}`);
+    console.log(`- Image size: ${imageSize}, model: ${imageModel}`);
     
     // Force DALL-E 2 with 512x512 resolution for speed testing
     const response = await openai.images.generate({
