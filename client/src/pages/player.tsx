@@ -71,19 +71,17 @@ export default function Player() {
             // Reset player data ONCE before applying the imported data
             resetPlayerData();
             
-            // Wait a moment and then update with imported player data
-            setTimeout(() => {
-              updatePlayerData(parsedStory.actData.__exportInfo.playerData);
-              
-              // Clean copy of act data to avoid loops
-              const actDataCopy = {
-                ...parsedStory.actData,
-                meta: parsedStory.actData.meta || {}
-              };
-              
-              setActData(actDataCopy);
-              setLoading(false);
-            }, 50);
+            // Update with imported player data immediately - no delay
+            updatePlayerData(parsedStory.actData.__exportInfo.playerData);
+            
+            // Clean copy of act data to avoid loops
+            const actDataCopy = {
+              ...parsedStory.actData,
+              meta: parsedStory.actData.meta || {}
+            };
+            
+            setActData(actDataCopy);
+            setLoading(false);
           } else {
             // If no player data, just set the act data directly
             const actDataCopy = {
@@ -106,20 +104,18 @@ export default function Player() {
               // Reset player data ONCE before applying the imported data
               resetPlayerData();
               
-              // Wait a moment and then update with imported player data
-              setTimeout(() => {
-                updatePlayerData(parsedStory.__exportInfo.playerData);
-                
-                // Clean copy of act data to avoid loops
-                const actDataCopy = {
-                  ...parsedStory,
-                  __exportInfo: undefined, // Remove to avoid conflicts
-                  meta: parsedStory.meta || {}
-                };
-                
-                setActData(actDataCopy);
-                setLoading(false);
-              }, 50);
+              // Update with imported player data immediately - no delay
+              updatePlayerData(parsedStory.__exportInfo.playerData);
+              
+              // Clean copy of act data to avoid loops
+              const actDataCopy = {
+                ...parsedStory,
+                __exportInfo: undefined, // Remove to avoid conflicts
+                meta: parsedStory.meta || {}
+              };
+              
+              setActData(actDataCopy);
+              setLoading(false);
             } else {
               // If no player data, just set the act data directly
               const actDataCopy = {
