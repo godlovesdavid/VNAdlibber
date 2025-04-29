@@ -33,6 +33,7 @@ export function VnPlayerImported({ actData, actNumber, onReturn, onRestart: exte
   
   // Scrolling container reference
   const containerRef = useRef<HTMLDivElement>(null);
+  const initialized = useRef(false);
   
   // Text animation functions
   const animateText = useCallback((text: string) => {
@@ -110,7 +111,10 @@ export function VnPlayerImported({ actData, actNumber, onReturn, onRestart: exte
   
   // Initialize manually on mount
   useEffect(() => {
-    if (!actData?.scenes?.length) return;
+    if (!actData?.scenes?.length || initialized.current) return;
+    
+    // Mark as initialized to prevent re-initialization
+    initialized.current = true;
     
     // Get and process the first scene
     const firstScene = processScene(actData.scenes[0]);
