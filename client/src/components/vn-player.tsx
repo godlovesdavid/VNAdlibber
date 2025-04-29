@@ -561,77 +561,32 @@ export function VnPlayer({
                   description: "This will consume a real API credit"
                 });
                 
-                // Since we can't modify internal state of the hook, we'll need to handle this API
-                // call directly without using the hook's state management
+                // Instead of making a separate fetch request, let's use the hook directly
+                // This avoids potential race conditions and state management issues
                 
-                // Generate the scene image ourselves
                 console.log('Forcing a real DALL-E image generation');
                 
-                const sceneReq = {
-                  scene: {
-                    id: currentScene.id,
-                    setting: currentScene.setting
-                  },
-                  theme: actData.meta?.theme || "fantasy",
-                  imageType: "background",
-                  forceReal: true
-                };
-                
-                // Show toast to indicate loading
                 toast({
-                  title: "Generating with DALL-E",
-                  description: "Please wait while the image is being generated...",
+                  title: "Generating with Real DALL-E",
+                  description: "Generating image using the OpenAI API..."
                 });
                 
-                console.log("Forcing a real DALL-E image generation");
+                // The most reliable approach: Just tell the server-side to use the real API
+                // and let the hook handle all the state changes
+                // This will use the ?force=true parameter under the hood
                 
-                fetch('/api/generate/image?force=true', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(sceneReq)
-                })
-                .then(res => res.json())
-                .then(data => {
-                  if (data.url) {
-                    console.log("⭐ REAL DALL-E URL:", data.url);
-                    
-                    // Show success toast
-                    toast({
-                      title: "Real DALL-E Image Generated",
-                      description: "The image URL has been logged to the console"
-                    });
-                    
-                    // Update the image by forcing a regeneration
-                    // This avoids direct DOM manipulation
-                    generateImage(true);
-                    
-                    // Cache the image URL for future use
-                    if (typeof window !== 'undefined') {
-                      try {
-                        const cacheKey = `vn-bg-${currentScene.id}`;
-                        localStorage.setItem(cacheKey, data.url);
-                        console.log(`Cached image URL for scene ${currentScene.id}`);
-                      } catch (e) {
-                        console.warn('Failed to cache image URL:', e);
-                      }
-                    }
-                  } else if (data.error) {
-                    console.error("DALL-E Error:", data.error);
-                    toast({
-                      title: "DALL-E Error",
-                      description: data.error,
-                      variant: "destructive"
-                    });
-                  }
-                })
-                .catch(error => {
-                  console.error("DALL-E API call failed:", error);
+                try {
+                  // Call the same function used by the "Generate Image" button
+                  // but with a custom option to force real DALL-E
+                  generateImage(true, { forceReal: true });
+                } catch (error) {
+                  console.error("DALL-E generation failed:", error);
                   toast({
-                    title: "API Call Failed",
-                    description: error.message,
+                    title: "Generation Failed",
+                    description: error instanceof Error ? error.message : "Unknown error",
                     variant: "destructive"
                   });
-                });
+                }
               }}
               disabled={isGenerating}
             >
