@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useParams } from "wouter";
-import { VnPlayer } from "@/components/vn-player-unified";
+import { VnPlayer } from "@/components/vn-player";
 import { GeneratedAct } from "@/types/vn";
 
 export default function Player() {
