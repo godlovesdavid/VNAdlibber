@@ -545,7 +545,88 @@ export function VnPlayer({
           </div>
           
           {/* Image generation controls - Increased z-index to ensure it's clickable */}
-          <div className="absolute top-4 right-4 flex space-x-2 z-20">
+          <div className="absolute top-4 right-4 flex space-x-2 z-20 gap-2">
+            {/* Force Real DALL-E Button */}
+            <Button
+              variant="outline"
+              className="bg-red-600 text-white hover:bg-red-700 border-red-400"
+              onClick={(e) => {
+                e.stopPropagation();
+                
+                if (!currentScene) return;
+                
+                // Set generating state
+                setIsGenerating(true);
+                
+                // Show generating toast
+                toast({
+                  title: "Using Real DALL-E API",
+                  description: "This will consume a real API credit"
+                });
+                
+                // Call API with force=true parameter
+                fetch('/api/generate/image?force=true', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    scene: {
+                      id: currentScene.id,
+                      setting: currentScene.setting
+                    },
+                    theme: actData.meta?.theme || "fantasy",
+                    imageType: "background",
+                    forceReal: true
+                  })
+                })
+                .then(res => res.json())
+                .then(data => {
+                  if (data.url) {
+                    console.log("⭐ REAL DALL-E URL:", data.url);
+                    toast({
+                      title: "Real DALL-E Image Generated",
+                      description: "The image URL has been logged to the console"
+                    });
+                    
+                    // Update the image URL
+                    setImageUrl(data.url);
+                    setImageError(null);
+                  } else if (data.error) {
+                    console.error("DALL-E Error:", data.error);
+                    toast({
+                      title: "DALL-E Error",
+                      description: data.error,
+                      variant: "destructive"
+                    });
+                    setImageError(data.error);
+                  }
+                })
+                .catch(error => {
+                  console.error("DALL-E API call failed:", error);
+                  toast({
+                    title: "API Call Failed",
+                    description: error.message,
+                    variant: "destructive"
+                  });
+                  setImageError(error.message);
+                })
+                .finally(() => {
+                  setIsGenerating(false);
+                });
+              }}
+              disabled={isGenerating}
+            >
+              {isGenerating ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                  <span>Generating...</span>
+                </>
+              ) : (
+                <>
+                  <ImageIcon className="h-4 w-4 mr-2" />
+                  <span>Real DALL-E</span>
+                </>
+              )}
+            </Button>
             {/* Button: Use the hook's generateImage function */}
             <Button
               variant="default"
