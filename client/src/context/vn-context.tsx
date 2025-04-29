@@ -410,11 +410,9 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         document.body.appendChild(a);
         a.click();
         
-        // Clean up
-        setTimeout(() => {
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        }, 100);
+        // Clean up - immediately, no delay needed
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
       });
       
       toast({

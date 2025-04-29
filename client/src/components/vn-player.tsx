@@ -158,13 +158,11 @@ export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRest
     
     // If condition not met and there's a failNext path, go to that scene
     if (!conditionMet && choice.failNext) {
-      // Visual feedback delay for failure path
-      setTimeout(() => {
-        if (choice.failNext) {
-          setCurrentSceneId(choice.failNext);
-        }
-        setClickableContent(true);
-      }, 300);
+      // No delay needed for failure path
+      if (choice.failNext) {
+        setCurrentSceneId(choice.failNext);
+      }
+      setClickableContent(true);
       return;
     }
     
@@ -195,11 +193,9 @@ export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRest
       });
     }
     
-    // Move to next scene after short delay
-    setTimeout(() => {
-      setCurrentSceneId(choice.next);
-      setClickableContent(true);
-    }, 100);
+    // Move to next scene immediately - no delay needed
+    setCurrentSceneId(choice.next);
+    setClickableContent(true);
   }, [playerData, checkConditionMet, updatePlayerData, clickableContent]);
   
   // Handle content click to advance dialogue
