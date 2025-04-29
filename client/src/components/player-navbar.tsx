@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useVnContext } from "@/context/vn-context";
 import { 
   RefreshCw,
@@ -23,6 +23,7 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog }: Pl
   const [showLog, setShowLog] = useState(false);
   const [showDataEditor, setShowDataEditor] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
+  const [activeTextSpeed, setActiveTextSpeed] = useState<'slow' | 'normal' | 'fast'>('fast'); // Track active text speed button
   
   // Create a copy of the player data for editing
   const [editableData, setEditableData] = useState({
@@ -58,6 +59,30 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog }: Pl
       });
     }
   };
+  
+  // Listen for player components changing text speed
+  // This keeps the options menu buttons in sync with player speed controls
+  useEffect(() => {
+    // When VN player components update their text speed, sync with our UI
+    const handlePlayerTextSpeedChange = (e: CustomEvent) => {
+      const speedValue = e.detail;
+      if (speedValue === 1) {
+        setActiveTextSpeed('slow');
+      } else if (speedValue === 5) {
+        setActiveTextSpeed('normal');
+      } else if (speedValue === 10) {
+        setActiveTextSpeed('fast');
+      }
+    };
+    
+    // Listen for text speed change events
+    window.addEventListener('vnSetTextSpeed', handlePlayerTextSpeedChange as EventListener);
+    
+    // Clean up event listener on unmount
+    return () => {
+      window.removeEventListener('vnSetTextSpeed', handlePlayerTextSpeedChange as EventListener);
+    };
+  }, []);
   
   return (
     <div className="fixed top-0 left-0 w-full bg-neutral-800 text-white text-sm px-3 py-2 z-20">
@@ -231,77 +256,38 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog }: Pl
                   <h3 className="text-sm font-medium">Text Speed</h3>
                   <div className="grid grid-cols-3 gap-2">
                     <Button 
-                      variant="outline" 
+                      variant={activeTextSpeed === 'slow' ? 'default' : 'outline'} 
                       size="sm"
                       onClick={() => {
                         // Dispatch event to set text speed
                         window.dispatchEvent(new CustomEvent('vnSetTextSpeed', { detail: 1 }));
-                        
-                        // Update button states visually
-                        const buttons = document.querySelectorAll('.text-speed-btn');
-                        buttons.forEach(btn => {
-                          btn.classList.remove('bg-primary', 'text-white');
-                          btn.classList.add('bg-transparent', 'border-input');
-                        });
-                        
-                        // Update this button state
-                        const button = document.querySelector('.text-speed-slow');
-                        if (button) {
-                          button.classList.remove('bg-transparent', 'border-input');
-                          button.classList.add('bg-primary', 'text-white');
-                        }
+                        // Update state to track active button
+                        setActiveTextSpeed('slow');
                       }}
-                      className="text-speed-btn text-speed-slow"
                     >
                       Slow
                     </Button>
                     <Button 
-                      variant="outline" 
+                      variant={activeTextSpeed === 'normal' ? 'default' : 'outline'} 
                       size="sm"
                       onClick={() => {
                         // Dispatch event to set text speed
                         window.dispatchEvent(new CustomEvent('vnSetTextSpeed', { detail: 5 }));
-                        
-                        // Update button states visually
-                        const buttons = document.querySelectorAll('.text-speed-btn');
-                        buttons.forEach(btn => {
-                          btn.classList.remove('bg-primary', 'text-white');
-                          btn.classList.add('bg-transparent', 'border-input');
-                        });
-                        
-                        // Update this button state
-                        const button = document.querySelector('.text-speed-normal');
-                        if (button) {
-                          button.classList.remove('bg-transparent', 'border-input');
-                          button.classList.add('bg-primary', 'text-white');
-                        }
+                        // Update state to track active button
+                        setActiveTextSpeed('normal');
                       }}
-                      className="text-speed-btn text-speed-normal"
                     >
                       Normal
                     </Button>
                     <Button 
-                      variant="default" 
+                      variant={activeTextSpeed === 'fast' ? 'default' : 'outline'} 
                       size="sm"
                       onClick={() => {
                         // Dispatch event to set text speed
                         window.dispatchEvent(new CustomEvent('vnSetTextSpeed', { detail: 10 }));
-                        
-                        // Update button states visually
-                        const buttons = document.querySelectorAll('.text-speed-btn');
-                        buttons.forEach(btn => {
-                          btn.classList.remove('bg-primary', 'text-white');
-                          btn.classList.add('bg-transparent', 'border-input');
-                        });
-                        
-                        // Update this button state
-                        const button = document.querySelector('.text-speed-fast');
-                        if (button) {
-                          button.classList.remove('bg-transparent', 'border-input');
-                          button.classList.add('bg-primary', 'text-white');
-                        }
+                        // Update state to track active button
+                        setActiveTextSpeed('fast');
                       }}
-                      className="text-speed-btn text-speed-fast"
                     >
                       Fast
                     </Button>
