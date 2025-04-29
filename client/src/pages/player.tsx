@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useParams } from "wouter";
@@ -14,11 +14,14 @@ export default function Player() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Separate effect for loading project act vs. imported act 
-  // to avoid unnecessary dependencies that cause loops
+  // First-load flag to prevent infinite updates
+  const initialLoadRef = useState<{loaded: boolean}>({loaded: false})[0];
+  
+  // Separate effect for loading project acts (non-imported)
   useEffect(() => {
-    // This effect is only for non-imported acts
-    if (actId !== "imported") {
+    // This effect is only for non-imported acts and only runs once per actId
+    if (actId !== "imported" && !initialLoadRef.loaded) {
+      initialLoadRef.loaded = true;
       setLoading(true);
       setError(null);
       
@@ -66,12 +69,15 @@ export default function Player() {
         setLoading(false);
       }
     }
-  }, [actId, projectData]);
+  }, [actId]);
   
-  // Separate effect for imported acts to minimize dependencies
+  // Separate effect for imported acts
+  const importLoadedRef = useRef(false);
+  
   useEffect(() => {
-    // Only run for imported acts
-    if (actId === "imported") {
+    // Only run once for imported acts
+    if (actId === "imported" && !importLoadedRef.current) {
+      importLoadedRef.current = true;
       setLoading(true);
       setError(null);
       
@@ -120,7 +126,7 @@ export default function Player() {
             });
           }
           
-          // Set act data
+          // Set act data and finish loading
           setActData(actDataCopy);
           setLoading(false);
         } else {
@@ -154,7 +160,7 @@ export default function Player() {
             };
           }
           
-          // Set act data
+          // Set act data and finish loading
           setActData(actDataCopy);
           setLoading(false);
         }
@@ -164,7 +170,7 @@ export default function Player() {
         setLoading(false);
       }
     }
-  }, [actId, resetPlayerData, updatePlayerData]);
+  }, [actId]);
   
   // Handle return to generator or play selection
   const handleReturn = () => 

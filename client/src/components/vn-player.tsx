@@ -125,67 +125,104 @@ export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRest
     return processed;
   }, [actNumber]);
   
-  // Initialize with first scene on mount - simplest approach is often best
+  // Initialize with first scene on mount - with a more robust approach
   useEffect(() => {
-    if (!actData?.scenes?.length || initialized.current) return;
+    // Skip if no scenes or already initialized
+    if (!actData?.scenes?.length) return;
     
-    // Mark as initialized to prevent re-initialization
-    initialized.current = true;
-    
-    // Set initial scene
-    const firstScene = processScene(actData.scenes[0]);
-    console.log('Initializing VN Player with first scene:', firstScene.id);
-    
-    setCurrentScene(firstScene);
-    setCurrentSceneId(firstScene.id);
-    setCurrentDialogueIndex(0);
-    setShowChoices(false);
-    setDialogueLog([]);
-    
-    // Start text animation for the first dialogue line
-    if (firstScene.dialogue && firstScene.dialogue.length > 0) {
-      setDisplayedText(""); // Clear any previous text
-      animateText(firstScene.dialogue[0][1]);
-    }
-  }, [actData, processScene, animateText]);
-  
-  // Update current scene when scene ID changes
-  useEffect(() => {
-    if (!actData?.scenes || !currentSceneId) return;
-    
-    const scene = actData.scenes.find(s => s.id === currentSceneId);
-    if (scene) {
-      const processedScene = processScene(scene);
-      setCurrentScene(processedScene);
-      setCurrentDialogueIndex(0);
-      setShowChoices(false);
+    // Load first scene only on initial render
+    if (!initialized.current && actData.scenes.length > 0) {
+      initialized.current = true;
+      console.log('Initializing VN Player with first scene:', actData.scenes[0].id);
       
-      // Start text animation for the first dialogue line
-      if (processedScene.dialogue && processedScene.dialogue.length > 0) {
-        setDisplayedText(""); // Clear any previous text
-        animateText(processedScene.dialogue[0][1]);
+      try {
+        // Create a deep copy to break references
+        const firstSceneData = JSON.parse(JSON.stringify(actData.scenes[0]));
+        const firstScene = processScene(firstSceneData);
+        
+        // Use separate setStates to avoid batching issues
+        setCurrentScene(firstScene);
+        setCurrentSceneId(firstScene.id);
+        setCurrentDialogueIndex(0);
+        setShowChoices(false);
+        setDialogueLog([]);
+        
+        // For the first dialogue line, set it directly rather than animating
+        if (firstScene.dialogue && firstScene.dialogue.length > 0) {
+          setDisplayedText(firstScene.dialogue[0][1]);
+        }
+      } catch (err) {
+        console.error("Error initializing scene:", err);
       }
     }
-  }, [actData, currentSceneId, processScene, animateText]);
+  }, []);
+  
+  // Update current scene when scene ID changes - using a ref to prevent infinite loops
+  const prevSceneIdRef = useRef<string | null>(null);
+  
+  useEffect(() => {
+    // Skip if no scenes or no scene ID
+    if (!actData?.scenes || !currentSceneId) return;
+    
+    // Skip if we're already on this scene
+    if (prevSceneIdRef.current === currentSceneId) return;
+    
+    // Update the ref
+    prevSceneIdRef.current = currentSceneId;
+    
+    try {
+      // Find the scene
+      const scene = actData.scenes.find(s => s.id === currentSceneId);
+      if (scene) {
+        // Make a deep copy to avoid reference issues
+        const sceneCopy = JSON.parse(JSON.stringify(scene));
+        const processedScene = processScene(sceneCopy);
+        
+        // Set the new scene first
+        setCurrentScene(processedScene);
+        setCurrentDialogueIndex(0);
+        setShowChoices(false);
+        
+        // Start text animation for the first dialogue line
+        if (processedScene.dialogue && processedScene.dialogue.length > 0) {
+          // For better stability, set text directly instead of animating here
+          setDisplayedText(processedScene.dialogue[0][1]);
+        }
+      }
+    } catch (err) {
+      console.error("Error changing scenes:", err);
+    }
+  }, [currentSceneId]);
   
   // Handle restart
   const handleRestart = useCallback(() => {
     if (!actData?.scenes?.length) return;
     
-    // Reset to first scene
-    const firstScene = processScene(actData.scenes[0]);
-    setCurrentScene(firstScene);
-    setCurrentSceneId(firstScene.id);
-    setCurrentDialogueIndex(0);
-    setShowChoices(false);
-    setDialogueLog([]);
+    try {
+      // Reset scene ID tracking ref
+      prevSceneIdRef.current = null;
     
-    // Start text animation for the first dialogue line
-    if (firstScene.dialogue && firstScene.dialogue.length > 0) {
-      setDisplayedText(""); // Clear any previous text
-      animateText(firstScene.dialogue[0][1]);
+      // Make a deep copy of the first scene to avoid reference issues
+      const firstSceneData = JSON.parse(JSON.stringify(actData.scenes[0]));
+      const firstScene = processScene(firstSceneData);
+      
+      // Update state
+      setDialogueLog([]); // Clear log first
+      setShowChoices(false);
+      setCurrentDialogueIndex(0);
+      
+      // These need to happen together to avoid infinite loops
+      setCurrentScene(firstScene);
+      setCurrentSceneId(firstScene.id);
+      
+      // Set the text directly for stability
+      if (firstScene.dialogue && firstScene.dialogue.length > 0) {
+        setDisplayedText(firstScene.dialogue[0][1]);
+      }
+    } catch (err) {
+      console.error("Error restarting:", err);
     }
-  }, [actData, processScene, animateText]);
+  }, [actData, processScene]);
   
   // Handle advancing to next dialogue or showing choices
   const advanceDialogue = useCallback(() => {
