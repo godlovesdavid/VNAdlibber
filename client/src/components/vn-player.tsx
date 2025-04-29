@@ -706,8 +706,9 @@ export function VnPlayer({
                       
                       // Show the test image if one was returned
                       if (data.url) {
-                        // Open the image in a new window
-                        window.open(data.url, '_blank');
+                        console.log("Test DALL-E image URL:", data.url);
+                        // Set the current image to the test image
+                        generateImage(true);
                       }
                     } else {
                       toast({
