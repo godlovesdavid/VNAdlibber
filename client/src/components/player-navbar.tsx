@@ -233,21 +233,75 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog }: Pl
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => window.dispatchEvent(new CustomEvent('vnSetTextSpeed', { detail: 1 }))}
+                      onClick={() => {
+                        // Dispatch event to set text speed
+                        window.dispatchEvent(new CustomEvent('vnSetTextSpeed', { detail: 1 }));
+                        
+                        // Update button states visually
+                        const buttons = document.querySelectorAll('.text-speed-btn');
+                        buttons.forEach(btn => {
+                          btn.classList.remove('bg-primary', 'text-white');
+                          btn.classList.add('bg-transparent', 'border-input');
+                        });
+                        
+                        // Update this button state
+                        const button = document.querySelector('.text-speed-slow');
+                        if (button) {
+                          button.classList.remove('bg-transparent', 'border-input');
+                          button.classList.add('bg-primary', 'text-white');
+                        }
+                      }}
+                      className="text-speed-btn text-speed-slow"
                     >
                       Slow
                     </Button>
                     <Button 
-                      variant="default" 
+                      variant="outline" 
                       size="sm"
-                      onClick={() => window.dispatchEvent(new CustomEvent('vnSetTextSpeed', { detail: 5 }))}
+                      onClick={() => {
+                        // Dispatch event to set text speed
+                        window.dispatchEvent(new CustomEvent('vnSetTextSpeed', { detail: 5 }));
+                        
+                        // Update button states visually
+                        const buttons = document.querySelectorAll('.text-speed-btn');
+                        buttons.forEach(btn => {
+                          btn.classList.remove('bg-primary', 'text-white');
+                          btn.classList.add('bg-transparent', 'border-input');
+                        });
+                        
+                        // Update this button state
+                        const button = document.querySelector('.text-speed-normal');
+                        if (button) {
+                          button.classList.remove('bg-transparent', 'border-input');
+                          button.classList.add('bg-primary', 'text-white');
+                        }
+                      }}
+                      className="text-speed-btn text-speed-normal"
                     >
                       Normal
                     </Button>
                     <Button 
-                      variant="outline" 
+                      variant="default" 
                       size="sm"
-                      onClick={() => window.dispatchEvent(new CustomEvent('vnSetTextSpeed', { detail: 10 }))}
+                      onClick={() => {
+                        // Dispatch event to set text speed
+                        window.dispatchEvent(new CustomEvent('vnSetTextSpeed', { detail: 10 }));
+                        
+                        // Update button states visually
+                        const buttons = document.querySelectorAll('.text-speed-btn');
+                        buttons.forEach(btn => {
+                          btn.classList.remove('bg-primary', 'text-white');
+                          btn.classList.add('bg-transparent', 'border-input');
+                        });
+                        
+                        // Update this button state
+                        const button = document.querySelector('.text-speed-fast');
+                        if (button) {
+                          button.classList.remove('bg-transparent', 'border-input');
+                          button.classList.add('bg-primary', 'text-white');
+                        }
+                      }}
+                      className="text-speed-btn text-speed-fast"
                     >
                       Fast
                     </Button>

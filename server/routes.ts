@@ -14,14 +14,14 @@ async function generateWithGemini(
   prompt: string,
   systemPrompt: string | null = null,
   responseFormat = "JSON",
-  maxOutputTokens = 8192,
+  maxOutputTokens = 4096,
 ) {
   try {
     const headers = {
       "Content-Type": "application/json",
       "x-goog-api-key": GEMINI_API_KEY,
     };
-    
+
     // Add strict JSON formatting instructions
     const jsonFormatInstructions = `
 STRICT JSON FORMATTING RULES:
@@ -34,7 +34,6 @@ STRICT JSON FORMATTING RULES:
 7. Validate your JSON structure before returning it.
 8. Do not include markdown code blocks in your response.
 9. Every object property name must be quoted.
-10. Use "null" (not undefined) for null values.
 
 Example of CORRECT JSON format:
 {
@@ -84,10 +83,10 @@ Example of CORRECT JSON format:
     // Extract the text from the response
     if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
       let responseText = data.candidates[0].content.parts[0].text;
-      
+
       // Clean response text of potential issues
       responseText = cleanResponseText(responseText);
-      
+
       return responseText;
     } else {
       throw new Error("Unexpected Gemini API response format");
@@ -117,7 +116,7 @@ function cleanResponseText(text: string): string {
     // Strip closing code block markers
     text = text.replace(/\n```\s*$/, "");
   }
-  
+
   // Replace JavaScript string concatenation in JSON with plain text
   // e.g., "name": "Geargrind " + "Cogsworth" becomes "name": "Geargrind Cogsworth"
   text = text.replace(/"([^"]+)" \+ "([^"]+)"/g, '"$1$2"');
@@ -125,25 +124,28 @@ function cleanResponseText(text: string): string {
   // Remove any JS-style comments
   text = text.replace(/\/\/.*$/gm, "");
   text = text.replace(/\/\*[\s\S]*?\*\//g, "");
-  
+
   // Fix common JSON syntax errors
-  
+
   // Fix missing quotes around property names
   text = text.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
-  
+
   // Fix trailing commas in arrays and objects
-  text = text.replace(/,(\s*[\]}])/g, '$1');
-  
+  text = text.replace(/,(\s*[\]}])/g, "$1");
+
   // Fix missing commas between array elements or object properties
-  text = text.replace(/([}\]"'0-9])\s*\n\s*([{\["a-zA-Z0-9_])/g, '$1,\n$2');
-  
+  text = text.replace(/([}\]"'0-9])\s*\n\s*([{\["a-zA-Z0-9_])/g, "$1,\n$2");
+
   // Ensure proper quoting of string values
   text = text.replace(/:\s*([a-zA-Z][a-zA-Z0-9_]*)\s*([,\n\r}])/g, ': "$1"$2');
-  
+
   // Add missing quotes to property values that look like unquoted strings
   // This could be risky but might help in some cases
-  text = text.replace(/:\s*([a-zA-Z][a-zA-Z0-9_\s]*[a-zA-Z0-9_])(\s*[,\n\r}])/g, ': "$1"$2');
-  
+  text = text.replace(
+    /:\s*([a-zA-Z][a-zA-Z0-9_\s]*[a-zA-Z0-9_])(\s*[,\n\r}])/g,
+    ': "$1"$2',
+  );
+
   return text;
 }
 
@@ -475,16 +477,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Generating character prompt:", prompt);
 
       // Generate characters using Gemini
-      const systemPrompt = "You're a wildly imaginative and slightly crazy film brainstormer creating characters for a visual novel";
+      const systemPrompt =
+        "You're a wildly imaginative and slightly crazy film brainstormer creating characters for a visual novel";
       const responseContent = await generateWithGemini(prompt, systemPrompt);
-      
+
       console.log(`Generating ${indices.length} characters at once`);
       console.log("Got:", responseContent);
 
       // Try to parse response
       try {
         if (responseContent === "{}") throw new Error("Empty response");
-        
+
         console.log("Cleaned response:", responseContent);
         const parsed = JSON.parse(responseContent);
 
@@ -539,16 +542,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Generating paths prompt:", prompt);
 
       // Generate paths using Gemini
-      const systemPrompt = "You're a visual novel brainstormer creating plot paths";
+      const systemPrompt =
+        "You're a visual novel brainstormer creating plot paths";
       const responseContent = await generateWithGemini(prompt, systemPrompt);
-      
+
       console.log(`Generating ${indices.length} paths at once`);
       console.log("Got:", responseContent);
 
       // Try to parse response
       try {
         if (responseContent === "{}") throw new Error("Empty response");
-        
+
         console.log("Cleaned response:", responseContent);
         const parsed = JSON.parse(responseContent);
 
@@ -600,16 +604,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Plot generation prompt:", prompt);
 
       // Generate plot using Gemini
-      const systemPrompt = "You're a visual novel brainstormer creating a comprehensive plot outline";
+      const systemPrompt =
+        "You're a visual novel brainstormer creating a comprehensive plot outline";
       const responseContent = await generateWithGemini(prompt, systemPrompt);
-      
+
       // Log the generated response for debugging
       console.log("Generated plot outline:", responseContent);
 
       // Try to parse response
       try {
         if (responseContent === "{}") throw new Error("Empty response");
-        
+
         console.log("Cleaned response:", responseContent);
         const generatedPlot = JSON.parse(responseContent);
 
@@ -671,26 +676,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   "next": "${actNumber}-2"
                 }
               ]
-            },
-            {
-              "id": "${actNumber}-final",
-              "setting": "Final location",
-              "dialogue": [
-                ["Character", "Final dialogue for this act"]
-              ],
-              "choices": null
             }
           ]
         }
         Notes:
         - Scene ids have format <Act#>-<Scene#>. 
         - Include branching paths based on 2-4 choices. Choices that don't take you to another scene have letters e.g. <Act#>-<Scene#>b, where they continue the dialogue conversation.
-        - Final scene of act should have choices set to null.
+        - Final scene of act should have choices set to null. Otherwise, ensure the scene connects to another scene.
         - Relationships, inventory items, or skills can be added or subtracted by "delta" values.
         - Pack each scene with ample dialogue to express the story (5-15+ lines). Be inventive about event details, while ensuring consistency with the plot outline.
         - Use of a narrator is encouraged to explain the scene or provide context.
         - Main protagonist may think in parentheses.
         - Unknown characters are named "???" until revealed.
+        - "bg" value is used for AI image generation prompts and is only required when the setting is visited the first time.
         - Maintain the given tone (${projectContext.basicData.tone}) consistent with the story context.
         - You may optionally include [emotion] or [action] tags before dialogue when it enhances the scene.
         - If a choice increases or decreases a relationship, reflect it subtly in the dialogue tone.
@@ -729,53 +727,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Act generation prompt:", prompt);
 
       // Generate act using Gemini
-      const systemPrompt = "You're a visual novel brainstormer creating detailed scenes with dialogue and choices";
+      const systemPrompt =
+        "You're a visual novel brainstormer creating detailed scenes with dialogue and choices";
       // Set longer maxOutputTokens for act generation which requires more tokens
-      const responseContent = await generateWithGemini(prompt, systemPrompt, "JSON", 16384);
-      
+      const responseContent = await generateWithGemini(
+        prompt,
+        systemPrompt,
+        "JSON",
+        32768,
+      );
+
       // Log the generated response for debugging
       console.log(
         `Generated Act ${actNumber}:`,
-        responseContent?.substring(0, 200) + "..."
+        responseContent?.substring(0, 200) + "...",
       );
 
       // Try to parse response
       try {
         if (responseContent === "{}") throw new Error("Empty response");
-        
-        console.log("Cleaned response for act:", responseContent.substring(0, 200) + "...");
-        
+
+        console.log(
+          "Cleaned response for act:",
+          responseContent.substring(0, 200) + "...",
+        );
+
         // Try standard JSON parsing first
         let generatedAct;
         try {
           generatedAct = JSON.parse(responseContent);
         } catch (initialParseError) {
-          console.log("Initial JSON parse failed, attempting more aggressive cleanup...");
-          
+          console.log(
+            "Initial JSON parse failed, attempting more aggressive cleanup...",
+          );
+
           // More aggressive cleanup for complex Act data
           let cleanedContent = responseContent;
-          
+
           // Try to isolate just the scenes array if we can find the pattern
-          const scenesMatch = cleanedContent.match(/\{\s*"scenes"\s*:\s*\[[\s\S]*\]\s*\}/);
+          const scenesMatch = cleanedContent.match(
+            /\{\s*"scenes"\s*:\s*\[[\s\S]*\]\s*\}/,
+          );
           if (scenesMatch) {
             cleanedContent = scenesMatch[0];
             console.log("Found scenes block, isolating it...");
           }
-          
+
           // Additional fix for common issues in the act JSON
           // Fix missing commas in arrays between objects
-          cleanedContent = cleanedContent.replace(/}(\s*){/g, '},\n{');
-          
+          cleanedContent = cleanedContent.replace(/}(\s*){/g, "},\n{");
+
           // Fix missing commas between dialogue array elements
-          cleanedContent = cleanedContent.replace(/\](\s*)\[/g, '],\n[');
-          
+          cleanedContent = cleanedContent.replace(/\](\s*)\[/g, "],\n[");
+
           // Fix any trailing commas before closing brackets
-          cleanedContent = cleanedContent.replace(/,(\s*[\]}])/g, '$1');
-          
+          cleanedContent = cleanedContent.replace(/,(\s*[\]}])/g, "$1");
+
           // Special fix for the bg property missing quotes
-          cleanedContent = cleanedContent.replace(/"bg":([^,"\{\}\[\]]*),/g, '"bg":"$1",');
-          
-          console.log("Applied aggressive cleanup, attempting to parse again...");
+          cleanedContent = cleanedContent.replace(
+            /"bg":([^,"\{\}\[\]]*),/g,
+            '"bg":"$1",',
+          );
+
+          console.log(
+            "Applied aggressive cleanup, attempting to parse again...",
+          );
           generatedAct = JSON.parse(cleanedContent);
         }
 
@@ -783,11 +799,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (checkResponseForError(generatedAct, res)) {
           return;
         }
-
+        console.log(JSON.stringify(generatedAct));
         res.json(generatedAct);
       } catch (parseError: any) {
         console.error("JSON parse error:", parseError);
-        console.error("Problematic JSON (first 200 chars):", responseContent.substring(0, 200) + "...");
+        console.error(
+          "Problematic JSON (first 200 chars):",
+          responseContent.substring(0, 200) + "...",
+        );
         throw new Error(`Failed to parse response: ${parseError.message}`);
       }
     } catch (error) {

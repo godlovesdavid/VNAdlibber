@@ -25,9 +25,9 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
   const [clickableContent, setClickableContent] = useState(true);
   
   // Text animation states
-  const [textSpeed, setTextSpeed] = useState(5); // 1-10 scale (1: slow, 5: normal, 10: fast)
+  const [textSpeed, setTextSpeed] = useState(10); // 1-10 scale (1: slow, 5: normal, 10: fast)
   const [displayedText, setDisplayedText] = useState("");
-  const [isTextFullyTyped, setIsTextFullyTyped] = useState(false);
+  const [isTextFullyTyped, setIsTextFullyTyped] = useState(true); // Start with text fully typed
   const [showSettings, setShowSettings] = useState(false);
   
   // Listen for text speed change events
@@ -49,14 +49,25 @@ export function VnPlayer({ actData, actNumber, onReturn }: VnPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const dialogueText = currentScene?.dialogue[currentDialogueIndex]?.[1] || "";
   
-  // Add end of act message to the last scene
+  // Add end of act message to the last scene and fix any misformatted choices
   const processScene = (scene: Scene): Scene => {
     // Deep clone the scene to avoid mutating the original data
     const processedScene = JSON.parse(JSON.stringify(scene));
     
+    // Fix choices if they're a string "null" instead of actual null
+    // This happens with some imported files
+    if (processedScene.choices === "null") {
+      processedScene.choices = null;
+    }
+    
+    // If choices is undefined or not an array, make it null
+    if (processedScene.choices && !Array.isArray(processedScene.choices)) {
+      processedScene.choices = null;
+    }
+    
     // If this is the last scene with no choices (end of act), append end of act message
     const isLastScene = processedScene.choices === null;
-    if (isLastScene && processedScene.dialogue.length > 0) {
+    if (isLastScene && processedScene.dialogue && processedScene.dialogue.length > 0) {
       // Add the "End of Act" message to the last dialogue line
       const lastDialogueIndex = processedScene.dialogue.length - 1;
       const [speaker, text] = processedScene.dialogue[lastDialogueIndex];
