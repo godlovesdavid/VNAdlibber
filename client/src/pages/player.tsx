@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useParams } from "wouter";
-import { VnPlayer } from "@/components/vn-player";
+import { VnPlayer } from "@/components/vn-player-unified";
 import { GeneratedAct } from "@/types/vn";
 
 export default function Player() {
@@ -255,13 +255,14 @@ export default function Player() {
     );
   }
   
-  // Use the original player regardless of source
+  // Use the unified player with mode parameter based on source
   return (
     <VnPlayer
       actData={actData}
       actNumber={actNumber}
       onReturn={handleReturn}
       onRestart={handleRestart}
+      mode={actId === "imported" ? "imported" : "generated"}
     />
   );
 }
