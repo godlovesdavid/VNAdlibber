@@ -950,17 +950,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("Image generation endpoint called with body:", req.body);
       
-      const { scene, theme, imageType } = generateImageSchema.parse(req.body);
+      const { scene, theme, imageType, forceReal } = req.body;
       
-      console.log(`Image generation request received for scene: ${scene.id}, setting: "${scene.setting}", theme: "${theme || 'none'}", type: ${imageType}`);
+      // Parse with the schema, but allow forceReal to pass through
+      generateImageSchema.parse({ scene, theme, imageType });
+      
+      // Check if we should force using the real API
+      const useRealApi = forceReal === true || req.query.force === 'true';
+      
+      console.log(`Image generation request received for scene: ${scene.id}, setting: "${scene.setting}", theme: "${theme || 'none'}", type: ${imageType}, forceReal: ${useRealApi}`);
       
       if (imageType === "background") {
         try {
           console.log("Calling OpenAI DALL-E API with API key:", process.env.OPENAI_API_KEY ? "Present (hidden)" : "Missing");
           
+          // Set an environment variable temporarily to force real API usage if requested
+          if (useRealApi) {
+            console.log("🔴 FORCING REAL API USAGE - DALL-E credits will be consumed");
+            process.env.FORCE_REAL_API = 'true';
+          }
+          
           const result = await generateSceneBackgroundImage(scene.id, scene.setting, theme);
           
+          // Reset the environment variable
+          if (useRealApi) {
+            delete process.env.FORCE_REAL_API;
+          }
+          
           console.log(`Background image generated for scene ${scene.id}:`, result.url ? "Success (URL hidden for privacy)" : "No URL returned");
+          
+          // Log the actual URL when using real API for debugging
+          if (useRealApi && result.url) {
+            console.log(`🔴 REAL DALL-E URL: ${result.url}`);
+          }
           
           res.json(result);
         } catch (generateError) {
