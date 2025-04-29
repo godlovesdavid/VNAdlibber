@@ -25,7 +25,7 @@ export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRest
   const [dialogueLog, setDialogueLog] = useState<Array<{speaker: string, text: string}>>([]);
   const [clickableContent, setClickableContent] = useState(true);
   
-  // Text animation states
+  // Text animation states - default to fast for better UX
   const [textSpeed, setTextSpeed] = useState(10); // 1-10 scale (1: slow, 5: normal, 10: fast)
   const [displayedText, setDisplayedText] = useState("");
   const [isTextFullyTyped, setIsTextFullyTyped] = useState(true); // Start with text fully typed
@@ -82,31 +82,44 @@ export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRest
   const memoizedProcessScene = useCallback(processScene, [actNumber]);
   
   // Initialize with the first scene once on mount or when actData changes
-  // Use a ref to track if this is the first time loading this act data
-  const isFirstLoad = useRef(true);
+  // Use a ref to track initialization status
+  const isInitialized = useRef(false);
   
   useEffect(() => 
   {
     // Only process once per actData change to prevent loops
-    if (actData?.scenes?.length > 0 && isFirstLoad.current) 
+    if (actData?.scenes?.length > 0 && !isInitialized.current) 
     {
-      isFirstLoad.current = false;
+      // Mark as initialized first to prevent loops
+      isInitialized.current = true;
       
       // Process the first scene
       const firstScene = memoizedProcessScene(actData.scenes[0]);
       
-      // Reset all state at once to prevent partial updates
+      // Set all initial state synchronously
+      setCurrentScene(firstScene);
       setCurrentSceneId(firstScene.id);
       setCurrentDialogueIndex(0);
       setShowChoices(false);
       setDialogueLog([]);
-      setDisplayedText("");
-      setIsTextFullyTyped(textSpeed >= 10); // Only fully type if in fast mode
+      
+      // For text, apply the current text speed setting immediately
+      if (textSpeed >= 10) {
+        // For fast mode, show text immediately
+        setDisplayedText(firstScene.dialogue[0]?.[1] || "");
+        setIsTextFullyTyped(true);
+      } else {
+        // For typing animation mode, start with empty text
+        setDisplayedText("");
+        setIsTextFullyTyped(false);
+      }
     }
     
-    // When actData changes, reset the first load tracker
+    // Cleanup on unmount, not on every render
     return () => {
-      isFirstLoad.current = true;
+      if (actData !== null) {
+        isInitialized.current = false;
+      }
     };
   }, [actData, memoizedProcessScene, textSpeed]);
   
