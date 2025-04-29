@@ -555,41 +555,47 @@ export function VnPlayer({
                 
                 if (!currentScene) return;
                 
-                // Set generating state
-                setIsGenerating(true);
-                
-                // Show generating toast
+                // Show generating toast - we can't directly set isGenerating
                 toast({
                   title: "Using Real DALL-E API",
                   description: "This will consume a real API credit"
                 });
                 
-                // Call API with force=true parameter
+                // Since we can't modify internal state of the hook, we'll need to handle this API
+                // call directly without using the hook's state management
+                
+                // Generate the scene image ourselves
+                console.log('Forcing a real DALL-E image generation');
+                
+                const sceneReq = {
+                  scene: {
+                    id: currentScene.id,
+                    setting: currentScene.setting
+                  },
+                  theme: actData.meta?.theme || "fantasy",
+                  imageType: "background",
+                  forceReal: true
+                };
+                
                 fetch('/api/generate/image?force=true', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    scene: {
-                      id: currentScene.id,
-                      setting: currentScene.setting
-                    },
-                    theme: actData.meta?.theme || "fantasy",
-                    imageType: "background",
-                    forceReal: true
-                  })
+                  body: JSON.stringify(sceneReq)
                 })
                 .then(res => res.json())
                 .then(data => {
                   if (data.url) {
                     console.log("⭐ REAL DALL-E URL:", data.url);
+                    
+                    // Show success toast
                     toast({
                       title: "Real DALL-E Image Generated",
                       description: "The image URL has been logged to the console"
                     });
                     
-                    // Update the image URL
-                    setImageUrl(data.url);
-                    setImageError(null);
+                    // Force a full page reload to see the new image
+                    // This isn't ideal but works for testing purposes
+                    window.location.reload();
                   } else if (data.error) {
                     console.error("DALL-E Error:", data.error);
                     toast({
@@ -597,7 +603,6 @@ export function VnPlayer({
                       description: data.error,
                       variant: "destructive"
                     });
-                    setImageError(data.error);
                   }
                 })
                 .catch(error => {
@@ -607,25 +612,12 @@ export function VnPlayer({
                     description: error.message,
                     variant: "destructive"
                   });
-                  setImageError(error.message);
-                })
-                .finally(() => {
-                  setIsGenerating(false);
                 });
               }}
               disabled={isGenerating}
             >
-              {isGenerating ? (
-                <>
-                  <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                  <span>Generating...</span>
-                </>
-              ) : (
-                <>
-                  <ImageIcon className="h-4 w-4 mr-2" />
-                  <span>Real DALL-E</span>
-                </>
-              )}
+              <ImageIcon className="h-4 w-4 mr-2" />
+              <span>Real DALL-E</span>
             </Button>
             {/* Button: Use the hook's generateImage function */}
             <Button
