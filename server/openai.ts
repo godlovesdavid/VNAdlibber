@@ -50,8 +50,8 @@ export async function generateSceneBackgroundImage(
     // Call the OpenAI API to generate the image
     // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
     
-    // Check if we should generate a smaller image (cost optimization mode)
-    const useOptimizedSize = process.env.OPTIMIZE_DALL_E === 'true';
+    // TEMPORARY: Always use half resolution for speed testing
+    // We'll use DALL-E 2 with 512x512 resolution for faster generation
     
     // For DALL-E 3, the available sizes are:
     // - 1024x1024
@@ -59,16 +59,16 @@ export async function generateSceneBackgroundImage(
     // - 1792x1024
     
     // For DALL-E 2, the available sizes are:
-    // - 256x256 (cheaper)
-    // - 512x512 
-    // - 1024x1024
+    // - 256x256 (cheapest & fastest)
+    // - 512x512 (good balance)
+    // - 1024x1024 (highest quality)
     
-    // Choose image parameters based on optimization setting
-    const imageSize = useOptimizedSize ? "512x512" : "1024x1024";
-    const imageQuality = useOptimizedSize ? "standard" : "hd";
-    const imageModel = useOptimizedSize ? "dall-e-2" : "dall-e-3";
+    // Force smaller images for speed test
+    const imageSize = "512x512";
+    const imageQuality = "standard";
+    const imageModel = "dall-e-2";
     
-    console.log(`- Using optimized DALL-E settings: ${useOptimizedSize ? 'YES' : 'NO'}`);
+    console.log(`- Using DALL-E 2 with half resolution for speed testing`);
     console.log(`- Image size: ${imageSize}, quality: ${imageQuality}, model: ${imageModel}`);
     
     const response = await openai.images.generate({

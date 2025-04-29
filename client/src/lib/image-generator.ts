@@ -59,49 +59,9 @@ export async function generateSceneBackground(
       return { error: result.error };
     }
 
-    // Determine if we should upscale the image
-    // Only upscale if:
-    // 1. Not a mobile device (they don't need high-res)
-    // 2. The image might be low resolution (DALL-E 2 or optimized mode)
-    // 3. The upscaler is available
-    const isMobile = isMobileDevice();
-    const isOptimized = result.isOptimized === true;
-    
-    if (!isMobile && isOptimized && !signal?.aborted) {
-      // Check if upscaler is available (only once)
-      if (!upscalerAvailabilityChecked) {
-        try {
-          isUpscalerAvailableCache = await isUpscalerAvailable();
-          upscalerAvailabilityChecked = true;
-          console.log("Upscaler availability:", isUpscalerAvailableCache);
-        } catch (err) {
-          console.error("Failed to check upscaler availability:", err);
-          upscalerAvailabilityChecked = true;
-          isUpscalerAvailableCache = false;
-        }
-      }
-      
-      // If upscaler is available, try upscaling the image
-      if (isUpscalerAvailableCache) {
-        try {
-          console.log("Upscaling optimized image for desktop view...");
-          const upscaledUrl = await upscaleImage(result.url, {
-            targetWidth: 1024,
-            targetHeight: 768,
-            quality: 90,
-            smoothingQuality: 'high'
-          });
-          
-          console.log("Image upscaled successfully");
-          return { url: upscaledUrl };
-        } catch (upscaleErr) {
-          console.error("Error upscaling image:", upscaleErr);
-          console.log("Falling back to original image");
-        }
-      }
-    } else if (isMobile) {
-      console.log("Mobile device detected, skipping upscaling");
-    }
+    // Skip upscaling for now - as requested by user
+    // This will use the original images directly, potentially half-resolution
+    console.log("Skipping upscaling as requested - using original image directly");
 
     console.log("Successfully generated image, returning URL");
     return { url: result.url };
