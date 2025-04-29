@@ -587,7 +587,12 @@ export function VnPlayer({
         dialogueLog={dialogueLog}
       />
 
-      <div className="vn-reader h-[calc(100vh-34px)] flex flex-col pt-[34px] relative">
+      {/* Setting name overlay - moved outside image area */}
+      <div className="absolute top-4 left-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded text-sm z-30">
+        {currentScene.setting}
+      </div>
+
+      <div className="vn-image-area absolute inset-0 bg-neutral-800 flex items-center justify-center">
         <div className="vn-image-area absolute inset-0 bg-neutral-800 flex items-center justify-center">
           {/* Setting name overlay */}
           <div className="absolute top-4 left-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded text-sm">
