@@ -288,23 +288,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Test endpoint to verify OpenAI connectivity
   app.get("/api/test/openai", async (req, res) => {
     try {
-      console.log("Testing OpenAI connectivity");
-      console.log("OpenAI API Key:", process.env.OPENAI_API_KEY ? "Present (hidden)" : "Missing");
+      console.log("Testing OpenAI API connectivity...");
       
       if (!process.env.OPENAI_API_KEY) {
-        return res.status(500).json({ 
+        return res.status(401).json({ 
           success: false, 
-          message: "OpenAI API key is missing" 
+          message: "OpenAI API key is missing. Please add it to your environment variables." 
         });
       }
       
-      // Return success without actually calling the API
-      return res.json({ 
-        success: true, 
-        message: "OpenAI API key is configured" 
-      });
+      try {
+        const openai = new OpenAI({
+          apiKey: process.env.OPENAI_API_KEY,
+        });
+        
+        // Simple completion to test the API connection
+        const chatResponse = await openai.chat.completions.create({
+          model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
+          messages: [
+            {
+              role: "system",
+              content: "You are a testing assistant. Reply with a simple 'API connection successful' message."
+            },
+            {
+              role: "user",
+              content: "Test the API connection"
+            }
+          ],
+          max_tokens: 20
+        });
+        
+        return res.json({ 
+          success: true, 
+          message: "OpenAI API connection successful",
+          response: chatResponse.choices[0]?.message?.content || "No response content"
+        });
+      } catch (apiError) {
+        console.error("OpenAI API error:", apiError);
+        return res.status(500).json({ 
+          success: false, 
+          message: apiError instanceof Error ? apiError.message : "Unknown OpenAI API error" 
+        });
+      }
     } catch (error) {
-      console.error("Error testing OpenAI connection:", error);
+      console.error("Error testing OpenAI API:", error);
       res.status(500).json({ 
         success: false, 
         message: error instanceof Error ? error.message : "Unknown error" 
@@ -315,50 +342,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Test DALL-E 3 image generation specifically
   app.get("/api/test/dalle", async (req, res) => {
     try {
-      console.log("Testing DALL-E API");
-      console.log("OpenAI API Key:", process.env.OPENAI_API_KEY ? "Present (hidden)" : "Missing");
+      console.log("Testing DALL-E API connectivity...");
       
       if (!process.env.OPENAI_API_KEY) {
-        return res.status(500).json({ 
+        return res.status(401).json({ 
           success: false, 
-          message: "OpenAI API key is missing" 
+          message: "OpenAI API key is missing. Please add it to your environment variables." 
         });
       }
       
-      // Only make a real API call if we're in production or FORCE_REAL_API is set
-      if (process.env.NODE_ENV === 'production' || process.env.FORCE_REAL_API) {
+      // Check if we should force using the real API
+      const useRealApi = req.query.force === 'true';
+      
+      // Only make a real API call if we're in production or force=true is specified
+      if (process.env.NODE_ENV === 'production' || useRealApi) {
         console.log("Making actual DALL-E API request...");
         
         const openai = new OpenAI({
           apiKey: process.env.OPENAI_API_KEY,
         });
         
-        const response = await openai.images.generate({
-          model: "dall-e-3",
-          prompt: "A simple test image of a blue circle on a white background",
-          n: 1,
-          size: "1024x1024",
-          quality: "standard",
-          style: "natural",
-        });
-        
-        if (response.data && response.data[0]?.url) {
-          return res.json({ 
-            success: true, 
-            message: "Successfully generated DALL-E test image",
-            url: response.data[0].url
+        try {
+          const response = await openai.images.generate({
+            model: "dall-e-3",
+            prompt: "A simple test image of a blue circle on a white background",
+            n: 1,
+            size: "1024x1024",
+            quality: "standard",
+            style: "natural",
           });
-        } else {
+          
+          if (response.data && response.data[0]?.url) {
+            console.log("Successfully generated DALL-E test image");
+            
+            return res.json({ 
+              success: true, 
+              message: "Successfully generated DALL-E test image",
+              url: response.data[0].url
+            });
+          } else {
+            console.error("No image URL in DALL-E response");
+            
+            return res.status(500).json({ 
+              success: false, 
+              message: "No image URL in DALL-E response" 
+            });
+          }
+        } catch (apiError) {
+          console.error("DALL-E API error:", apiError);
+          
           return res.status(500).json({ 
             success: false, 
-            message: "No image URL in DALL-E response" 
+            message: apiError instanceof Error ? apiError.message : "Unknown DALL-E API error" 
           });
         }
       } else {
         // In development mode, return an inline SVG data URL
+        console.log("DALL-E test mode - returning test image");
+        
         return res.json({ 
           success: true, 
-          message: "DALL-E API key is configured (test mode)",
+          message: "DALL-E API key is configured (test mode). Add ?force=true to the URL to test with the real API.",
           url: "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221024%22%20height%3D%221024%22%20viewBox%3D%220%200%201024%201024%22%20preserveAspectRatio%3D%22none%22%3E%3Cg%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23f39c12%22%3E%3C%2Frect%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20font-size%3D%2264%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20font-family%3D%22Arial%2C%20sans-serif%22%20fill%3D%22white%22%3EDALL-E%20Test%20Image%3C%2Ftext%3E%3Ccircle%20cx%3D%22512%22%20cy%3D%22700%22%20r%3D%22100%22%20fill%3D%22white%22%20%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"
         });
       }
@@ -949,6 +993,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/generate/image", async (req, res) => {
     try {
       console.log("Image generation endpoint called with body:", req.body);
+      
+      // Check if OpenAI API key is configured
+      if (!process.env.OPENAI_API_KEY) {
+        console.error("OpenAI API key is missing");
+        return res.status(401).json({
+          error: "OpenAI API key is missing. Please add the OPENAI_API_KEY secret in your environment variables."
+        });
+      }
       
       const { scene, theme, imageType, forceReal } = req.body;
       
