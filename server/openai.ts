@@ -12,8 +12,24 @@ export async function generateSceneBackgroundImage(
   theme?: string
 ): Promise<{ url: string }> {
   try {
+    console.log("🎨 START: Generating image background for scene:", sceneId);
+    console.log("- Settings:", { sceneSetting, theme });
+    console.log("- OpenAI API Key:", process.env.OPENAI_API_KEY ? "Present (hidden)" : "MISSING");
+    
     // Create a rich, detailed prompt for the image generation
     const prompt = generateBackgroundPrompt(sceneSetting, theme);
+    console.log("- Generated prompt:", prompt);
+    
+    // For testing, let's return a mock image URL to avoid hitting the API constantly
+    // This will help debug the client-side image loading
+    if (process.env.NODE_ENV === 'development') {
+      console.log("DEV MODE: Returning mock image for testing");
+      return { 
+        url: "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxleHBsb3JlLWZlZWR8MXx8fGVufDB8fHx8&w=1000&q=80" 
+      };
+    }
+    
+    console.log("- Making OpenAI API request...");
     
     // Call the OpenAI API to generate the image
     // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
@@ -26,14 +42,18 @@ export async function generateSceneBackgroundImage(
       style: "natural", // Natural style works best for backgrounds
     });
     
+    console.log("- OpenAI API response received");
+    
     // Extract and return the URL
     if (response.data && response.data[0]?.url) {
+      console.log("- Image URL found in response (hidden for privacy)");
       return { url: response.data[0].url };
     } else {
+      console.error("- No image URL found in the OpenAI response");
       throw new Error("No image URL found in the OpenAI response");
     }
   } catch (error) {
-    console.error("Error generating image with DALL-E:", error);
+    console.error("❌ Error generating image with DALL-E:", error);
     throw error;
   }
 }

@@ -458,31 +458,46 @@ export function VnPlayer({
           
           {/* Image generation controls */}
           <div className="absolute top-4 right-4 flex space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-black bg-opacity-70 text-white border-neutral-600 transition-all 
-                hover:bg-primary hover:bg-opacity-80 hover:border-primary-300 hover:text-white hover:scale-105
-                active:bg-primary-600 active:scale-95 active:shadow-inner
-                focus:ring-2 focus:ring-primary-400 focus:ring-opacity-50"
+            {/* Simple regular button with very basic styling */}
+            <button
+              type="button"
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200"
               onClick={() => {
-                console.log('Generate image button clicked');
-                if (currentScene) {
-                  console.log('Current scene:', currentScene);
-                  generateImage(true);
-                } else {
-                  console.error('No current scene available');
-                }
+                console.log('Generate image button clicked (direct DOM button)');
+                
+                // Generate a simple request to our image API to test
+                fetch('/api/generate/image', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    scene: {
+                      id: currentScene?.id || 'test-scene',
+                      setting: currentScene?.setting || 'A beautiful mountain landscape'
+                    },
+                    theme: theme || 'fantasy',
+                    imageType: 'background'
+                  })
+                })
+                .then(response => {
+                  console.log('API Response status:', response.status);
+                  return response.json();
+                })
+                .then(data => {
+                  console.log('API Response data:', data);
+                  if (data.url) {
+                    console.log('Got image URL:', data.url.substring(0, 30) + '...');
+                  }
+                })
+                .catch(error => {
+                  console.error('API Error:', error);
+                });
               }}
               disabled={isGenerating}
             >
-              {isGenerating ? (
-                <RefreshCw className="h-4 w-4 animate-spin" />
-              ) : (
-                <ImageIcon className="h-4 w-4" />
-              )}
-              <span className="ml-2">{isGenerating ? "Generating..." : "Generate Image"}</span>
-            </Button>
+              {isGenerating ? "Generating..." : "Generate Image (Direct)"}
+            </button>
           </div>
           
           {/* Background image display */}
