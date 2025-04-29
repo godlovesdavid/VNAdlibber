@@ -587,15 +587,10 @@ export function VnPlayer({
         dialogueLog={dialogueLog}
       />
 
-      {/* Setting name overlay - moved outside image area */}
-      <div className="absolute top-4 left-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded text-sm z-30">
-        {currentScene.setting}
-      </div>
-
-      <div className="vn-image-area absolute inset-0 bg-neutral-800 flex items-center justify-center">
+      <div className="vn-reader h-[calc(100vh-34px)] flex flex-col pt-[34px] relative">
         <div className="vn-image-area absolute inset-0 bg-neutral-800 flex items-center justify-center">
           {/* Setting name overlay */}
-          <div className="absolute top-4 left-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded text-sm">
+          <div className="absolute top-14 left-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded text-sm z-30">
             {currentScene.setting}
           </div>
 
@@ -610,21 +605,8 @@ export function VnPlayer({
 
                 if (!currentScene) return;
 
-                // Show generating toast - we can't directly set isGenerating
-                toast({
-                  title: "Using Real DALL-E API",
-                  description: "This will consume a real API credit",
-                });
-
                 // Instead of making a separate fetch request, let's use the hook directly
                 // This avoids potential race conditions and state management issues
-
-                console.log("Forcing a real DALL-E image generation");
-
-                toast({
-                  title: "Generating with Real DALL-E",
-                  description: "Generating image using the OpenAI API...",
-                });
 
                 // The most reliable approach: Just tell the server-side to use the real API
                 // and let the hook handle all the state changes
@@ -635,7 +617,7 @@ export function VnPlayer({
                   // but with a custom option to force real DALL-E
                   generateImage(true, { forceReal: true });
                 } catch (error) {
-                  console.error("DALL-E generation failed:", error);
+                  console.error("Image generation failed:", error);
                   toast({
                     title: "Generation Failed",
                     description:
