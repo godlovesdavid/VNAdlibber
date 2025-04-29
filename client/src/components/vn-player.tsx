@@ -50,12 +50,7 @@ export function VnPlayer({
       return;
     }
     
-    // Always skip animation only for imported stories (legacy reason)
-    if (mode === 'imported') {
-      setDisplayedText(text);
-      setIsTextAnimating(false);
-      return;
-    }
+    // We've enabled animations for imported stories too, removing the exception
     
     // Clear any existing animation
     if (textAnimationRef.current) {
@@ -183,9 +178,10 @@ export function VnPlayer({
     setShowChoices(false);
     setDialogueLog([]);
     
-    // For imported mode, directly set the full text without animation
+    // For imported mode, now using animation like generated mode
     if (firstScene.dialogue && firstScene.dialogue.length > 0) {
-      setDisplayedText(firstScene.dialogue[0][1]);
+      setDisplayedText(""); // Clear any previous text
+      animateText(firstScene.dialogue[0][1]);
     }
   }, [actData, processScene, mode]);
   
@@ -222,9 +218,10 @@ export function VnPlayer({
       setCurrentDialogueIndex(0);
       setShowChoices(false);
       
-      // For imported mode, set text immediately without animation
+      // For imported mode, now using animation like generated mode
       if (processedScene.dialogue && processedScene.dialogue.length > 0) {
-        setDisplayedText(processedScene.dialogue[0][1]);
+        setDisplayedText(""); // Clear any previous text
+        animateText(processedScene.dialogue[0][1]);
       }
     }
   }, [actData, currentSceneId, processScene, mode]);
@@ -244,18 +241,10 @@ export function VnPlayer({
     setShowChoices(false);
     setDialogueLog([]);
     
-    // Handle different modes for text display
-    if (mode === 'imported') {
-      // For imported mode, just set the text directly without animation
-      if (firstScene.dialogue && firstScene.dialogue.length > 0) {
-        setDisplayedText(firstScene.dialogue[0][1]);
-      }
-    } else {
-      // For generated mode, use animation
-      if (firstScene.dialogue && firstScene.dialogue.length > 0) {
-        setDisplayedText(""); // Clear any previous text
-        animateText(firstScene.dialogue[0][1]);
-      }
+    // Use animation for both modes now
+    if (firstScene.dialogue && firstScene.dialogue.length > 0) {
+      setDisplayedText(""); // Clear any previous text
+      animateText(firstScene.dialogue[0][1]);
     }
   }, [actData, processScene, animateText, mode]);
   
@@ -271,18 +260,10 @@ export function VnPlayer({
       // Advance to next dialogue line
       setCurrentDialogueIndex(prev => prev + 1);
       
-      // Handle next dialogue display based on mode
-      if (mode === 'imported') {
-        // For imported mode: no animation, just set the full text immediately
-        if (currentScene.dialogue[currentDialogueIndex + 1]) {
-          setDisplayedText(currentScene.dialogue[currentDialogueIndex + 1][1]);
-        }
-      } else {
-        // For generated mode: use animation
-        setDisplayedText(""); // Clear any previous text
-        if (currentScene.dialogue[currentDialogueIndex + 1]) {
-          animateText(currentScene.dialogue[currentDialogueIndex + 1][1]);
-        }
+      // Use animation for both modes now
+      setDisplayedText(""); // Clear any previous text
+      if (currentScene.dialogue[currentDialogueIndex + 1]) {
+        animateText(currentScene.dialogue[currentDialogueIndex + 1][1]);
       }
     } else {
       // Add final dialogue to log
