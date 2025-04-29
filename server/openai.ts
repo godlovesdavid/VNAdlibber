@@ -20,30 +20,8 @@ export async function generateSceneBackgroundImage(
     const prompt = generateBackgroundPrompt(sceneSetting, theme);
     console.log("- Generated prompt:", prompt);
     
-    // Use a test image in development mode to avoid consuming the API quota
-    // This also helps with faster iteration during development
-    if (process.env.NODE_ENV === 'development' && !process.env.FORCE_REAL_API) {
-      console.log("📸 DEV MODE: Using test image instead of calling OpenAI API");
-      
-      // Create an artificial delay to simulate API request time (500ms)
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Using direct colored backgrounds without text for reliability
-      // These are plain solid-colored images that are guaranteed to work
-      const testImages = [
-        "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221024%22%20height%3D%22768%22%20viewBox%3D%220%200%201024%20768%22%20preserveAspectRatio%3D%22none%22%3E%3Cg%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%233498db%22%3E%3C%2Frect%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20font-size%3D%2248%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20font-family%3D%22Arial%2C%20sans-serif%22%20fill%3D%22white%22%3EMountain%20Landscape%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fsvg%3E", 
-        "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221024%22%20height%3D%22768%22%20viewBox%3D%220%200%201024%20768%22%20preserveAspectRatio%3D%22none%22%3E%3Cg%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23e74c3c%22%3E%3C%2Frect%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20font-size%3D%2248%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20font-family%3D%22Arial%2C%20sans-serif%22%20fill%3D%22white%22%3EUrban%20Scene%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fsvg%3E",    
-        "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221024%22%20height%3D%22768%22%20viewBox%3D%220%200%201024%20768%22%20preserveAspectRatio%3D%22none%22%3E%3Cg%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%232ecc71%22%3E%3C%2Frect%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20font-size%3D%2248%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20font-family%3D%22Arial%2C%20sans-serif%22%20fill%3D%22white%22%3ECity%20Plaza%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fsvg%3E", 
-        "data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221024%22%20height%3D%22768%22%20viewBox%3D%220%200%201024%20768%22%20preserveAspectRatio%3D%22none%22%3E%3Cg%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%239b59b6%22%3E%3C%2Frect%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20font-size%3D%2248%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20font-family%3D%22Arial%2C%20sans-serif%22%20fill%3D%22white%22%3ECastle%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fsvg%3E"
-      ];
-      
-      // Choose a random image each time for better testing
-      const imageIndex = Math.floor(Math.random() * testImages.length);
-      
-      return { 
-        url: testImages[imageIndex]
-      };
-    }
+    // Always use real DALL-E for this speed test
+    process.env.FORCE_REAL_API = 'true';
     
     console.log("- Making OpenAI API request...");
     
@@ -71,12 +49,13 @@ export async function generateSceneBackgroundImage(
     console.log(`- Using DALL-E 2 with half resolution for speed testing`);
     console.log(`- Image size: ${imageSize}, quality: ${imageQuality}, model: ${imageModel}`);
     
+    // Force DALL-E 2 with 512x512 resolution for speed testing
     const response = await openai.images.generate({
-      model: imageModel,
+      model: "dall-e-2", // DALL-E 2 is faster than DALL-E 3
       prompt: prompt,
       n: 1, // Generate one image
-      size: imageSize as "1024x1024" | "512x512" | "256x256", // Type assertion for TypeScript
-      quality: imageQuality as "standard" | "hd", // Type assertion for TypeScript
+      size: "512x512", // Smaller, faster images
+      quality: "standard", // Standard quality (HD only available for DALL-E 3)
       style: "natural", // Natural style works best for backgrounds
     });
     

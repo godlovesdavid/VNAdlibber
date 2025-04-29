@@ -1019,35 +1019,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           console.log("Calling OpenAI DALL-E API with API key:", process.env.OPENAI_API_KEY ? "Present (hidden)" : "Missing");
           
-          // Set environment variables for this request
-          if (useRealApi) {
-            console.log("🔴 FORCING REAL API USAGE - DALL-E credits will be consumed");
-            process.env.FORCE_REAL_API = 'true';
-          }
+          // Always force real API and optimization for our speed test
+          console.log("🔴 FORCING REAL API USAGE - DALL-E credits will be consumed");
+          process.env.FORCE_REAL_API = 'true';
           
-          // Set optimization flag if requested
-          if (useOptimizedSettings) {
-            console.log("📱 OPTIMIZED IMAGE REQUESTED - Using smaller image size");
-            process.env.OPTIMIZE_DALL_E = 'true';
-          }
+          // Always use optimization settings for faster generation
+          console.log("⚡ SPEED TEST - Using DALL-E 2 with 512x512 resolution");
+          process.env.OPTIMIZE_DALL_E = 'true';
           
           const result = await generateSceneBackgroundImage(scene.id, scene.setting, theme);
           
-          // Reset the environment variable
-          if (useRealApi) {
-            delete process.env.FORCE_REAL_API;
-          }
+          // Reset the environment variables after generation
+          delete process.env.FORCE_REAL_API;
+          delete process.env.OPTIMIZE_DALL_E;
           
           console.log(`Background image generated for scene ${scene.id}:`, result.url ? "Success (URL hidden for privacy)" : "No URL returned");
           
-          // Log the actual URL when using real API for debugging
-          if (useRealApi && result.url) {
+          // Log the actual URL for debugging
+          if (result.url) {
             console.log(`🔴 REAL DALL-E URL: ${result.url}`);
-          }
-          
-          // Clean up the optimization flag
-          if (useOptimizedSettings) {
-            delete process.env.OPTIMIZE_DALL_E;
           }
           
           // Include optimization information in the response
