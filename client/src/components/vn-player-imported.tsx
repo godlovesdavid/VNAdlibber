@@ -34,14 +34,6 @@ export function VnPlayerImported({ actData, actNumber, onReturn, onRestart: exte
   // Scrolling container reference
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // Process scene to ensure it's ready for display
-  const processScene = useCallback((scene: Scene): Scene => {
-    // Create a clean copy to avoid modifying the original
-    const processed = { ...scene };
-    
-    return processed;
-  }, [actNumber]);
-  
   // Text animation functions
   const animateText = useCallback((text: string) => {
     // Skip animation if text speed is fast
@@ -94,6 +86,28 @@ export function VnPlayerImported({ actData, actNumber, onReturn, onRestart: exte
     textAnimationRef.current = window.requestAnimationFrame(animate);
   }, [textSpeed]);
   
+  // Skip text animation
+  const skipTextAnimation = useCallback(() => {
+    if (textAnimationRef.current) {
+      window.cancelAnimationFrame(textAnimationRef.current);
+      textAnimationRef.current = null;
+    }
+    
+    if (currentScene && currentDialogueIndex < currentScene.dialogue.length) {
+      setDisplayedText(currentScene.dialogue[currentDialogueIndex][1]);
+    }
+    
+    setIsTextAnimating(false);
+  }, [currentScene, currentDialogueIndex]);
+  
+  // Process scene to ensure it's ready for display
+  const processScene = useCallback((scene: Scene): Scene => {
+    // Create a clean copy to avoid modifying the original
+    const processed = { ...scene };
+    
+    return processed;
+  }, [actNumber]);
+  
   // Initialize manually on mount
   useEffect(() => {
     if (!actData?.scenes?.length) return;
@@ -114,7 +128,7 @@ export function VnPlayerImported({ actData, actNumber, onReturn, onRestart: exte
       setDisplayedText(""); // Clear any previous text
       animateText(firstScene.dialogue[0][1]);
     }
-  }, [processScene, animateText]); // Include dependencies
+  }, [processScene, animateText, actData]); // Include dependencies
   
   // Update current scene when scene ID changes
   useEffect(() => {
@@ -133,7 +147,7 @@ export function VnPlayerImported({ actData, actNumber, onReturn, onRestart: exte
         animateText(processedScene.dialogue[0][1]);
       }
     }
-  }, [currentSceneId, processScene, animateText]);
+  }, [currentSceneId, processScene, animateText, actData]);
   
   // Handle restart
   const handleRestart = useCallback(() => {
@@ -146,7 +160,7 @@ export function VnPlayerImported({ actData, actNumber, onReturn, onRestart: exte
     setCurrentDialogueIndex(0);
     setShowChoices(false);
     setDialogueLog([]);
-  }, [processScene]);
+  }, [processScene, actData]);
   
   // Handle advancing to next dialogue or showing choices
   const advanceDialogue = useCallback(() => {
@@ -257,72 +271,6 @@ export function VnPlayerImported({ actData, actNumber, onReturn, onRestart: exte
     setClickableContent(true);
   }, [playerData, checkConditionMet, updatePlayerData, clickableContent]);
   
-  // Text animation functions
-  const animateText = useCallback((text: string) => {
-    // Skip animation if text speed is fast
-    if (textSpeed === 'fast') {
-      setDisplayedText(text);
-      setIsTextAnimating(false);
-      return;
-    }
-    
-    // Clear any existing animation
-    if (textAnimationRef.current) {
-      window.cancelAnimationFrame(textAnimationRef.current);
-    }
-    
-    // Start new animation
-    setIsTextAnimating(true);
-    let currentIndex = 0;
-    const totalLength = text.length;
-    
-    // Determine speed in milliseconds per character
-    const charDelay = textSpeed === 'slow' ? 80 : 40; // slow = 80ms, medium = 40ms
-    let lastTimeStamp = 0;
-    
-    const animate = (timestamp: number) => {
-      if (!lastTimeStamp) lastTimeStamp = timestamp;
-      
-      const elapsed = timestamp - lastTimeStamp;
-      
-      if (elapsed > charDelay) {
-        // Add one character
-        currentIndex++;
-        lastTimeStamp = timestamp;
-        
-        // Update displayed text
-        setDisplayedText(text.substring(0, currentIndex));
-        
-        // Check if we're done
-        if (currentIndex >= totalLength) {
-          setIsTextAnimating(false);
-          textAnimationRef.current = null;
-          return;
-        }
-      }
-      
-      // Continue animation
-      textAnimationRef.current = window.requestAnimationFrame(animate);
-    };
-    
-    // Start animation
-    textAnimationRef.current = window.requestAnimationFrame(animate);
-  }, [textSpeed]);
-  
-  // Skip text animation
-  const skipTextAnimation = useCallback(() => {
-    if (textAnimationRef.current) {
-      window.cancelAnimationFrame(textAnimationRef.current);
-      textAnimationRef.current = null;
-    }
-    
-    if (currentScene && currentDialogueIndex < currentScene.dialogue.length) {
-      setDisplayedText(currentScene.dialogue[currentDialogueIndex][1]);
-    }
-    
-    setIsTextAnimating(false);
-  }, [currentScene, currentDialogueIndex]);
-  
   // Handle content click to advance dialogue or skip animation
   const handleContentClick = useCallback(() => {
     if (isTextAnimating) {
@@ -340,6 +288,47 @@ export function VnPlayerImported({ actData, actNumber, onReturn, onRestart: exte
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
   }, [currentDialogueIndex, showChoices]);
+  
+  // Text speed controls UI
+  const renderTextSpeedControls = () => {
+    return (
+      <div className="absolute bottom-4 left-4 flex items-center space-x-2 bg-black bg-opacity-60 rounded-md p-1">
+        <Button 
+          size="sm" 
+          variant="ghost"
+          className={cn(
+            "text-xs px-2 py-1 h-auto", 
+            textSpeed === 'slow' ? "bg-primary text-white" : "text-gray-300"
+          )}
+          onClick={() => setTextSpeed('slow')}
+        >
+          Slow
+        </Button>
+        <Button 
+          size="sm" 
+          variant="ghost"
+          className={cn(
+            "text-xs px-2 py-1 h-auto", 
+            textSpeed === 'medium' ? "bg-primary text-white" : "text-gray-300"
+          )}
+          onClick={() => setTextSpeed('medium')}
+        >
+          Medium
+        </Button>
+        <Button 
+          size="sm" 
+          variant="ghost"
+          className={cn(
+            "text-xs px-2 py-1 h-auto", 
+            textSpeed === 'fast' ? "bg-primary text-white" : "text-gray-300"
+          )}
+          onClick={() => setTextSpeed('fast')}
+        >
+          Fast
+        </Button>
+      </div>
+    );
+  };
   
   // Show loading while no scene is available
   if (!currentScene) {
@@ -390,6 +379,9 @@ export function VnPlayerImported({ actData, actNumber, onReturn, onRestart: exte
             <p>Background Image Placeholder</p>
             <p className="text-sm text-neutral-400 mt-1">Image generation disabled</p>
           </div>
+          
+          {/* Text speed controls */}
+          {renderTextSpeedControls()}
         </div>
         
         <div 
@@ -469,7 +461,7 @@ export function VnPlayerImported({ actData, actNumber, onReturn, onRestart: exte
           )}
           
           {/* Bounce indicator for continuing dialogue */}
-          {!showChoices && currentScene.dialogue.length > 0 && (
+          {!showChoices && currentScene.dialogue.length > 0 && !isTextAnimating && (
             <div className="absolute bottom-4 right-4 animate-bounce text-white">
               <ChevronDown className="h-6 w-6" />
             </div>

@@ -6,19 +6,25 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { Scene, SceneChoice, GeneratedAct } from "@/types/vn";
 
-interface VnPlayerImportedProps {
+interface VnPlayerProps {
   actData: GeneratedAct;
   actNumber: number;
   onReturn: () => void;
   onRestart?: () => void; // Optional external restart handler
+  mode: "generated" | "imported"; // Mode to determine initialization behavior
 }
 
-// Special player component just for imported stories
-export function VnPlayerImported({ actData, actNumber, onReturn, onRestart: externalRestart }: VnPlayerImportedProps) {
+export function VnPlayer({ 
+  actData, 
+  actNumber, 
+  onReturn, 
+  onRestart: externalRestart,
+  mode = "generated" // Default to standard behavior
+}: VnPlayerProps) {
   const { playerData, updatePlayerData } = useVnContext();
   
   // Core scene and dialogue state
-  const [currentSceneId, setCurrentSceneId] = useState("");
+  const [currentSceneId, setCurrentSceneId] = useState<string>("");
   const [currentScene, setCurrentScene] = useState<Scene | null>(null);
   const [currentDialogueIndex, setCurrentDialogueIndex] = useState(0);
   const [showChoices, setShowChoices] = useState(false);
@@ -36,10 +42,20 @@ export function VnPlayerImported({ actData, actNumber, onReturn, onRestart: exte
   
   // Process scene to ensure it's ready for display
   const processScene = useCallback((scene: Scene): Scene => {
+    if (!scene) return scene;
+    
     // Create a clean copy to avoid modifying the original
     const processed = { ...scene };
+    
+    // Additional processing based on mode if needed
+    if (mode === "generated") {
+      // Any special processing for generated mode
+    } else if (mode === "imported") {
+      // Any special processing for imported mode
+    }
+    
     return processed;
-  }, [actNumber]);
+  }, [mode]);
   
   // Text animation functions
   const animateText = useCallback((text: string) => {
@@ -177,9 +193,7 @@ export function VnPlayerImported({ actData, actNumber, onReturn, onRestart: exte
     // If condition not met and there's a failNext path, go to that scene
     if (!conditionMet && choice.failNext) {
       // No delay needed for failure path
-      if (choice.failNext) {
-        setCurrentSceneId(choice.failNext);
-      }
+      setCurrentSceneId(choice.failNext);
       setClickableContent(true);
       return;
     }
@@ -227,27 +241,34 @@ export function VnPlayerImported({ actData, actNumber, onReturn, onRestart: exte
     }
   }, [showChoices, advanceDialogue, isTextAnimating, skipTextAnimation]);
   
-  // Initialize manually on mount
+  // Initialize manually on mount with different behaviors based on mode
   useEffect(() => {
     if (!actData?.scenes?.length) return;
     
     // Get and process the first scene
     const firstScene = processScene(actData.scenes[0]);
-    console.log('Initializing Imported VN Player with first scene:', firstScene.id);
+    console.log(`Initializing VN Player (${mode} mode) with first scene:`, firstScene.id);
     
-    // Set all the initial state
-    setCurrentScene(firstScene);
-    setCurrentSceneId(firstScene.id);
-    setCurrentDialogueIndex(0);
-    setShowChoices(false);
-    setDialogueLog([]);
-    
-    // Start text animation for the first dialogue line
-    if (firstScene.dialogue && firstScene.dialogue.length > 0) {
-      setDisplayedText(""); // Clear any previous text
-      animateText(firstScene.dialogue[0][1]);
+    // Different initialization based on mode
+    if (mode === "imported") {
+      // For imported stories, use a simpler one-time initialization
+      // that won't cause infinite update loops
+      setCurrentScene(firstScene);
+      setCurrentSceneId(firstScene.id);
+      setCurrentDialogueIndex(0);
+      setShowChoices(false);
+      setDialogueLog([]);
+      
+      // Start text animation for the first dialogue line
+      if (firstScene.dialogue && firstScene.dialogue.length > 0) {
+        setDisplayedText(""); // Clear any previous text
+        animateText(firstScene.dialogue[0][1]);
+      }
+    } else {
+      // For generated stories, use the standard approach
+      setCurrentSceneId(firstScene.id);
     }
-  }, [processScene, animateText, actData]); // Include dependencies
+  }, [actData, processScene, animateText, mode]); 
   
   // Update current scene when scene ID changes
   useEffect(() => {
@@ -279,7 +300,7 @@ export function VnPlayerImported({ actData, actNumber, onReturn, onRestart: exte
     setCurrentDialogueIndex(0);
     setShowChoices(false);
     setDialogueLog([]);
-  }, [processScene, actData]);
+  }, [actData, processScene]);
   
   // Auto-scroll to keep the current dialogue visible
   useEffect(() => {
@@ -331,7 +352,7 @@ export function VnPlayerImported({ actData, actNumber, onReturn, onRestart: exte
   
   // Show loading while no scene is available
   if (!currentScene) {
-    return <div className="flex items-center justify-center h-screen">Loading imported story...</div>;
+    return <div className="flex items-center justify-center h-screen">Loading story...</div>;
   }
   
   // Get current dialogue text (using either the animated display text or the full original text)

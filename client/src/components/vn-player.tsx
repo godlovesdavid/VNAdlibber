@@ -24,9 +24,81 @@ export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRest
   const [dialogueLog, setDialogueLog] = useState<Array<{speaker: string, text: string}>>([]);
   const [clickableContent, setClickableContent] = useState(true);
   
+  // Text animation state
+  const [textSpeed, setTextSpeed] = useState<'slow' | 'medium' | 'fast'>('fast');
+  const [isTextAnimating, setIsTextAnimating] = useState(false);
+  const [displayedText, setDisplayedText] = useState("");
+  const textAnimationRef = useRef<number | null>(null);
+  
   // Scrolling container reference
   const containerRef = useRef<HTMLDivElement>(null);
   const initialized = useRef(false);
+  
+  // Text animation functions
+  const animateText = useCallback((text: string) => {
+    // Skip animation if text speed is fast
+    if (textSpeed === 'fast') {
+      setDisplayedText(text);
+      setIsTextAnimating(false);
+      return;
+    }
+    
+    // Clear any existing animation
+    if (textAnimationRef.current) {
+      window.cancelAnimationFrame(textAnimationRef.current);
+    }
+    
+    // Start new animation
+    setIsTextAnimating(true);
+    let currentIndex = 0;
+    const totalLength = text.length;
+    
+    // Determine speed in milliseconds per character
+    const charDelay = textSpeed === 'slow' ? 80 : 40; // slow = 80ms, medium = 40ms
+    let lastTimeStamp = 0;
+    
+    const animate = (timestamp: number) => {
+      if (!lastTimeStamp) lastTimeStamp = timestamp;
+      
+      const elapsed = timestamp - lastTimeStamp;
+      
+      if (elapsed > charDelay) {
+        // Add one character
+        currentIndex++;
+        lastTimeStamp = timestamp;
+        
+        // Update displayed text
+        setDisplayedText(text.substring(0, currentIndex));
+        
+        // Check if we're done
+        if (currentIndex >= totalLength) {
+          setIsTextAnimating(false);
+          textAnimationRef.current = null;
+          return;
+        }
+      }
+      
+      // Continue animation
+      textAnimationRef.current = window.requestAnimationFrame(animate);
+    };
+    
+    // Start animation
+    textAnimationRef.current = window.requestAnimationFrame(animate);
+  }, [textSpeed]);
+  
+  // Skip text animation
+  const skipTextAnimation = useCallback(() => {
+    if (textAnimationRef.current) {
+      window.cancelAnimationFrame(textAnimationRef.current);
+      textAnimationRef.current = null;
+    }
+    
+    if (currentScene && currentDialogueIndex < currentScene.dialogue.length) {
+      setDisplayedText(currentScene.dialogue[currentDialogueIndex][1]);
+    }
+    
+    setIsTextAnimating(false);
+  }, [currentScene, currentDialogueIndex]);
   
   // Process scenes to fix imported data issues and add end-of-act messages
   const processScene = useCallback((scene: Scene): Scene => {
@@ -108,6 +180,14 @@ export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRest
       
       // Advance to next dialogue line
       setCurrentDialogueIndex(prev => prev + 1);
+      
+      // Reset displayed text for animation
+      setDisplayedText("");
+      
+      // Start animating the next dialogue
+      if (currentScene.dialogue[currentDialogueIndex + 1]) {
+        animateText(currentScene.dialogue[currentDialogueIndex + 1][1]);
+      }
     } else {
       // Add final dialogue to log
       if (currentScene.dialogue.length > 0) {
@@ -118,7 +198,7 @@ export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRest
       // Show choices if there are any, otherwise this is the end
       setShowChoices(true);
     }
-  }, [currentScene, currentDialogueIndex, clickableContent]);
+  }, [currentScene, currentDialogueIndex, clickableContent, animateText]);
   
   // Check if a choice's condition is met
   const checkConditionMet = useCallback((choice: SceneChoice): boolean => {
@@ -198,12 +278,16 @@ export function VnPlayer({ actData, actNumber, onReturn, onRestart: externalRest
     setClickableContent(true);
   }, [playerData, checkConditionMet, updatePlayerData, clickableContent]);
   
-  // Handle content click to advance dialogue
+  // Handle content click to advance dialogue or skip animation
   const handleContentClick = useCallback(() => {
-    if (!showChoices) {
+    if (isTextAnimating) {
+      // If text is animating, skip to end
+      skipTextAnimation();
+    } else if (!showChoices) {
+      // If not showing choices and not animating, advance dialogue
       advanceDialogue();
     }
-  }, [showChoices, advanceDialogue]);
+  }, [showChoices, advanceDialogue, isTextAnimating, skipTextAnimation]);
   
   // Auto-scroll to keep the current dialogue visible
   useEffect(() => {
