@@ -2,8 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useParams } from "wouter";
-import { VnPlayer as VnPlayerOriginal } from "@/components/vn-player";
-import { VnPlayer as VnPlayerUnified } from "@/components/vn-player-unified";
+import { VnPlayer } from "@/components/vn-player";
 import { GeneratedAct } from "@/types/vn";
 
 export default function Player() {
@@ -250,29 +249,13 @@ export default function Player() {
     );
   }
   
-  // Use different player components based on the story source
-  // The original player works well for all stories, but use the unified one for generated stories
-  // to allow the text animation feature
-  if (actId === "imported") {
-    // Use original player for imported stories (no animation)
-    return (
-      <VnPlayerOriginal
-        actData={actData}
-        actNumber={actNumber}
-        onReturn={handleReturn}
-        onRestart={handleRestart}
-      />
-    );
-  } else {
-    // Use unified player with animations for generated stories
-    return (
-      <VnPlayerUnified
-        actData={actData}
-        actNumber={actNumber}
-        onReturn={handleReturn}
-        onRestart={handleRestart}
-        mode="generated"
-      />
-    );
-  }
+  // Use the original player regardless of source
+  return (
+    <VnPlayer
+      actData={actData}
+      actNumber={actNumber}
+      onReturn={handleReturn}
+      onRestart={handleRestart}
+    />
+  );
 }
