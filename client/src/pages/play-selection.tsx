@@ -22,7 +22,16 @@ export default function PlaySelection() {
     actNumber: number;
     createdAt: string;
     actData: GeneratedAct;
-  }>>([]);
+  }>>(() => {
+    // Initialize from sessionStorage on component mount
+    try {
+      const stored = sessionStorage.getItem('imported_stories');
+      return stored ? JSON.parse(stored) : [];
+    } catch (e) {
+      console.error("Error loading imported stories:", e);
+      return [];
+    }
+  });
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -58,7 +67,7 @@ export default function PlaySelection() {
         
         // Add to imported stories
         const storyId = Date.now().toString();
-        setImportedStories([
+        const updatedStories = [
           ...importedStories,
           {
             id: storyId,
@@ -67,7 +76,13 @@ export default function PlaySelection() {
             createdAt: new Date().toISOString(),
             actData
           }
-        ]);
+        ];
+        
+        // Update state
+        setImportedStories(updatedStories);
+        
+        // Also save to sessionStorage for persistence
+        sessionStorage.setItem('imported_stories', JSON.stringify(updatedStories));
         
         toast({
           title: "Story Imported",
@@ -105,22 +120,22 @@ export default function PlaySelection() {
           actData: JSON.parse(JSON.stringify(story.actData))
         };
         
-        // Store the story in localStorage instead of sessionStorage for persistence
-        localStorage.setItem('imported_story', JSON.stringify(storyToStore));
+        // Store the story in sessionStorage for persistence
+        sessionStorage.setItem('imported_story', JSON.stringify(storyToStore));
         
         // Create an extra backup of the raw story data in case the Player has trouble parsing
-        localStorage.setItem('imported_story_backup', JSON.stringify(story.actData));
+        sessionStorage.setItem('imported_story_backup', JSON.stringify(story.actData));
         
         // Clear any previous player data to prevent conflicts
         if (story.actData.__exportInfo?.playerData) {
           // Create a copy of the player data for the component to use
-          localStorage.setItem('imported_story_player_data', 
+          sessionStorage.setItem('imported_story_player_data', 
             JSON.stringify(story.actData.__exportInfo.playerData));
         }
         
         // Force a new component mount by adding a timestamp to the URL
         const timestamp = Date.now();
-        localStorage.setItem('import_timestamp', timestamp.toString());
+        sessionStorage.setItem('import_timestamp', timestamp.toString());
         setLocation(`/player/imported?t=${timestamp}`);
       } catch (error) {
         console.error("Error preparing story for import:", error);

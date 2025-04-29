@@ -77,8 +77,8 @@ export default function Player() {
       setError(null);
       
       try {
-        // Handle imported story from localStorage
-        const importedStory = localStorage.getItem("imported_story");
+        // Handle imported story from sessionStorage
+        const importedStory = sessionStorage.getItem("imported_story");
         
         if (!importedStory) {
           throw new Error("No imported story found");
