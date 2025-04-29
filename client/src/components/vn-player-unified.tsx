@@ -19,12 +19,12 @@ export function VnPlayer({
   actNumber, 
   onReturn, 
   onRestart: externalRestart,
-  mode = "generated" // Default to standard behavior
+  mode = "generated" 
 }: VnPlayerProps) {
   const { playerData, updatePlayerData } = useVnContext();
   
   // Core scene and dialogue state
-  const [currentSceneId, setCurrentSceneId] = useState<string>("");
+  const [currentSceneId, setCurrentSceneId] = useState("");
   const [currentScene, setCurrentScene] = useState<Scene | null>(null);
   const [currentDialogueIndex, setCurrentDialogueIndex] = useState(0);
   const [showChoices, setShowChoices] = useState(false);
@@ -37,27 +37,11 @@ export function VnPlayer({
   const [displayedText, setDisplayedText] = useState("");
   const textAnimationRef = useRef<number | null>(null);
   
-  // Scrolling container reference
+  // Refs to prevent infinite render loops
   const containerRef = useRef<HTMLDivElement>(null);
+  const initialized = useRef(false);
   
-  // Process scene to ensure it's ready for display
-  const processScene = useCallback((scene: Scene): Scene => {
-    if (!scene) return scene;
-    
-    // Create a clean copy to avoid modifying the original
-    const processed = { ...scene };
-    
-    // Additional processing based on mode if needed
-    if (mode === "generated") {
-      // Any special processing for generated mode
-    } else if (mode === "imported") {
-      // Any special processing for imported mode
-    }
-    
-    return processed;
-  }, [mode]);
-  
-  // Text animation functions
+  // Text animation function
   const animateText = useCallback((text: string) => {
     // Skip animation if text speed is fast
     if (textSpeed === 'fast') {
@@ -122,6 +106,93 @@ export function VnPlayer({
     
     setIsTextAnimating(false);
   }, [currentScene, currentDialogueIndex]);
+  
+  // Process scenes to fix imported data issues and add end-of-act messages
+  const processScene = useCallback((scene: Scene): Scene => {
+    // Make a deep copy to avoid mutating the original
+    const processed = JSON.parse(JSON.stringify(scene));
+    
+    // Fix choices that are string "null" instead of null
+    if (processed.choices === "null") {
+      processed.choices = null;
+    }
+    
+    // Fix non-array choices
+    if (processed.choices && !Array.isArray(processed.choices)) {
+      processed.choices = null;
+    }
+    
+    // Add end of act message to the final scene
+    if (processed.choices === null && processed.dialogue?.length > 0) {
+      const lastIndex = processed.dialogue.length - 1;
+      const [speaker, text] = processed.dialogue[lastIndex];
+      processed.dialogue[lastIndex] = [speaker, `${text}\n\n(End of Act ${actNumber})`];
+    }
+    
+    return processed;
+  }, [actNumber]);
+  
+  // Initialize with first scene on mount - simplest approach is often best
+  useEffect(() => {
+    if (!actData?.scenes?.length || initialized.current) return;
+    
+    // Mark as initialized to prevent re-initialization
+    initialized.current = true;
+    
+    // Set initial scene
+    const firstScene = processScene(actData.scenes[0]);
+    console.log(`Initializing VN Player (${mode} mode) with first scene:`, firstScene.id);
+    
+    setCurrentScene(firstScene);
+    setCurrentSceneId(firstScene.id);
+    setCurrentDialogueIndex(0);
+    setShowChoices(false);
+    setDialogueLog([]);
+    
+    // Start text animation for the first dialogue line
+    if (firstScene.dialogue && firstScene.dialogue.length > 0) {
+      setDisplayedText(""); // Clear any previous text
+      animateText(firstScene.dialogue[0][1]);
+    }
+  }, [actData, processScene, animateText, mode]);
+  
+  // Update current scene when scene ID changes
+  useEffect(() => {
+    if (!actData?.scenes || !currentSceneId) return;
+    
+    const scene = actData.scenes.find(s => s.id === currentSceneId);
+    if (scene) {
+      const processedScene = processScene(scene);
+      setCurrentScene(processedScene);
+      setCurrentDialogueIndex(0);
+      setShowChoices(false);
+      
+      // Start text animation for the first dialogue line
+      if (processedScene.dialogue && processedScene.dialogue.length > 0) {
+        setDisplayedText(""); // Clear any previous text
+        animateText(processedScene.dialogue[0][1]);
+      }
+    }
+  }, [actData, currentSceneId, processScene, animateText]);
+  
+  // Handle restart
+  const handleRestart = useCallback(() => {
+    if (!actData?.scenes?.length) return;
+    
+    // Reset to first scene
+    const firstScene = processScene(actData.scenes[0]);
+    setCurrentScene(firstScene);
+    setCurrentSceneId(firstScene.id);
+    setCurrentDialogueIndex(0);
+    setShowChoices(false);
+    setDialogueLog([]);
+    
+    // Start text animation for the first dialogue line
+    if (firstScene.dialogue && firstScene.dialogue.length > 0) {
+      setDisplayedText(""); // Clear any previous text
+      animateText(firstScene.dialogue[0][1]);
+    }
+  }, [actData, processScene, animateText]);
   
   // Handle advancing to next dialogue or showing choices
   const advanceDialogue = useCallback(() => {
@@ -193,7 +264,9 @@ export function VnPlayer({
     // If condition not met and there's a failNext path, go to that scene
     if (!conditionMet && choice.failNext) {
       // No delay needed for failure path
-      setCurrentSceneId(choice.failNext);
+      if (choice.failNext) {
+        setCurrentSceneId(choice.failNext);
+      }
       setClickableContent(true);
       return;
     }
@@ -240,67 +313,6 @@ export function VnPlayer({
       advanceDialogue();
     }
   }, [showChoices, advanceDialogue, isTextAnimating, skipTextAnimation]);
-  
-  // Initialize manually on mount with different behaviors based on mode
-  useEffect(() => {
-    if (!actData?.scenes?.length) return;
-    
-    // Get and process the first scene
-    const firstScene = processScene(actData.scenes[0]);
-    console.log(`Initializing VN Player (${mode} mode) with first scene:`, firstScene.id);
-    
-    // Different initialization based on mode
-    if (mode === "imported") {
-      // For imported stories, use a simpler one-time initialization
-      // that won't cause infinite update loops
-      setCurrentScene(firstScene);
-      setCurrentSceneId(firstScene.id);
-      setCurrentDialogueIndex(0);
-      setShowChoices(false);
-      setDialogueLog([]);
-      
-      // Start text animation for the first dialogue line
-      if (firstScene.dialogue && firstScene.dialogue.length > 0) {
-        setDisplayedText(""); // Clear any previous text
-        animateText(firstScene.dialogue[0][1]);
-      }
-    } else {
-      // For generated stories, use the standard approach
-      setCurrentSceneId(firstScene.id);
-    }
-  }, [actData, processScene, animateText, mode]); 
-  
-  // Update current scene when scene ID changes
-  useEffect(() => {
-    if (!actData?.scenes || !currentSceneId) return;
-    
-    const scene = actData.scenes.find(s => s.id === currentSceneId);
-    if (scene) {
-      const processedScene = processScene(scene);
-      setCurrentScene(processedScene);
-      setCurrentDialogueIndex(0);
-      setShowChoices(false);
-      
-      // Start text animation for the first dialogue line
-      if (processedScene.dialogue && processedScene.dialogue.length > 0) {
-        setDisplayedText(""); // Clear any previous text
-        animateText(processedScene.dialogue[0][1]);
-      }
-    }
-  }, [currentSceneId, processScene, animateText, actData]);
-  
-  // Handle restart
-  const handleRestart = useCallback(() => {
-    if (!actData?.scenes?.length) return;
-    
-    // Reset to first scene
-    const firstScene = processScene(actData.scenes[0]);
-    setCurrentScene(firstScene);
-    setCurrentSceneId(firstScene.id);
-    setCurrentDialogueIndex(0);
-    setShowChoices(false);
-    setDialogueLog([]);
-  }, [actData, processScene]);
   
   // Auto-scroll to keep the current dialogue visible
   useEffect(() => {
@@ -352,7 +364,7 @@ export function VnPlayer({
   
   // Show loading while no scene is available
   if (!currentScene) {
-    return <div className="flex items-center justify-center h-screen">Loading story...</div>;
+    return <div className="flex items-center justify-center h-screen">Loading {mode} story...</div>;
   }
   
   // Get current dialogue text (using either the animated display text or the full original text)
@@ -491,7 +503,7 @@ export function VnPlayer({
           {currentScene.choices === null && currentDialogueIndex >= currentScene.dialogue.length - 1 && (
             <div className="mt-8 text-center">
               <Button onClick={onReturn} className="mx-auto">
-                Return to Selection Screen
+                {mode === "imported" ? "Return to Selection Screen" : "Return to Generation Screen"}
               </Button>
             </div>
           )}

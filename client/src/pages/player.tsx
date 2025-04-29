@@ -2,8 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useParams } from "wouter";
-import { VnPlayer } from "@/components/vn-player";
-import { VnPlayerImported } from "@/components/vn-player-imported";
+import { VnPlayer } from "@/components/vn-player-unified";
 import { GeneratedAct } from "@/types/vn";
 
 export default function Player() {
@@ -250,25 +249,14 @@ export default function Player() {
     );
   }
   
-  // Use different player components for imported vs. generated stories
-  if (actId === "imported") {
-    return (
-      <VnPlayerImported
-        actData={actData}
-        actNumber={actNumber}
-        onReturn={handleReturn}
-        onRestart={handleRestart}
-      />
-    );
-  }
-  
-  // Use regular player for generated acts
+  // Use the unified player component with different modes based on the source
   return (
     <VnPlayer
       actData={actData}
       actNumber={actNumber}
       onReturn={handleReturn}
       onRestart={handleRestart}
+      mode={actId === "imported" ? "imported" : "generated"}
     />
   );
 }
