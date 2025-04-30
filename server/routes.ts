@@ -173,16 +173,16 @@ function cleanResponseText(text: string): string {
   text = text.replace(/([}\]"'0-9])\s*\n\s*([{\["a-zA-Z0-9_])/g, "$1,\n$2");
 
   // Fix broken arrays where brackets are missing
-  text = text.replace(/(\[\s*[^[\]]*?)\s*(?:\n\s*\]|$)/g, '$1]');
+  text = text.replace(/(\[\s*[^[\]]*?)\s*(?:\n\s*\]|$)/g, "$1]");
 
   // Fix invalid escape sequences
-  text = text.replace(/\\([^"\\\/bfnrt])/g, '$1');
+  text = text.replace(/\\([^"\\\/bfnrt])/g, "$1");
 
   // Fix unescaped quotes in strings
   text = text.replace(/(?<!\\)"(?=[^"]*"[^"]*$)/g, '\\"');
 
   // Fix undefined/null values
-  text = text.replace(/:\s*(undefined|null)\s*([,}])/g, ': null$2');
+  text = text.replace(/:\s*(undefined|null)\s*([,}])/g, ": null$2");
 
   // Ensure proper quoting of string values
   text = text.replace(/:\s*([a-zA-Z][a-zA-Z0-9_]*)\s*([,\n\r}])/g, ': "$1"$2');
@@ -194,10 +194,7 @@ function cleanResponseText(text: string): string {
   );
 
   // Remove any remaining whitespace between the end of content and closing brackets
-  text = text.replace(/\s+([\]}])\s*$/g, '$1');
-
-  return text;
-}
+  text = text.replace(/\s+([\]}])\s*$/g, "$1");
 
   return text;
 }
@@ -816,7 +813,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         - Do not generate any other act except Act ${actNumber}.
         - Create approximately ${scenesCount} scenes for Act ${actNumber}, or more if necessary to convey Act ${actNumber}.
         - Include branching paths based on 2-4 choices. Choices that continue the dialogue conversation in the same scene are marked with a letter e.g. Act ${actNumber} Scene 1b (although they are technically different scenes).
-        - Final scene of act should have choices set to null. Otherwise, ensure the scene connects to another scene.
+        - Final scene of act should have choices set to null value. Otherwise, ensure the scene connects to another scene.
         - Relationships, inventory items, or skills can be added or subtracted by "delta" values.
         - Pack each scene with ample dialogue to express the story (5-15+ lines). Be inventive and creative about event details, while ensuring consistency with the plot outline.
         - Use of a narrator is encouraged to explain the scene or provide context.
