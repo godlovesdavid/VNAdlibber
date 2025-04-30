@@ -231,6 +231,7 @@ export function VnPlayer({
     [actNumber],
   );
 
+  
   // Initialize scenes separately for generated and imported modes to avoid recursion issues
   // This initialization is only for generated mode
   useEffect(() => {
@@ -301,6 +302,7 @@ export function VnPlayer({
     debug: false,
     generationDelay: 100, // Added slight delay to prevent rapid generation during transitions
   });
+  
   // Update current scene when scene ID changes - for generated mode
   useEffect(() => {
     if (mode !== "generated" || !actData?.scenes || !currentSceneId) return;
@@ -317,9 +319,6 @@ export function VnPlayer({
         setDisplayedText(""); // Clear any previous text
         animateText(processedScene.dialogue[0][1]);
       }
-
-      // Automatically generate image for the new scene
-      generateImage(true);
     }
   }, [actData, currentSceneId, processScene, animateText, mode, generateImage]);
 
@@ -342,11 +341,8 @@ export function VnPlayer({
         setDisplayedText(""); // Clear any previous text
         animateText(processedScene.dialogue[0][1]);
       }
-
-      // Automatically generate image for the new scene
-      generateImage(true);
     }
-  }, [actData, currentSceneId, processScene, mode, generateImage, animateText]);
+  }, [actData, currentSceneId, processScene, mode, generateImage]);
 
   // Handle restart
   const handleRestart = useCallback(() => {
