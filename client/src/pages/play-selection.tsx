@@ -72,13 +72,18 @@ export default function PlaySelection() {
         const content = event.target?.result as string;
         let cleanedContent = content;
 
-        // Extract the main content between the first { and last }
-        const mainContent = cleanedContent.substring(
-          cleanedContent.indexOf("{"),
-          cleanedContent.lastIndexOf("}") + 1,
-        );
+        // Log the initial content for debugging
+        console.log("Importing content:", content.substring(0, 100) + "...");
 
-        cleanedContent = mainContent;
+        // Extract the main content between the first { and last }
+        const firstBrace = cleanedContent.indexOf("{");
+        const lastBrace = cleanedContent.lastIndexOf("}");
+
+        if (firstBrace === -1 || lastBrace === -1) {
+          throw new Error("Invalid JSON structure - missing braces");
+        }
+
+        cleanedContent = cleanedContent.substring(firstBrace, lastBrace + 1);
 
         // Fix common JSON issues
         // Fix missing quotes around property names
@@ -219,7 +224,7 @@ export default function PlaySelection() {
         toast({
           title: "Import Failed",
           description:
-            "The file format is not valid. Please upload a valid story JSON file.",
+            "The file format is not valid. Please upload a valid story JSON file.  Error details: " + error,
           variant: "destructive",
         });
       }
