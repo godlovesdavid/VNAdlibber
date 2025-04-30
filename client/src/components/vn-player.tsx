@@ -306,6 +306,14 @@ export function VnPlayer({
     generationDelay: 100, // Added slight delay to prevent rapid generation during transitions
   });
 
+  // Separate effect for image generation
+  useEffect(() => {
+    if (shouldGenerateImage.current && currentScene) {
+      shouldGenerateImage.current = false;
+      generateImage(true);
+    }
+  }, [currentScene, generateImage]);
+  
   // Update current scene when scene ID changes - for generated mode
   useEffect(() => {
     if (mode !== "generated" || !actData?.scenes || !currentSceneId) return;
@@ -328,13 +336,6 @@ export function VnPlayer({
     }
   }, [actData, currentSceneId, processScene, animateText, mode]);
 
-  // Separate effect for image generation
-  useEffect(() => {
-    if (shouldGenerateImage.current && currentScene) {
-      shouldGenerateImage.current = false;
-      generateImage(true);
-    }
-  }, [currentScene, generateImage]);
 
   // Update current scene when scene ID changes - for imported mode (no animation)
   useEffect(() => {
