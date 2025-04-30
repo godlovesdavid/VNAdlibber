@@ -541,9 +541,9 @@ export function VnPlayer({
     error: imageError,
     generateImage,
   } = useImageGeneration(currentScene, theme, {
-    autoGenerate: false,
+    autoGenerate: true,
     debug: true,
-    generationDelay: 100, // Reduced delay for testing
+    generationDelay: 500, // Added slight delay to prevent rapid generation during transitions
   });
 
   // Log current scene and image state for debugging
