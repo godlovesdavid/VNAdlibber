@@ -290,6 +290,17 @@ export function VnPlayer({
     }
   }, [actData, processScene, mode]);
 
+  // Use image generation hook - make sure to update when scene changes
+  const {
+    imageUrl,
+    isGenerating,
+    error: imageError,
+    generateImage,
+  } = useImageGeneration(currentScene, {
+    autoGenerate: false,
+    debug: false,
+    generationDelay: 100, // Added slight delay to prevent rapid generation during transitions
+  });
   // Update current scene when scene ID changes - for generated mode
   useEffect(() => {
     if (mode !== "generated" || !actData?.scenes || !currentSceneId) return;
@@ -527,17 +538,6 @@ export function VnPlayer({
     };
   }, [mode, isTextAnimating]);
 
-  // Use image generation hook - make sure to update when scene changes
-  const {
-    imageUrl,
-    isGenerating,
-    error: imageError,
-    generateImage,
-  } = useImageGeneration(currentScene, {
-    autoGenerate: false,
-    debug: false,
-    generationDelay: 100, // Added slight delay to prevent rapid generation during transitions
-  });
 
   // Log current scene and image state for debugging
   useEffect(() => {
