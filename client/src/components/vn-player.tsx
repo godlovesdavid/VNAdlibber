@@ -129,6 +129,9 @@ export function VnPlayer({
   const containerRef = useRef<HTMLDivElement>(null);
   const initialized = useRef(false);
 
+  // Track if we need to generate an image
+  const shouldGenerateImage = useRef(false);
+
   // Text animation function
   const animateText = useCallback(
     (text: string) => {
@@ -231,7 +234,7 @@ export function VnPlayer({
     [actNumber],
   );
 
-  
+
   // Initialize scenes separately for generated and imported modes to avoid recursion issues
   // This initialization is only for generated mode
   useEffect(() => {
@@ -302,7 +305,7 @@ export function VnPlayer({
     debug: false,
     generationDelay: 100, // Added slight delay to prevent rapid generation during transitions
   });
-  
+
   // Update current scene when scene ID changes - for generated mode
   useEffect(() => {
     if (mode !== "generated" || !actData?.scenes || !currentSceneId) return;
@@ -319,8 +322,19 @@ export function VnPlayer({
         setDisplayedText(""); // Clear any previous text
         animateText(processedScene.dialogue[0][1]);
       }
+
+      // Mark that we need to generate an image
+      shouldGenerateImage.current = true;
     }
-  }, [actData, currentSceneId, processScene, animateText, mode, generateImage]);
+  }, [actData, currentSceneId, processScene, animateText, mode]);
+
+  // Separate effect for image generation
+  useEffect(() => {
+    if (shouldGenerateImage.current && currentScene) {
+      shouldGenerateImage.current = false;
+      generateImage(true);
+    }
+  }, [currentScene, generateImage]);
 
   // Update current scene when scene ID changes - for imported mode (no animation)
   useEffect(() => {
@@ -342,7 +356,7 @@ export function VnPlayer({
         animateText(processedScene.dialogue[0][1]);
       }
     }
-  }, [actData, currentSceneId, processScene, mode, generateImage]);
+  }, [actData, currentSceneId, processScene, mode]);
 
   // Handle restart
   const handleRestart = useCallback(() => {
