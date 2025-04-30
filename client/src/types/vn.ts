@@ -71,7 +71,6 @@ export interface PlotData {
 
 // Scene choice structure
 export interface SceneChoice {
-  id: string;
   text?: string;
   description?: string; // Added description field for choice consequences explanation
   delta?: Record<string, number>;

@@ -91,11 +91,6 @@ export default function Player() {
           // Set act number
           setActNumber(parsedStory.actNumber || 1);
           
-          // Apply player data if present in export info
-          if (parsedStory.actData.__exportInfo?.playerData) {
-            updatePlayerData(parsedStory.actData.__exportInfo.playerData);
-          }
-          
           // Make a deep copy of act data to avoid reference issues
           const stringCopy = JSON.stringify(parsedStory.actData);
           const actDataCopy = JSON.parse(stringCopy);
@@ -116,11 +111,6 @@ export default function Player() {
         } else {
           // Direct data format (less common)
           setActNumber(1);
-          
-          // Apply player data if present in export info
-          if (parsedStory.__exportInfo?.playerData) {
-            updatePlayerData(parsedStory.__exportInfo.playerData);
-          }
           
           // Make a deep copy to avoid reference issues
           const stringCopy = JSON.stringify(parsedStory);

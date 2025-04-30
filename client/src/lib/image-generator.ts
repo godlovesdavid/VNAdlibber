@@ -32,7 +32,7 @@ export async function generateSceneBackground(
   try {
     console.log(
       "Generating background for scene:",
-      scene.id,
+      scene.name,
       "image prompt:",
       scene.image_prompt,
       "theme:",

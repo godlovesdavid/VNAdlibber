@@ -152,15 +152,6 @@ export default function PlaySelection() {
           JSON.stringify(story.actData),
         );
 
-        // Clear any previous player data to prevent conflicts
-        if (story.actData.__exportInfo?.playerData) {
-          // Create a copy of the player data for the component to use
-          localStorage.setItem(
-            "imported_story_player_data",
-            JSON.stringify(story.actData.__exportInfo.playerData),
-          );
-        }
-
         // Force a new component mount by adding a timestamp to the URL
         const timestamp = Date.now();
         localStorage.setItem("import_timestamp", timestamp.toString());

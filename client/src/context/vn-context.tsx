@@ -388,21 +388,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         const actNumber = actKey.replace('act', '');
         const fileName = `${projectData.title.replace(/\s+/g, '_')}-Act${actNumber}.json`;
         
-        // Include metadata to ensure proper scene transitions
-        const exportData = {
-          ...actData,
-          __exportInfo: {
-            title: projectData.title,
-            actNumber: parseInt(actNumber),
-            exportedAt: new Date().toISOString(),
-            // Include initial player state and metadata to properly handle transitions
-            playerData: projectData.playerData || defaultPlayerData,
-            basicData: projectData.basicData
-          }
-        };
-        
         // Create a blob and download link
-        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        const blob = new Blob([JSON.stringify(actData, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
