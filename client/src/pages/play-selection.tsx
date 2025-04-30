@@ -68,7 +68,7 @@ export default function PlaySelection() {
     // Update localStorage with JSON repair
     try {
       // Use jsonrepair to ensure valid JSON when saving to localStorage
-      const repairedStories = jsonrepair(JSON.stringify(updatedStories));
+      const repairedStories = JSON.stringify(updatedStories);
       localStorage.setItem("imported_stories", repairedStories);
       console.log("Saved repaired stories list after removal with jsonrepair");
     } catch (error) {
@@ -135,7 +135,7 @@ export default function PlaySelection() {
         // Also save to localStorage for persistence
         try {
           // Use jsonrepair to ensure valid JSON when saving to localStorage
-          const repairedStories = jsonrepair(JSON.stringify(updatedStories));
+          const repairedStories = JSON.stringify(updatedStories);
           localStorage.setItem(
             "imported_stories",
             repairedStories
@@ -185,26 +185,16 @@ export default function PlaySelection() {
           actNumber: story.actNumber,
           createdAt: story.createdAt,
           // Convert to string and back to ensure deep cloning
-          // Use jsonrepair to fix any potential JSON serialization issues
-          actData: JSON.parse(jsonrepair(JSON.stringify(story.actData))),
+          actData: JSON.parse(JSON.stringify(story.actData)),
         };
 
         // Store the story in localStorage for persistence
-        try {
-          // Use jsonrepair to ensure valid JSON for the main story storage
-          const repairedStory = jsonrepair(JSON.stringify(storyToStore));
-          localStorage.setItem("imported_story", repairedStory);
-          console.log("Created repaired story storage with jsonrepair");
-        } catch (error) {
-          console.error("Failed to repair main story JSON:", error);
-          // Fall back to original stringification if repair fails
-          localStorage.setItem("imported_story", JSON.stringify(storyToStore));
-        }
+        localStorage.setItem("imported_story", JSON.stringify(storyToStore));
 
         // Create an extra backup of the raw story data in case the Player has trouble parsing
         // Using jsonrepair to ensure the backup is also free of JSON issues
         try {
-          const repairedBackup = jsonrepair(JSON.stringify(story.actData));
+          const repairedBackup = JSON.stringify(story.actData);
           localStorage.setItem(
             "imported_story_backup",
             repairedBackup
@@ -224,7 +214,7 @@ export default function PlaySelection() {
           // Create a copy of the player data for the component to use
           try {
             // Use jsonrepair to ensure valid JSON for player data
-            const repairedPlayerData = jsonrepair(JSON.stringify(story.actData.__exportInfo.playerData));
+            const repairedPlayerData = JSON.stringify(story.actData.__exportInfo.playerData);
             localStorage.setItem(
               "imported_story_player_data",
               repairedPlayerData
