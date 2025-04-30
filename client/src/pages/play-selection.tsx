@@ -25,7 +25,19 @@ export default function PlaySelection() {
     // Initialize from localStorage on component mount
     try {
       const stored = localStorage.getItem("imported_stories");
-      return stored ? JSON.parse(stored) : [];
+      if (!stored) return [];
+      
+      // Try to repair potentially broken JSON using jsonrepair
+      let fixedStored = stored;
+      try {
+        console.log("Attempting to repair localStorage JSON with jsonrepair");
+        fixedStored = jsonrepair(stored);
+      } catch (repairError) {
+        console.error("JSON repair failed on localStorage data:", repairError);
+        // Continue with original content if repair fails
+      }
+      
+      return JSON.parse(fixedStored);
     } catch (e) {
       console.error("Error loading imported stories:", e);
       return [];
@@ -53,8 +65,17 @@ export default function PlaySelection() {
     // Update state
     setImportedStories(updatedStories);
 
-    // Update localStorage
-    localStorage.setItem("imported_stories", JSON.stringify(updatedStories));
+    // Update localStorage with JSON repair
+    try {
+      // Use jsonrepair to ensure valid JSON when saving to localStorage
+      const repairedStories = jsonrepair(JSON.stringify(updatedStories));
+      localStorage.setItem("imported_stories", repairedStories);
+      console.log("Saved repaired stories list after removal with jsonrepair");
+    } catch (error) {
+      console.error("Failed to repair stories list JSON after removal:", error);
+      // Fall back to original stringification if repair fails
+      localStorage.setItem("imported_stories", JSON.stringify(updatedStories));
+    }
 
     toast({
       title: "Story Removed",
@@ -70,7 +91,16 @@ export default function PlaySelection() {
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const content = event.target?.result as string;
+        let content = event.target?.result as string;
+        
+        // Try to repair potentially broken JSON using jsonrepair
+        try {
+          console.log("Attempting to repair JSON with jsonrepair");
+          content = jsonrepair(content);
+        } catch (repairError) {
+          console.error("JSON repair failed:", repairError);
+          // Continue with original content if repair fails
+        }
 
         const actData = JSON.parse(content) as GeneratedAct;
 
@@ -103,10 +133,22 @@ export default function PlaySelection() {
         setImportedStories(updatedStories);
 
         // Also save to localStorage for persistence
-        localStorage.setItem(
-          "imported_stories",
-          JSON.stringify(updatedStories),
-        );
+        try {
+          // Use jsonrepair to ensure valid JSON when saving to localStorage
+          const repairedStories = jsonrepair(JSON.stringify(updatedStories));
+          localStorage.setItem(
+            "imported_stories",
+            repairedStories
+          );
+          console.log("Saved repaired stories list with jsonrepair");
+        } catch (error) {
+          console.error("Failed to repair stories list JSON:", error);
+          // Fall back to original stringification if repair fails
+          localStorage.setItem(
+            "imported_stories",
+            JSON.stringify(updatedStories)
+          );
+        }
 
         toast({
           title: "Story Imported",
@@ -143,25 +185,59 @@ export default function PlaySelection() {
           actNumber: story.actNumber,
           createdAt: story.createdAt,
           // Convert to string and back to ensure deep cloning
-          actData: JSON.parse(JSON.stringify(story.actData)),
+          // Use jsonrepair to fix any potential JSON serialization issues
+          actData: JSON.parse(jsonrepair(JSON.stringify(story.actData))),
         };
 
         // Store the story in localStorage for persistence
-        localStorage.setItem("imported_story", JSON.stringify(storyToStore));
+        try {
+          // Use jsonrepair to ensure valid JSON for the main story storage
+          const repairedStory = jsonrepair(JSON.stringify(storyToStore));
+          localStorage.setItem("imported_story", repairedStory);
+          console.log("Created repaired story storage with jsonrepair");
+        } catch (error) {
+          console.error("Failed to repair main story JSON:", error);
+          // Fall back to original stringification if repair fails
+          localStorage.setItem("imported_story", JSON.stringify(storyToStore));
+        }
 
         // Create an extra backup of the raw story data in case the Player has trouble parsing
-        localStorage.setItem(
-          "imported_story_backup",
-          JSON.stringify(story.actData),
-        );
+        // Using jsonrepair to ensure the backup is also free of JSON issues
+        try {
+          const repairedBackup = jsonrepair(JSON.stringify(story.actData));
+          localStorage.setItem(
+            "imported_story_backup",
+            repairedBackup
+          );
+          console.log("Created repaired backup with jsonrepair");
+        } catch (error) {
+          console.error("Failed to repair backup JSON:", error);
+          // Fall back to original stringification if repair fails
+          localStorage.setItem(
+            "imported_story_backup",
+            JSON.stringify(story.actData)
+          );
+        }
 
         // Clear any previous player data to prevent conflicts
         if (story.actData.__exportInfo?.playerData) {
           // Create a copy of the player data for the component to use
-          localStorage.setItem(
-            "imported_story_player_data",
-            JSON.stringify(story.actData.__exportInfo.playerData),
-          );
+          try {
+            // Use jsonrepair to ensure valid JSON for player data
+            const repairedPlayerData = jsonrepair(JSON.stringify(story.actData.__exportInfo.playerData));
+            localStorage.setItem(
+              "imported_story_player_data",
+              repairedPlayerData
+            );
+            console.log("Created repaired player data with jsonrepair");
+          } catch (error) {
+            console.error("Failed to repair player data JSON:", error);
+            // Fall back to original stringification if repair fails
+            localStorage.setItem(
+              "imported_story_player_data",
+              JSON.stringify(story.actData.__exportInfo.playerData)
+            );
+          }
         }
 
         // Force a new component mount by adding a timestamp to the URL
