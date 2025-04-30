@@ -148,8 +148,13 @@ function cleanResponseText(text: string): string {
     text = text.replace(/\n```\s*$/, "");
   }
 
+  // Remove HTML comments
+  text = text.replace(/<!--[\s\S]*?-->/g, "");
+
+  // Fix "choices": "null" to "choices": null
+  text = text.replace(/"choices"\s*:\s*"null"/g, '"choices": null');
+
   // Replace JavaScript string concatenation in JSON with plain text
-  // e.g., "name": "Geargrind " + "Cogsworth" becomes "name": "Geargrind Cogsworth"
   text = text.replace(/"([^"]+)" \+ "([^"]+)"/g, '"$1$2"');
 
   // Remove any JS-style comments
@@ -167,15 +172,32 @@ function cleanResponseText(text: string): string {
   // Fix missing commas between array elements or object properties
   text = text.replace(/([}\]"'0-9])\s*\n\s*([{\["a-zA-Z0-9_])/g, "$1,\n$2");
 
+  // Fix broken arrays where brackets are missing
+  text = text.replace(/(\[\s*[^[\]]*?)\s*(?:\n\s*\]|$)/g, '$1]');
+
+  // Fix invalid escape sequences
+  text = text.replace(/\\([^"\\\/bfnrt])/g, '$1');
+
+  // Fix unescaped quotes in strings
+  text = text.replace(/(?<!\\)"(?=[^"]*"[^"]*$)/g, '\\"');
+
+  // Fix undefined/null values
+  text = text.replace(/:\s*(undefined|null)\s*([,}])/g, ': null$2');
+
   // Ensure proper quoting of string values
   text = text.replace(/:\s*([a-zA-Z][a-zA-Z0-9_]*)\s*([,\n\r}])/g, ': "$1"$2');
 
   // Add missing quotes to property values that look like unquoted strings
-  // This could be risky but might help in some cases
   text = text.replace(
     /:\s*([a-zA-Z][a-zA-Z0-9_\s]*[a-zA-Z0-9_])(\s*[,\n\r}])/g,
     ': "$1"$2',
   );
+
+  // Remove any remaining whitespace between the end of content and closing brackets
+  text = text.replace(/\s+([\]}])\s*$/g, '$1');
+
+  return text;
+}
 
   return text;
 }
