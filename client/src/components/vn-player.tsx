@@ -294,7 +294,7 @@ export function VnPlayer({
   useEffect(() => {
     if (mode !== "generated" || !actData?.scenes || !currentSceneId) return;
 
-    const scene = actData.scenes.find((s) => s.id === currentSceneId);
+    const scene = actData.scenes.find((s) => s.name === currentSceneId);
     if (scene) {
       const processedScene = processScene(scene);
       setCurrentScene(processedScene);
@@ -313,7 +313,7 @@ export function VnPlayer({
   useEffect(() => {
     if (mode !== "imported" || !actData?.scenes || !currentSceneId) return;
 
-    const scene = actData.scenes.find((s) => s.id === currentSceneId);
+    const scene = actData.scenes.find((s) => s.name === currentSceneId);
     if (scene) {
       // Use deep copy to prevent any reference issues
       const sceneCopy = JSON.parse(JSON.stringify(scene));

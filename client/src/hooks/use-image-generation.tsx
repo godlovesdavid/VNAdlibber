@@ -127,7 +127,6 @@ export function useImageGeneration(
           // Call API to generate image
           const result: ImageGenerationResult = await generateSceneBackground(
             { id: scene.name, image_prompt: scene.image_prompt || "" },
-            theme,
             abortController.current.signal,
             {}, // No options needed since we're using RunPod
           );
@@ -175,7 +174,7 @@ export function useImageGeneration(
         }
       }, generationDelay);
     },
-    [scene, theme, cancelGeneration, generationDelay, toast, logDebug],
+    [scene, cancelGeneration, generationDelay, toast, logDebug],
   );
 
   // Auto-generate when scene changes if autoGenerate is true

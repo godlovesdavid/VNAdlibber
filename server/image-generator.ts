@@ -7,17 +7,16 @@ interface RunPodStatusResponse {
 export async function generateSceneBackgroundImage(
   sceneId: string,
   bg: string,
-  theme?: string,
 ): Promise<{ url: string }> {
   try {
     console.log("🎨 START: Generating image background for scene:", sceneId);
-    console.log("- bg:", { bg, theme });
+    console.log("- bg:", { bg });
 
     if (!process.env.RUNPOD_API_KEY) {
       throw new Error("RUNPOD_API_KEY is required for image generation");
     }
 
-    const prompt = generateBackgroundPrompt(bg, theme);
+    const prompt = generateBackgroundPrompt(bg);
     const width = 512;
     const height = 512;
     const guidance_scale = 7.5;

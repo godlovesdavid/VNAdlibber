@@ -1,5 +1,4 @@
 import { apiRequest } from "./queryClient";
-import { isUpscalerAvailable, upscaleImage } from "./image-upscaler";
 
 // Interface for image generation result with error validation
 export interface ImageGenerationResult {
@@ -7,10 +6,6 @@ export interface ImageGenerationResult {
   error?: string;
   loading?: boolean;
 }
-
-// Flag to track upscaler availability
-let upscalerAvailabilityChecked = false;
-let isUpscalerAvailableCache = false;
 
 // Helper to detect mobile devices
 function isMobileDevice(): boolean {
@@ -23,9 +18,8 @@ function isMobileDevice(): boolean {
 export async function generateSceneBackground(
   scene: {
     image_prompt: string;
-    id: string;
+    name: string;
   },
-  theme?: string,
   signal?: AbortSignal,
   options?: {},
 ): Promise<ImageGenerationResult> {
@@ -34,14 +28,11 @@ export async function generateSceneBackground(
       "Generating background for scene:",
       scene.name,
       "image prompt:",
-      scene.image_prompt,
-      "theme:",
-      theme || "none",
+      scene.image_prompt
     );
 
     const requestData = {
       scene,
-      theme,
       imageType: "background",
       // Include flag to indicate if optimize mode should be used
       optimizeForMobile: isMobileDevice(),
@@ -68,12 +59,6 @@ export async function generateSceneBackground(
       console.error("API returned error:", result.error);
       return { error: result.error };
     }
-
-    // Skip upscaling for now - as requested by user
-    // This will use the original images directly, potentially half-resolution
-    console.log(
-      "Skipping upscaling as requested - using original image directly",
-    );
 
     console.log("Successfully generated image, returning URL");
     return { url: result.url };
