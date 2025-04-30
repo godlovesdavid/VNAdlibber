@@ -72,18 +72,48 @@ export default function PlaySelection() {
         const content = event.target?.result as string;
         let cleanedContent = content;
 
-        // More aggressive JSON cleaning
-        // Remove any truncated content
-        cleanedContent = cleanedContent.replace(/\[\s*$/, '');
+        // Extract the main content between the first { and last }
+        const mainContent = cleanedContent.substring(
+          cleanedContent.indexOf('{'),
+          cleanedContent.lastIndexOf('}') + 1
+        );
 
+        cleanedContent = mainContent;
+
+        // Fix common JSON issues
         // Fix missing quotes around property names
         cleanedContent = cleanedContent.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
 
-        // Fix missing commas in nested arrays
-        cleanedContent = cleanedContent.replace(/\](\s*)\[/g, "],\n[");
+        // Fix "choices": "null" to "choices": null
+        cleanedContent = cleanedContent.replace(/"choices"\s*:\s*"null"/g, '"choices": null');
 
-        // Fix missing commas between objects
-        cleanedContent = cleanedContent.replace(/}(\s*){/g, "},\n{");
+        // Fix broken arrays/objects
+        cleanedContent = cleanedContent.replace(/\}\s*\"/g, '},\"');
+        cleanedContent = cleanedContent.replace(/\"\s*\{/g, '\",{');
+        cleanedContent = cleanedContent.replace(/\]\s*\"/g, '],\"');
+        cleanedContent = cleanedContent.replace(/\"\s*\[/g, '\",[');
+
+        // Remove trailing commas in arrays and objects
+        cleanedContent = cleanedContent.replace(/,(\s*[\]}])/g, '$1');
+
+        // Fix unescaped quotes
+        cleanedContent = cleanedContent.replace(/(?<!\\)"(?=[^"]*"[^"]*$)/g, '\\"');
+
+        // Fix missing brackets/braces
+        const openBraces = (cleanedContent.match(/{/g) || []).length;
+        const closeBraces = (cleanedContent.match(/}/g) || []).length;
+        const openBrackets = (cleanedContent.match(/\[/g) || []).length;
+        const closeBrackets = (cleanedContent.match(/\]/g) || []).length;
+
+        // Add missing closing braces/brackets
+        while (openBraces > closeBraces) {
+          cleanedContent += '}';
+          closeBraces++;
+        }
+        while (openBrackets > closeBrackets) {
+          cleanedContent += ']';
+          closeBrackets++;
+        }
 
         // Add missing brackets to arrays
         if (cleanedContent.includes('[') && !cleanedContent.includes(']')) {
