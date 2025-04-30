@@ -306,8 +306,11 @@ export function VnPlayer({
         setDisplayedText(""); // Clear any previous text
         animateText(processedScene.dialogue[0][1]);
       }
+
+      // Automatically generate image for the new scene
+      generateImage(true);
     }
-  }, [actData, currentSceneId, processScene, animateText, mode]);
+  }, [actData, currentSceneId, processScene, animateText, mode, generateImage]);
 
   // Update current scene when scene ID changes - for imported mode (no animation)
   useEffect(() => {
@@ -328,8 +331,11 @@ export function VnPlayer({
         setDisplayedText(""); // Clear any previous text
         animateText(processedScene.dialogue[0][1]);
       }
+
+      // Automatically generate image for the new scene
+      generateImage(true);
     }
-  }, [actData, currentSceneId, processScene, mode]);
+  }, [actData, currentSceneId, processScene, mode, generateImage, animateText]);
 
   // Handle restart
   const handleRestart = useCallback(() => {
