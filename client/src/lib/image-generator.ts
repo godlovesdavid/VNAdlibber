@@ -22,7 +22,7 @@ function isMobileDevice(): boolean {
 // Function to generate a scene background image using RunPod
 export async function generateSceneBackground(
   scene: {
-    bg: string;
+    image_prompt: string;
     id: string;
   },
   theme?: string,
@@ -33,8 +33,8 @@ export async function generateSceneBackground(
     console.log(
       "Generating background for scene:",
       scene.id,
-      "bg:",
-      scene.bg,
+      "image prompt:",
+      scene.image_prompt,
       "theme:",
       theme || "none",
     );

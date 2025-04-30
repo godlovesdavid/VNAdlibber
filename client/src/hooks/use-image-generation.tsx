@@ -86,9 +86,9 @@ export function useImageGeneration(
       currentSceneId.current = scene.id;
 
       // Check if scene already has a background URL
-      if (scene.bg && !forceGenerate) {
-        logDebug("Scene already has bg URL:", scene.bg);
-        setImageUrl(scene.bg);
+      if (scene.image_prompt && !forceGenerate) {
+        logDebug("Scene already has bg URL:", scene.image_prompt);
+        setImageUrl(scene.image_prompt);
         return;
       }
 
@@ -127,7 +127,7 @@ export function useImageGeneration(
 
           // Call API to generate image
           const result: ImageGenerationResult = await generateSceneBackground(
-            { id: scene.id, bg: scene.bg || "" },
+            { id: scene.id, image_prompt: scene.image_prompt || "" },
             theme,
             abortController.current.signal,
             {}, // No options needed since we're using RunPod
@@ -187,9 +187,9 @@ export function useImageGeneration(
     currentSceneId.current = scene.id;
 
     // Check if scene already has a background URL or cached URL
-    if (scene.bg) {
-      logDebug("Scene has bg URL, using it:", scene.bg);
-      setImageUrl(scene.bg);
+    if (scene.image_prompt) {
+      logDebug("Scene has bg URL, using it:", scene.image_prompt);
+      setImageUrl(scene.image_prompt);
       return;
     }
 

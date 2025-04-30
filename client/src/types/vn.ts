@@ -16,7 +16,7 @@ export interface ConceptData {
 export interface Character {
   name: string;
   role: string;
-  occupation: string;  // Added occupation field to distinguish from role
+  occupation: string; // Added occupation field to distinguish from role
   gender: string;
   age: string;
   appearance: string;
@@ -35,7 +35,7 @@ export interface CharactersData {
 export interface Route {
   title: string;
   loveInterest: string | null;
-  keyChoices: string;  // Changed from array to a single text area
+  keyChoices: string; // Changed from array to a single text area
   beginning: string;
   middle: string;
   climax: string;
@@ -84,25 +84,15 @@ export interface SceneChoice {
 export interface Scene {
   id: string;
   setting: string;
-  bg?: string;
+  image_prompt?: string;
   dialogue: [string, string][];
   choices: SceneChoice[] | null;
 }
 
 // Generated act structure - the complete VN act data
 export interface GeneratedAct {
-  meta: {
-    theme: string;
-    relationshipVars: string[];
-  };
+  act: number;
   scenes: Scene[];
-  __exportInfo?: {
-    title: string;
-    actNumber: number;
-    exportedAt: string;
-    playerData: PlayerData;
-    basicData: BasicData;
-  };
 }
 
 // Player data structure for tracking relationships, inventory, and skills

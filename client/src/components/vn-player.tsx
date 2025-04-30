@@ -632,10 +632,10 @@ export function VnPlayer({
               sceneId={currentScene.id}
               isGenerated={true}
             />
-          ) : currentScene.bg ? (
+          ) : currentScene.image_prompt ? (
             // Display scene's existing background image
             <SceneBackground
-              imageUrl={currentScene.bg}
+              imageUrl={currentScene.image_prompt}
               sceneId={currentScene.id}
               isGenerated={false}
             />

@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
-import { insertVnProjectSchema, insertVnStorySchema } from "@shared/schema";
+import {  insertVnStorySchema } from "@shared/schema";
 import { generateSceneBackgroundImage } from "./image-generator";
 import { jsonrepair } from "jsonrepair";
 
@@ -214,7 +214,7 @@ const generateActSchema = z.object({
 const generateImageSchema = z.object({
   scene: z.object({
     id: z.string(),
-    bg: z.string(),
+    image_prompt: z.string(),
   }),
   theme: z.string().optional(),
   imageType: z.enum(["background", "character"]).default("background"),
@@ -510,7 +510,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Generate characters using Gemini
       const systemPrompt =
-        "You're a wildly imaginative and slightly crazy brainstormer of visual novel characters";
+        "You're a visual novel brainstormer with wildly creative ideas";
       const responseContent = await generateWithGemini(prompt, systemPrompt);
 
       // Try to parse response
@@ -560,7 +560,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Generate paths using Gemini
       const systemPrompt =
-        "You're a visual novel brainstormer creating plot paths";
+        "You're a visual novel brainstormer with wildly creative ideas";
       const responseContent = await generateWithGemini(prompt, systemPrompt);
 
       // Try to parse response
@@ -607,7 +607,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Generate plot using Gemini
       const systemPrompt =
-        "You're a visual novel brainstormer creating a comprehensive plot outline";
+        "You're a visual novel brainstormer with wildly creative ideas";
       const responseContent = await generateWithGemini(prompt, systemPrompt);
 
       // Try to parse response
@@ -634,11 +634,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ${JSON.stringify(projectContext, null, 2)}
         Create scenes for Act ${actNumber} of the plot outline and return a JSON as structured:
         {
+          "act": ${actNumber},
           "scenes": [
             {
-              "id": "Act ${actNumber} Scene 1",
-              "setting": "Name of the location",
-              "bg": "Detailed background description for image generation",
+              "name": "Act ${actNumber} Scene 1",
+              "setting": "Name of the location (and optionally, time of day)",
+              "image_prompt": "Detailed background description for AI image generation",
               "dialogue": [
                 ["Narrator", "text"]
                 ["Character Name", "text"],
@@ -646,20 +647,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
               ],
               "choices": [
                 {
-                  "id": "choice1",
                   "text": "Choice text displayed to player",
                   "description": "Optional: brief description of choice consequences",
                   "delta": {"character1": 1, "character2": -1},
                   "next": "Act ${actNumber} Scene 1a"
                 },
                 {
-                  "id": "choice2",
                   "text": "Alternative choice text",
                   "delta": {"character2": 1},
                   "next": "Act ${actNumber} Scene 1b"
                 }
                 {
-                  "id": "choice3",
                   "text": "Alternative choice text",
                   "next": "Act ${actNumber} Scene 2"
                 }
@@ -671,54 +669,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
         - Do not generate any other act except Act ${actNumber}.
         - Create approximately ${scenesCount} scenes for Act ${actNumber}, or more if necessary to convey Act ${actNumber}.
         - Include branching paths based on 2-4 choices. Choices that continue the dialogue conversation in the same scene are marked with a letter e.g. Act ${actNumber} Scene 1b (although they are technically different scenes).
-        - Final scene of act should have choices set to the null value. Otherwise, ensure the scene connects to another scene.
+        - Final scene of act should have choices set to null value. Otherwise, ensure the scene has a choice that connects to another valid scene name.
         - Relationships, inventory items, or skills can be added or subtracted by "delta" values.
         - Pack each scene with ample dialogue to express the story (5-15+ lines). Be inventive and creative about event details, while ensuring consistency with the plot outline.
         - Use of a narrator is encouraged to explain the scene or provide context.
         - The protagonist may think in parentheses.
         - Unknown characters are named "???" until revealed.
-        - "bg" value is used for AI image generation prompts and is only required when the setting is visited the first time.
+        - "image_prompt" is only required when visiting the setting for the first time.
         - Maintain the given tone (${projectContext.basics.tone}) consistent with the story context.
         - You may optionally include [emotion] or [action] tags before dialogue when it enhances the scene.
         - If a choice increases or decreases a relationship, reflect it subtly in the dialogue tone.
         - Some choices may succeed or fail based on condition of relationship values, items, or skills. To do this, add a "condition" value in the choice (see below).
         Here is a sample scene that blocks paths based on relationship requirements. Player tries to enter the engine room, but cannot due to his relationship value with Bruno being less than 2. If player has at least 2 points with Bruno, they proceed to the "failNext" scene 2-5a. Otherwise, they proceed to "next" scene 2-5b. 
         {
-          "id": "Act 2 Scene 5",
+          "name": "Act ${actNumber} Scene 5",
           "setting": "Engine Room",
-          "bg":"dimly lit engine room, flickering valves, massive pressure dials, creaking pipes overhead"
+          "image_prompt":"dimly lit engine room, flickering valves, massive pressure dials, creaking pipes overhead"
           "dialogue": [
           ["Bruno", "Only someone I trust can see this."]
           ],
           "choices": [
-          {
-            "id": "enter_room",
-            "text": "Try to enter the engine room",
-            "condition": { "bruno": 2 },
-            "next": "Act 2 Scene 5a",
-            "failNext": "Act 2 Scene 5b" 
-          },
-          {
-            "id": "ask_trust",
-            "text": "Ask how to earn his trust",
-            "next": "Act 2 Scene 5c"
-          }
+            {
+              "text": "Try to enter the engine room",
+              "condition": { "bruno": 2 },
+              "next": "Act ${actNumber} Scene 5a",
+              "failNext": "Act ${actNumber} Scene 5b" 
+            },
+            {
+              "text": "Ask how to earn his trust",
+              "next": "Act ${actNumber} Scene 5c"
+            }
           ]
         },
         {
-          "id": "Act 2 Scene 5b",
-          "bg": "door blocked",
+          "name": "Act ${actNumber} Scene 5b",
+          "image_prompt": "blocked door",
           "dialogue": [
           ["Bruno", "Not yet. You're not ready."]
           ]
+          ...
         }
 
-        - You may take creative liberties at any other unclear points.
+        - You may take creative liberties when stumbling upon any unclear points.
+        - And lastly, keep it engaging and exciting for a young audience!
       `;
 
       // Generate act using Gemini
       const systemPrompt =
-        "You're a visual novel brainstormer creating detailed scenes with dialogue and choices";
+        "You're a visual novel brainstormer with wildly creative ideas";
 
       const responseContent = await generateWithGemini(
         prompt,
@@ -755,14 +753,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Parse with the schema, but allow forceReal and optimizeForMobile to pass through
       generateImageSchema.parse({ scene, theme, imageType });
 
-      // We no longer need to check for forceReal since we always use RunPod now
-
       // Check if we should use optimized image settings (smaller/cheaper)
       const useOptimizedSettings = optimizeForMobile === true;
-
-      console.log(
-        `Image generation request received for scene: ${scene.id}, bg: "${scene.bg}", theme: "${theme || "none"}", type: ${imageType}, optimizeForMobile: ${useOptimizedSettings}`,
-      );
 
       if (imageType === "background") {
         try {
@@ -770,9 +762,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             "Calling RunPod SDXL API with API key:",
             process.env.RUNPOD_API_KEY ? "Present (hidden)" : "Missing",
           );
-
-          // We're now using RunPod's SDXL endpoint for image generation
-          console.log("🎨 USING RUNPOD AI - SDXL credits will be consumed");
 
           // Make sure we have the required API key
           if (!process.env.RUNPOD_API_KEY) {
@@ -792,12 +781,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           const result = await generateSceneBackgroundImage(
             scene.id,
-            scene.bg,
+            scene.image_prompt,
             theme,
           );
 
           // No environment variables to reset since we've removed DALL-E
-
           console.log(
             `Background image generated for scene ${scene.id}:`,
             result.url ? "Success (URL hidden for privacy)" : "No URL returned",

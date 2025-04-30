@@ -41,14 +41,6 @@ export default function Player() {
         const stringCopy = JSON.stringify(projectData.generatedActs[actKey]);
         const actDataCopy = JSON.parse(stringCopy);
         
-        // Ensure it has meta property
-        if (!actDataCopy.meta) {
-          actDataCopy.meta = {
-            theme: projectData.basicData?.theme || "Generated story",
-            relationshipVars: []
-          };
-        }
-        
         // Fix any "null" string issues
         if (actDataCopy.scenes) {
           actDataCopy.scenes = actDataCopy.scenes.map((scene: any) => {
@@ -108,14 +100,6 @@ export default function Player() {
           const stringCopy = JSON.stringify(parsedStory.actData);
           const actDataCopy = JSON.parse(stringCopy);
           
-          // Ensure meta property exists
-          if (!actDataCopy.meta) {
-            actDataCopy.meta = {
-              theme: "Imported story",
-              relationshipVars: []
-            };
-          }
-          
           // Fix 'choices: "null"' issue in older exports
           if (actDataCopy.scenes) {
             actDataCopy.scenes = actDataCopy.scenes.map((scene: any) => {
@@ -150,14 +134,6 @@ export default function Player() {
               }
               return scene;
             });
-          }
-          
-          // Ensure meta property exists
-          if (!actDataCopy.meta) {
-            actDataCopy.meta = {
-              theme: "Imported story",
-              relationshipVars: []
-            };
           }
           
           // Set act data and finish loading

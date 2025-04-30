@@ -75,15 +75,13 @@ export default function PlaySelection() {
 
         // Extract act number from filename if possible
         const filename = file.name;
-        const actMatch = filename.match(/Act(\d+)/i);
-        const actNumber = actMatch ? parseInt(actMatch[1], 10) : 1;
+        const actNumber = actData.act;
 
         // Extract title from filename if possible
         let title = "Imported Story";
-        const titleMatch = filename.match(/^(.+?)-Act\d+/);
-        if (titleMatch) {
+        const titleMatch = filename.match(/^(.+?)(-Act[^.]+)?\./);
+        if (titleMatch) 
           title = titleMatch[1].replace(/_/g, " ");
-        }
 
         // Add to imported stories
         const storyId = Date.now().toString();
