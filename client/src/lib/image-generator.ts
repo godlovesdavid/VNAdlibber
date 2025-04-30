@@ -91,13 +91,15 @@ export async function generateSceneBackground(
 const imageCache: Record<string, string> = {};
 
 // Function to get an image URL, using cache if available
-export function getCachedImageUrl(sceneId: string): string | null {
-  return imageCache[sceneId] || null;
+export function getCachedImageUrl(setting: string): string | null {
+  return imageCache[setting] || null;
 }
 
 // Function to set an image URL in the cache
-export function setCachedImageUrl(sceneId: string, url: string): void {
-  imageCache[sceneId] = url;
+export function setCachedImageUrl(setting: string, url: string): void {
+  if (setting && setting.length > 0) {
+    imageCache[setting] = url;
+  }
 }
 
 // Function to clear the image cache

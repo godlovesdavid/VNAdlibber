@@ -87,10 +87,11 @@ export function useImageGeneration(
         return;
       }
 
-      // Check cache first
-      const cachedUrl = getCachedImageUrl(scene.id);
+      // Check cache first using scene setting
+      const setting = scene.setting || '';
+      const cachedUrl = getCachedImageUrl(setting);
       if (cachedUrl && !forceGenerate) {
-        logDebug("Using cached image URL for scene:", scene.id);
+        logDebug("Using cached image URL for scene setting:", setting);
         setImageUrl(cachedUrl);
         return;
       }
@@ -142,7 +143,7 @@ export function useImageGeneration(
             });
           } else if (result.url) {
             setImageUrl(result.url);
-            setCachedImageUrl(scene.id, result.url);
+            setCachedImageUrl(scene.setting || scene.id, result.url); //Store using setting if available, otherwise use ID
             logDebug("Image generated successfully:", result.url);
           }
         } catch (err) {
@@ -187,9 +188,10 @@ export function useImageGeneration(
       return;
     }
 
-    const cachedUrl = getCachedImageUrl(scene.id);
+    const setting = scene.setting || '';
+    const cachedUrl = getCachedImageUrl(setting);
     if (cachedUrl) {
-      logDebug("Using cached image for scene:", scene.id);
+      logDebug("Using cached image for scene setting:", setting);
       setImageUrl(cachedUrl);
       return;
     }
