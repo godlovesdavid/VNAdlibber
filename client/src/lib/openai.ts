@@ -46,3 +46,33 @@ export async function generateAct(
   const data = await response.json();
   return { data };
 }
+
+export async function generateCharacter(
+  characterTemplates: any[],
+  projectContext: any,
+  signal?: AbortSignal,
+): Promise<GenerationResult<any>> {
+  const response = await apiRequest(
+    "POST",
+    "/api/generate/character",
+    { characterTemplates, projectContext },
+    signal,
+  );
+  const data = await response.json();
+  return { data };
+}
+
+export async function generatePath(
+  pathTemplates: any[],
+  projectContext: any,
+  signal?: AbortSignal,
+): Promise<GenerationResult<any>> {
+  const response = await apiRequest(
+    "POST",
+    "/api/generate/path",
+    { pathTemplates, projectContext },
+    signal,
+  );
+  const data = await response.json();
+  return { data };
+}
