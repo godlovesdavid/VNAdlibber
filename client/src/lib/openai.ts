@@ -43,52 +43,6 @@ export async function generateConcept(
   }
 }
 
-// Function to generate character details
-export async function generateCharacter(
-  index: number,
-  partialCharacter: Partial<{
-    name: string;
-    role: string;
-    gender: string;
-    age: string;
-  }>,
-  projectContext: any,
-  signal?: AbortSignal,
-): Promise<
-  GenerationResult<{
-    name: string;
-    role: string;
-    gender: string;
-    age: string;
-    appearance: string;
-    personality: string;
-    goals: string;
-    relationshipPotential: string;
-    conflict: string;
-  }>
-> {
-  try {
-    const response = await apiRequest(
-      "POST",
-      "/api/generate/character",
-      { index, partialCharacter, projectContext },
-      signal,
-    );
-
-    const result = await response.json();
-
-    // Check if the API returned an error
-    if (result.error) {
-      return { error: result.error };
-    }
-
-    return { data: result };
-  } catch (error) {
-    console.error("Error generating character:", error);
-    return { error: "Failed to generate character. Please try again." };
-  }
-}
-
 // Function to generate path details
 export async function generatePath(
   index: number,

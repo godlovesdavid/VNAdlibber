@@ -71,8 +71,7 @@ export default function PlaySelection() {
     reader.onload = (event) => {
       try {
         const content = event.target?.result as string;
-
-        const actData = JSON.parse(content) as GeneratedAct;
+        const actData = JSON.parse(jsonrepair(content)) as GeneratedAct;
 
         // Extract act number from filename if possible
         const filename = file.name;

@@ -100,9 +100,8 @@ export default function PlotForm() {
   const handleValidate = async () => {
     // Set validating state
     setIsValidating(true);
-    if (!projectData)
-      throw "Empty project data";
-    
+    if (!projectData) throw "Empty project data";
+
     try {
       // Call validate endpoint
       const validationResponse = await apiRequest("POST", "/api/validate", {
@@ -700,7 +699,7 @@ export default function PlotForm() {
                 variant="outline"
                 className="flex items-center"
                 onClick={handleValidate}
-                disabled={isValidating || !plotOutline}
+                disabled={isValidating}
               >
                 {isValidating ? (
                   <>

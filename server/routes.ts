@@ -8,6 +8,8 @@ import { jsonrepair } from "jsonrepair";
 
 // Use Google's Gemini API instead of OpenAI for text generation
 const GEMINI_API_URL =
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent";
+const GEMINI_API_URL_PRO =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent";
 const GEMINI_API_KEY = "AIzaSyDE-O9FT4wsie2Cb5SWNUhNVszlQg3dHnU";
 
@@ -16,7 +18,8 @@ async function generateWithGemini(
   prompt: string,
   systemPrompt: string | null = null,
   responseFormat = "JSON",
-  maxOutputTokens = 65536,
+  maxOutputTokens = 8192,
+  isPro = false,
 ) {
   try {
     const headers = {
@@ -46,9 +49,9 @@ Example of CORRECT JSON format:
   }
 }
 `;
-
     // Add the JSON formatting instructions to the prompt
-    const enhancedPrompt = `${prompt}\n\n${jsonFormatInstructions}`;
+    const enhancedPrompt = prompt + "\n\n" + jsonFormatInstructions; //
+    console.log(enhancedPrompt);
 
     // Construct the request body
     const requestBody = {
@@ -59,27 +62,27 @@ Example of CORRECT JSON format:
         { role: "user", parts: [{ text: enhancedPrompt }] },
       ],
       generationConfig: {
-        // temperature: 0.2, // Lower temperature for stricter adherence to formatting
+        // temperature: 0.2,
         // topP: 0.9,
         // topK: 40,
         maxOutputTokens: maxOutputTokens,
       },
     };
 
-    const response = await fetch(GEMINI_API_URL, {
+    const response = await fetch(isPro ? GEMINI_API_URL_PRO : GEMINI_API_URL, {
       method: "POST",
       headers,
       body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
+      console.log(response);
       const errorData = await response.json();
       console.error("Gemini API error:", errorData);
       throw new Error(
         `Gemini API error: ${errorData.error?.message || "Unknown error"}`,
       );
     }
-
     const data = await response.json();
 
     // Extract the text from the response
@@ -89,20 +92,19 @@ Example of CORRECT JSON format:
       // Strip markdown code blocks if present
       if (responseText.startsWith("```")) {
         // Strip opening code block markers (```json or just ```)
-        responseText = responseText.replace(/^```(?:json|javascript)?\s*\n/, "");
+        responseText = responseText.replace(
+          /^```(?:json|javascript)?\s*\n/,
+          "",
+        );
         // Strip closing code block markers
         responseText = responseText.replace(/\n```\s*$/, "");
       }
-      
       try {
         // Use jsonrepair to fix any JSON formatting issues
         responseText = jsonrepair(responseText);
-        console.log("JSON successfully repaired with jsonrepair");
+        console.log(responseText);
       } catch (repairError) {
         console.error("jsonrepair failed:", repairError);
-        // Fall back to original cleanResponseText if jsonrepair fails
-        responseText = cleanResponseText(responseText);
-        console.log("Fell back to cleanResponseText");
       }
 
       return responseText;
@@ -115,107 +117,6 @@ Example of CORRECT JSON format:
   }
 }
 
-// Helper function to check for error in AI responses
-function checkResponseForError(parsedResponse: any, res: any): boolean {
-  // Check for error in the response
-  if ("error" in parsedResponse) {
-    console.error("AI validation error:", parsedResponse.error);
-
-    // Format the error message for display
-    const errorMessage =
-      typeof parsedResponse.error === "string"
-        ? parsedResponse.error
-        : JSON.stringify(parsedResponse.error);
-
-    // Return the error with status 400 and infinite duration for the toast
-    res.status(400).json({
-      message: errorMessage,
-      errorType: "validation_error",
-      duration: "infinite", // Signal to the frontend that this error should persist
-    });
-
-    return true;
-  }
-
-  // For content with other types of validation issues
-  if (parsedResponse.validation_issues) {
-    console.error("AI validation issues:", parsedResponse.validation_issues);
-
-    res.status(400).json({
-      message: Array.isArray(parsedResponse.validation_issues)
-        ? parsedResponse.validation_issues.join(", ")
-        : String(parsedResponse.validation_issues),
-      errorType: "validation_issue",
-      duration: "infinite",
-    });
-
-    return true;
-  }
-
-  return false;
-}
-
-// Helper function to clean response text of common issues before parsing
-function cleanResponseText(text: string): string {
-  // Strip markdown code blocks if present
-  if (text.startsWith("```")) {
-    // Strip opening code block markers (```json or just ```)
-    text = text.replace(/^```(?:json|javascript)?\s*\n/, "");
-    // Strip closing code block markers
-    text = text.replace(/\n```\s*$/, "");
-  }
-
-  // Remove HTML comments
-  text = text.replace(/<!--[\s\S]*?-->/g, "");
-
-  // Fix "choices": "null" to "choices": null
-  text = text.replace(/"choices"\s*:\s*"null"/g, '"choices": null');
-
-  // Replace JavaScript string concatenation in JSON with plain text
-  text = text.replace(/"([^"]+)" \+ "([^"]+)"/g, '"$1$2"');
-
-  // Remove any JS-style comments
-  text = text.replace(/\/\/.*$/gm, "");
-  text = text.replace(/\/\*[\s\S]*?\*\//g, "");
-
-  // Fix common JSON syntax errors
-
-  // Fix missing quotes around property names
-  text = text.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
-
-  // Fix trailing commas in arrays and objects
-  text = text.replace(/,(\s*[\]}])/g, "$1");
-
-  // Fix missing commas between array elements or object properties
-  text = text.replace(/([}\]"'0-9])\s*\n\s*([{\["a-zA-Z0-9_])/g, "$1,\n$2");
-
-  // Fix broken arrays where brackets are missing
-  text = text.replace(/(\[\s*[^[\]]*?)\s*(?:\n\s*\]|$)/g, "$1]");
-
-  // Fix invalid escape sequences
-  text = text.replace(/\\([^"\\\/bfnrt])/g, "$1");
-
-  // Fix unescaped quotes in strings
-  text = text.replace(/(?<!\\)"(?=[^"]*"[^"]*$)/g, '\\"');
-
-  // Fix undefined/null values
-  text = text.replace(/:\s*(undefined|null)\s*([,}])/g, ": null$2");
-
-  // Ensure proper quoting of string values
-  text = text.replace(/:\s*([a-zA-Z][a-zA-Z0-9_]*)\s*([,\n\r}])/g, ': "$1"$2');
-
-  // Add missing quotes to property values that look like unquoted strings
-  text = text.replace(
-    /:\s*([a-zA-Z][a-zA-Z0-9_\s]*[a-zA-Z0-9_])(\s*[,\n\r}])/g,
-    ': "$1"$2',
-  );
-
-  // Remove any remaining whitespace between the end of content and closing brackets
-  text = text.replace(/\s+([\]}])\s*$/g, "$1");
-
-  return text;
-}
-
 // Standard system prompt for content validation
 const standardValidationInstructions =
   "Return a JSON based on the given story context. ";
@@ -223,7 +124,6 @@ const standardValidationInstructions =
 // Explicit validation system prompt that prevents "looks good" errors
 //If story context is plot-conflicting, incoherent, sexually explicit, or offensive, then instead return a JSON with an error key explaining the issue like this: { "error": "Brief description of why the content is invalid." }
 const validationSystemPrompt = `You are a strict validation assistant for Visual Novel (VN) project data.
-
 You will receive JSON input containing:
 - "basicData": an object containing story theme, tone, and genre
 - "conceptData": an object describing the central concept
@@ -509,11 +409,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Parse validation response
       const validationResult = JSON.parse(responseContent || "{}");
 
-      // Use the standard error checking function for validation errors
-      if (checkResponseForError(validationResult, res)) {
-        return;
-      }
-
       // If validation failed and we have issues, return them with infinite duration
       if (!validationResult.valid && validationResult.issues) {
         return res.status(400).json({
@@ -549,23 +444,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         Be wildly imaginative, original, and surprising — but keep it emotionally resonant.
       `;
-      console.log("Concept generation prompt:", prompt);
 
       // Use Gemini to generate the concept
       const systemPrompt =
         "You're a visual novel brainstormer with wildly creative ideas";
       const responseContent = await generateWithGemini(prompt, systemPrompt);
-
-      console.log("Generated concept:", responseContent);
-
-      // Parse the generated concept
       const generatedConcept = JSON.parse(responseContent || "{}");
-
-      // Check if the response contains an error and return early if it does
-      if (checkResponseForError(generatedConcept, res)) {
-        return;
-      }
-
       res.json(generatedConcept);
     } catch (error) {
       console.error("Error generating concept:", error);
@@ -622,34 +506,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         Character one is the main protagonist.`
         }
       `;
-      console.log("Generating character prompt:", prompt);
 
       // Generate characters using Gemini
       const systemPrompt =
-        "You're a wildly imaginative and slightly crazy film brainstormer creating characters for a visual novel";
+        "You're a wildly imaginative and slightly crazy brainstormer of visual novel characters";
       const responseContent = await generateWithGemini(prompt, systemPrompt);
-
-      console.log(`Generating ${indices.length} characters at once`);
-      console.log("Got:", responseContent);
 
       // Try to parse response
       try {
         if (responseContent === "{}") throw new Error("Empty response");
-
-        console.log("Cleaned response:", responseContent);
         const parsed = JSON.parse(responseContent);
-
-        // Check if the response contains an error and return early if it does
-        if (checkResponseForError(parsed, res)) {
-          return;
-        }
-
-        // Return array of characters directly (not wrapped in an object)
         res.json("characters" in parsed ? parsed.characters : [parsed]);
-      } catch (parseError: any) {
-        console.error("JSON parse error:", parseError);
-        console.error("Problematic JSON:", responseContent);
-        throw new Error(`Failed to parse response: ${parseError.message}`);
+      } catch (e) {
+        console.error("Problematic JSON:", e);
       }
     } catch (error) {
       console.error("Error generating characters:", error);
@@ -687,34 +556,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ]
         }
       `;
-      console.log("Generating paths prompt:", prompt);
 
       // Generate paths using Gemini
       const systemPrompt =
         "You're a visual novel brainstormer creating plot paths";
       const responseContent = await generateWithGemini(prompt, systemPrompt);
 
-      console.log(`Generating ${indices.length} paths at once`);
-      console.log("Got:", responseContent);
-
       // Try to parse response
       try {
         if (responseContent === "{}") throw new Error("Empty response");
-
-        console.log("Cleaned response:", responseContent);
         const parsed = JSON.parse(responseContent);
-
-        // Check if the response contains an error and return early if it does
-        if (checkResponseForError(parsed, res)) {
-          return;
-        }
-
-        // Return array of paths directly (not wrapped in an object)
         res.json(parsed.paths);
-      } catch (parseError: any) {
-        console.error("JSON parse error:", parseError);
-        console.error("Problematic JSON:", responseContent);
-        throw new Error(`Failed to parse response: ${parseError.message}`);
+      } catch (e) {
+        console.error("Problematic JSON:", e);
       }
     } catch (error) {
       console.error("Error generating paths:", error);
@@ -749,33 +603,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         Structure the plot into 5 acts: Introduction, Rising Action, Midpoint Twist, Escalating Conflict, Resolution/Endings.
         Be descriptive and inventive about events in order to flesh out the story.
       `;
-      console.log("Plot generation prompt:", prompt);
 
       // Generate plot using Gemini
       const systemPrompt =
         "You're a visual novel brainstormer creating a comprehensive plot outline";
       const responseContent = await generateWithGemini(prompt, systemPrompt);
 
-      // Log the generated response for debugging
-      console.log("Generated plot outline:", responseContent);
-
       // Try to parse response
       try {
         if (responseContent === "{}") throw new Error("Empty response");
-
-        console.log("Cleaned response:", responseContent);
         const generatedPlot = JSON.parse(responseContent);
-
-        // Check if the response contains an error and return early if it does
-        if (checkResponseForError(generatedPlot, res)) {
-          return;
-        }
-
         res.json(generatedPlot);
-      } catch (parseError: any) {
-        console.error("JSON parse error:", parseError);
-        console.error("Problematic JSON:", responseContent);
-        throw new Error(`Failed to parse response: ${parseError.message}`);
+      } catch (e) {
+        console.error("Problematic JSON:", e);
       }
     } catch (error) {
       console.error("Error generating plot:", error);
@@ -830,14 +670,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         - Do not generate any other act except Act ${actNumber}.
         - Create approximately ${scenesCount} scenes for Act ${actNumber}, or more if necessary to convey Act ${actNumber}.
         - Include branching paths based on 2-4 choices. Choices that continue the dialogue conversation in the same scene are marked with a letter e.g. Act ${actNumber} Scene 1b (although they are technically different scenes).
-        - Final scene of act should have choices set to null value. Otherwise, ensure the scene connects to another scene.
+        - Final scene of act should have choices set to the null value. Otherwise, ensure the scene connects to another scene.
         - Relationships, inventory items, or skills can be added or subtracted by "delta" values.
         - Pack each scene with ample dialogue to express the story (5-15+ lines). Be inventive and creative about event details, while ensuring consistency with the plot outline.
         - Use of a narrator is encouraged to explain the scene or provide context.
         - The protagonist may think in parentheses.
         - Unknown characters are named "???" until revealed.
         - "bg" value is used for AI image generation prompts and is only required when the setting is visited the first time.
-        - Maintain the given tone (${projectContext.basicData.tone}) consistent with the story context.
+        - Maintain the given tone (${projectContext.basics.tone}) consistent with the story context.
         - You may optionally include [emotion] or [action] tags before dialogue when it enhances the scene.
         - If a choice increases or decreases a relationship, reflect it subtly in the dialogue tone.
         - Some choices may succeed or fail based on condition of relationship values, items, or skills. To do this, add a "condition" value in the choice (see below).
@@ -871,85 +711,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ["Bruno", "Not yet. You're not ready."]
           ]
         }
+
+        - You may take creative liberties at any other unclear points.
       `;
-      console.log("Act generation prompt:", prompt);
 
       // Generate act using Gemini
       const systemPrompt =
         "You're a visual novel brainstormer creating detailed scenes with dialogue and choices";
-      // Set longer maxOutputTokens for act generation which requires more tokens
+
       const responseContent = await generateWithGemini(
         prompt,
         systemPrompt,
         "JSON",
         65536,
+        // true,
       );
 
-      // Log the generated response for debugging
-      console.log(`Generated Act ${actNumber}:`, responseContent);
-
-      // Try to parse response
-      try {
-        if (responseContent === "{}") throw new Error("Empty response");
-
-        // Try standard JSON parsing first
-        let generatedAct;
-        try {
-          generatedAct = JSON.parse(responseContent);
-        } catch (initialParseError) {
-          console.log(
-            "Initial JSON parse failed, attempting more aggressive cleanup...",
-          );
-
-          // More aggressive cleanup for complex Act data
-          let cleanedContent = responseContent;
-
-          // Try to isolate just the scenes array if we can find the pattern
-          const scenesMatch = cleanedContent.match(
-            /\{\s*"scenes"\s*:\s*\[[\s\S]*\]\s*\}/,
-          );
-          if (scenesMatch) {
-            cleanedContent = scenesMatch[0];
-            console.log("Found scenes block, isolating it...");
-          }
-
-          // Additional fix for common issues in the act JSON
-          // Fix missing commas in arrays between objects
-          cleanedContent = cleanedContent.replace(/}(\s*){/g, "},\n{");
-
-          // Fix missing commas between dialogue array elements
-          cleanedContent = cleanedContent.replace(/\](\s*)\[/g, "],\n[");
-
-          // Fix any trailing commas before closing brackets
-          cleanedContent = cleanedContent.replace(/,(\s*[\]}])/g, "$1");
-
-          // Special fix for the bg property missing quotes
-          // cleanedContent = cleanedContent.replace(
-          //   /"bg":([^,"\{\}\[\]]*),/g,
-          //   '"bg":"$1",',
-          // );
-
-          console.log(
-            "Applied aggressive cleanup, attempting to parse again...",
-          );
-          generatedAct = JSON.parse(cleanedContent);
-        }
-
-        // Check if the response contains an error and return early if it does
-        if (checkResponseForError(generatedAct, res)) {
-          return;
-        }
-        res.json(generatedAct);
-      } catch (parseError: any) {
-        console.error("JSON parse error:", parseError);
-        console.error(
-          "Problematic JSON (first 200 chars):",
-          responseContent.substring(0, 200) + "...",
-        );
-        throw new Error(`Failed to parse response: ${parseError.message}`);
-      }
-    } catch (error) {
-      console.error("Error generating act:", error);
+      res.json(responseContent);
+    } catch (e) {
+      console.error("Error generating act:", e);
       res.status(500).json({ message: "Failed to generate act" });
     }
   });
