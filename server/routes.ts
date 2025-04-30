@@ -676,7 +676,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         - Unknown characters are named "???" until revealed.
         - "image_prompt" is only required when visiting the setting for the first time.
         - Maintain the given tone (${projectContext.basics.tone}) consistent with the story context.
-        - You may optionally include [emotion] or [action] tags before dialogue when it enhances the scene.
+        - You may optionally include [emotion] or [action] tags in dialogue when it enhances the scene.
         - If a choice increases or decreases a relationship, reflect it subtly in the dialogue tone.
         - Some choices may succeed or fail based on condition of relationship values, items, or skills. To do this, add a "condition" value in the choice (see below).
         Here is a sample scene that blocks paths based on relationship requirements. Player tries to enter the engine room, but cannot due to his relationship value with Bruno being less than 2. If player has at least 2 points with Bruno, they proceed to the "failNext" scene 2-5a. Otherwise, they proceed to "next" scene 2-5b. 
@@ -758,7 +758,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (imageType === "background") {
         try {
           console.log(
-            "Calling RunPod SDXL API with API key:",
+            "Calling RunPod with API key:",
             process.env.RUNPOD_API_KEY ? "Present (hidden)" : "Missing",
           );
 
@@ -779,14 +779,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
 
           const result = await generateSceneBackgroundImage(
-            scene.id,
+            scene.name,
             scene.image_prompt,
             theme,
           );
 
           // No environment variables to reset since we've removed DALL-E
           console.log(
-            `Background image generated for scene ${scene.id}:`,
+            `Background image generated for scene ${scene.name}:`,
             result.url ? "Success (URL hidden for privacy)" : "No URL returned",
           );
 

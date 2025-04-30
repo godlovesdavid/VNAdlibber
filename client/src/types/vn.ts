@@ -81,7 +81,7 @@ export interface SceneChoice {
 
 // Visual novel scene structure
 export interface Scene {
-  id: string;
+  name: string;
   setting: string;
   image_prompt?: string;
   dialogue: [string, string][];

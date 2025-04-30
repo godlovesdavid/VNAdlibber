@@ -35,17 +35,6 @@ function SceneBackground({
     setActualUrl(imageUrl);
   }, [imageUrl]);
 
-  // Generate a color from the scene ID for consistent display when needed
-  const getSceneColor = (id: string) => {
-    // Generate a consistent color based on scene ID
-    const hash = Array.from(id).reduce(
-      (acc, char) => char.charCodeAt(0) + acc,
-      0,
-    );
-    const hue = hash % 360;
-    return `hsl(${hue}, 70%, 40%)`;
-  };
-
   const handleImageError = () => {
     console.error(`Image failed to load: ${imageUrl}`);
     setHasError(true);
@@ -64,7 +53,6 @@ function SceneBackground({
     <div
       className="w-full h-full absolute inset-0"
       style={{
-        backgroundColor: getSceneColor(sceneId),
         transition: "background-color 0.5s ease",
       }}
     >
@@ -256,11 +244,11 @@ export function VnPlayer({
     const firstScene = processScene(actData.scenes[0]);
     console.log(
       `Initializing VN Player (${mode} mode) with first scene:`,
-      firstScene.id,
+      firstScene.name,
     );
 
     setCurrentScene(firstScene);
-    setCurrentSceneId(firstScene.id);
+    setCurrentSceneId(firstScene.name);
     setCurrentDialogueIndex(0);
     setShowChoices(false);
     setDialogueLog([]);
@@ -285,12 +273,12 @@ export function VnPlayer({
     const firstScene = processScene(firstSceneRaw);
     console.log(
       `Initializing VN Player (${mode} mode) with first scene:`,
-      firstScene.id,
+      firstScene.name,
     );
 
     // Set all initial state directly (without animation)
     setCurrentScene(firstScene);
-    setCurrentSceneId(firstScene.id);
+    setCurrentSceneId(firstScene.name);
     setCurrentDialogueIndex(0);
     setShowChoices(false);
     setDialogueLog([]);
@@ -353,7 +341,7 @@ export function VnPlayer({
 
     // Reset all the state
     setCurrentScene(firstScene);
-    setCurrentSceneId(firstScene.id);
+    setCurrentSceneId(firstScene.name);
     setCurrentDialogueIndex(0);
     setShowChoices(false);
     setDialogueLog([]);
@@ -534,13 +522,12 @@ export function VnPlayer({
   }, [mode, isTextAnimating]);
 
   // Use image generation hook - make sure to update when scene changes
-  const theme = actData?.meta?.theme || "";
   const {
     imageUrl,
     isGenerating,
     error: imageError,
     generateImage,
-  } = useImageGeneration(currentScene, theme, {
+  } = useImageGeneration(currentScene, {
     autoGenerate: false,
     debug: false,
     generationDelay: 100, // Added slight delay to prevent rapid generation during transitions
@@ -549,11 +536,14 @@ export function VnPlayer({
   // Log current scene and image state for debugging
   useEffect(() => {
     if (currentScene) {
-      console.log(`Current scene updated: ${currentScene.id}, image status:`, {
-        imageUrl: imageUrl ? "Has URL" : "No URL",
-        isGenerating,
-        hasError: !!imageError,
-      });
+      console.log(
+        `Current scene updated: ${currentScene.name}, image status:`,
+        {
+          imageUrl: imageUrl ? "Has URL" : "No URL",
+          isGenerating,
+          hasError: !!imageError,
+        },
+      );
     }
   }, [currentScene, imageUrl, isGenerating, imageError]);
 
@@ -629,14 +619,14 @@ export function VnPlayer({
             // Display generated image with reliable placeholder fallback
             <SceneBackground
               imageUrl={imageUrl}
-              sceneId={currentScene.id}
+              sceneId={currentScene.name}
               isGenerated={true}
             />
           ) : currentScene.image_prompt ? (
             // Display scene's existing background image
             <SceneBackground
               imageUrl={currentScene.image_prompt}
-              sceneId={currentScene.id}
+              sceneId={currentScene.name}
               isGenerated={false}
             />
           ) : (

@@ -19,7 +19,6 @@ interface UseImageGenerationOptions {
 
 export function useImageGeneration(
   scene: Scene | null,
-  theme?: string,
   options: UseImageGenerationOptions = {},
 ) {
   const {
@@ -83,7 +82,7 @@ export function useImageGeneration(
         }
 
       // Always update current scene ID reference
-      currentSceneId.current = scene.id;
+      currentSceneId.current = scene.name;
 
       // Check if scene already has a background URL
       if (scene.image_prompt && !forceGenerate) {
@@ -105,12 +104,12 @@ export function useImageGeneration(
       cancelGeneration();
 
       // Don't generate immediately - queue with delay to prevent too many API calls
-      logDebug("Queueing image generation for scene:", scene.id);
+      logDebug("Queueing image generation for scene:", scene.name);
       isGenerationQueued.current = true;
 
       generationTimeout.current = setTimeout(async () => {
         // Only proceed if this is still the current scene
-        if (currentSceneId.current !== scene.id) {
+        if (currentSceneId.current !== scene.name) {
           logDebug("Scene changed before generation, aborting");
           return;
         }
@@ -123,18 +122,18 @@ export function useImageGeneration(
           setIsGenerating(true);
           setError(null);
 
-          logDebug("Starting image generation for scene:", scene.id);
+          logDebug("Starting image generation for scene:", scene.name);
 
           // Call API to generate image
           const result: ImageGenerationResult = await generateSceneBackground(
-            { id: scene.id, image_prompt: scene.image_prompt || "" },
+            { id: scene.name, image_prompt: scene.image_prompt || "" },
             theme,
             abortController.current.signal,
             {}, // No options needed since we're using RunPod
           );
 
           // Only update state if this is still the current scene
-          if (currentSceneId.current !== scene.id) {
+          if (currentSceneId.current !== scene.name) {
             logDebug("Scene changed during generation, discarding result");
             return;
           }
@@ -148,12 +147,12 @@ export function useImageGeneration(
             });
           } else if (result.url) {
             setImageUrl(result.url);
-            setCachedImageUrl(scene.setting || scene.id, result.url); //Store using setting if available, otherwise use ID
+            setCachedImageUrl(scene.setting || scene.name, result.url); //Store using setting if available, otherwise use ID
             logDebug("Image generated successfully:", result.url);
           }
         } catch (err) {
           // Only update error state if this is still the current scene
-          if (currentSceneId.current !== scene.id) return;
+          if (currentSceneId.current !== scene.name) return;
 
           const errorMessage =
             (err as Error).message || "Unknown error occurred";
@@ -167,7 +166,7 @@ export function useImageGeneration(
           });
         } finally {
           // Only update state if this is still the current scene
-          if (currentSceneId.current !== scene.id) return;
+          if (currentSceneId.current !== scene.name) return;
 
           setIsGenerating(false);
           isGenerationQueued.current = false;
@@ -184,7 +183,7 @@ export function useImageGeneration(
     if (!scene || !autoGenerate) return;
 
     // Always update current scene ID reference even if we don't generate
-    currentSceneId.current = scene.id;
+    currentSceneId.current = scene.name;
 
     // Check if scene already has a background URL or cached URL
     if (scene.image_prompt) {
