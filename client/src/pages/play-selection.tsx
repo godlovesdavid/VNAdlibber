@@ -70,21 +70,36 @@ export default function PlaySelection() {
     reader.onload = (event) => {
       try {
         const content = event.target?.result as string;
-
-        // Clean the JSON content using our enhanced cleaning functions
         let cleanedContent = content;
 
+        // More aggressive JSON cleaning
+        // Remove any truncated content
+        cleanedContent = cleanedContent.replace(/\[\s*$/, '');
+
+        // Fix missing quotes around property names
+        cleanedContent = cleanedContent.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
+
+        // Fix missing commas in nested arrays
+        cleanedContent = cleanedContent.replace(/\](\s*)\[/g, "],\n[");
+
+        // Fix missing commas between objects
+        cleanedContent = cleanedContent.replace(/}(\s*){/g, "},\n{");
+
+        // Add missing brackets to arrays
+        if (cleanedContent.includes('[') && !cleanedContent.includes(']')) {
+          cleanedContent += ']';
+        }
+
+        // Add missing braces to objects
+        if (cleanedContent.includes('{') && !cleanedContent.includes('}')) {
+          cleanedContent += '}';
+        }
+
         // Fix "choices": "null" to "choices": null
-        cleanedContent = cleanedContent.replace(
-          /"choices"\s*:\s*"null"/g,
-          '"choices": null',
-        );
+        cleanedContent = cleanedContent.replace(/"choices"\s*:\s*"null"/g, '"choices": null');
 
         // Fix missing commas between array elements
-        cleanedContent = cleanedContent.replace(
-          /([}\]"'0-9])\s*\n\s*([{\["a-zA-Z0-9_])/g,
-          "$1,\n$2",
-        );
+        cleanedContent = cleanedContent.replace(/([}\]"'0-9])\s*\n\s*([{\["a-zA-Z0-9_])/g, "$1,\n$2");
 
         // Fix broken arrays where brackets are missing
         cleanedContent = cleanedContent.replace(
