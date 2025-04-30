@@ -5,10 +5,10 @@ import { z } from "zod";
 import { insertVnProjectSchema, insertVnStorySchema } from "@shared/schema";
 import { generateSceneBackgroundImage } from "./image-generator";
 
-import GoogleGenerativeAI from "@google/genai";
+import { GoogleGenerativeAI } from "@google/genai";
 
 const GEMINI_API_KEY = "AIzaSyDE-O9FT4wsie2Cb5SWNUhNVszlQg3dHnU";
-const ai = GoogleGenerativeAI.new GoogleGenerativeAI(GEMINI_API_KEY);
+const ai = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 // Helper function for Gemini API calls
 async function generateWithGemini(
@@ -50,10 +50,8 @@ Example of CORRECT JSON format:
     // Generate content
     const result = await model.generateContent({
       contents: [
-        ...(systemPrompt
-          ? [{ role: "model", parts: [{ text: systemPrompt }] }]
-          : []),
-        { role: "user", parts: [{ text: enhancedPrompt }] },
+        ...(systemPrompt ? [{ role: "model", parts: [{ text: systemPrompt }] }] : []),
+        { role: "user", parts: [{ text: enhancedPrompt }] }
       ],
       generationConfig: {
         temperature: 0.2,
