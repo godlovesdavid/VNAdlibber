@@ -431,7 +431,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/generate/concept", async (req, res) => {
     try {
       const { basicData } = generateConceptSchema.parse(req.body);
-
       // Create prompt for the concept generation
       const prompt = `Given this VN story context:
         Theme: ${basicData.theme}
