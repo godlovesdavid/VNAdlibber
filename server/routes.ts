@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { z } from "zod";
 import { insertVnProjectSchema, insertVnStorySchema } from "@shared/schema";
 import { generateSceneBackgroundImage } from "./image-generator";
+import { jsonrepair } from "jsonrepair";
 
 // Use Google's Gemini API instead of OpenAI for text generation
 const GEMINI_API_URL =
@@ -85,8 +86,24 @@ Example of CORRECT JSON format:
     if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
       let responseText = data.candidates[0].content.parts[0].text;
 
-      // Clean response text of potential issues
-      responseText = cleanResponseText(responseText);
+      // Strip markdown code blocks if present
+      if (responseText.startsWith("```")) {
+        // Strip opening code block markers (```json or just ```)
+        responseText = responseText.replace(/^```(?:json|javascript)?\s*\n/, "");
+        // Strip closing code block markers
+        responseText = responseText.replace(/\n```\s*$/, "");
+      }
+      
+      try {
+        // Use jsonrepair to fix any JSON formatting issues
+        responseText = jsonrepair(responseText);
+        console.log("JSON successfully repaired with jsonrepair");
+      } catch (repairError) {
+        console.error("jsonrepair failed:", repairError);
+        // Fall back to original cleanResponseText if jsonrepair fails
+        responseText = cleanResponseText(responseText);
+        console.log("Fell back to cleanResponseText");
+      }
 
       return responseText;
     } else {

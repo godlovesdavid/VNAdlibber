@@ -7,6 +7,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Upload, Play, ArrowLeft, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { GeneratedAct } from "@/types/vn";
+import { jsonrepair } from "jsonrepair";
 
 export default function PlaySelection() {
   const [, setLocation] = useLocation();
@@ -70,112 +71,8 @@ export default function PlaySelection() {
     reader.onload = (event) => {
       try {
         const content = event.target?.result as string;
-        let cleanedContent = content;
 
-        // Log the initial content for debugging
-        console.log("Importing content:", content.substring(0, 100) + "...");
-
-        // Extract the main content between the first { and last }
-        const firstBrace = cleanedContent.indexOf("{");
-        const lastBrace = cleanedContent.lastIndexOf("}");
-
-        if (firstBrace === -1 || lastBrace === -1) {
-          throw new Error("Invalid JSON structure - missing braces");
-        }
-
-        cleanedContent = cleanedContent.substring(firstBrace, lastBrace + 1);
-
-        // Fix common JSON issues
-        // Fix missing quotes around property names
-        cleanedContent = cleanedContent.replace(
-          /([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g,
-          '$1"$2"$3',
-        );
-
-        // Fix "choices": "null" to "choices": null
-        cleanedContent = cleanedContent.replace(
-          /"choices"\s*:\s*"null"/g,
-          '"choices": null',
-        );
-
-        // Fix broken arrays/objects
-        cleanedContent = cleanedContent.replace(/\}\s*\"/g, '},"');
-        cleanedContent = cleanedContent.replace(/\"\s*\{/g, '",{');
-        cleanedContent = cleanedContent.replace(/\]\s*\"/g, '],"');
-        cleanedContent = cleanedContent.replace(/\"\s*\[/g, '",[');
-
-        // Remove trailing commas in arrays and objects
-        cleanedContent = cleanedContent.replace(/,(\s*[\]}])/g, "$1");
-
-        // Fix unescaped quotes
-        cleanedContent = cleanedContent.replace(
-          /(?<!\\)"(?=[^"]*"[^"]*$)/g,
-          '\\"',
-        );
-
-        // Fix missing brackets/braces
-        const openBraces = (cleanedContent.match(/{/g) || []).length;
-        let closeBraces = (cleanedContent.match(/}/g) || []).length;
-        const openBrackets = (cleanedContent.match(/\[/g) || []).length;
-        let closeBrackets = (cleanedContent.match(/\]/g) || []).length;
-
-        // Add missing closing braces/brackets
-        while (openBraces > closeBraces) {
-          cleanedContent += "}";
-          closeBraces++;
-        }
-        while (openBrackets > closeBrackets) {
-          cleanedContent += "]";
-          closeBrackets++;
-        }
-
-        // Add missing brackets to arrays
-        if (cleanedContent.includes("[") && !cleanedContent.includes("]")) {
-          cleanedContent += "]";
-        }
-
-        // Add missing braces to objects
-        if (cleanedContent.includes("{") && !cleanedContent.includes("}")) {
-          cleanedContent += "}";
-        }
-
-        // Fix "choices": "null" to "choices": null
-        cleanedContent = cleanedContent.replace(
-          /"choices"\s*:\s*"null"/g,
-          '"choices": null',
-        );
-
-        // Fix missing commas between array elements
-        cleanedContent = cleanedContent.replace(
-          /([}\]"'0-9])\s*\n\s*([{\["a-zA-Z0-9_])/g,
-          "$1,\n$2",
-        );
-
-        // Fix broken arrays where brackets are missing
-        cleanedContent = cleanedContent.replace(
-          /(\[\s*[^[\]]*?)\s*(?:\n\s*\]|$)/g,
-          "$1]",
-        );
-
-        // Fix invalid escape sequences
-        cleanedContent = cleanedContent.replace(/\\([^"\\\/bfnrt])/g, "$1");
-
-        // Fix unescaped quotes in strings
-        cleanedContent = cleanedContent.replace(
-          /(?<!\\)"(?=[^"]*"[^"]*$)/g,
-          '\\"',
-        );
-
-        // Fix undefined/null values
-        cleanedContent = cleanedContent.replace(
-          /:\s*(undefined|null)\s*([,}])/g,
-          ": null$2",
-        );
-
-        // Remove any remaining whitespace between the end of content and closing brackets
-        cleanedContent = cleanedContent.replace(/\s+([\]}])\s*$/g, "$1");
-
-        const actData = JSON.parse(cleanedContent) as GeneratedAct;
+        const actData = JSON.parse(content) as GeneratedAct;
 
         // Extract act number from filename if possible
         const filename = file.name;
@@ -224,7 +121,8 @@ export default function PlaySelection() {
         toast({
           title: "Import Failed",
           description:
-            "The file format is not valid. Please upload a valid story JSON file.  Error details: " + error,
+            "The file format is not valid. Please upload a valid story JSON file.  Error details: " +
+            error,
           variant: "destructive",
         });
       }
