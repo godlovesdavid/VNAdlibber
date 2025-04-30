@@ -9,7 +9,9 @@ import {
 } from "@/lib/openai";
 import { apiRequest } from "@/lib/queryClient";
 
-export function useVnData() {
+// To make this hook compatible with Fast Refresh, we use a named function
+// expression instead of a function declaration
+const useVnData = () => {
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [abortController, setAbortController] =
@@ -857,4 +859,6 @@ export function useVnData() {
     cancelGeneration,
     isGenerating,
   };
-}
+};
+
+export { useVnData };
