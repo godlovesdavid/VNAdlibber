@@ -1,0 +1,48 @@
+import { apiRequest } from "./queryClient";
+
+export interface GenerationResult<T> {
+  data?: T;
+  error?: string;
+}
+
+export async function generateConcept(
+  params: any,
+  signal?: AbortSignal,
+): Promise<GenerationResult<any>> {
+  const response = await apiRequest(
+    "POST",
+    "/api/generate/concept",
+    params,
+    signal,
+  );
+  const data = await response.json();
+  return { data };
+}
+
+export async function generatePlot(
+  params: any,
+  signal?: AbortSignal,
+): Promise<GenerationResult<any>> {
+  const response = await apiRequest(
+    "POST",
+    "/api/generate/plot",
+    params,
+    signal,
+  );
+  const data = await response.json();
+  return { data };
+}
+
+export async function generateAct(
+  params: any,
+  signal?: AbortSignal,
+): Promise<GenerationResult<any>> {
+  const response = await apiRequest(
+    "POST",
+    "/api/generate/act",
+    params,
+    signal,
+  );
+  const data = await response.json();
+  return { data };
+}
