@@ -5,10 +5,10 @@ import { z } from "zod";
 import { insertVnProjectSchema, insertVnStorySchema } from "@shared/schema";
 import { generateSceneBackgroundImage } from "./image-generator";
 
-// Use Google's Gemini API instead of OpenAI for text generation
-const GEMINI_API_URL =
-  "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent";
+import { GoogleGenerativeAI } from "@google/genai";
+
 const GEMINI_API_KEY = "AIzaSyDE-O9FT4wsie2Cb5SWNUhNVszlQg3dHnU";
+const ai = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 // Helper function for Gemini API calls
 async function generateWithGemini(
@@ -18,11 +18,6 @@ async function generateWithGemini(
   maxOutputTokens = 8192,
 ) {
   try {
-    const headers = {
-      "Content-Type": "application/json",
-      "x-goog-api-key": GEMINI_API_KEY,
-    };
-
     // Add strict JSON formatting instructions
     const jsonFormatInstructions = `
 STRICT JSON FORMATTING RULES:
@@ -49,49 +44,28 @@ Example of CORRECT JSON format:
     // Add the JSON formatting instructions to the prompt
     const enhancedPrompt = `${prompt}\n\n${jsonFormatInstructions}`;
 
-    // Construct the request body
-    const requestBody = {
+    // Create the model instance
+    const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+    // Generate content
+    const result = await model.generateContent({
       contents: [
-        ...(systemPrompt
-          ? [{ role: "model", parts: [{ text: systemPrompt }] }]
-          : []),
-        { role: "user", parts: [{ text: enhancedPrompt }] },
+        ...(systemPrompt ? [{ role: "model", parts: [{ text: systemPrompt }] }] : []),
+        { role: "user", parts: [{ text: enhancedPrompt }] }
       ],
       generationConfig: {
-        temperature: 0.2, // Lower temperature for stricter adherence to formatting
+        temperature: 0.2,
         topP: 0.9,
         topK: 40,
         maxOutputTokens: maxOutputTokens,
       },
-    };
-
-    const response = await fetch(GEMINI_API_URL, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(requestBody),
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Gemini API error:", errorData);
-      throw new Error(
-        `Gemini API error: ${errorData.error?.message || "Unknown error"}`,
-      );
-    }
+    const response = await result.response;
+    const responseText = response.text();
 
-    const data = await response.json();
-
-    // Extract the text from the response
-    if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
-      let responseText = data.candidates[0].content.parts[0].text;
-
-      // Clean response text of potential issues
-      responseText = cleanResponseText(responseText);
-
-      return responseText;
-    } else {
-      throw new Error("Unexpected Gemini API response format");
-    }
+    // Clean response text of potential issues
+    return cleanResponseText(responseText);
   } catch (error) {
     console.error("Error calling Gemini API:", error);
     throw error;
