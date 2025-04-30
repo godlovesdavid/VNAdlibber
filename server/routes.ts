@@ -5,19 +5,24 @@ import { z } from "zod";
 import { insertVnProjectSchema, insertVnStorySchema } from "@shared/schema";
 import { generateSceneBackgroundImage } from "./image-generator";
 
-import { GoogleGenerativeAI } from "@google/genai";
-
+// Use Google's Gemini API instead of OpenAI for text generation
+const GEMINI_API_URL =
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent";
 const GEMINI_API_KEY = "AIzaSyDE-O9FT4wsie2Cb5SWNUhNVszlQg3dHnU";
-const ai = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 // Helper function for Gemini API calls
 async function generateWithGemini(
   prompt: string,
   systemPrompt: string | null = null,
   responseFormat = "JSON",
-  maxOutputTokens = 8192,
+  maxOutputTokens = 65536,
 ) {
   try {
+    const headers = {
+      "Content-Type": "application/json",
+      "x-goog-api-key": GEMINI_API_KEY,
+    };
+
     // Add strict JSON formatting instructions
     const jsonFormatInstructions = `
 STRICT JSON FORMATTING RULES:
@@ -44,28 +49,49 @@ Example of CORRECT JSON format:
     // Add the JSON formatting instructions to the prompt
     const enhancedPrompt = `${prompt}\n\n${jsonFormatInstructions}`;
 
-    // Create the model instance
-    const model = ai.getGenerativeModel({ model: "gemini-2.0-flash" });
-
-    // Generate content
-    const result = await model.generateContent({
+    // Construct the request body
+    const requestBody = {
       contents: [
-        ...(systemPrompt ? [{ role: "model", parts: [{ text: systemPrompt }] }] : []),
-        { role: "user", parts: [{ text: enhancedPrompt }] }
+        ...(systemPrompt
+          ? [{ role: "model", parts: [{ text: systemPrompt }] }]
+          : []),
+        { role: "user", parts: [{ text: enhancedPrompt }] },
       ],
       generationConfig: {
-        temperature: 0.2,
-        topP: 0.9,
-        topK: 40,
+        // temperature: 0.2, // Lower temperature for stricter adherence to formatting
+        // topP: 0.9,
+        // topK: 40,
         maxOutputTokens: maxOutputTokens,
       },
+    };
+
+    const response = await fetch(GEMINI_API_URL, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(requestBody),
     });
 
-    const response = await result.response;
-    const responseText = response.text();
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Gemini API error:", errorData);
+      throw new Error(
+        `Gemini API error: ${errorData.error?.message || "Unknown error"}`,
+      );
+    }
 
-    // Clean response text of potential issues
-    return cleanResponseText(responseText);
+    const data = await response.json();
+
+    // Extract the text from the response
+    if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
+      let responseText = data.candidates[0].content.parts[0].text;
+
+      // Clean response text of potential issues
+      responseText = cleanResponseText(responseText);
+
+      return responseText;
+    } else {
+      throw new Error("Unexpected Gemini API response format");
+    }
   } catch (error) {
     console.error("Error calling Gemini API:", error);
     throw error;
@@ -767,7 +793,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         Instructions:
         - Do not generate any other act except Act ${actNumber}.
         - Create approximately ${scenesCount} scenes for Act ${actNumber}, or more if necessary to convey Act ${actNumber}.
-        - Include branching paths based on 2-4 choices. Choices may continue the dialogue conversation in the same scene and are marked with a letter e.g. Act ${actNumber} Scene 1b.
+        - Include branching paths based on 2-4 choices. Choices that continue the dialogue conversation in the same scene are marked with a letter e.g. Act ${actNumber} Scene 1b (although they are technically different scenes).
         - Final scene of act should have choices set to null. Otherwise, ensure the scene connects to another scene.
         - Relationships, inventory items, or skills can be added or subtracted by "delta" values.
         - Pack each scene with ample dialogue to express the story (5-15+ lines). Be inventive and creative about event details, while ensuring consistency with the plot outline.
@@ -820,7 +846,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         prompt,
         systemPrompt,
         "JSON",
-        8192,
+        65536,
       );
 
       // Log the generated response for debugging
