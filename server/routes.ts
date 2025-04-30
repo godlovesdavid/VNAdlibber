@@ -7,7 +7,7 @@ import { generateSceneBackgroundImage } from "./image-generator";
 
 // Use Google's Gemini API instead of OpenAI for text generation
 const GEMINI_API_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+  "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent";
 const GEMINI_API_KEY = "AIzaSyDE-O9FT4wsie2Cb5SWNUhNVszlQg3dHnU";
 
 // Helper function for Gemini API calls
@@ -760,7 +760,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         {
           "scenes": [
             {
-              "id": "${actNumber}-1",
+              "id": "Act ${actNumber} Scene 1",
               "setting": "Name of the location",
               "bg": "Detailed background description for image generation",
               "dialogue": [
@@ -774,31 +774,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   "text": "Choice text displayed to player",
                   "description": "Optional: brief description of choice consequences",
                   "delta": {"character1": 1, "character2": -1},
-                  "next": "${actNumber}-1a"
+                  "next": "Act ${actNumber} Scene 1a"
                 },
                 {
                   "id": "choice2",
                   "text": "Alternative choice text",
                   "delta": {"character2": 1},
-                  "next": "${actNumber}-1b"
+                  "next": "Act ${actNumber} Scene 1b"
                 }
                 {
                   "id": "choice3",
                   "text": "Alternative choice text",
-                  "next": "${actNumber}-2"
+                  "next": "Act ${actNumber} Scene 2"
                 }
               ]
             }
           ]
         }
-        Notes:
-        - Scene ids have format <Act#>-<Scene#>. 
-        - Include branching paths based on 2-4 choices. Choices that don't take you to another scene have letters e.g. <Act#>-<Scene#>b, where they continue the dialogue conversation.
+        Instructions:
+        - Do not generate any other act except Act ${actNumber}.
+        - Include branching paths based on 2-4 choices. Choices that don't take you to another scene # with letters, where they continue the dialogue conversation.
         - Final scene of act should have choices set to null. Otherwise, ensure the scene connects to another scene.
         - Relationships, inventory items, or skills can be added or subtracted by "delta" values.
-        - Pack each scene with ample dialogue to express the story (5-15+ lines). Be inventive about event details, while ensuring consistency with the plot outline.
+        - Pack each scene with ample dialogue to express the story (5-15+ lines). Be inventive and creative about event details, while ensuring consistency with the plot outline.
         - Use of a narrator is encouraged to explain the scene or provide context.
-        - Main protagonist may think in parentheses.
+        - The protagonist may think in parentheses.
         - Unknown characters are named "???" until revealed.
         - "bg" value is used for AI image generation prompts and is only required when the setting is visited the first time.
         - Maintain the given tone (${projectContext.basicData.tone}) consistent with the story context.
@@ -807,7 +807,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         - Some choices may succeed or fail based on condition of relationship values, items, or skills. To do this, add a "condition" value in the choice (see below).
         Here is a sample scene that blocks paths based on relationship requirements. Player tries to enter the engine room, but cannot due to his relationship value with Bruno being less than 2. If player has at least 2 points with Bruno, they proceed to the "failNext" scene 2-5a. Otherwise, they proceed to "next" scene 2-5b. 
         {
-          "id": "2-5",
+          "id": "Act 2 Scene 5",
           "setting": "Engine Room",
           "bg":"dimly lit engine room, flickering valves, massive pressure dials, creaking pipes overhead"
           "dialogue": [
@@ -818,18 +818,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
             "id": "enter_room",
             "text": "Try to enter the engine room",
             "condition": { "bruno": 2 },
-            "next": "2-5a",
-            "failNext": "2-5b" 
+            "next": "Act 2 Scene 5a",
+            "failNext": "Act 2 Scene 5b" 
           },
           {
             "id": "ask_trust",
             "text": "Ask how to earn his trust",
-            "next": "2-5c"
+            "next": "Act 2 Scene 5c"
           }
           ]
         },
         {
-          "id": "2-5b",
+          "id": "Act 2 Scene 5b",
           "bg": "door blocked",
           "dialogue": [
           ["Bruno", "Not yet. You're not ready."]

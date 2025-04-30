@@ -76,6 +76,11 @@ export function useImageGeneration(
         logDebug("Cannot generate - no scene provided");
         return;
       }
+       // Block any new scene transitions until generation completes
+        if (isGenerating) {
+          logDebug("Already generating an image, blocking new generation");
+          return;
+        }
 
       // Always update current scene ID reference
       currentSceneId.current = scene.id;

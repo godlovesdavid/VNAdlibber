@@ -541,9 +541,9 @@ export function VnPlayer({
     error: imageError,
     generateImage,
   } = useImageGeneration(currentScene, theme, {
-    autoGenerate: true,
-    debug: true,
-    generationDelay: 500, // Added slight delay to prevent rapid generation during transitions
+    autoGenerate: false,
+    debug: false,
+    generationDelay: 100, // Added slight delay to prevent rapid generation during transitions
   });
 
   // Log current scene and image state for debugging
@@ -595,42 +595,7 @@ export function VnPlayer({
           </div>
 
           {/* Image generation controls - Increased z-index to ensure it's clickable */}
-          <div className="absolute top-4 right-4 flex space-x-2 z-20 gap-2">
-            {/* Force Real DALL-E Button */}
-            <Button
-              variant="outline"
-              className="bg-red-600 text-white hover:bg-red-700 border-red-400"
-              onClick={(e) => {
-                e.stopPropagation();
-
-                if (!currentScene) return;
-
-                // Instead of making a separate fetch request, let's use the hook directly
-                // This avoids potential race conditions and state management issues
-
-                // The most reliable approach: Just tell the server-side to use the real API
-                // and let the hook handle all the state changes
-                // This will use the ?force=true parameter under the hood
-
-                try {
-                  // Call the same function used by the "Generate Image" button
-                  // but with a custom option to force real DALL-E
-                  generateImage(true, { forceReal: true });
-                } catch (error) {
-                  console.error("Image generation failed:", error);
-                  toast({
-                    title: "Generation Failed",
-                    description:
-                      error instanceof Error ? error.message : "Unknown error",
-                    variant: "destructive",
-                  });
-                }
-              }}
-              disabled={isGenerating}
-            >
-              <ImageIcon className="h-4 w-4 mr-2" />
-              <span>Real DALL-E</span>
-            </Button>
+          <div className="absolute top-14 right-4 flex space-x-2 z-20 gap-2">
             {/* Button: Use the hook's generateImage function */}
             <Button
               variant="default"
@@ -656,99 +621,6 @@ export function VnPlayer({
                   <span>Generate Image</span>
                 </>
               )}
-            </Button>
-
-            {/* Button: Test OpenAI connection */}
-            <Button
-              variant="outline"
-              className="ml-2 bg-green-500 text-white hover:bg-green-700 active:bg-green-800 cursor-pointer"
-              onClick={(e) => {
-                // Stop propagation to prevent parent elements from capturing the click
-                e.stopPropagation();
-                console.log("Testing OpenAI connection");
-
-                fetch("/api/test/openai")
-                  .then((response) => response.json())
-                  .then((data) => {
-                    console.log("OpenAI test result:", data);
-                    toast({
-                      title: `OpenAI Connection: ${data.success ? "SUCCESS" : "FAILED"}`,
-                      description: data.message,
-                      variant: data.success ? "default" : "destructive",
-                    });
-                  })
-                  .catch((error) => {
-                    console.error("Test Error:", error);
-                    toast({
-                      title: "Connection Test Failed",
-                      description:
-                        error instanceof Error
-                          ? error.message
-                          : "Unknown error",
-                      variant: "destructive",
-                    });
-                  });
-              }}
-              style={{ pointerEvents: "auto" }} // Ensure pointer events are enabled
-            >
-              Test OpenAI
-            </Button>
-
-            {/* Button: Test DALL-E API */}
-            <Button
-              variant="outline"
-              className="ml-2 bg-purple-500 text-white hover:bg-purple-700 active:bg-purple-800 cursor-pointer"
-              onClick={(e) => {
-                // Stop propagation to prevent parent elements from capturing the click
-                e.stopPropagation();
-                console.log("Testing DALL-E API");
-
-                toast({
-                  title: "Testing DALL-E API",
-                  description:
-                    "Checking if DALL-E image generation is working...",
-                });
-
-                fetch("/api/test/dalle")
-                  .then((response) => response.json())
-                  .then((data) => {
-                    console.log("DALL-E test result:", data);
-                    if (data.success) {
-                      toast({
-                        title: "DALL-E API Success",
-                        description: data.message,
-                        variant: "default",
-                      });
-
-                      // Show the test image if one was returned
-                      if (data.url) {
-                        console.log("Test DALL-E image URL:", data.url);
-                        // Set the current image to the test image
-                        generateImage(true);
-                      }
-                    } else {
-                      toast({
-                        title: "DALL-E API Failed",
-                        description: data.message,
-                        variant: "destructive",
-                      });
-                    }
-                  })
-                  .catch((error) => {
-                    console.error("DALL-E Test Error:", error);
-                    toast({
-                      title: "DALL-E Test Failed",
-                      description:
-                        error instanceof Error
-                          ? error.message
-                          : "Unknown error",
-                      variant: "destructive",
-                    });
-                  });
-              }}
-              style={{ pointerEvents: "auto" }} // Ensure pointer events are enabled
-            >
-              Test DALL-E
             </Button>
           </div>
 
