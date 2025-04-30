@@ -39,6 +39,7 @@ STRICT JSON FORMATTING RULES:
 7. Validate your JSON structure before returning it.
 8. Do not include markdown code blocks in your response.
 9. Every object property name must be quoted.
+10. Use value null instead of string "null"
 
 Example of CORRECT JSON format:
 {
