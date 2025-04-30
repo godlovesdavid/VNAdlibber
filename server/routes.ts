@@ -15,7 +15,7 @@ async function generateWithGemini(
   prompt: string,
   systemPrompt: string | null = null,
   responseFormat = "JSON",
-  maxOutputTokens = 4096,
+  maxOutputTokens = 8192,
 ) {
   try {
     const headers = {
@@ -755,8 +755,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create prompt for the act generation
       const prompt = `You are tasked with bringing this story to life:
         ${JSON.stringify(projectContext, null, 2)}
-        Create approximately ${scenesCount} scenes for Act ${actNumber} of the plot outline.
-        Return a JSON as structured:
+        Create scenes for Act ${actNumber} of the plot outline and return a JSON as structured:
         {
           "scenes": [
             {
@@ -793,7 +792,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         Instructions:
         - Do not generate any other act except Act ${actNumber}.
-        - Include branching paths based on 2-4 choices. Choices that don't take you to another scene # with letters, where they continue the dialogue conversation.
+        - Create approximately ${scenesCount} scenes for Act ${actNumber}, or more if necessary to convey Act ${actNumber}.
+        - Include branching paths based on 2-4 choices. Choices may continue the dialogue conversation in the same scene and are marked with a letter e.g. Act ${actNumber} Scene 1b.
         - Final scene of act should have choices set to null. Otherwise, ensure the scene connects to another scene.
         - Relationships, inventory items, or skills can be added or subtracted by "delta" values.
         - Pack each scene with ample dialogue to express the story (5-15+ lines). Be inventive and creative about event details, while ensuring consistency with the plot outline.
@@ -846,23 +846,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         prompt,
         systemPrompt,
         "JSON",
-        32768,
+        8192,
       );
 
       // Log the generated response for debugging
-      console.log(
-        `Generated Act ${actNumber}:`,
-        responseContent?.substring(0, 200) + "...",
-      );
+      console.log(`Generated Act ${actNumber}:`, responseContent);
 
       // Try to parse response
       try {
         if (responseContent === "{}") throw new Error("Empty response");
-
-        console.log(
-          "Cleaned response for act:",
-          responseContent.substring(0, 200) + "...",
-        );
 
         // Try standard JSON parsing first
         let generatedAct;
@@ -911,7 +903,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (checkResponseForError(generatedAct, res)) {
           return;
         }
-        console.log(JSON.stringify(generatedAct));
         res.json(generatedAct);
       } catch (parseError: any) {
         console.error("JSON parse error:", parseError);
