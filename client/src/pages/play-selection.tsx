@@ -74,62 +74,77 @@ export default function PlaySelection() {
 
         // Extract the main content between the first { and last }
         const mainContent = cleanedContent.substring(
-          cleanedContent.indexOf('{'),
-          cleanedContent.lastIndexOf('}') + 1
+          cleanedContent.indexOf("{"),
+          cleanedContent.lastIndexOf("}") + 1,
         );
 
         cleanedContent = mainContent;
 
         // Fix common JSON issues
         // Fix missing quotes around property names
-        cleanedContent = cleanedContent.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
+        cleanedContent = cleanedContent.replace(
+          /([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g,
+          '$1"$2"$3',
+        );
 
         // Fix "choices": "null" to "choices": null
-        cleanedContent = cleanedContent.replace(/"choices"\s*:\s*"null"/g, '"choices": null');
+        cleanedContent = cleanedContent.replace(
+          /"choices"\s*:\s*"null"/g,
+          '"choices": null',
+        );
 
         // Fix broken arrays/objects
-        cleanedContent = cleanedContent.replace(/\}\s*\"/g, '},\"');
-        cleanedContent = cleanedContent.replace(/\"\s*\{/g, '\",{');
-        cleanedContent = cleanedContent.replace(/\]\s*\"/g, '],\"');
-        cleanedContent = cleanedContent.replace(/\"\s*\[/g, '\",[');
+        cleanedContent = cleanedContent.replace(/\}\s*\"/g, '},"');
+        cleanedContent = cleanedContent.replace(/\"\s*\{/g, '",{');
+        cleanedContent = cleanedContent.replace(/\]\s*\"/g, '],"');
+        cleanedContent = cleanedContent.replace(/\"\s*\[/g, '",[');
 
         // Remove trailing commas in arrays and objects
-        cleanedContent = cleanedContent.replace(/,(\s*[\]}])/g, '$1');
+        cleanedContent = cleanedContent.replace(/,(\s*[\]}])/g, "$1");
 
         // Fix unescaped quotes
-        cleanedContent = cleanedContent.replace(/(?<!\\)"(?=[^"]*"[^"]*$)/g, '\\"');
+        cleanedContent = cleanedContent.replace(
+          /(?<!\\)"(?=[^"]*"[^"]*$)/g,
+          '\\"',
+        );
 
         // Fix missing brackets/braces
         const openBraces = (cleanedContent.match(/{/g) || []).length;
-        const closeBraces = (cleanedContent.match(/}/g) || []).length;
+        let closeBraces = (cleanedContent.match(/}/g) || []).length;
         const openBrackets = (cleanedContent.match(/\[/g) || []).length;
-        const closeBrackets = (cleanedContent.match(/\]/g) || []).length;
+        let closeBrackets = (cleanedContent.match(/\]/g) || []).length;
 
         // Add missing closing braces/brackets
         while (openBraces > closeBraces) {
-          cleanedContent += '}';
+          cleanedContent += "}";
           closeBraces++;
         }
         while (openBrackets > closeBrackets) {
-          cleanedContent += ']';
+          cleanedContent += "]";
           closeBrackets++;
         }
 
         // Add missing brackets to arrays
-        if (cleanedContent.includes('[') && !cleanedContent.includes(']')) {
-          cleanedContent += ']';
+        if (cleanedContent.includes("[") && !cleanedContent.includes("]")) {
+          cleanedContent += "]";
         }
 
         // Add missing braces to objects
-        if (cleanedContent.includes('{') && !cleanedContent.includes('}')) {
-          cleanedContent += '}';
+        if (cleanedContent.includes("{") && !cleanedContent.includes("}")) {
+          cleanedContent += "}";
         }
 
         // Fix "choices": "null" to "choices": null
-        cleanedContent = cleanedContent.replace(/"choices"\s*:\s*"null"/g, '"choices": null');
+        cleanedContent = cleanedContent.replace(
+          /"choices"\s*:\s*"null"/g,
+          '"choices": null',
+        );
 
         // Fix missing commas between array elements
-        cleanedContent = cleanedContent.replace(/([}\]"'0-9])\s*\n\s*([{\["a-zA-Z0-9_])/g, "$1,\n$2");
+        cleanedContent = cleanedContent.replace(
+          /([}\]"'0-9])\s*\n\s*([{\["a-zA-Z0-9_])/g,
+          "$1,\n$2",
+        );
 
         // Fix broken arrays where brackets are missing
         cleanedContent = cleanedContent.replace(
