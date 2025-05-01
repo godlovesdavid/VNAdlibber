@@ -49,6 +49,7 @@ export interface PathsData {
 
 // Structure for plot acts
 export interface PlotAct {
+  title?: string; // Optional title property for backward compatibility
   summary: string;
   events: string[];
   arcsActivated: string[];

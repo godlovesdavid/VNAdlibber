@@ -107,7 +107,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       },
       charactersData: {},
       pathsData: {},
-      plotData: {plotOutline: {}},
+      plotData: {},
       currentStep: 1,
     };
     // Save the new project data to localStorage

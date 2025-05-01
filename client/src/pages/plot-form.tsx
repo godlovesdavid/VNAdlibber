@@ -33,8 +33,8 @@ export default function PlotForm() {
 
   // Load existing data if available
   useEffect(() => {
-    if (projectData?.plotData?.plotOutline) {
-      setPlotActs(projectData.plotData.plotOutline);
+    if (projectData?.plotData && Object.keys(projectData.plotData).length > 0) {
+      setPlotActs(projectData.plotData);
 
       // Expand the first act by default if we have data
       setExpandedActs({
@@ -85,10 +85,10 @@ export default function PlotForm() {
 
   // Go back to previous step
   const handleBack = () => {
-    // Save data using object-based pattern
-    setPlotData({
-      plotOutline: plotActs , // Keep using 'plotOutline' key to match PlotData interface
-    });
+    // Save data using the new direct object pattern
+    if (plotActs) {
+      setPlotData(plotActs);
+    }
 
     goToStep(4);
   };
@@ -101,10 +101,8 @@ export default function PlotForm() {
       return;
     }
 
-    // Save data using object-based pattern
-    setPlotData({
-      plotOutline: plotActs, // Keep using 'plotOutline' key to match PlotData interface
-    });
+    // Save data using the new direct object pattern
+    setPlotData(plotActs);
 
     // Navigate to next step
     setLocation("/create/generate-vn");
