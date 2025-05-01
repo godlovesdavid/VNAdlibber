@@ -275,7 +275,7 @@ export default function PlotForm() {
                             Title
                           </h5>
                           <p className="text-neutral-600">
-                            {plotOutline.act1.title}
+                            {plotActs.act1.title}
                           </p>
                         </div>
                         <div>
@@ -283,7 +283,7 @@ export default function PlotForm() {
                             Summary
                           </h5>
                           <p className="text-neutral-600">
-                            {plotOutline.act1.summary}
+                            {plotActs.act1.summary}
                           </p>
                         </div>
                         <div>
@@ -291,7 +291,7 @@ export default function PlotForm() {
                             Events
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotOutline.act1.events.map((event, index) => (
+                            {plotActs.act1.events.map((event: string, index: number) => (
                               <li key={index}>{event}</li>
                             ))}
                           </ul>
@@ -301,7 +301,7 @@ export default function PlotForm() {
                             Arcs Activated
                           </h5>
                           <p className="text-neutral-600">
-                            {plotOutline.act1.arcsActivated.join(", ")}
+                            {plotActs.act1.arcsActivated.join(", ")}
                           </p>
                         </div>
                         <div>
@@ -309,8 +309,8 @@ export default function PlotForm() {
                             Arc Intersections
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotOutline.act1.arcIntersections.map(
-                              (intersection, index) => (
+                            {plotActs.act1.arcIntersections.map(
+                              (intersection: string, index: number) => (
                                 <li key={index}>{intersection}</li>
                               ),
                             )}
@@ -321,8 +321,8 @@ export default function PlotForm() {
                             Player Choices
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotOutline.act1.playerChoices.map(
-                              (choice, index) => (
+                            {plotActs.act1.playerChoices.map(
+                              (choice: string, index: number) => (
                                 <li key={index}>{choice}</li>
                               ),
                             )}
@@ -354,7 +354,7 @@ export default function PlotForm() {
                             Title
                           </h5>
                           <p className="text-neutral-600">
-                            {plotOutline.act2.title}
+                            {plotActs.act2.title}
                           </p>
                         </div>
                         <div>
@@ -362,7 +362,7 @@ export default function PlotForm() {
                             Summary
                           </h5>
                           <p className="text-neutral-600">
-                            {plotOutline.act2.summary}
+                            {plotActs.act2.summary}
                           </p>
                         </div>
                         <div>
@@ -370,7 +370,7 @@ export default function PlotForm() {
                             Events
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotOutline.act2.events.map((event, index) => (
+                            {plotActs.act2.events.map((event: string, index: number) => (
                               <li key={index}>{event}</li>
                             ))}
                           </ul>
@@ -380,7 +380,7 @@ export default function PlotForm() {
                             Arcs Activated
                           </h5>
                           <p className="text-neutral-600">
-                            {plotOutline.act2.arcsActivated.join(", ")}
+                            {plotActs.act2.arcsActivated.join(", ")}
                           </p>
                         </div>
                         <div>
@@ -388,8 +388,8 @@ export default function PlotForm() {
                             Arc Intersections
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotOutline.act2.arcIntersections.map(
-                              (intersection, index) => (
+                            {plotActs.act2.arcIntersections.map(
+                              (intersection: string, index: number) => (
                                 <li key={index}>{intersection}</li>
                               ),
                             )}
@@ -400,8 +400,8 @@ export default function PlotForm() {
                             Player Choices
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotOutline.act2.playerChoices.map(
-                              (choice, index) => (
+                            {plotActs.act2.playerChoices.map(
+                              (choice: string, index: number) => (
                                 <li key={index}>{choice}</li>
                               ),
                             )}
@@ -433,7 +433,7 @@ export default function PlotForm() {
                             Title
                           </h5>
                           <p className="text-neutral-600">
-                            {plotOutline.act3.title}
+                            {plotActs.act3.title}
                           </p>
                         </div>
                         <div>
@@ -441,7 +441,7 @@ export default function PlotForm() {
                             Summary
                           </h5>
                           <p className="text-neutral-600">
-                            {plotOutline.act3.summary}
+                            {plotActs.act3.summary}
                           </p>
                         </div>
                         <div>
@@ -449,7 +449,7 @@ export default function PlotForm() {
                             Events
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotOutline.act3.events.map((event, index) => (
+                            {plotActs.act3.events.map((event: string, index: number) => (
                               <li key={index}>{event}</li>
                             ))}
                           </ul>
@@ -459,7 +459,7 @@ export default function PlotForm() {
                             Arcs Activated
                           </h5>
                           <p className="text-neutral-600">
-                            {plotOutline.act3.arcsActivated.join(", ")}
+                            {plotActs.act3.arcsActivated.join(", ")}
                           </p>
                         </div>
                         <div>
@@ -467,8 +467,8 @@ export default function PlotForm() {
                             Arc Intersections
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotOutline.act3.arcIntersections.map(
-                              (intersection, index) => (
+                            {plotActs.act3.arcIntersections.map(
+                              (intersection: string, index: number) => (
                                 <li key={index}>{intersection}</li>
                               ),
                             )}
@@ -479,8 +479,8 @@ export default function PlotForm() {
                             Player Choices
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotOutline.act3.playerChoices.map(
-                              (choice, index) => (
+                            {plotActs.act3.playerChoices.map(
+                              (choice: string, index: number) => (
                                 <li key={index}>{choice}</li>
                               ),
                             )}
@@ -512,7 +512,7 @@ export default function PlotForm() {
                             Title
                           </h5>
                           <p className="text-neutral-600">
-                            {plotOutline.act4.title}
+                            {plotActs.act4.title}
                           </p>
                         </div>
                         <div>
@@ -520,7 +520,7 @@ export default function PlotForm() {
                             Summary
                           </h5>
                           <p className="text-neutral-600">
-                            {plotOutline.act4.summary}
+                            {plotActs.act4.summary}
                           </p>
                         </div>
                         <div>
@@ -528,7 +528,7 @@ export default function PlotForm() {
                             Events
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotOutline.act4.events.map((event, index) => (
+                            {plotActs.act4.events.map((event: string, index: number) => (
                               <li key={index}>{event}</li>
                             ))}
                           </ul>
@@ -538,7 +538,7 @@ export default function PlotForm() {
                             Arcs Activated
                           </h5>
                           <p className="text-neutral-600">
-                            {plotOutline.act4.arcsActivated.join(", ")}
+                            {plotActs.act4.arcsActivated.join(", ")}
                           </p>
                         </div>
                         <div>
@@ -546,8 +546,8 @@ export default function PlotForm() {
                             Arc Intersections
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotOutline.act4.arcIntersections.map(
-                              (intersection, index) => (
+                            {plotActs.act4.arcIntersections.map(
+                              (intersection: string, index: number) => (
                                 <li key={index}>{intersection}</li>
                               ),
                             )}
@@ -558,8 +558,8 @@ export default function PlotForm() {
                             Player Choices
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotOutline.act4.playerChoices.map(
-                              (choice, index) => (
+                            {plotActs.act4.playerChoices.map(
+                              (choice: string, index: number) => (
                                 <li key={index}>{choice}</li>
                               ),
                             )}
@@ -591,7 +591,7 @@ export default function PlotForm() {
                             Title
                           </h5>
                           <p className="text-neutral-600">
-                            {plotOutline.act5.title}
+                            {plotActs.act5.title}
                           </p>
                         </div>
                         <div>
@@ -599,7 +599,7 @@ export default function PlotForm() {
                             Summary
                           </h5>
                           <p className="text-neutral-600">
-                            {plotOutline.act5.summary}
+                            {plotActs.act5.summary}
                           </p>
                         </div>
                         <div>
@@ -607,7 +607,7 @@ export default function PlotForm() {
                             Events
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotOutline.act5.events.map((event, index) => (
+                            {plotActs.act5.events.map((event: string, index: number) => (
                               <li key={index}>{event}</li>
                             ))}
                           </ul>
@@ -617,7 +617,7 @@ export default function PlotForm() {
                             Arcs Activated
                           </h5>
                           <p className="text-neutral-600">
-                            {plotOutline.act5.arcsActivated.join(", ")}
+                            {plotActs.act5.arcsActivated.join(", ")}
                           </p>
                         </div>
                         <div>
@@ -625,8 +625,8 @@ export default function PlotForm() {
                             Arc Intersections
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotOutline.act5.arcIntersections.map(
-                              (intersection, index) => (
+                            {plotActs.act5.arcIntersections.map(
+                              (intersection: string, index: number) => (
                                 <li key={index}>{intersection}</li>
                               ),
                             )}
@@ -637,8 +637,8 @@ export default function PlotForm() {
                             Player Choices
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotOutline.act5.playerChoices.map(
-                              (choice, index) => (
+                            {plotActs.act5.playerChoices.map(
+                              (choice: string, index: number) => (
                                 <li key={index}>{choice}</li>
                               ),
                             )}
