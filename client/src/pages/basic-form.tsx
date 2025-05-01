@@ -267,7 +267,7 @@ export default function BasicForm() {
                       <SelectContent className="min-w-[180px]">
                         <SelectItem value="mystery">mystery</SelectItem>
                         <SelectItem value="romance">romance</SelectItem>
-                        <SelectItem value="science_fiction">sci-fi</SelectItem>
+                        <SelectItem value="sci_fi">sci-fi</SelectItem>
                         <SelectItem value="adventure">adventure</SelectItem>
                         <SelectItem value="slice_of_life">
                           slice of life
