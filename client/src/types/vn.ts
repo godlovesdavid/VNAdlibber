@@ -108,6 +108,7 @@ export interface VnProjectData {
   basicData: BasicData;
   conceptData?: ConceptData;
   charactersData?: CharactersData;
+  protagonist?: string; // Store the name of the main character for easy reference
   pathsData?: PathsData;
   plotData?: PlotData;
   generatedActs?: Record<string, any>; // Fixed GeneratedAct reference

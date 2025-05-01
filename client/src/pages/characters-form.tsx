@@ -27,8 +27,13 @@ export default function CharactersForm() {
     cancelGeneration,
   } = useVnData();
 
+  // Extended Character interface for form usage (includes name separately)
+  interface CharacterForm extends Character {
+    name: string; // Only used in the form, not stored in the context
+  }
+
   // Form state
-  const [characters, setCharacters] = useState<Character[]>([
+  const [characters, setCharacters] = useState<CharacterForm[]>([
     {
       name: "",
       role: "protagonist",
@@ -54,9 +59,20 @@ export default function CharactersForm() {
       const charactersArray = Object.entries(projectData.charactersData).map(
         ([name, character]) => ({
           ...character,
-          name // Ensure name is set properly
+          name // Add name field for form usage
         })
       );
+      
+      // If there's a protagonist field set, ensure it appears first in the array
+      if (projectData.protagonist && projectData.charactersData[projectData.protagonist]) {
+        const protagonistIndex = charactersArray.findIndex(char => char.name === projectData.protagonist);
+        if (protagonistIndex > 0) { // If not already first
+          const protagonist = charactersArray[protagonistIndex];
+          charactersArray.splice(protagonistIndex, 1); // Remove from current position
+          charactersArray.unshift(protagonist); // Add to beginning
+        }
+      }
+      
       setCharacters(charactersArray);
     }
   }, [projectData]);
@@ -100,7 +116,7 @@ export default function CharactersForm() {
   // Update character field
   const updateCharacter = (
     index: number,
-    field: keyof Character,
+    field: string, // Using string type to allow 'name' which isn't in Character
     value: string,
   ) => {
     const updatedCharacters = [...characters];
