@@ -55,24 +55,36 @@ export default function CharactersForm() {
   // Load existing data if available
   useEffect(() => {
     if (projectData?.charactersData && Object.keys(projectData.charactersData).length > 0) {
+      console.log("Loading characters data from context:", projectData.charactersData);
+      
       // Convert from object to array format for the form
       const charactersArray = Object.entries(projectData.charactersData).map(
-        ([name, character]) => ({
-          ...character,
-          name // Add name field for form usage
-        })
+        ([name, character]) => {
+          console.log(`Processing character '${name}':`, character);
+          return {
+            ...character,
+            name // Add name field for form usage
+          };
+        }
       );
+      
+      console.log("Converted characters array:", charactersArray);
       
       // If there's a protagonist field set, ensure it appears first in the array
       if (projectData.protagonist && projectData.charactersData[projectData.protagonist]) {
+        console.log("Protagonist from context:", projectData.protagonist);
         const protagonistIndex = charactersArray.findIndex(char => char.name === projectData.protagonist);
+        console.log("Protagonist index in array:", protagonistIndex);
+        
         if (protagonistIndex > 0) { // If not already first
           const protagonist = charactersArray[protagonistIndex];
           charactersArray.splice(protagonistIndex, 1); // Remove from current position
           charactersArray.unshift(protagonist); // Add to beginning
+          console.log("Moved protagonist to beginning of array");
         }
       }
       
+      console.log("Final characters array to set in form:", charactersArray);
       setCharacters(charactersArray);
     }
   }, [projectData]);
@@ -155,7 +167,16 @@ export default function CharactersForm() {
           if (char.name) {
             // Extract name but don't store it in the object
             const { name, ...characterWithoutName } = char;
-            charactersObj[name] = characterWithoutName;
+            
+            // Remove any numeric keys that might be causing unintended nesting
+            const cleanCharacter = Object.entries(characterWithoutName)
+              .filter(([key]) => isNaN(Number(key)))
+              .reduce((obj, [key, value]) => {
+                obj[key] = value;
+                return obj;
+              }, {} as Record<string, any>) as Character;
+              
+            charactersObj[name] = cleanCharacter;
             
             // Store the protagonist name (first character is always protagonist)
             if (idx === 0) {
@@ -252,7 +273,16 @@ export default function CharactersForm() {
           if (char.name) {
             // Extract name but don't store it in the object
             const { name, ...characterWithoutName } = char;
-            charactersObj[name] = characterWithoutName;
+            
+            // Remove any numeric keys that might be causing unintended nesting
+            const cleanCharacter = Object.entries(characterWithoutName)
+              .filter(([key]) => isNaN(Number(key)))
+              .reduce((obj, [key, value]) => {
+                obj[key] = value;
+                return obj;
+              }, {} as Record<string, any>) as Character;
+              
+            charactersObj[name] = cleanCharacter;
             
             // Store the protagonist name (first character is always protagonist)
             if (idx === 0) {
@@ -311,7 +341,15 @@ export default function CharactersForm() {
       if (char.name) {
         // Extract name but don't store it in the object
         const { name, ...characterWithoutName } = char;
-        charactersObj[name] = characterWithoutName;
+        // Remove any numeric keys that might be causing unintended nesting
+        const cleanCharacter = Object.entries(characterWithoutName)
+          .filter(([key]) => isNaN(Number(key)))
+          .reduce((obj, [key, value]) => {
+            obj[key] = value;
+            return obj;
+          }, {} as Record<string, any>) as Character;
+          
+        charactersObj[name] = cleanCharacter;
         
         // Store the protagonist name (first character is always protagonist)
         if (index === 0) {

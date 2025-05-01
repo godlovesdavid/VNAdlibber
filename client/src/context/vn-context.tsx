@@ -162,6 +162,9 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const setCharactersData = (data: CharactersData, protagonist?: string) => {
     if (!projectData) return;
     
+    console.log("Setting character data in context:", data);
+    console.log("Setting protagonist:", protagonist);
+    
     setProjectData({
       ...projectData,
       charactersData: data,
