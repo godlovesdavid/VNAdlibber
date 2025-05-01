@@ -14,7 +14,7 @@ export interface ConceptData {
 
 // Character definition
 export interface Character {
-  name: string;
+  // name field removed as it's redundant with the key in CharactersData
   role: string;
   occupation: string; // Added occupation field to distinguish from role
   gender: string;
