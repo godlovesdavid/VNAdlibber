@@ -81,9 +81,9 @@ export default function PlotForm() {
       return;
     }
 
-    // Save data
+    // Save data using object-based pattern
     setPlotData({
-      plotOutline: plotActs,
+      plotOutline: plotActs, // Keep using 'plotOutline' key to match PlotData interface
     });
 
     // Navigate to next step

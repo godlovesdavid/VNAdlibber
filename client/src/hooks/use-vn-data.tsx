@@ -908,6 +908,4 @@ export const useVnData = () => {
   };
 };
 
-// Needed for proper Fast Refresh support
-// eslint-disable-next-line
-export default useVnData;
+// Fast Refresh support removed as it was causing errors
