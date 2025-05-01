@@ -15,18 +15,6 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 
 // Arrays for each dropdown type
-const themes = [
-  "forgiveness",
-  "freedom_vs_control",
-  "growth",
-  "identity",
-  "love_vs_duty",
-  "revenge_and_justice",
-  "technology_vs_humanity",
-  "sacrifice",
-  "trust_and_betrayal",
-];
-
 const tones = [
   "adventurous",
   "dark",
@@ -37,21 +25,32 @@ const tones = [
   "satirical",
   "suspenseful",
   "tragicomic",
-  "whimsical",
+  "uplifting",
+  "whimsical"
 ];
 
 const genres = [
-  "cyberpunk",
-  "steampunk",
   "mystery",
   "romance",
-  "science_fiction",
-  "fantasy",
+  "sci_fi",
+  "adventure",
   "slice_of_life",
   "thriller",
   "comedy",
   "horror",
-  "drama",
+  "drama"
+];
+
+const themes = [
+  "forgiveness",
+  "freedom_vs_control",
+  "growth",
+  "identity",
+  "love_vs_duty",
+  "revenge_and_justice",
+  "technology_vs_humanity",
+  "sacrifice",
+  "trust_and_betrayal"
 ];
 
 const settings = [
@@ -66,10 +65,10 @@ const settings = [
   "dystopia",
   "utopia",
   "urban_city",
-  "scary_place",
+  "haunted_place",
   "countryside",
   "post_apocalypse",
-  "virtual_reality",
+  "virtual_reality"
 ];
 
 // Helper function to get a random item from an array
