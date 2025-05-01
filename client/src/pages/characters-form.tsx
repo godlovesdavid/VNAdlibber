@@ -145,6 +145,8 @@ export default function CharactersForm() {
 
     try {
       console.log("Calling generateCharacterData for single character...");
+      console.log("Current character before generation:", characters[index]);
+      
       const generatedCharacter = await generateCharacterData(
         index,
         characters[index],
@@ -152,21 +154,45 @@ export default function CharactersForm() {
       console.log("generateCharacterData returned:", generatedCharacter);
 
       if (generatedCharacter) {
+        console.log("Checking generated character structure for numeric keys...");
+        const hasNumericKeysInGenerated = Object.keys(generatedCharacter).some(key => !isNaN(Number(key)));
+        console.log(`Generated character has numeric keys: ${hasNumericKeysInGenerated}`);
+        
+        if (hasNumericKeysInGenerated) {
+          console.log("Numeric keys found in generated character:", 
+            Object.keys(generatedCharacter).filter(key => !isNaN(Number(key))));
+        }
+        
         const updatedCharacters = [...characters];
+        console.log("Before merge:", updatedCharacters[index]);
+        
         updatedCharacters[index] = {
           ...updatedCharacters[index],
           ...generatedCharacter,
         };
+        
+        console.log("After merge:", updatedCharacters[index]);
         setCharacters(updatedCharacters);
 
         // Update the project context after character generation
         const charactersObj: Record<string, Character> = {};
         let protagonist = "";
         
+        console.log("Converting to storage format...");
+        
         updatedCharacters.forEach((char, idx) => {
           if (char.name) {
+            console.log(`Processing character for save: ${char.name}`);
+            
             // Extract name but don't store it in the object
             const { name, ...characterWithoutName } = char;
+            console.log(`Character without name:`, characterWithoutName);
+            
+            // Check for numeric keys
+            const numericKeys = Object.keys(characterWithoutName).filter(key => !isNaN(Number(key)));
+            if (numericKeys.length > 0) {
+              console.log(`Found numeric keys for ${name}:`, numericKeys);
+            }
             
             // Remove any numeric keys that might be causing unintended nesting
             const cleanCharacter = Object.entries(characterWithoutName)
@@ -176,6 +202,7 @@ export default function CharactersForm() {
                 return obj;
               }, {} as Record<string, any>) as Character;
               
+            console.log(`Clean character:`, cleanCharacter);
             charactersObj[name] = cleanCharacter;
             
             // Store the protagonist name (first character is always protagonist)
@@ -184,6 +211,9 @@ export default function CharactersForm() {
             }
           }
         });
+        
+        console.log("Final characters object to save:", charactersObj);
+        console.log("Setting protagonist to:", protagonist);
         
         setCharactersData(charactersObj, protagonist);
 
@@ -253,13 +283,31 @@ export default function CharactersForm() {
         await generateMultipleCharactersData(characterTemplates);
 
       if (generatedCharacters && Array.isArray(generatedCharacters)) {
+        console.log("Received generated characters:", generatedCharacters);
+        
+        // Check for numeric keys in generated characters
+        generatedCharacters.forEach((character, idx) => {
+          const hasNumericKeys = Object.keys(character).some(key => !isNaN(Number(key)));
+          if (hasNumericKeys) {
+            console.log(`Generated character ${idx} has numeric keys:`, 
+              Object.keys(character).filter(key => !isNaN(Number(key))));
+          }
+        });
+        
         // Merge the generated characters with existing character data
         const updatedCharacters = allCharacters.map((char, idx) => {
-          // Otherwise use the generated data
-          return {
+          console.log(`Merging character ${idx}:`);
+          console.log("Original:", char);
+          console.log("Generated:", generatedCharacters[idx]);
+          
+          // Merge the data
+          const merged = {
             ...char,
             ...generatedCharacters[idx],
           };
+          
+          console.log("Result:", merged);
+          return merged;
         });
 
         // Update state and project context
@@ -269,10 +317,21 @@ export default function CharactersForm() {
         const charactersObj: Record<string, Character> = {};
         let protagonist = "";
         
+        console.log("Converting batch-generated characters to storage format...");
+        
         updatedCharacters.forEach((char, idx) => {
           if (char.name) {
+            console.log(`Processing character for save: ${char.name}`);
+            
             // Extract name but don't store it in the object
             const { name, ...characterWithoutName } = char;
+            console.log(`Character without name:`, characterWithoutName);
+            
+            // Check for numeric keys
+            const numericKeys = Object.keys(characterWithoutName).filter(key => !isNaN(Number(key)));
+            if (numericKeys.length > 0) {
+              console.log(`Found numeric keys for ${name}:`, numericKeys);
+            }
             
             // Remove any numeric keys that might be causing unintended nesting
             const cleanCharacter = Object.entries(characterWithoutName)
@@ -282,6 +341,7 @@ export default function CharactersForm() {
                 return obj;
               }, {} as Record<string, any>) as Character;
               
+            console.log(`Clean character:`, cleanCharacter);
             charactersObj[name] = cleanCharacter;
             
             // Store the protagonist name (first character is always protagonist)
@@ -290,6 +350,9 @@ export default function CharactersForm() {
             }
           }
         });
+        
+        console.log("Final characters object to save:", charactersObj);
+        console.log("Setting protagonist to:", protagonist);
         
         setCharactersData(charactersObj, protagonist);
 
@@ -324,7 +387,7 @@ export default function CharactersForm() {
         char.appearance &&
         char.personality &&
         char.goals &&
-        char.relationshipPotential &&
+        // relationshipPotential can be null
         char.conflict,
     );
 
@@ -333,14 +396,24 @@ export default function CharactersForm() {
     //   return;
     // }
 
+    console.log("Characters before saving:", characters);
+    
     // Save data - transform array to object format
     const charactersObj: Record<string, Character> = {};
     let protagonist = "";
     
     characters.forEach((char, index) => {
       if (char.name) {
+        console.log(`Processing character for save: ${char.name}`);
+        
         // Extract name but don't store it in the object
         const { name, ...characterWithoutName } = char;
+        console.log(`Character without name:`, characterWithoutName);
+        
+        // Check for nested properties or array-like numeric keys
+        const hasNumericKeys = Object.keys(characterWithoutName).some(key => !isNaN(Number(key)));
+        console.log(`Has numeric keys: ${hasNumericKeys}`);
+        
         // Remove any numeric keys that might be causing unintended nesting
         const cleanCharacter = Object.entries(characterWithoutName)
           .filter(([key]) => isNaN(Number(key)))
@@ -349,6 +422,8 @@ export default function CharactersForm() {
             return obj;
           }, {} as Record<string, any>) as Character;
           
+        console.log(`Clean character:`, cleanCharacter);
+        
         charactersObj[name] = cleanCharacter;
         
         // Store the protagonist name (first character is always protagonist)
@@ -357,6 +432,9 @@ export default function CharactersForm() {
         }
       }
     });
+    
+    console.log("Final characters object to save:", charactersObj);
+    console.log("Setting protagonist to:", protagonist);
     
     // Set the characters data with protagonist field
     setCharactersData(charactersObj, protagonist);

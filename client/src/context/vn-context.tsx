@@ -165,6 +165,31 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     console.log("Setting character data in context:", data);
     console.log("Setting protagonist:", protagonist);
     
+    // Deep check of character data structure
+    const characterNames = Object.keys(data);
+    console.log(`Received ${characterNames.length} characters:`, characterNames);
+    
+    // Check if each character has the expected structure
+    characterNames.forEach(name => {
+      const character = data[name];
+      console.log(`Character ${name} object structure:`, Object.keys(character));
+      
+      // Check for any unexpected nested objects
+      Object.entries(character).forEach(([key, value]) => {
+        if (typeof value === 'object' && value !== null) {
+          console.log(`WARNING: Character ${name} has nested object in property ${key}:`, value);
+        }
+      });
+      
+      // Verify Character has the expected fields
+      const expectedKeys = ['role', 'occupation', 'gender', 'age', 'appearance', 'personality', 'goals', 'relationshipPotential', 'conflict'];
+      const missingKeys = expectedKeys.filter(key => !(key in character));
+      if (missingKeys.length > 0) {
+        console.log(`WARNING: Character ${name} is missing expected fields:`, missingKeys);
+      }
+    });
+    
+    // Set the new data while preserving the rest
     setProjectData({
       ...projectData,
       charactersData: data,
@@ -172,6 +197,11 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       currentStep: Math.max(projectData.currentStep, 3),
       updatedAt: new Date().toISOString(),
     });
+    
+    // Verify the data was successfully set
+    setTimeout(() => {
+      console.log("Characters data after update:", projectData?.charactersData);
+    }, 0);
   };
   
   const setPathsData = (data: PathsData) => {
