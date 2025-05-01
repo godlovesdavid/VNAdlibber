@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/hooks/use-toast";
 
 // Arrays for each dropdown type
 const tones = [
@@ -78,7 +79,7 @@ function getRandomItem(array: string[]): string {
 
 export default function BasicForm() {
   const [, setLocation] = useLocation();
-  const { projectData, setBasicData } = useVnContext();
+  const { projectData, setBasicData, createNewProject } = useVnContext();
 
   // Use state with empty default values
   const [theme, setTheme] = useState("");
@@ -151,16 +152,17 @@ export default function BasicForm() {
   const handleManualReset = () => {
     console.log("Manual reset requested");
 
-    // Trigger a proper full reset by calling the context's createNewProject function
-    // which will clear all browser storage and reset all form state
-    createNewProject();
+    // Clear all browser storage explicitly
+    localStorage.clear();
+    sessionStorage.clear();
     
-    // Show confirmation
-    toast({
-      title: "Form Reset",
-      description: "All forms have been reset and randomized.",
-      duration: 3000,
-    });
+    // Set a flag to indicate this is a fresh project that needs randomization
+    sessionStorage.setItem('vn_fresh_project', 'true');
+    
+    // Use window location for a full page reload to clear all form state
+    window.location.href = '/create/basic';
+    
+    // Toast will be shown after the redirect
   };
 
   // We no longer need this effect as we handle initialization in the projectData effect
