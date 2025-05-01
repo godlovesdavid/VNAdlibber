@@ -201,14 +201,34 @@ export function VnPlayer({
     setIsTextAnimating(false);
   }, [currentScene, currentDialogueIndex]);
 
-  // Initialize scenes separately for generated and imported modes to avoid recursion issues
-  // This initialization is only for generated mode
+  // Use image generation hook - make sure to update when scene changes
+  const {
+    imageUrl,
+    isGenerating,
+    error: imageError,
+    generateImage,
+  } = useImageGeneration(currentScene, {
+    autoGenerate: false,
+    debug: false,
+    generationDelay: 100, // Added slight delay to prevent rapid generation during transitions
+  });
+
+  // image generation
+  useEffect(() => {
+    if (shouldGenerateImage.current && currentScene) {
+      shouldGenerateImage.current = false;
+      generateImage(true);
+    }
+  }, [currentScene, generateImage]);
+
+  //initialize player with first scene
   useEffect(() => {
     if (!actData?.scenes?.length || initialized.current) return;
 
     // Mark as initialized to prevent re-initialization
     initialized.current = true;
 
+    shouldGenerateImage.current = true;
     // Set initial scene
     const firstScene = actData.scenes[0];
     console.log(
@@ -227,27 +247,8 @@ export function VnPlayer({
       setDisplayedText(""); // Clear any previous text
       animateText(firstScene.dialogue[0][1]);
     }
-  }, [actData, animateText, mode]);
+  }, [actData, mode]);
 
-  // Use image generation hook - make sure to update when scene changes
-  const {
-    imageUrl,
-    isGenerating,
-    error: imageError,
-    generateImage,
-  } = useImageGeneration(currentScene, {
-    autoGenerate: false,
-    debug: false,
-    generationDelay: 100, // Added slight delay to prevent rapid generation during transitions
-  });
-
-  // Separate effect for image generation
-  useEffect(() => {
-    if (shouldGenerateImage.current && currentScene) {
-      shouldGenerateImage.current = false;
-      generateImage(true);
-    }
-  }, [currentScene, generateImage]);
 
   // Update current scene when scene ID changes
   useEffect(() => {

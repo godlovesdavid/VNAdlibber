@@ -32,27 +32,11 @@ export default function Player() {
           throw new Error("Invalid act number");
         }
         
-        if (!projectData?.generatedActs?.[`act${num}`]) {
+        if (!projectData?.generatedActs?.[`act${num}`]) 
           throw new Error(`Act ${num} has not been generated yet`);
-        }
-        
-        // Make a deep copy to avoid reference issues (same as import flow)
-        const actKey = `act${num}`;
-        const stringCopy = JSON.stringify(projectData.generatedActs[actKey]);
-        const actDataCopy = JSON.parse(stringCopy);
-        
-        // Fix any "null" string issues
-        if (actDataCopy.scenes) {
-          actDataCopy.scenes = actDataCopy.scenes.map((scene: any) => {
-            if (scene.choices === "null") {
-              return { ...scene, choices: null };
-            }
-            return scene;
-          });
-        }
         
         // Set the data and number
-        setActData(actDataCopy);
+        setActData(projectData.generatedActs[`act${num}`]);
         setActNumber(num);
         setLoading(false);
       } catch (err) {
@@ -86,50 +70,13 @@ export default function Player() {
         // Reset player data first (one time only)
         resetPlayerData();
         
-        // Handle old format with actData property (which is what we use)
-        if (parsedStory.actData) {
           // Set act number
           setActNumber(parsedStory.actNumber || 1);
           
-          // Make a deep copy of act data to avoid reference issues
-          const stringCopy = JSON.stringify(parsedStory.actData);
-          const actDataCopy = JSON.parse(stringCopy);
-          
-          // Fix 'choices: "null"' issue in older exports
-          if (actDataCopy.scenes) {
-            actDataCopy.scenes = actDataCopy.scenes.map((scene: any) => {
-              if (scene.choices === "null") {
-                return { ...scene, choices: null };
-              }
-              return scene;
-            });
-          }
-          
           // Set act data and finish loading
-          setActData(actDataCopy);
+          setActData(parsedStory.actData);
           setLoading(false);
-        } else {
-          // Direct data format (less common)
-          setActNumber(1);
-          
-          // Make a deep copy to avoid reference issues
-          const stringCopy = JSON.stringify(parsedStory);
-          const actDataCopy = JSON.parse(stringCopy);
-          
-          // Fix 'choices: "null"' issue in older exports
-          if (actDataCopy.scenes) {
-            actDataCopy.scenes = actDataCopy.scenes.map((scene: any) => {
-              if (scene.choices === "null") {
-                return { ...scene, choices: null };
-              }
-              return scene;
-            });
-          }
-          
-          // Set act data and finish loading
-          setActData(actDataCopy);
-          setLoading(false);
-        }
+        
       } catch (err) {
         console.error("Error loading imported act:", err);
         setError(err instanceof Error ? err.message : "Failed to load imported act");

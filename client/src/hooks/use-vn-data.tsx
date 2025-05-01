@@ -11,7 +11,7 @@ import { apiRequest } from "@/lib/queryClient";
 
 // To make this hook compatible with Fast Refresh, we use a named function
 // expression instead of a function declaration
-const useVnData = () => {
+export function useVnData() {
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [abortController, setAbortController] =
@@ -260,7 +260,6 @@ const useVnData = () => {
         }
 
         const result = await generationResponse.json();
-        console.log("🔥 Generated path:", result);
 
         setAbortController(null);
 
@@ -416,7 +415,6 @@ const useVnData = () => {
       }
 
       const result = await generationResponse.json();
-      console.log("🔥 Generated plot outline:", result);
 
       setAbortController(null);
 
@@ -545,8 +543,8 @@ const useVnData = () => {
         }
 
         const result = await generationResponse.json();
-        console.log(`🔥 Generated Act ${actNumber}:`, result);
 
+        //to stop aborted without reason errors
         setAbortController(null);
 
         return { data: result } as GenerationResult<any>;
@@ -629,7 +627,6 @@ const useVnData = () => {
         );
 
         const result = await response.json();
-        console.log("Received characters response:", result);
 
         setAbortController(null);
 
@@ -775,7 +772,6 @@ const useVnData = () => {
         }
 
         const result = await generationResponse.json();
-        console.log("🔥 Generated paths:", result);
 
         setAbortController(null);
 
@@ -860,5 +856,3 @@ const useVnData = () => {
     isGenerating,
   };
 };
-
-export { useVnData };

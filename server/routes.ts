@@ -102,8 +102,9 @@ Example of CORRECT JSON format:
       }
       try {
         // Use jsonrepair to fix any JSON formatting issues
-        responseText = jsonrepair(responseText);
         console.log(responseText);
+        responseText = jsonrepair(responseText);
+        // console.log(responseText);
       } catch (repairError) {
         console.error("jsonrepair failed:", repairError);
       }
@@ -157,48 +158,6 @@ const generateConceptSchema = z.object({
     tone: z.string(),
     genre: z.string(),
   }),
-});
-
-const generateCharacterSchema = z.object({
-  index: z.number(),
-  partialCharacter: z.object({
-    name: z.string().optional(),
-    role: z.string().optional(),
-    gender: z.string().optional(),
-    age: z.string().optional(),
-  }),
-  projectContext: z.any(),
-});
-
-const generateMultipleCharactersSchema = z.object({
-  characterTemplates: z.array(
-    z.object({
-      name: z.string().optional(),
-      role: z.string().optional(),
-      gender: z.string().optional(),
-      age: z.string().optional(),
-    }),
-  ),
-  projectContext: z.any(),
-});
-
-const generatePathSchema = z.object({
-  index: z.number(),
-  partialPath: z.object({
-    title: z.string().optional(),
-    loveInterest: z.string().nullable().optional(),
-  }),
-  projectContext: z.any(),
-});
-
-const generateMultiplePathsSchema = z.object({
-  pathTemplates: z.array(
-    z.object({
-      title: z.string().optional(),
-      loveInterest: z.string().nullable().optional(),
-    }),
-  ),
-  projectContext: z.any(),
 });
 
 const generatePlotSchema = z.object({
@@ -471,15 +430,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create prompt for the character generation
       const prompt = `Given this story context:
         ${JSON.stringify(projectContext, null, 2)}
-        Return exactly ${indices.length} character${indices.length > 1 ? "s" : ""} as a JSON:
+        Return exactly ${indices.length} character${indices.length > 1 ? "s" : ""} in this format:
         ${
           indices.length > 1
             ? `
-        {
-          "characters":
-          [`
-            : ""
-        }
+          [` : ''}
             {
               "name": "Memorable name",
               "role": "${indices.length == 1 && indices[0] == 0 ? "Main Protagonist" : "Story role e.g. antagonist"}",
@@ -495,7 +450,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               indices.length > 1
                 ? `
           ]
-        }`
+        `
                 : ""
             }
         ${
@@ -516,7 +471,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         if (responseContent === "{}") throw new Error("Empty response");
         const parsed = JSON.parse(responseContent);
-        res.json("characters" in parsed ? parsed.characters : [parsed]);
+        res.json(Array.isArray(parsed) ? parsed : [parsed]);
       } catch (e) {
         console.error("Problematic JSON:", e);
       }
@@ -725,7 +680,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // true,
       );
 
-      res.json(responseContent);
+      res.json(JSON.parse(responseContent));
     } catch (e) {
       console.error("Error generating act:", e);
       res.status(500).json({ message: "Failed to generate act" });
@@ -746,11 +701,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const { scene, theme, imageType, forceReal, optimizeForMobile } =
+      const { scene, imageType, optimizeForMobile } =
         req.body;
 
       // Parse with the schema, but allow forceReal and optimizeForMobile to pass through
-      generateImageSchema.parse({ scene, theme, imageType });
+      generateImageSchema.parse({ scene, imageType });
 
       // Check if we should use optimized image settings (smaller/cheaper)
       const useOptimizedSettings = optimizeForMobile === true;
@@ -781,7 +736,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const result = await generateSceneBackgroundImage(
             scene.name,
             scene.image_prompt,
-            theme,
           );
 
           // No environment variables to reset since we've removed DALL-E
