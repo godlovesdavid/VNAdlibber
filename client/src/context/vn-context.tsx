@@ -216,7 +216,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         });
       }
       
-      // Add the cleaned character to the sanitized data
+      // Add the cleaned character to the sanitized data with proper typing
       sanitizedData[name] = cleanCharacter;
     });
     

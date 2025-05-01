@@ -60,11 +60,7 @@ export interface PlotAct {
 
 // Plot outline structure
 export interface PlotData {
-  act1: PlotAct;
-  act2: PlotAct;
-  act3: PlotAct;
-  act4: PlotAct;
-  act5: PlotAct;
+  plotOutline: Record<string, PlotAct>;
 }
 
 // Scene choice structure

@@ -17,14 +17,8 @@ export default function PlotForm() {
   const { toast } = useToast();
   const [isValidating, setIsValidating] = useState(false);
 
-  // Plot state
-  const [plotOutline, setPlotOutline] = useState<{
-    act1: PlotAct;
-    act2: PlotAct;
-    act3: PlotAct;
-    act4: PlotAct;
-    act5: PlotAct;
-  } | null>(null);
+  // Plot state - using object-based storage pattern
+  const [plotActs, setPlotActs] = useState<Record<string, PlotAct> | null>(null);
 
   // Track expanded acts
   const [expandedActs, setExpandedActs] = useState<Record<string, boolean>>({
@@ -38,7 +32,7 @@ export default function PlotForm() {
   // Load existing data if available
   useEffect(() => {
     if (projectData?.plotData?.plotOutline) {
-      setPlotOutline(projectData.plotData.plotOutline);
+      setPlotActs(projectData.plotData.plotOutline);
 
       // Expand the first act by default if we have data
       setExpandedActs({
@@ -61,7 +55,7 @@ export default function PlotForm() {
     const generatedPlot = await generatePlotData();
 
     if (generatedPlot && generatedPlot.plotOutline) {
-      setPlotOutline(generatedPlot.plotOutline);
+      setPlotActs(generatedPlot.plotOutline);
 
       // Expand the first act after generation
       setExpandedActs({
@@ -82,14 +76,14 @@ export default function PlotForm() {
   // Proceed to next step
   const handleNext = () => {
     // Validate that we have plot outline
-    if (!plotOutline) {
+    if (!plotActs) {
       alert("Please generate a plot outline before proceeding");
       return;
     }
 
     // Save data
     setPlotData({
-      plotOutline,
+      plotOutline: plotActs,
     });
 
     // Navigate to next step
@@ -258,7 +252,7 @@ export default function PlotForm() {
               </div>
             )}
 
-            {plotOutline ? (
+            {plotActs ? (
               <div className="space-y-3">
                 {/* Act 1 */}
                 <div className="border border-neutral-200 rounded-md overflow-hidden">
