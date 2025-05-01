@@ -86,6 +86,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   // Create a new project
   const createNewProject = () => 
   {
+    
     // First create a clean minimal basic structure
     const initialProject: VnProjectData = {
       title: "Untitled Project",

@@ -26,7 +26,7 @@ const tones = [
   "suspenseful",
   "tragicomic",
   "uplifting",
-  "whimsical"
+  "whimsical",
 ];
 
 const genres = [
@@ -38,7 +38,7 @@ const genres = [
   "thriller",
   "comedy",
   "horror",
-  "drama"
+  "drama",
 ];
 
 const themes = [
@@ -50,7 +50,7 @@ const themes = [
   "revenge_and_justice",
   "technology_vs_humanity",
   "sacrifice",
-  "trust_and_betrayal"
+  "trust_and_betrayal",
 ];
 
 const settings = [
@@ -68,7 +68,7 @@ const settings = [
   "haunted_place",
   "countryside",
   "post_apocalypse",
-  "virtual_reality"
+  "virtual_reality",
 ];
 
 // Helper function to get a random item from an array
@@ -97,16 +97,6 @@ export default function BasicForm() {
     setGenre(getRandomItem(genres));
     setSetting(getRandomItem(settings));
     setInitialized(true);
-  };
-
-  // Function to reset the form
-  const resetForm = () => {
-    // Don't automatically randomize on reset, just clear values
-    console.log("Resetting form values");
-    setTheme("");
-    setTone("");
-    setGenre("");
-    setSetting("");
   };
 
   // Load or reset form values based on projectData
