@@ -16,64 +16,68 @@ function convertActFormat(actData: any): {
 } {
   // Handle case where the data is already in the correct format
   if (actData.scenes && Array.isArray(actData.scenes)) {
-    console.log('Act data is already in the legacy array format');
+    console.log("Act data is already in the legacy array format");
     return actData;
   }
-  
+
   let sceneMap = {};
   let actNumber = 1;
-  
+
   // Check for the new simplified format: {scene1: {...}, scene2: {...}}
-  if (Object.keys(actData).some(key => key.startsWith('scene'))) {
-    console.log('Act data is in the simplified scene map format');
+  if (Object.keys(actData).some((key) => key.startsWith("scene"))) {
+    console.log("Act data is in the simplified scene map format");
     sceneMap = actData;
     // Attempt to extract act number from scene names if available
     const firstScene = Object.values(actData)[0] as any;
-    if (firstScene && firstScene.name && typeof firstScene.name === 'string') {
+    if (firstScene && firstScene.name && typeof firstScene.name === "string") {
       const match = firstScene.name.match(/Act (\d+)/i);
       if (match && match[1]) {
         actNumber = parseInt(match[1]);
       }
     }
-  } 
+  }
   // Check for nested format: {act1: {scene1: {...}, scene2: {...}}}
   else {
-    console.log('Act data is in the nested format with act wrapper');
+    console.log("Act data is in the nested format with act wrapper");
     // Find the act key (e.g., "act1")
-    const actKey = Object.keys(actData).find(key => key.startsWith('act'));
+    const actKey = Object.keys(actData).find((key) => key.startsWith("act"));
     if (actKey) {
-      actNumber = parseInt(actKey.replace('act', '')) || 1;
+      actNumber = parseInt(actKey.replace("act", "")) || 1;
       sceneMap = actData[actKey] || {};
     } else {
-      console.warn('No scene data found in the expected formats');
+      console.warn("No scene data found in the expected formats");
     }
   }
-  
+
   // Convert the scene map to an array
-  const scenes: Scene[] = Object.entries(sceneMap).map(([sceneKey, sceneData]: [string, any]) => {
-    // Use the scene key as the name (instead of any nested name property)
-    // This simplifies scene navigation since we'll reference scenes by their key
-    
-    // Make sure the scene's 'next' properties in choices point to actual scene keys
-    const choices = sceneData.choices && sceneData.choices.map((choice: any) => {
-      // Update any scene references to use the scene keys
-      // No need to look up the name property anymore
+  const scenes: Scene[] = Object.entries(sceneMap).map(
+    ([sceneKey, sceneData]: [string, any]) => {
+      // Use the scene key as the name (instead of any nested name property)
+      // This simplifies scene navigation since we'll reference scenes by their key
+
+      // Make sure the scene's 'next' properties in choices point to actual scene keys
+      const choices =
+        sceneData.choices &&
+        sceneData.choices.map((choice: any) => {
+          // Update any scene references to use the scene keys
+          // No need to look up the name property anymore
+          return {
+            ...choice,
+            // We'll use the scene keys directly in next/failNext fields, so no need to transform
+          };
+        });
+
       return {
-        ...choice
-        // We'll use the scene keys directly in next/failNext fields, so no need to transform
+        ...sceneData,
+        name: sceneKey, // Use the scene key as the name
+        choices: choices,
       };
-    });
-    
-    return {
-      ...sceneData,
-      name: sceneKey, // Use the scene key as the name
-      choices: choices
-    };
-  });
-  
+    },
+  );
+
   return {
     scenes,
-    act: actNumber
+    act: actNumber,
   };
 }
 
@@ -94,7 +98,7 @@ function SceneBackground({
   const [actualUrl, setActualUrl] = useState(imageUrl);
 
   // Fallback URL in case of loading failures - using data URI for guaranteed compatibility
-  const fallbackUrl = `data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221024%22%20height%3D%22768%22%20viewBox%3D%220%200%201024%20768%22%20preserveAspectRatio%3D%22none%22%3E%3Cg%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23333333%22%3E%3C%2Frect%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20font-size%3D%2248%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20font-family%3D%22Arial%2C%20sans-serif%22%20fill%3D%22white%22%3EFallback%20Background%3C%2Ftext%3E%3C%2Fg%3E%3C%2Fsvg%3E`;
+  const fallbackUrl = `data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221024%22%20height%3D%22768%22%20viewBox%3D%220%200%201024%20768%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E`;
 
   useEffect(() => {
     // Reset states when URL changes
@@ -174,14 +178,16 @@ export function VnPlayer({
 }: VnPlayerProps) {
   // Convert the actData to the format expected by the player using useMemo to prevent re-calculation on every render
   const actData = useMemo(() => convertActFormat(rawActData), [rawActData]);
-  
+
   // Debug log the conversion
   useEffect(() => {
     if (rawActData) {
-      console.log('VN Player received data format:', 
-        Object.keys(rawActData).length > 0 && !Array.isArray(rawActData.scenes) 
-          ? 'New nested format' 
-          : 'Legacy array format');
+      console.log(
+        "VN Player received data format:",
+        Object.keys(rawActData).length > 0 && !Array.isArray(rawActData.scenes)
+          ? "New nested format"
+          : "Legacy array format",
+      );
     }
   }, [rawActData]);
   const { playerData, updatePlayerData } = useVnContext();
@@ -329,7 +335,6 @@ export function VnPlayer({
     }
   }, [actData, mode, animateText]);
 
-
   // Update current scene when scene ID changes
   useEffect(() => {
     if (!actData?.scenes || !currentSceneId) return;
@@ -346,7 +351,17 @@ export function VnPlayer({
       }
       shouldGenerateImage.current = true;
     }
-  }, [actData, currentSceneId, animateText, mode, setCurrentScene, setCurrentDialogueIndex, setShowChoices, setDisplayedText, shouldGenerateImage]);
+  }, [
+    actData,
+    currentSceneId,
+    animateText,
+    mode,
+    setCurrentScene,
+    setCurrentDialogueIndex,
+    setShowChoices,
+    setDisplayedText,
+    shouldGenerateImage,
+  ]);
 
   // Handle restart
   const handleRestart = useCallback(() => {
@@ -364,7 +379,17 @@ export function VnPlayer({
       setDisplayedText(""); // Clear any previous text
       animateText(actData.scenes[0].dialogue[0][1]);
     }
-  }, [actData, animateText, mode, setCurrentScene, setCurrentSceneId, setCurrentDialogueIndex, setShowChoices, setDialogueLog, setDisplayedText]);
+  }, [
+    actData,
+    animateText,
+    mode,
+    setCurrentScene,
+    setCurrentSceneId,
+    setCurrentDialogueIndex,
+    setShowChoices,
+    setDialogueLog,
+    setDisplayedText,
+  ]);
 
   // Handle advancing to next dialogue or showing choices
   const advanceDialogue = useCallback(() => {
@@ -649,9 +674,7 @@ export function VnPlayer({
               </svg>
               <p></p>
               <p className="text-sm text-neutral-400 mt-1">
-                {imageError
-                  ? `Error: ${imageError}`
-                  : ""}
+                {imageError ? `Error: ${imageError}` : ""}
               </p>
             </div>
           )}
@@ -662,8 +685,7 @@ export function VnPlayer({
               <div className="text-white text-center">
                 <RefreshCw className="h-12 w-12 animate-spin mx-auto mb-4" />
                 <p className="text-xl">Generating Image</p>
-                <p className="text-sm opacity-75 mt-2">
-                </p>
+                <p className="text-sm opacity-75 mt-2"></p>
               </div>
             </div>
           )}
