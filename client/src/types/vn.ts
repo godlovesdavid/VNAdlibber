@@ -49,7 +49,6 @@ export interface PathsData {
 
 // Structure for plot acts
 export interface PlotAct {
-  title: string;
   summary: string;
   events: string[];
   arcsActivated: string[];
@@ -59,7 +58,7 @@ export interface PlotAct {
 
 // Plot outline structure
 export interface PlotData {
-  plotOutline: Record<string, PlotAct>;
+  [title: string]: PlotAct;
 }
 
 // Scene choice structure

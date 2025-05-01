@@ -371,6 +371,35 @@ export default function CharactersForm() {
 
   // Go back to previous step
   const handleBack = () => {
+    // Save data before navigating - transform array to object format
+    const charactersObj: Record<string, Character> = {};
+    let protagonist = "";
+    
+    characters.forEach((char, index) => {
+      if (char.name) {
+        // Extract name but don't store it in the object
+        const { name, ...characterWithoutName } = char;
+        
+        // Remove any numeric keys that might be causing unintended nesting
+        const cleanCharacter = Object.entries(characterWithoutName)
+          .filter(([key]) => isNaN(Number(key)))
+          .reduce((obj, [key, value]) => {
+            obj[key] = value;
+            return obj;
+          }, {} as Record<string, any>) as Character;
+          
+        charactersObj[name] = cleanCharacter;
+        
+        // Store the protagonist name (first character is always protagonist)
+        if (index === 0) {
+          protagonist = name;
+        }
+      }
+    });
+    
+    // Set the characters data with protagonist field
+    setCharactersData(charactersObj, protagonist);
+    
     goToStep(2);
   };
 
