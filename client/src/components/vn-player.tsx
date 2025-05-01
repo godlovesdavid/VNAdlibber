@@ -9,19 +9,45 @@ import { useImageGeneration } from "@/hooks/use-image-generation";
 import { setCachedImageUrl } from "@/lib/image-generator";
 import { useToast } from "@/hooks/use-toast";
 
-// Helper function to convert new act format {act1: {scene1: {...}}} to array format for VN player
+// Helper function to convert various act formats to array format for VN player
 function convertActFormat(actData: any): {
   scenes: Scene[];
   act: number;
 } {
   // Handle case where the data is already in the correct format
   if (actData.scenes && Array.isArray(actData.scenes)) {
+    console.log('Act data is already in the legacy array format');
     return actData;
   }
   
-  const actNumber = parseInt(Object.keys(actData)[0].replace('act', '')) || 1;
-  const actKey = `act${actNumber}`;
-  const sceneMap = actData[actKey] || {};
+  let sceneMap = {};
+  let actNumber = 1;
+  
+  // Check for the new simplified format: {scene1: {...}, scene2: {...}}
+  if (Object.keys(actData).some(key => key.startsWith('scene'))) {
+    console.log('Act data is in the simplified scene map format');
+    sceneMap = actData;
+    // Attempt to extract act number from scene names if available
+    const firstScene = Object.values(actData)[0] as any;
+    if (firstScene && firstScene.name && typeof firstScene.name === 'string') {
+      const match = firstScene.name.match(/Act (\d+)/i);
+      if (match && match[1]) {
+        actNumber = parseInt(match[1]);
+      }
+    }
+  } 
+  // Check for nested format: {act1: {scene1: {...}, scene2: {...}}}
+  else {
+    console.log('Act data is in the nested format with act wrapper');
+    // Find the act key (e.g., "act1")
+    const actKey = Object.keys(actData).find(key => key.startsWith('act'));
+    if (actKey) {
+      actNumber = parseInt(actKey.replace('act', '')) || 1;
+      sceneMap = actData[actKey] || {};
+    } else {
+      console.warn('No scene data found in the expected formats');
+    }
+  }
   
   // Convert the scene map to an array
   const scenes: Scene[] = Object.entries(sceneMap).map(([sceneKey, sceneData]: [string, any]) => {

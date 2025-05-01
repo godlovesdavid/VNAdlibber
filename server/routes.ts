@@ -615,44 +615,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { actNumber, scenesCount, projectContext } =
         generateActSchema.parse(req.body);
 
-      // Create prompt for the act generation - {act1: {scene1: {...}}} format
+      // Create prompt for the act generation - simplified {scene1: {...}} format
       const prompt = `You are tasked with creating scenes for Act ${actNumber} based on this story context:
         ${JSON.stringify(projectContext, null, 2)}
         
         Generate a visual novel act structure in JSON with the exact format below:
         {
-          "act${actNumber}": {
-            "scene1": {
-              "name": "Act ${actNumber} Scene 1",
-              "setting": "Detailed location description",
-              "image_prompt": "Detailed visual description for AI image generation",
-              "dialogue": [
-                ["Narrator", "Descriptive text about the scene"],
-                ["Character Name", "Character dialogue"],
-                ["Another Character", "Response dialogue"]
-              ],
-              "choices": [
-                {
-                  "text": "Choice option text",
-                  "description": "Brief explanation of consequences",
-                  "delta": {"characterName": 1, "anotherCharacter": -1},
-                  "next": "scene2"
-                },
-                {
-                  "text": "Alternative choice",
-                  "delta": {"characterName": -1},
-                  "next": "scene3"
-                }
-              ]
-            },
-            "scene2": {
-              "name": "Act ${actNumber} Scene 2",
-              "setting": "New location",
-              "dialogue": [/* dialogue array */],
-              "choices": [/* more choices */]
-            }
-            /* Include approximately ${scenesCount} scenes, named scene1, scene2, scene3, etc. */
+          "scene1": {
+            "name": "Act ${actNumber} Scene 1",
+            "setting": "Detailed location description",
+            "image_prompt": "Detailed visual description for AI image generation",
+            "dialogue": [
+              ["Narrator", "Descriptive text about the scene"],
+              ["Character Name", "Character dialogue"],
+              ["Another Character", "Response dialogue"]
+            ],
+            "choices": [
+              {
+                "text": "Choice option text",
+                "description": "Brief explanation of consequences",
+                "delta": {"characterName": 1, "anotherCharacter": -1},
+                "next": "scene2"
+              },
+              {
+                "text": "Alternative choice",
+                "delta": {"characterName": -1},
+                "next": "scene3"
+              }
+            ]
+          },
+          "scene2": {
+            "name": "Act ${actNumber} Scene 2",
+            "setting": "New location",
+            "dialogue": [/* dialogue array */],
+            "choices": [/* more choices */]
           }
+          /* Include approximately ${scenesCount} scenes, named scene1, scene2, scene3, etc. */
         }
 
         Important guidelines:
