@@ -90,6 +90,8 @@ export function useVnData() {
         const controller = new AbortController();
         setAbortController(controller);
 
+        console.log("Generating single character with data:", partialCharacter);
+
         // Use our simplified character endpoint
         const response = await apiRequest(
           "POST",
@@ -105,6 +107,7 @@ export function useVnData() {
         );
 
         const result = await response.json();
+        console.log("Character generation response:", result);
 
         setAbortController(null);
 
@@ -121,7 +124,30 @@ export function useVnData() {
         }
 
         // Return just the first character since we only requested one
-        return Array.isArray(result) && result.length > 0 ? result[0] : null;
+        // Ensure the character data has no nested objects that might cause issues
+        if (Array.isArray(result) && result.length > 0) {
+          const character = result[0];
+          console.log("Processing generated character:", character);
+          
+          // Clean character data to ensure no nested objects
+          const cleanCharacter = Object.entries(character)
+            .filter(([key]) => isNaN(Number(key))) // Remove any numeric keys
+            .reduce((obj, [key, value]) => {
+              // For non-null objects, convert to string unless it's relationshipPotential
+              if (typeof value === 'object' && value !== null && key !== 'relationshipPotential') {
+                console.warn(`Converting nested object in ${key} to string:`, value);
+                obj[key] = JSON.stringify(value);
+              } else {
+                obj[key] = value;
+              }
+              return obj;
+            }, {} as Record<string, any>);
+            
+          console.log("Cleaned character data:", cleanCharacter);
+          return cleanCharacter;
+        }
+        
+        return null;
       } catch (error: any) {
         if ((error as Error).name !== "AbortError") {
           // Try to extract error message from the error response if it exists
@@ -611,6 +637,8 @@ export function useVnData() {
           { length: characterTemplates.length },
           (_, i) => i,
         );
+        
+        console.log(`Generating ${indices.length} characters with templates:`, characterTemplates);
 
         // Use our simplified character endpoint
         const response = await apiRequest(
@@ -627,6 +655,7 @@ export function useVnData() {
         );
 
         const result = await response.json();
+        console.log("Multiple characters generation response:", result);
 
         setAbortController(null);
 
@@ -644,7 +673,29 @@ export function useVnData() {
 
         // Just return the array directly
         if (Array.isArray(result)) {
-          return result;
+          // Clean each character object to prevent nested objects
+          const cleanedCharacters = result.map((character, index) => {
+            console.log(`Processing batch character ${index}:`, character);
+            
+            // Clean character data to ensure no nested objects
+            const cleanCharacter = Object.entries(character)
+              .filter(([key]) => isNaN(Number(key))) // Remove any numeric keys
+              .reduce((obj, [key, value]) => {
+                // For non-null objects, convert to string unless it's relationshipPotential
+                if (typeof value === 'object' && value !== null && key !== 'relationshipPotential') {
+                  console.warn(`Converting nested object in ${key} to string:`, value);
+                  obj[key] = JSON.stringify(value);
+                } else {
+                  obj[key] = value;
+                }
+                return obj;
+              }, {} as Record<string, any>);
+              
+            return cleanCharacter;
+          });
+          
+          console.log("Cleaned batch of characters:", cleanedCharacters);
+          return cleanedCharacters;
         } else {
           console.error("Unexpected response format:", result);
           return null;

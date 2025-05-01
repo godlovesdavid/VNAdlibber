@@ -169,30 +169,63 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     const characterNames = Object.keys(data);
     console.log(`Received ${characterNames.length} characters:`, characterNames);
     
+    // Create a sanitized copy of the character data with fixed structure
+    const sanitizedData: CharactersData = {};
+    
     // Check if each character has the expected structure
     characterNames.forEach(name => {
       const character = data[name];
       console.log(`Character ${name} object structure:`, Object.keys(character));
       
-      // Check for any unexpected nested objects
+      // Create a new clean character object
+      const cleanCharacter: Record<string, any> = {};
+      
+      // Check for any unexpected nested objects and fix them
       Object.entries(character).forEach(([key, value]) => {
-        if (typeof value === 'object' && value !== null) {
+        // Skip numeric keys (prevent array indexes from being treated as properties)
+        if (!isNaN(Number(key))) {
+          console.log(`Skipping numeric key ${key} in character ${name}`);
+          return;
+        }
+        
+        // Handle nested objects - convert to string representations except relationshipPotential
+        if (typeof value === 'object' && value !== null && key !== 'relationshipPotential') {
           console.log(`WARNING: Character ${name} has nested object in property ${key}:`, value);
+          console.log(`Converting nested object to string`);
+          cleanCharacter[key] = JSON.stringify(value);
+        } else {
+          cleanCharacter[key] = value;
         }
       });
       
       // Verify Character has the expected fields
       const expectedKeys = ['role', 'occupation', 'gender', 'age', 'appearance', 'personality', 'goals', 'relationshipPotential', 'conflict'];
-      const missingKeys = expectedKeys.filter(key => !(key in character));
+      const missingKeys = expectedKeys.filter(key => !(key in cleanCharacter));
       if (missingKeys.length > 0) {
         console.log(`WARNING: Character ${name} is missing expected fields:`, missingKeys);
+        
+        // Add placeholder values for missing keys
+        missingKeys.forEach(key => {
+          if (key === 'relationshipPotential') {
+            // For missing relationshipPotential, set to null for protagonist, empty string for others
+            cleanCharacter[key] = name === protagonist ? null : "";
+          } else {
+            cleanCharacter[key] = `To be defined`;
+            console.log(`Added placeholder for ${key} in character ${name}`);
+          }
+        });
       }
+      
+      // Add the cleaned character to the sanitized data
+      sanitizedData[name] = cleanCharacter;
     });
+    
+    console.log("Sanitized character data for storage:", sanitizedData);
     
     // Set the new data while preserving the rest
     setProjectData({
       ...projectData,
-      charactersData: data,
+      charactersData: sanitizedData,
       protagonist: protagonist || projectData.protagonist,
       currentStep: Math.max(projectData.currentStep, 3),
       updatedAt: new Date().toISOString(),

@@ -427,7 +427,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         (_, i) => i,
       );
 
+      console.log(`Generating ${indices.length} characters`);
+
       // Create prompt for the character generation
+      // For single character, we format as a single object
+      // For multiple characters, we format as an array
       const prompt = `Given this story context:
         ${JSON.stringify(projectContext, null, 2)}
         Return exactly ${indices.length} character${indices.length > 1 ? "s" : ""} in this format:
@@ -444,7 +448,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               "appearance": "Physical description",
               "personality": "Key personality traits and behaviors",
               "goals": "Primary motivations and objectives",
-              "relationshipPotential": "${indices.length == 1 && indices[0] == 0 ? "(Leave blank)" : "Relationship potential with main protagonist. Lovers must be opposite gender."}",
+              "relationshipPotential": ${indices.length == 1 && indices[0] == 0 ? "null" : "\"Relationship potential with main protagonist. Lovers must be opposite gender.\""}, 
               "conflict": "Their primary internal or external struggle"
             } ${
               indices.length > 1
@@ -467,13 +471,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
         "You're a visual novel brainstormer with wildly creative ideas";
       const responseContent = await generateWithGemini(prompt, systemPrompt);
 
+      console.log("Raw response from Gemini:", responseContent);
+
       // Try to parse response
       try {
         if (responseContent === "{}") throw new Error("Empty response");
-        const parsed = JSON.parse(responseContent);
-        res.json(Array.isArray(parsed) ? parsed : [parsed]);
+        
+        // Try to repair JSON if needed
+        let fixedContent = responseContent;
+        try {
+          if (responseContent.includes("(Leave blank)")) {
+            // Replace (Leave blank) with null value
+            fixedContent = responseContent.replace(/"\(Leave blank\)"/g, "null");
+          }
+          fixedContent = jsonrepair(fixedContent);
+        } catch (repairError) {
+          console.error("Could not repair JSON:", repairError);
+          fixedContent = responseContent; // Fall back to original
+        }
+        
+        // Parse the response
+        const parsed = JSON.parse(fixedContent);
+        console.log("Parsed character data:", parsed);
+        
+        // Ensure consistent format: for single character requests, we still return an array
+        const result = Array.isArray(parsed) ? parsed : [parsed];
+        
+        // Verify each character has the expected fields
+        result.forEach((character, index) => {
+          if (!character.name) {
+            console.warn(`Character ${index} missing name, setting default`);
+            character.name = `Character ${index + 1}`;
+          }
+          
+          // Ensure relationshipPotential is properly formatted (null for protagonist)
+          if (index === 0) {
+            character.relationshipPotential = null;
+          }
+          
+          // Check for any unexpected property types
+          Object.entries(character).forEach(([key, value]) => {
+            if (typeof value === 'object' && value !== null && key !== 'relationshipPotential') {
+              console.warn(`Warning: Character has nested object property ${key}:`, value);
+            }
+          });
+        });
+        
+        res.json(result);
       } catch (e) {
-        console.error("Problematic JSON:", e);
+        console.error("Problem parsing character JSON:", e);
+        console.error("Problematic content:", responseContent);
+        res.status(500).json({
+          message: "Failed to parse character data from AI response"
+        });
       }
     } catch (error) {
       console.error("Error generating characters:", error);
