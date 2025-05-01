@@ -4,7 +4,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { LoadProjectDialog } from "@/components/modals/load-project-dialog";
 import { ShareDialog } from "@/components/modals/share-dialog";
-import { Pencil, FolderOpen, Play, Share2 } from "lucide-react";
+import { Pencil, FolderOpen, Play, Share2, Beaker } from "lucide-react";
 
 export function MainMenu() {
   const [, setLocation] = useLocation();
@@ -30,6 +30,11 @@ export function MainMenu() {
   // Handle share stories
   const handleShareStories = () => {
     setShowShareDialog(true);
+  };
+  
+  // Handle test player navigation
+  const handleTestPlayer = () => {
+    setLocation("/test-player");
   };
 
   return (
