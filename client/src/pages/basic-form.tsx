@@ -14,6 +14,69 @@ import {
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 
+// Arrays for each dropdown type
+const themes = [
+  "forgiveness",
+  "freedom_vs_control",
+  "growth",
+  "identity",
+  "love_vs_duty",
+  "revenge_and_justice",
+  "technology_vs_humanity",
+  "sacrifice",
+  "trust_and_betrayal"
+];
+
+const tones = [
+  "adventurous",
+  "dark",
+  "gritty",
+  "lighthearted",
+  "melancholic",
+  "romantic",
+  "satirical",
+  "suspenseful",
+  "tragicomic",
+  "whimsical"
+];
+
+const genres = [
+  "cyberpunk",
+  "steampunk",
+  "mystery",
+  "romance",
+  "science_fiction",
+  "fantasy",
+  "slice_of_life",
+  "thriller",
+  "comedy",
+  "horror",
+  "drama"
+];
+
+const settings = [
+  "cyberpunk_world",
+  "steampunk_world",
+  "noir_setting",
+  "modern_day",
+  "school",
+  "history",
+  "mythology",
+  "space",
+  "dystopia",
+  "utopia",
+  "urban_city",
+  "scary_place",
+  "countryside",
+  "post_apocalypse",
+  "virtual_reality"
+];
+
+// Helper function to get a random item from an array
+function getRandomItem(array: string[]): string {
+  return array[Math.floor(Math.random() * array.length)];
+}
+
 export default function BasicForm() {
   const [, setLocation] = useLocation();
   const { projectData, setBasicData } = useVnContext();
@@ -23,14 +86,25 @@ export default function BasicForm() {
   const [tone, setTone] = useState("");
   const [genre, setGenre] = useState("");
   const [setting, setSetting] = useState("");
+  
+  // State to track if the form has been initialized with random values
+  const [initialized, setInitialized] = useState(false);
+
+  // Function to randomize all form values
+  const randomizeForm = () => {
+    console.log("Randomizing form values");
+    setTheme(getRandomItem(themes));
+    setTone(getRandomItem(tones));
+    setGenre(getRandomItem(genres));
+    setSetting(getRandomItem(settings));
+    setInitialized(true);
+  };
 
   // Function to reset the form
   const resetForm = () => {
     console.log("Resetting form values");
-    setTheme("");
-    setTone("");
-    setGenre("");
-    setSetting("");
+    // For new forms, we want random values instead of empty ones
+    randomizeForm();
   };
 
   // Load or reset form values based on projectData
@@ -73,15 +147,21 @@ export default function BasicForm() {
     localStorage.clear();
     sessionStorage.clear();
 
-    // Clear form state
-    resetForm();
+    // Randomize form values
+    randomizeForm();
 
     // Show confirmation
-    window.alert("Form values manually reset. The page will now refresh.");
-
-    // Force a complete refresh of the page
-    window.location.href = "/";
+    window.alert("Form values manually reset and randomized.");
   };
+
+  // Initialize the form with random values when first loaded
+  useEffect(() => {
+    if (!initialized && !theme && !tone && !genre && !setting) {
+      console.log("Initializing form with random values");
+      randomizeForm();
+      setInitialized(true);
+    }
+  }, [initialized, theme, tone, genre, setting]);
 
   // Proceed to next step
   const handleNext = () => {
@@ -121,7 +201,23 @@ export default function BasicForm() {
           <div className="space-y-8">
             {/* Sentence-style form with dropdowns */}
             <div className="bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200">
-              <h3 className="text-xl font-medium text-gray-700 mb-6">Create Your Story</h3>
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-medium text-gray-700">Create Your Story</h3>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={randomizeForm}
+                  className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 2v6h6"></path>
+                    <path d="M3 13a9 9 0 0 0 9 9 9 9 0 0 0 6.75-3"></path>
+                    <path d="M14 10h7"></path>
+                    <path d="M21 10v7"></path>
+                  </svg>
+                  Randomize All
+                </Button>
+              </div>
               
               <div className="text-lg leading-relaxed space-y-6">
                 <div className="flex flex-wrap items-center gap-2">
