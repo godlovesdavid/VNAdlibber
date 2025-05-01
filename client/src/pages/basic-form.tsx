@@ -130,26 +130,27 @@ export default function BasicForm() {
                   <SelectValue placeholder="Select a theme" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="identity">Identity</SelectItem>
-                  <SelectItem value="trust_vs_betrayal">
-                    Trust and Betrayal
-                  </SelectItem>
-                  <SelectItem value="love_vs_duty">Love vs Duty</SelectItem>
+                  <SelectItem value="forgiveness">Forgiveness</SelectItem>
                   <SelectItem value="freedom_vs_control">
                     Freedom vs Control
                   </SelectItem>
+                  <SelectItem value="growth">Growth</SelectItem>
+                  <SelectItem value="identity">
+                    Identity
+                  </SelectItem>
+                  <SelectItem value="love_vs_duty">Love vs Duty</SelectItem>
                   <SelectItem value="revenge_and_justice">
                     Revenge and Justice
                   </SelectItem>
-                  <SelectItem value="technology_and_humanity">
-                    Technology and Humanity
+                  <SelectItem value="technology_vs_humanity">
+                    Technology vs Humanity
                   </SelectItem>
-                  <SelectItem value="sacrifice">Sacrifice</SelectItem>
-                  <SelectItem value="corruption">Corruption</SelectItem>
-                  <SelectItem value="truth_vs_illusion">
-                    Truth vs Illusion
+                  <SelectItem value="sacrifice">
+                    Sacrifice
                   </SelectItem>
-                  <SelectItem value="legacy">Legacy</SelectItem>
+                  <SelectItem value="trust_and_betrayal">
+                    Trust and Betrayal
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -170,16 +171,16 @@ export default function BasicForm() {
                   <SelectValue placeholder="Select a tone" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="adventurous">Adventurous</SelectItem>
+                  <SelectItem value="dark">Dark</SelectItem>
+                  <SelectItem value="gritty">Gritty</SelectItem>
                   <SelectItem value="lighthearted">Lighthearted</SelectItem>
                   <SelectItem value="melancholic">Melancholic</SelectItem>
-                  <SelectItem value="dark">Dark</SelectItem>
+                  <SelectItem value="romantic">Romantic</SelectItem>
                   <SelectItem value="satirical">Satirical</SelectItem>
                   <SelectItem value="suspenseful">Suspenseful</SelectItem>
-                  <SelectItem value="whimsical">Whimsical</SelectItem>
-                  <SelectItem value="romantic">Romantic</SelectItem>
                   <SelectItem value="tragicomic">Tragicomic</SelectItem>
-                  <SelectItem value="adventurous">Adventurous</SelectItem>
-                  <SelectItem value="gritty">Gritty</SelectItem>
+                  <SelectItem value="whimsical">Whimsical</SelectItem>
                 </SelectContent>
               </Select>
             </div>
