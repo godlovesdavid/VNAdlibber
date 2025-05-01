@@ -907,3 +907,7 @@ export const useVnData = () => {
     isGenerating,
   };
 };
+
+// Needed for proper Fast Refresh support
+// eslint-disable-next-line
+export default useVnData;
