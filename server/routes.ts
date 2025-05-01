@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
-import {  insertVnStorySchema } from "@shared/schema";
+import { insertVnStorySchema } from "@shared/schema";
 import { generateSceneBackgroundImage } from "./image-generator";
 import { jsonrepair } from "jsonrepair";
 
@@ -213,7 +213,7 @@ const generateActSchema = z.object({
 
 const generateImageSchema = z.object({
   scene: z.object({
-    id: z.string(),
+    name: z.string(),
     image_prompt: z.string(),
   }),
   theme: z.string().optional(),

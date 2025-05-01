@@ -142,8 +142,6 @@ export function VnPlayer({
         return;
       }
 
-      // We've enabled animations for imported stories too, removing the exception
-
       // Clear any existing animation
       if (textAnimationRef.current) {
         window.cancelAnimationFrame(textAnimationRef.current);
@@ -203,49 +201,16 @@ export function VnPlayer({
     setIsTextAnimating(false);
   }, [currentScene, currentDialogueIndex]);
 
-  // Process scenes to fix imported data issues and add end-of-act messages
-  const processScene = useCallback(
-    (scene: Scene): Scene => {
-      // Make a deep copy to avoid mutating the original
-      const processed = JSON.parse(JSON.stringify(scene));
-
-      // Fix choices that are string "null" instead of null
-      if (processed.choices === "null") {
-        processed.choices = null;
-      }
-
-      // Fix non-array choices
-      if (processed.choices && !Array.isArray(processed.choices)) {
-        processed.choices = null;
-      }
-
-      // Add end of act message to the final scene
-      if (processed.choices === null && processed.dialogue?.length > 0) {
-        const lastIndex = processed.dialogue.length - 1;
-        const [speaker, text] = processed.dialogue[lastIndex];
-        processed.dialogue[lastIndex] = [
-          speaker,
-          `${text}\n\n(End of Act ${actNumber})`,
-        ];
-      }
-
-      return processed;
-    },
-    [actNumber],
-  );
-
-
   // Initialize scenes separately for generated and imported modes to avoid recursion issues
   // This initialization is only for generated mode
   useEffect(() => {
-    if (mode !== "generated" || !actData?.scenes?.length || initialized.current)
-      return;
+    if (!actData?.scenes?.length || initialized.current) return;
 
     // Mark as initialized to prevent re-initialization
     initialized.current = true;
 
     // Set initial scene
-    const firstScene = processScene(actData.scenes[0]);
+    const firstScene = actData.scenes[0];
     console.log(
       `Initializing VN Player (${mode} mode) with first scene:`,
       firstScene.name,
@@ -262,37 +227,7 @@ export function VnPlayer({
       setDisplayedText(""); // Clear any previous text
       animateText(firstScene.dialogue[0][1]);
     }
-  }, [actData, processScene, animateText, mode]);
-
-  // Separate initialization for imported mode
-  useEffect(() => {
-    if (mode !== "imported" || !actData?.scenes?.length || initialized.current)
-      return;
-
-    // Mark as initialized to prevent re-initialization
-    initialized.current = true;
-
-    // Set initial scene - using direct JSON copy to avoid any reference issues
-    const firstSceneRaw = JSON.parse(JSON.stringify(actData.scenes[0]));
-    const firstScene = processScene(firstSceneRaw);
-    console.log(
-      `Initializing VN Player (${mode} mode) with first scene:`,
-      firstScene.name,
-    );
-
-    // Set all initial state directly (without animation)
-    setCurrentScene(firstScene);
-    setCurrentSceneId(firstScene.name);
-    setCurrentDialogueIndex(0);
-    setShowChoices(false);
-    setDialogueLog([]);
-
-    // For imported mode, now using animation like generated mode
-    if (firstScene.dialogue && firstScene.dialogue.length > 0) {
-      setDisplayedText(""); // Clear any previous text
-      animateText(firstScene.dialogue[0][1]);
-    }
-  }, [actData, processScene, mode]);
+  }, [actData, animateText, mode]);
 
   // Use image generation hook - make sure to update when scene changes
   const {
@@ -313,7 +248,6 @@ export function VnPlayer({
       generateImage(true);
     }
   }, [currentScene, generateImage]);
-  
 
   // Update current scene when scene ID changes
   useEffect(() => {
@@ -326,12 +260,12 @@ export function VnPlayer({
       setShowChoices(false);
 
       if (scene.dialogue && scene.dialogue.length > 0) {
-        setDisplayedText(""); 
+        setDisplayedText("");
         animateText(scene.dialogue[0][1]);
       }
       shouldGenerateImage.current = true;
     }
-  }, [actData, currentSceneId, processScene, animateText, mode]);
+  }, [actData, currentSceneId, animateText, mode]);
 
   // Handle restart
   const handleRestart = useCallback(() => {
@@ -345,11 +279,11 @@ export function VnPlayer({
     setDialogueLog([]);
 
     // Use animation for both modes now
-    if (firstScene.dialogue && firstScene.dialogue.length > 0) {
+    if (actData.scenes[0].dialogue && actData.scenes[0].dialogue.length > 0) {
       setDisplayedText(""); // Clear any previous text
-      animateText(firstScene.dialogue[0][1]);
+      animateText(actData.scenes[0].dialogue[0][1]);
     }
-  }, [actData, processScene, animateText, mode]);
+  }, [actData, animateText, mode]);
 
   // Handle advancing to next dialogue or showing choices
   const advanceDialogue = useCallback(() => {
@@ -518,7 +452,6 @@ export function VnPlayer({
       );
     };
   }, [mode, isTextAnimating]);
-
 
   // Log current scene and image state for debugging
   useEffect(() => {
