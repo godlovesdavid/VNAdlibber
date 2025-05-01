@@ -86,7 +86,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   // Create a new project
   const createNewProject = () => 
   {
-    // First create a clean minimal basic structure
+    // First create a clean minimal basic structure with completely empty values
     const initialProject: VnProjectData = {
       title: "Untitled Project",
       createdAt: new Date().toISOString(),
@@ -97,14 +97,23 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         genre: "",
         setting: "",
       },
+      // Reset all optional fields to undefined to ensure form components start fresh
+      conceptData: undefined,
+      charactersData: undefined,
+      protagonist: undefined,
+      pathsData: undefined,
+      plotData: undefined,
+      generatedActs: undefined,
+      playerData: undefined,
       currentStep: 1
     };
     
     // Clear any existing project data
     try 
     {
-      // Remove old data from storage
-      localStorage.removeItem("current_vn_project");
+      // Explicitly clear all browser storage to prevent cached data
+      localStorage.clear();
+      sessionStorage.clear();
       
       // Set a flag to indicate this is a fresh project that needs randomization
       sessionStorage.setItem('vn_fresh_project', 'true');

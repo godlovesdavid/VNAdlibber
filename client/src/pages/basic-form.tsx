@@ -151,15 +151,16 @@ export default function BasicForm() {
   const handleManualReset = () => {
     console.log("Manual reset requested");
 
-    // Clear all browser storage
-    localStorage.clear();
-    sessionStorage.clear();
-
-    // Randomize form values
-    randomizeForm();
-
+    // Trigger a proper full reset by calling the context's createNewProject function
+    // which will clear all browser storage and reset all form state
+    createNewProject();
+    
     // Show confirmation
-    window.alert("Form values manually reset and randomized.");
+    toast({
+      title: "Form Reset",
+      description: "All forms have been reset and randomized.",
+      duration: 3000,
+    });
   };
 
   // We no longer need this effect as we handle initialization in the projectData effect
