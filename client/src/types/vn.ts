@@ -83,10 +83,15 @@ export interface Scene {
 }
 
 // Generated act structure - the complete VN act data
-export interface GeneratedAct {
+// Legacy format kept for backward compatibility
+export interface LegacyGeneratedAct {
   act: number;
   scenes: Scene[];
 }
+
+// New nested format for the generated act data with scene map
+// Format: { act1: { scene1: Scene, scene2: Scene, ... } }
+export type GeneratedAct = LegacyGeneratedAct | Record<string, Record<string, Scene>>;
 
 // Player data structure for tracking relationships, inventory, and skills
 export interface PlayerData {

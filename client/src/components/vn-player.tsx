@@ -9,6 +9,48 @@ import { useImageGeneration } from "@/hooks/use-image-generation";
 import { setCachedImageUrl } from "@/lib/image-generator";
 import { useToast } from "@/hooks/use-toast";
 
+// Helper function to convert new act format {act1: {scene1: {...}}} to array format for VN player
+function convertActFormat(actData: any): {
+  scenes: Scene[];
+  act: number;
+} {
+  // Handle case where the data is already in the correct format
+  if (actData.scenes && Array.isArray(actData.scenes)) {
+    return actData;
+  }
+  
+  const actNumber = parseInt(Object.keys(actData)[0].replace('act', '')) || 1;
+  const actKey = `act${actNumber}`;
+  const sceneMap = actData[actKey] || {};
+  
+  // Convert the scene map to an array
+  const scenes: Scene[] = Object.entries(sceneMap).map(([sceneKey, sceneData]: [string, any]) => {
+    // Use the scene key as the name (instead of any nested name property)
+    // This simplifies scene navigation since we'll reference scenes by their key
+    
+    // Make sure the scene's 'next' properties in choices point to actual scene keys
+    const choices = sceneData.choices && sceneData.choices.map((choice: any) => {
+      // Update any scene references to use the scene keys
+      // No need to look up the name property anymore
+      return {
+        ...choice
+        // We'll use the scene keys directly in next/failNext fields, so no need to transform
+      };
+    });
+    
+    return {
+      ...sceneData,
+      name: sceneKey, // Use the scene key as the name
+      choices: choices
+    };
+  });
+  
+  return {
+    scenes,
+    act: actNumber
+  };
+}
+
 // Dedicated component for handling scene backgrounds with fallbacks
 interface SceneBackgroundProps {
   imageUrl: string;
@@ -98,12 +140,24 @@ interface VnPlayerProps {
 }
 
 export function VnPlayer({
-  actData,
+  actData: rawActData,
   actNumber,
   onReturn,
   onRestart: externalRestart,
   mode = "generated",
 }: VnPlayerProps) {
+  // Convert the actData to the format expected by the player
+  const actData = convertActFormat(rawActData);
+  
+  // Debug log the conversion
+  useEffect(() => {
+    if (rawActData) {
+      console.log('VN Player received data format:', 
+        Object.keys(rawActData).length > 0 && !Array.isArray(rawActData.scenes) 
+          ? 'New nested format' 
+          : 'Legacy array format');
+    }
+  }, [rawActData]);
   const { playerData, updatePlayerData } = useVnContext();
   const { toast } = useToast(); // Initialize toast
 
