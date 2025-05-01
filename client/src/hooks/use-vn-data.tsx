@@ -11,7 +11,7 @@ import { apiRequest } from "@/lib/queryClient";
 
 // To make this hook compatible with Fast Refresh, we use a named function
 // expression instead of a function declaration
-export function useVnData() {
+export const useVnData = () => {
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [abortController, setAbortController] =

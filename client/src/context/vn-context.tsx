@@ -5,6 +5,7 @@ import {
   BasicData,
   ConceptData,
   CharactersData,
+  Character,
   PathsData,
   PlotData,
   GeneratedAct,
@@ -177,7 +178,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       const character = data[name];
       console.log(`Character ${name} object structure:`, Object.keys(character));
       
-      // Create a new clean character object
+      // Create a new clean character object with correct typing
       const cleanCharacter: Record<string, any> = {};
       
       // Check for any unexpected nested objects and fix them
@@ -217,7 +218,20 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       }
       
       // Add the cleaned character to the sanitized data with proper typing
-      sanitizedData[name] = cleanCharacter as Character;
+      // Create a properly typed Character object from the cleaned data
+      const typedCharacter: Character = {
+        role: cleanCharacter.role || "To be defined",
+        occupation: cleanCharacter.occupation || "To be defined",
+        gender: cleanCharacter.gender || "To be defined",
+        age: cleanCharacter.age || "To be defined",
+        appearance: cleanCharacter.appearance || "To be defined",
+        personality: cleanCharacter.personality || "To be defined",
+        goals: cleanCharacter.goals || "To be defined",
+        relationshipPotential: name === protagonist ? "N/A - Protagonist" : (cleanCharacter.relationshipPotential || ""),
+        conflict: cleanCharacter.conflict || "To be defined"
+      };
+      
+      sanitizedData[name] = typedCharacter;
     });
     
     console.log("Sanitized character data for storage:", sanitizedData);
@@ -548,3 +562,7 @@ export const useVnContext = () => {
   }
   return context;
 };
+
+// Needed for proper Fast Refresh support
+// eslint-disable-next-line
+export default useVnContext;
