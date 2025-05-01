@@ -314,62 +314,32 @@ export function VnPlayer({
     }
   }, [currentScene, generateImage]);
   
-  // Update current scene when scene ID changes - for generated mode
+
+  // Update current scene when scene ID changes
   useEffect(() => {
-    if (mode !== "generated" || !actData?.scenes || !currentSceneId) return;
+    if (!actData?.scenes || !currentSceneId) return;
 
     const scene = actData.scenes.find((s) => s.name === currentSceneId);
     if (scene) {
-      const processedScene = processScene(scene);
-      setCurrentScene(processedScene);
+      setCurrentScene(scene);
       setCurrentDialogueIndex(0);
       setShowChoices(false);
 
-      // Start text animation for the first dialogue line
-      if (processedScene.dialogue && processedScene.dialogue.length > 0) {
-        setDisplayedText(""); // Clear any previous text
-        animateText(processedScene.dialogue[0][1]);
+      if (scene.dialogue && scene.dialogue.length > 0) {
+        setDisplayedText(""); 
+        animateText(scene.dialogue[0][1]);
       }
-
-      // Mark that we need to generate an image
       shouldGenerateImage.current = true;
     }
   }, [actData, currentSceneId, processScene, animateText, mode]);
-
-
-  // Update current scene when scene ID changes - for imported mode (no animation)
-  useEffect(() => {
-    if (mode !== "imported" || !actData?.scenes || !currentSceneId) return;
-
-    const scene = actData.scenes.find((s) => s.name === currentSceneId);
-    if (scene) {
-      // Use deep copy to prevent any reference issues
-      const sceneCopy = JSON.parse(JSON.stringify(scene));
-      const processedScene = processScene(sceneCopy);
-
-      setCurrentScene(processedScene);
-      setCurrentDialogueIndex(0);
-      setShowChoices(false);
-
-      // For imported mode, now using animation like generated mode
-      if (processedScene.dialogue && processedScene.dialogue.length > 0) {
-        setDisplayedText(""); // Clear any previous text
-        animateText(processedScene.dialogue[0][1]);
-      }
-    }
-  }, [actData, currentSceneId, processScene, mode]);
 
   // Handle restart
   const handleRestart = useCallback(() => {
     if (!actData?.scenes?.length) return;
 
-    // Reset to first scene - using deep copy to avoid reference issues
-    const firstSceneRaw = JSON.parse(JSON.stringify(actData.scenes[0]));
-    const firstScene = processScene(firstSceneRaw);
-
     // Reset all the state
-    setCurrentScene(firstScene);
-    setCurrentSceneId(firstScene.name);
+    setCurrentScene(actData.scenes[0]);
+    setCurrentSceneId(actData.scenes[0].name);
     setCurrentDialogueIndex(0);
     setShowChoices(false);
     setDialogueLog([]);

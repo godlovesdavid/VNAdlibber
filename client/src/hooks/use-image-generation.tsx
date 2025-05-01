@@ -126,7 +126,7 @@ export function useImageGeneration(
 
           // Call API to generate image
           const result: ImageGenerationResult = await generateSceneBackground(
-            { id: scene.name, image_prompt: scene.image_prompt || "" },
+            { name: scene.name, image_prompt: scene.image_prompt || "" },
             abortController.current.signal,
             {}, // No options needed since we're using RunPod
           );
