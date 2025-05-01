@@ -3,6 +3,7 @@ export interface BasicData {
   theme: string;
   tone: string;
   genre: string;
+  setting?: string; // Optional to maintain backward compatibility
 }
 
 // Concept information for the visual novel

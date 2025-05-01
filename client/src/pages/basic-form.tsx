@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { CreationProgress } from "@/components/creation-progress";
@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 
 export default function BasicForm() {
@@ -21,6 +22,7 @@ export default function BasicForm() {
   const [theme, setTheme] = useState("");
   const [tone, setTone] = useState("");
   const [genre, setGenre] = useState("");
+  const [setting, setSetting] = useState("");
 
   // Function to reset the form
   const resetForm = () => {
@@ -28,6 +30,7 @@ export default function BasicForm() {
     setTheme("");
     setTone("");
     setGenre("");
+    setSetting("");
   };
 
   // Load or reset form values based on projectData
@@ -49,6 +52,7 @@ export default function BasicForm() {
       setTheme(projectData.basicData.theme || "");
       setTone(projectData.basicData.tone || "");
       setGenre(projectData.basicData.genre || "");
+      setSetting(projectData.basicData.setting || "");
     } else {
       // Otherwise clear the form
       console.log("No project data found, resetting form");
@@ -82,7 +86,7 @@ export default function BasicForm() {
   // Proceed to next step
   const handleNext = () => {
     // Validate form
-    if (!theme || !tone || !genre) {
+    if (!theme || !tone || !genre || !setting) {
       alert("Please fill in all required fields");
       return;
     }
@@ -92,6 +96,7 @@ export default function BasicForm() {
       theme,
       tone,
       genre,
+      setting,
     });
 
     // Navigate to next step
@@ -113,116 +118,128 @@ export default function BasicForm() {
             world and atmosphere.
           </p>
 
-          <div className="space-y-6">
-            {/* Theme Selection */}
-            <div className="form-group">
-              <label
-                htmlFor="theme"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Theme
-              </label>
-              <p className="text-xs text-gray-500 mb-2">
-                The central ideas explored in your story
-              </p>
-              <Select value={theme} onValueChange={setTheme}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a theme" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="forgiveness">Forgiveness</SelectItem>
-                  <SelectItem value="freedom_vs_control">
-                    Freedom vs Control
-                  </SelectItem>
-                  <SelectItem value="growth">Growth</SelectItem>
-                  <SelectItem value="identity">
-                    Identity
-                  </SelectItem>
-                  <SelectItem value="love_vs_duty">Love vs Duty</SelectItem>
-                  <SelectItem value="revenge_and_justice">
-                    Revenge and Justice
-                  </SelectItem>
-                  <SelectItem value="technology_vs_humanity">
-                    Technology vs Humanity
-                  </SelectItem>
-                  <SelectItem value="sacrifice">
-                    Sacrifice
-                  </SelectItem>
-                  <SelectItem value="trust_and_betrayal">
-                    Trust and Betrayal
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+          <div className="space-y-8">
+            {/* Sentence-style form with dropdowns */}
+            <div className="bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200">
+              <h3 className="text-xl font-medium text-gray-700 mb-6">Create Your Story</h3>
+              
+              <div className="text-lg leading-relaxed space-y-6">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-gray-700">Compose me a</span>
+                  
+                  {/* Tone Dropdown */}
+                  <div className="inline-block">
+                    <Select value={tone} onValueChange={setTone}>
+                      <SelectTrigger className="w-36 h-8 text-base border-b-2 border-blue-500 rounded-none bg-transparent focus:ring-0">
+                        <SelectValue placeholder="tone" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="adventurous">adventurous</SelectItem>
+                        <SelectItem value="dark">dark</SelectItem>
+                        <SelectItem value="gritty">gritty</SelectItem>
+                        <SelectItem value="lighthearted">lighthearted</SelectItem>
+                        <SelectItem value="melancholic">melancholic</SelectItem>
+                        <SelectItem value="romantic">romantic</SelectItem>
+                        <SelectItem value="satirical">satirical</SelectItem>
+                        <SelectItem value="suspenseful">suspenseful</SelectItem>
+                        <SelectItem value="tragicomic">tragicomic</SelectItem>
+                        <SelectItem value="whimsical">whimsical</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  {/* Genre Dropdown */}
+                  <div className="inline-block">
+                    <Select value={genre} onValueChange={setGenre}>
+                      <SelectTrigger className="w-36 h-8 text-base border-b-2 border-green-500 rounded-none bg-transparent focus:ring-0">
+                        <SelectValue placeholder="genre" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="cyberpunk">cyberpunk</SelectItem>
+                        <SelectItem value="steampunk">steampunk</SelectItem>
+                        <SelectItem value="mystery">mystery</SelectItem>
+                        <SelectItem value="romance">romance</SelectItem>
+                        <SelectItem value="science_fiction">sci-fi</SelectItem>
+                        <SelectItem value="fantasy">fantasy</SelectItem>
+                        <SelectItem value="slice_of_life">slice of life</SelectItem>
+                        <SelectItem value="thriller">thriller</SelectItem>
+                        <SelectItem value="comedy">comedy</SelectItem>
+                        <SelectItem value="horror">horror</SelectItem>
+                        <SelectItem value="drama">drama</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <span className="text-gray-700">about</span>
+                  
+                  {/* Theme Dropdown */}
+                  <div className="inline-block">
+                    <Select value={theme} onValueChange={setTheme}>
+                      <SelectTrigger className="w-40 h-8 text-base border-b-2 border-purple-500 rounded-none bg-transparent focus:ring-0">
+                        <SelectValue placeholder="theme" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="forgiveness">forgiveness</SelectItem>
+                        <SelectItem value="freedom_vs_control">freedom vs control</SelectItem>
+                        <SelectItem value="growth">growth</SelectItem>
+                        <SelectItem value="identity">identity</SelectItem>
+                        <SelectItem value="love_vs_duty">love vs duty</SelectItem>
+                        <SelectItem value="revenge_and_justice">revenge & justice</SelectItem>
+                        <SelectItem value="technology_vs_humanity">tech vs humanity</SelectItem>
+                        <SelectItem value="sacrifice">sacrifice</SelectItem>
+                        <SelectItem value="trust_and_betrayal">trust & betrayal</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <span className="text-gray-700">set in</span>
+                  
+                  {/* Setting Dropdown */}
+                  <div className="inline-block">
+                    <Select value={setting} onValueChange={setSetting}>
+                      <SelectTrigger className="w-40 h-8 text-base border-b-2 border-amber-500 rounded-none bg-transparent focus:ring-0">
+                        <SelectValue placeholder="setting" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="cyberpunk_world">cyberpunk world</SelectItem>
+                        <SelectItem value="steampunk_world">steampunk world</SelectItem>
+                        <SelectItem value="noir_setting">noir setting</SelectItem>
+                        <SelectItem value="modern_day">modern day</SelectItem>
+                        <SelectItem value="school">school</SelectItem>
+                        <SelectItem value="history">history</SelectItem>
+                        <SelectItem value="mythology">mythology</SelectItem>
+                        <SelectItem value="space">space</SelectItem>
+                        <SelectItem value="dystopia">dystopia</SelectItem>
+                        <SelectItem value="utopia">utopia</SelectItem>
+                        <SelectItem value="urban_city">urban city</SelectItem>
+                        <SelectItem value="scary_place">a scary place</SelectItem>
+                        <SelectItem value="countryside">countryside</SelectItem>
+                        <SelectItem value="post_apocalypse">post-apocalypse</SelectItem>
+                        <SelectItem value="virtual_reality">virtual reality</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Tone Selection */}
-            <div className="form-group">
-              <label
-                htmlFor="tone"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Tone
-              </label>
-              <p className="text-xs text-gray-500 mb-2">
-                The emotional atmosphere of your story
-              </p>
-              <Select value={tone} onValueChange={setTone}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a tone" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="adventurous">Adventurous</SelectItem>
-                  <SelectItem value="dark">Dark</SelectItem>
-                  <SelectItem value="gritty">Gritty</SelectItem>
-                  <SelectItem value="lighthearted">Lighthearted</SelectItem>
-                  <SelectItem value="melancholic">Melancholic</SelectItem>
-                  <SelectItem value="romantic">Romantic</SelectItem>
-                  <SelectItem value="satirical">Satirical</SelectItem>
-                  <SelectItem value="suspenseful">Suspenseful</SelectItem>
-                  <SelectItem value="tragicomic">Tragicomic</SelectItem>
-                  <SelectItem value="whimsical">Whimsical</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Genre Selection */}
-            <div className="form-group">
-              <label
-                htmlFor="genre"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Genre
-              </label>
-              <p className="text-xs text-gray-500 mb-2">
-                The category or style of your story
-              </p>
-              <Select value={genre} onValueChange={setGenre}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a genre" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cyberpunk">Cyberpunk</SelectItem>
-                  <SelectItem value="steampunk">Steampunk</SelectItem>
-                  <SelectItem value="mystery">Mystery</SelectItem>
-                  <SelectItem value="romance">Romance</SelectItem>
-                  <SelectItem value="science_fiction">
-                    Science Fiction
-                  </SelectItem>
-                  <SelectItem value="fantasy">Fantasy</SelectItem>
-                  <SelectItem value="slice_of_life">Slice of Life</SelectItem>
-                  <SelectItem value="thriller">Thriller</SelectItem>
-                  <SelectItem value="comedy">Comedy</SelectItem>
-                  <SelectItem value="horror">Horror</SelectItem>
-                  <SelectItem value="drama">Drama</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Preview of the selected options */}
+            {(theme || tone || genre || setting) && (
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h3 className="text-sm font-medium text-blue-700 mb-2">Preview:</h3>
+                <p className="text-gray-700">
+                  Composing {tone && <span className="font-medium">{tone}</span>} {genre && <span className="font-medium">{genre}</span>} about {theme && <span className="font-medium">{theme.replace(/_/g, ' ')}</span>} set in {setting && <span className="font-medium">{setting.replace(/_/g, ' ')}</span>}.
+                </p>
+              </div>
+            )}
 
             <div className="pt-6 flex justify-between">
               <Button variant="outline" onClick={goBack}>
                 Back
               </Button>
-              <Button onClick={handleNext}>Next: Concept</Button>
+              <Button onClick={handleNext} disabled={!theme || !tone || !genre || !setting}>
+                Next: Concept
+              </Button>
             </div>
 
             {/* Debug button - remove in production */}
