@@ -54,11 +54,15 @@ export default function PathsForm() {
 
   // Load existing data if available
   useEffect(() => {
-    if (
-      projectData?.pathsData?.routes &&
-      projectData.pathsData.routes.length > 0
-    ) {
-      setRoutes(projectData.pathsData.routes);
+    if (projectData?.pathsData && Object.keys(projectData.pathsData).length > 0) {
+      // Convert from object to array format for the form
+      const routesArray = Object.entries(projectData.pathsData).map(
+        ([title, route]) => ({
+          ...route,
+          title // Ensure title is set properly
+        })
+      );
+      setRoutes(routesArray);
     }
   }, [projectData]);
 
@@ -131,9 +135,14 @@ export default function PathsForm() {
       setRoutes(updatedRoutes);
 
       // Update the project context after path generation
-      setPathsData({
-        routes: updatedRoutes,
+      const pathsObj: Record<string, Route> = {};
+      updatedRoutes.forEach(route => {
+        if (route.title) {
+          pathsObj[route.title] = { ...route };
+        }
       });
+      
+      setPathsData(pathsObj);
 
       // Log generation to console
       console.log(`🔥 Generated path ${index + 1}:`, generatedPath);
@@ -181,9 +190,16 @@ export default function PathsForm() {
 
         // Update state and project context
         setRoutes(updatedRoutes);
-        setPathsData({
-          routes: updatedRoutes,
+        
+        // Convert to object format for storage
+        const pathsObj: Record<string, Route> = {};
+        updatedRoutes.forEach(route => {
+          if (route.title) {
+            pathsObj[route.title] = { ...route };
+          }
         });
+        
+        setPathsData(pathsObj);
 
         console.log("Successfully generated all paths at once");
         console.log("Updated project context with all path data");
@@ -222,10 +238,15 @@ export default function PathsForm() {
     //   return;
     // }
 
-    // Save data
-    setPathsData({
-      routes,
+    // Save data - transform array to object format
+    const pathsObj: Record<string, Route> = {};
+    routes.forEach(route => {
+      if (route.title) {
+        pathsObj[route.title] = { ...route };
+      }
     });
+    
+    setPathsData(pathsObj);
 
     // Navigate to next step
     setLocation("/create/plot");
@@ -233,13 +254,14 @@ export default function PathsForm() {
 
   // Get character options for love interest dropdown
   const getCharacterOptions = () => {
-    if (!projectData?.charactersData?.characters) {
+    if (!projectData?.charactersData || Object.keys(projectData.charactersData).length === 0) {
       return [];
     }
 
-    return projectData.charactersData.characters.map((char, index) => ({
-      label: char.name || `Character ${index + 1}`,
-      value: char.name || `Character ${index + 1}`,
+    // Convert the object of characters to an array of options
+    return Object.entries(projectData.charactersData).map(([name, char]) => ({
+      label: name,
+      value: name,
     }));
   };
 
