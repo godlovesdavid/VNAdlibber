@@ -390,18 +390,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/generate/concept", async (req, res) => {
     try {
       const { basicData } = generateConceptSchema.parse(req.body);
-      // Create prompt for the concept generation
-      const prompt = `Given this VN story context:
+      // Create prompt for the concept generation - directly matching our expected format
+      const prompt = `Given this visual novel story context:
         Theme: ${basicData.theme}
         Tone: ${basicData.tone}
         Genre: ${basicData.genre}
-        Return a story concept in a JSON as structured:
+        
+        Create a compelling visual novel concept based on these elements.
+        Return in this exact JSON format:
         {
-          "title": "Intriguing title",
-          "tagline": "Very short & memorable catchphrase (<10 words and no period)",
-          "premise": "Premise & main conflict. Don't name names (designed later)"
+          "title": "Captivating and unique title",
+          "tagline": "Brief, memorable catchphrase under 10 words",
+          "premise": "Detailed premise describing the world, main conflict, and core story without specific character names"
         }
-        Be wildly imaginative, original, and surprising — but keep it emotionally resonant.
+        
+        Make the concept original, emotionally resonant, and aligned with the specified theme, tone and genre.
+        Avoid clichés and create something players haven't experienced before.
       `;
 
       // Use Gemini to generate the concept
@@ -429,41 +433,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`Generating ${indices.length} characters`);
 
-      // Create prompt for the character generation
-      // For single character, we format as a single object
-      // For multiple characters, we format as an array
+      // Create prompt for the character generation - directly matching our expected format
       const prompt = `Given this story context:
         ${JSON.stringify(projectContext, null, 2)}
-        Return exactly ${indices.length} character${indices.length > 1 ? "s" : ""} in this format:
-        ${
-          indices.length > 1
-            ? `
-          [` : ''}
-            {
-              "name": "Memorable name",
-              "role": "${indices.length == 1 && indices[0] == 0 ? "Main Protagonist" : "Story role e.g. antagonist"}",
-              "occupation": "Can be unemployed",
-              "gender": "Can be robot/AI",
-              "age": "Age as a string",
-              "appearance": "Physical description",
-              "personality": "Key personality traits and behaviors",
-              "goals": "Primary motivations and objectives",
-              "relationshipPotential": ${indices.length == 1 && indices[0] == 0 ? "null" : "\"Relationship potential with main protagonist. Lovers must be opposite gender.\""}, 
-              "conflict": "Their primary internal or external struggle"
-            } ${
-              indices.length > 1
-                ? `
-          ]
-        `
-                : ""
-            }
-        ${
-          indices.length == 1
-            ? ""
-            : `
-        Ensure unique characters with varying strengths, flaws, and motivations, and fit story concept. 
-        Character one is the main protagonist.`
-        }
+        Generate ${indices.length} detailed character${indices.length > 1 ? "s" : ""} for a visual novel in JSON format.
+        
+        ${indices.length > 1 ? "Return an array of character objects:" : "Return a single character object:"}
+        
+        ${indices.length > 1 ? "[" : ""}
+          {
+            "name": "Character full name",
+            "role": "${indices.length == 1 && indices[0] == 0 ? "Main Protagonist" : "Role in story (antagonist, mentor, etc.)"}",
+            "occupation": "Job or daily activity",
+            "gender": "Gender identity",
+            "age": "Age as a string",
+            "appearance": "Detailed physical description",
+            "personality": "Key traits, behaviors, and quirks",
+            "goals": "Primary motivations and objectives",
+            "relationshipPotential": ${indices.length == 1 && indices[0] == 0 ? "null" : '"Potential relationship dynamic with protagonist"'}, 
+            "conflict": "Main personal struggle or challenge"
+          }${indices.length > 1 ? "," : ""}
+          ${indices.length > 1 ? "...more characters..." : ""}
+        ${indices.length > 1 ? "]" : ""}
+        
+        Make characters feel realistic, complex, and memorable with distinct personalities.
+        ${indices.length > 1 ? "Ensure the first character is the main protagonist." : ""}
+        Keep all characters consistent with the story's theme, tone, and genre.
       `;
 
       // Generate characters using Gemini
@@ -476,53 +471,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Try to parse response
       try {
         if (responseContent === "{}") throw new Error("Empty response");
-        
+
         // Try to repair JSON if needed
         let fixedContent = responseContent;
         try {
           if (responseContent.includes("(Leave blank)")) {
             // Replace (Leave blank) with null value
-            fixedContent = responseContent.replace(/"\(Leave blank\)"/g, "null");
+            fixedContent = responseContent.replace(
+              /"\(Leave blank\)"/g,
+              "null",
+            );
           }
           fixedContent = jsonrepair(fixedContent);
         } catch (repairError) {
           console.error("Could not repair JSON:", repairError);
           fixedContent = responseContent; // Fall back to original
         }
-        
+
         // Parse the response
         const parsed = JSON.parse(fixedContent);
         console.log("Parsed character data:", parsed);
-        
+
         // Ensure consistent format: for single character requests, we still return an array
         const result = Array.isArray(parsed) ? parsed : [parsed];
-        
+
         // Verify each character has the expected fields
         result.forEach((character, index) => {
           if (!character.name) {
             console.warn(`Character ${index} missing name, setting default`);
             character.name = `Character ${index + 1}`;
           }
-          
+
           // Ensure relationshipPotential is properly formatted (null for protagonist)
           if (index === 0) {
             character.relationshipPotential = null;
           }
-          
+
           // Check for any unexpected property types
           Object.entries(character).forEach(([key, value]) => {
-            if (typeof value === 'object' && value !== null && key !== 'relationshipPotential') {
-              console.warn(`Warning: Character has nested object property ${key}:`, value);
+            if (
+              typeof value === "object" &&
+              value !== null &&
+              key !== "relationshipPotential"
+            ) {
+              console.warn(
+                `Warning: Character has nested object property ${key}:`,
+                value,
+              );
             }
           });
         });
-        
+
         res.json(result);
       } catch (e) {
         console.error("Problem parsing character JSON:", e);
         console.error("Problematic content:", responseContent);
         res.status(500).json({
-          message: "Failed to parse character data from AI response"
+          message: "Failed to parse character data from AI response",
         });
       }
     } catch (error) {
@@ -541,25 +546,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create indices array based on the number of templates
       const indices = Array.from({ length: pathTemplates.length }, (_, i) => i);
 
-      // Create prompt for the path generation
+      // Create prompt for the path generation - directly matching our expected format
       const prompt = `Given this story context:
         ${JSON.stringify(projectContext, null, 2)}
-        Generate exactly ${indices.length} plot arc${indices.length > 1 ? "s" : ""} as a JSON:
+        
+        Generate exactly ${indices.length} story path${indices.length > 1 ? "s" : ""} for a visual novel in JSON format.
+        Each path represents a different storyline or route the player can follow.
+        
+        Return in this exact format:
         {
-          "paths":
-          [
+          "paths": [
             {
-              "title": "Path title",
-              "loveInterest": "(optional) One of the opposite-gender characters otherwise leave as null",
-              "keyChoices": "Comma-separated choices that alter the course of story",
-              "beginning": "Description of how this route begins",
-              "middle": "Description of conflict escalation and unexpected twists",
-              "climax": "Description of the highest tension moment of this path",
-              "goodEnding": "Description of positive resolution",
-              "badEnding": "Description of negative outcome"
+              "title": "Path title (e.g. 'Path of Redemption')",
+              "loveInterest": ${pathTemplates[0]?.loveInterest ? `"${pathTemplates[0].loveInterest}"` : "null"},
+              "keyChoices": "Major decision points separated by commas",
+              "beginning": "How this story path begins",
+              "middle": "Mid-story conflicts and developments",
+              "climax": "The most intense moment in this path",
+              "goodEnding": "Positive resolution if player makes good choices",
+              "badEnding": "Negative outcome if player makes poor choices"
             }
+            ${indices.length > 1 ? ",\n            /* additional paths with same structure */" : ""}
           ]
         }
+        
+        Make each path distinct and compelling, with different story arcs, challenges, and themes.
+        Ensure paths align with the overall story context and character relationships.
       `;
 
       // Generate paths using Gemini
@@ -585,28 +597,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { projectContext } = generatePlotSchema.parse(req.body);
 
-      // Create prompt for the plot generation
+      // Create prompt for the plot generation - directly matching our expected format
       const prompt = `Given this story context:
         ${JSON.stringify(projectContext, null, 2)}
-        Return a master plot outline in a JSON as structured:
+        Return a JSON object with 5 acts (act1 through act5) with NO plotOutline wrapper. Format as follows:
         {
-          "plotOutline": {
-            "act1": {
-              "title": "Act 1 Title",
-              "summary": "Brief overview of Act 1",
-              "events": ["Event 1", "Event 2", "Event 3", "Event 4", "Event 5"],
-              "arcsActivated": ["route1", "route2"],
-              "arcIntersections": ["Intersection 1", "Intersection 2"],
-              "playerChoices": ["Choice 1 - Consequences", "Choice 2 - Consequences"]
-            },
-            "act2": {...},
-            "act3": {...},
-            "act4": {...},
-            "act5": {...}
-          }
+          "act1": {
+            "title": "Act 1 Title",
+            "summary": "Brief overview of Act 1",
+            "events": ["Event 1", "Event 2", "Event 3", "Event 4", "Event 5"],
+            "arcsActivated": ["Include route titles from pathsData"],
+            "arcIntersections": ["Intersection 1", "Intersection 2"],
+            "playerChoices": ["Choice 1 - Consequences", "Choice 2 - Consequences"]
+          },
+          "act2": {/* same structure as act1 */},
+          "act3": {/* same structure as act1 */},
+          "act4": {/* same structure as act1 */},
+          "act5": {/* same structure as act1 */}
         }
-        Structure the plot into 5 acts: Introduction, Rising Action, Midpoint Twist, Escalating Conflict, Resolution/Endings.
-        Be descriptive and inventive about events in order to flesh out the story.
+        
+        Make the 5 acts follow this structure: Introduction, Rising Action, Midpoint Twist, Escalating Conflict, Resolution/Endings.
+        Be descriptive and imaginative about events to create a rich visual novel story.
       `;
 
       // Generate plot using Gemini
@@ -633,89 +644,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { actNumber, scenesCount, projectContext } =
         generateActSchema.parse(req.body);
 
-      // Create prompt for the act generation
-      const prompt = `You are tasked with bringing this story to life:
+      // Create prompt for the act generation - directly matching our expected format
+      const prompt = `You are tasked with creating scenes for Act ${actNumber} based on this story context:
         ${JSON.stringify(projectContext, null, 2)}
-        Create scenes for Act ${actNumber} of the plot outline and return a JSON as structured:
+        
+        Generate a visual novel act structure in JSON with the exact format below:
         {
           "act": ${actNumber},
           "scenes": [
             {
               "name": "Act ${actNumber} Scene 1",
-              "setting": "Name of the location (and optionally, time of day)",
-              "image_prompt": "Detailed background description for AI image generation",
+              "setting": "Detailed location description",
+              "image_prompt": "Detailed visual description for AI image generation",
               "dialogue": [
-                ["Narrator", "text"]
-                ["Character Name", "text"],
-                ["Another Character", "text"]
+                ["Narrator", "Descriptive text about the scene"],
+                ["Character Name", "Character dialogue"],
+                ["Another Character", "Response dialogue"]
               ],
               "choices": [
                 {
-                  "text": "Choice text displayed to player",
-                  "description": "Optional: brief description of choice consequences",
-                  "delta": {"character1": 1, "character2": -1},
-                  "next": "Act ${actNumber} Scene 1a"
+                  "text": "Choice option text",
+                  "description": "Brief explanation of consequences",
+                  "delta": {"characterName": 1, "anotherCharacter": -1},
+                  "next": "Act ${actNumber} Scene 2"
                 },
                 {
-                  "text": "Alternative choice text",
-                  "delta": {"character2": 1},
-                  "next": "Act ${actNumber} Scene 1b"
-                }
-                {
-                  "text": "Alternative choice text",
-                  "next": "Act ${actNumber} Scene 2"
+                  "text": "Alternative choice",
+                  "delta": {"characterName": -1},
+                  "next": "Act ${actNumber} Scene 3"
                 }
               ]
-            }
-          ]
-        }
-        Instructions:
-        - Do not generate any other act except Act ${actNumber}.
-        - Create approximately ${scenesCount} scenes for Act ${actNumber}, or more if necessary to convey Act ${actNumber}.
-        - Include branching paths based on 2-4 choices. Choices that continue the dialogue conversation in the same scene are marked with a letter e.g. Act ${actNumber} Scene 1b (although they are technically different scenes).
-        - Final scene of act should have choices set to null value. Otherwise, ensure the scene has a choice that connects to another valid scene name.
-        - Relationships, inventory items, or skills can be added or subtracted by "delta" values.
-        - Pack each scene with ample dialogue to express the story (5-15+ lines). Be inventive and creative about event details, while ensuring consistency with the plot outline.
-        - Use of a narrator is encouraged to explain the scene or provide context.
-        - The protagonist may think in parentheses.
-        - Unknown characters are named "???" until revealed.
-        - "image_prompt" is only required when visiting the setting for the first time.
-        - Maintain the given tone (${projectContext.basics.tone}) consistent with the story context.
-        - You may optionally include [emotion] or [action] tags in dialogue when it enhances the scene.
-        - If a choice increases or decreases a relationship, reflect it subtly in the dialogue tone.
-        - Some choices may succeed or fail based on condition of relationship values, items, or skills. To do this, add a "condition" value in the choice (see below).
-        Here is a sample scene that blocks paths based on relationship requirements. Player tries to enter the engine room, but cannot due to his relationship value with Bruno being less than 2. If player has at least 2 points with Bruno, they proceed to the "failNext" scene 2-5a. Otherwise, they proceed to "next" scene 2-5b. 
-        {
-          "name": "Act ${actNumber} Scene 5",
-          "setting": "Engine Room",
-          "image_prompt":"dimly lit engine room, flickering valves, massive pressure dials, creaking pipes overhead"
-          "dialogue": [
-          ["Bruno", "Only someone I trust can see this."]
-          ],
-          "choices": [
-            {
-              "text": "Try to enter the engine room",
-              "condition": { "bruno": 2 },
-              "next": "Act ${actNumber} Scene 5a",
-              "failNext": "Act ${actNumber} Scene 5b" 
             },
             {
-              "text": "Ask how to earn his trust",
-              "next": "Act ${actNumber} Scene 5c"
+              "name": "Act ${actNumber} Scene 2",
+              "setting": "New location",
+              "dialogue": [/* dialogue array */],
+              "choices": [/* more choices */]
             }
+            /* Include approximately ${scenesCount} scenes */
           ]
-        },
-        {
-          "name": "Act ${actNumber} Scene 5b",
-          "image_prompt": "blocked door",
-          "dialogue": [
-          ["Bruno", "Not yet. You're not ready."]
-          ]
-          ...
         }
 
-        - You may take creative liberties when stumbling upon any unclear points.
-        - And lastly, keep it engaging and exciting for a young audience!
+        Important guidelines:
+        1. Use branching paths with 2-3 choices per scene
+        2. Final scene should have choices: null
+        3. Include relationship changes via delta values
+        4. Use plenty of dialogue (10-15 lines per scene)
+        5. Use "???" for mystery characters
+        6. Include image_prompt only for new settings
+        7. For conditional choices, use this format:
+           {
+             "text": "Try to convince guard",
+             "condition": {"guardRelationship": 2},
+             "next": "Success Scene",
+             "failNext": "Failure Scene"
+           }
+        
+        Keep the tone ${projectContext.basicData?.tone || 'consistent with the story'} and make it engaging!
       `;
 
       // Generate act using Gemini
@@ -751,8 +736,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const { scene, imageType, optimizeForMobile } =
-        req.body;
+      const { scene, imageType, optimizeForMobile } = req.body;
 
       // Parse with the schema, but allow forceReal and optimizeForMobile to pass through
       generateImageSchema.parse({ scene, imageType });
