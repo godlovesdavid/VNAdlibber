@@ -86,7 +86,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   // Create a new project
   const createNewProject = () => 
   {
-    // First create a clean minimal basic structure with completely empty values
+    // First create a clean minimal basic structure
     const initialProject: VnProjectData = {
       title: "Untitled Project",
       createdAt: new Date().toISOString(),
@@ -97,35 +97,20 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         genre: "",
         setting: "",
       },
-      // Reset all optional fields to undefined to ensure form components start fresh
-      conceptData: undefined,
-      charactersData: undefined,
-      protagonist: undefined,
-      pathsData: undefined,
-      plotData: undefined,
-      generatedActs: undefined,
-      playerData: undefined,
       currentStep: 1
     };
     
     // Clear any existing project data
     try 
     {
-      // Explicitly clear all browser storage to prevent cached data
-      localStorage.clear();
-      sessionStorage.clear();
+      // Remove old data from storage
+      localStorage.removeItem("current_vn_project");
       
       // Set a flag to indicate this is a fresh project that needs randomization
       sessionStorage.setItem('vn_fresh_project', 'true');
       
       // Important: Set the new project data in localStorage FIRST, before updating state
       localStorage.setItem("current_vn_project", JSON.stringify(initialProject));
-      
-      // Force a full page refresh to clear all form state
-      if (typeof window !== 'undefined') {
-        window.location.href = '/create/basic';
-        return; // Return early since we're redirecting
-      }
     } 
     catch (e) 
     {
@@ -143,12 +128,15 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     setProjectData(initialProject);
     resetPlayerData();
     
-    // In case the early return above didn't execute (e.g., in a testing environment)
-    // Still update the state
-    return;
+    // Navigate to the first step
+    setLocation("/create/basic");
     
-    // This code won't execute due to the early return above
-    // It's kept here for reference but is unreachable
+    // Show confirmation toast
+    toast({
+      title: "New Project Created",
+      description: "Starting with a fresh project",
+      duration: 3000,
+    });
   };
   
   // Step data setters

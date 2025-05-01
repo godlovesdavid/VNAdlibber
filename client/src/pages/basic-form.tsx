@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { toast } from "@/hooks/use-toast";
 
 // Arrays for each dropdown type
 const tones = [
@@ -27,7 +26,7 @@ const tones = [
   "suspenseful",
   "tragicomic",
   "uplifting",
-  "whimsical",
+  "whimsical"
 ];
 
 const genres = [
@@ -39,7 +38,7 @@ const genres = [
   "thriller",
   "comedy",
   "horror",
-  "drama",
+  "drama"
 ];
 
 const themes = [
@@ -51,7 +50,7 @@ const themes = [
   "revenge_and_justice",
   "technology_vs_humanity",
   "sacrifice",
-  "trust_and_betrayal",
+  "trust_and_betrayal"
 ];
 
 const settings = [
@@ -69,7 +68,7 @@ const settings = [
   "haunted_place",
   "countryside",
   "post_apocalypse",
-  "virtual_reality",
+  "virtual_reality"
 ];
 
 // Helper function to get a random item from an array
@@ -79,7 +78,7 @@ function getRandomItem(array: string[]): string {
 
 export default function BasicForm() {
   const [, setLocation] = useLocation();
-  const { projectData, setBasicData, createNewProject } = useVnContext();
+  const { projectData, setBasicData } = useVnContext();
 
   // Use state with empty default values
   const [theme, setTheme] = useState("");
@@ -152,17 +151,15 @@ export default function BasicForm() {
   const handleManualReset = () => {
     console.log("Manual reset requested");
 
-    // Clear all browser storage explicitly
+    // Clear all browser storage
     localStorage.clear();
     sessionStorage.clear();
 
-    // Set a flag to indicate this is a fresh project that needs randomization
-    sessionStorage.setItem("vn_fresh_project", "true");
+    // Randomize form values
+    randomizeForm();
 
-    // Use window location for a full page reload to clear all form state
-    window.location.href = "/create/basic";
-
-    // Toast will be shown after the redirect
+    // Show confirmation
+    window.alert("Form values manually reset and randomized.");
   };
 
   // We no longer need this effect as we handle initialization in the projectData effect
@@ -241,7 +238,7 @@ export default function BasicForm() {
 
                   {/* Tone Dropdown */}
                   <div className="inline-block">
-                    <Select value={tone} onValueChange={setTone} required>
+                    <Select value={tone} onValueChange={setTone}>
                       <SelectTrigger className="w-44 h-8 text-base border-b-2 border-blue-500 rounded-none bg-transparent focus:ring-0">
                         <SelectValue placeholder="tone" />
                       </SelectTrigger>
@@ -265,7 +262,7 @@ export default function BasicForm() {
 
                   {/* Genre Dropdown */}
                   <div className="inline-block">
-                    <Select value={genre} onValueChange={setGenre} required>
+                    <Select value={genre} onValueChange={setGenre}>
                       <SelectTrigger className="w-44 h-8 text-base border-b-2 border-green-500 rounded-none bg-transparent focus:ring-0">
                         <SelectValue placeholder="genre" />
                       </SelectTrigger>
@@ -289,7 +286,7 @@ export default function BasicForm() {
 
                   {/* Theme Dropdown */}
                   <div className="inline-block">
-                    <Select value={theme} onValueChange={setTheme} required>
+                    <Select value={theme} onValueChange={setTheme}>
                       <SelectTrigger className="w-52 h-8 text-base border-b-2 border-purple-500 rounded-none bg-transparent focus:ring-0">
                         <SelectValue placeholder="theme" />
                       </SelectTrigger>
@@ -321,7 +318,7 @@ export default function BasicForm() {
 
                   {/* Setting Dropdown */}
                   <div className="inline-block">
-                    <Select value={setting} onValueChange={setSetting} required>
+                    <Select value={setting} onValueChange={setSetting}>
                       <SelectTrigger className="w-52 h-8 text-base border-b-2 border-amber-500 rounded-none bg-transparent focus:ring-0">
                         <SelectValue placeholder="setting" />
                       </SelectTrigger>
