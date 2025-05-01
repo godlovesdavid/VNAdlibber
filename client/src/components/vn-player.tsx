@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useVnContext } from "@/context/vn-context";
 import { cn } from "@/lib/utils";
 import { PlayerNavbar } from "@/components/player-navbar";
@@ -172,8 +172,8 @@ export function VnPlayer({
   onRestart: externalRestart,
   mode = "generated",
 }: VnPlayerProps) {
-  // Convert the actData to the format expected by the player
-  const actData = convertActFormat(rawActData);
+  // Convert the actData to the format expected by the player using useMemo to prevent re-calculation on every render
+  const actData = useMemo(() => convertActFormat(rawActData), [rawActData]);
   
   // Debug log the conversion
   useEffect(() => {
@@ -327,7 +327,7 @@ export function VnPlayer({
       setDisplayedText(""); // Clear any previous text
       animateText(firstScene.dialogue[0][1]);
     }
-  }, [actData, mode]);
+  }, [actData, mode, animateText]);
 
 
   // Update current scene when scene ID changes
@@ -346,7 +346,7 @@ export function VnPlayer({
       }
       shouldGenerateImage.current = true;
     }
-  }, [actData, currentSceneId, animateText, mode]);
+  }, [actData, currentSceneId, animateText, mode, setCurrentScene, setCurrentDialogueIndex, setShowChoices, setDisplayedText, shouldGenerateImage]);
 
   // Handle restart
   const handleRestart = useCallback(() => {
@@ -364,7 +364,7 @@ export function VnPlayer({
       setDisplayedText(""); // Clear any previous text
       animateText(actData.scenes[0].dialogue[0][1]);
     }
-  }, [actData, animateText, mode]);
+  }, [actData, animateText, mode, setCurrentScene, setCurrentSceneId, setCurrentDialogueIndex, setShowChoices, setDialogueLog, setDisplayedText]);
 
   // Handle advancing to next dialogue or showing choices
   const advanceDialogue = useCallback(() => {
