@@ -615,15 +615,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { actNumber, scenesCount, projectContext } =
         generateActSchema.parse(req.body);
 
-      // Create prompt for the act generation - directly matching our expected format
+      // Create prompt for the act generation - {act1: {scene1: {...}}} format
       const prompt = `You are tasked with creating scenes for Act ${actNumber} based on this story context:
         ${JSON.stringify(projectContext, null, 2)}
         
         Generate a visual novel act structure in JSON with the exact format below:
         {
-          "act": ${actNumber},
-          "scenes": [
-            {
+          "act${actNumber}": {
+            "scene1": {
               "name": "Act ${actNumber} Scene 1",
               "setting": "Detailed location description",
               "image_prompt": "Detailed visual description for AI image generation",
@@ -637,23 +636,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   "text": "Choice option text",
                   "description": "Brief explanation of consequences",
                   "delta": {"characterName": 1, "anotherCharacter": -1},
-                  "next": "Act ${actNumber} Scene 2"
+                  "next": "scene2"
                 },
                 {
                   "text": "Alternative choice",
                   "delta": {"characterName": -1},
-                  "next": "Act ${actNumber} Scene 3"
+                  "next": "scene3"
                 }
               ]
             },
-            {
+            "scene2": {
               "name": "Act ${actNumber} Scene 2",
               "setting": "New location",
               "dialogue": [/* dialogue array */],
               "choices": [/* more choices */]
             }
-            /* Include approximately ${scenesCount} scenes */
-          ]
+            /* Include approximately ${scenesCount} scenes, named scene1, scene2, scene3, etc. */
+          }
         }
 
         Important guidelines:
@@ -663,12 +662,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         4. Use plenty of dialogue (10-15 lines per scene)
         5. Use "???" for mystery characters
         6. Include image_prompt only for new settings
-        7. For conditional choices, use this format:
+        7. All scene keys must be sceneN where N is a number (scene1, scene2, etc.)
+        8. The 'next' property in choices must refer to scene keys (scene1, scene2, etc.) not full scene names
+        9. For conditional choices, use this format:
            {
              "text": "Try to convince guard",
              "condition": {"guardRelationship": 2},
-             "next": "Success Scene",
-             "failNext": "Failure Scene"
+             "next": "scene5",
+             "failNext": "scene6"
            }
         
         Keep the tone ${projectContext.basicData?.tone || 'consistent with the story'} and make it engaging!

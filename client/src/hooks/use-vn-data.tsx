@@ -454,16 +454,16 @@ export const useVnData = () => {
       // Clear the abort controller
       setAbortController(null);
       
-      // If the result doesn't have plotOutline property but has a different structure,
-      // try to transform it to match our expected object-based pattern
-      if (!result.plotOutline && result.plotActs) {
-        console.log('Converting plotActs to plotOutline format');
+      // Since we're now getting the data directly in {act1: {...}} format from the server,
+      // we need to wrap it in the plotOutline property that the client expects
+      if (result && Object.keys(result).some(key => key.startsWith('act'))) {
+        console.log('Received direct act data, wrapping in plotOutline');
         return {
-          plotOutline: result.plotActs
+          plotOutline: result
         };
       }
       
-      // Return the result as is
+      // Return the result as is if it already has the right structure
       return result;
     } catch (error: any) {
       if ((error as Error).name !== "AbortError") {
