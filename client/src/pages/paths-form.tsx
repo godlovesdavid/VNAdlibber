@@ -56,10 +56,11 @@ export default function PathsForm() {
   useEffect(() => {
     if (projectData?.pathsData && Object.keys(projectData.pathsData).length > 0) {
       // Convert from object to array format for the form
+      // Since we removed the title property from stored routes, we need to add it back for UI display
       const routesArray = Object.entries(projectData.pathsData).map(
         ([title, route]) => ({
           ...route,
-          title // Ensure title is set properly
+          title // Add the title from the key for the form
         })
       );
       setRoutes(routesArray);
@@ -195,7 +196,10 @@ export default function PathsForm() {
         const pathsObj: Record<string, Route> = {};
         updatedRoutes.forEach(route => {
           if (route.title) {
-            pathsObj[route.title] = { ...route };
+            // Create a copy of the route without the redundant title property
+            const { title, ...routeWithoutTitle } = route;
+            // Store with title as key but don't include title in the value
+            pathsObj[title] = routeWithoutTitle;
           }
         });
         
@@ -242,7 +246,10 @@ export default function PathsForm() {
     const pathsObj: Record<string, Route> = {};
     routes.forEach(route => {
       if (route.title) {
-        pathsObj[route.title] = { ...route };
+        // Create a copy of the route without the redundant title property
+        const { title, ...routeWithoutTitle } = route;
+        // Store with title as key but don't include title in the value
+        pathsObj[title] = routeWithoutTitle;
       }
     });
     

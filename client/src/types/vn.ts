@@ -33,7 +33,7 @@ export interface CharactersData {
 
 // Definition of a story route
 export interface Route {
-  title: string;
+  title?: string; // Make title optional since it's used as the key in PathsData
   loveInterest: string | null;
   keyChoices: string; // Changed from array to a single text area
   beginning: string;
