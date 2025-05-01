@@ -101,9 +101,12 @@ export default function BasicForm() {
 
   // Function to reset the form
   const resetForm = () => {
+    // Don't automatically randomize on reset, just clear values
     console.log("Resetting form values");
-    // For new forms, we want random values instead of empty ones
-    randomizeForm();
+    setTheme("");
+    setTone("");
+    setGenre("");
+    setSetting("");
   };
 
   // Load or reset form values based on projectData
@@ -115,21 +118,27 @@ export default function BasicForm() {
     if (isNewProject) {
       console.log("New project flag found, resetting form");
       sessionStorage.removeItem("vn_fresh_project");
-      resetForm();
+      randomizeForm();
       return;
     }
 
-    // If we have project data, use it
+    // If we have project data, use it without randomizing
     if (projectData?.basicData) {
       console.log("Loading existing project data", projectData.basicData);
       setTheme(projectData.basicData.theme || "");
       setTone(projectData.basicData.tone || "");
       setGenre(projectData.basicData.genre || "");
       setSetting(projectData.basicData.setting || "");
+      // Explicitly set initialized to true to prevent auto-randomization
+      setInitialized(true);
     } else {
-      // Otherwise clear the form
-      console.log("No project data found, resetting form");
-      resetForm();
+      // Only randomize for completely new projects, not navigation
+      console.log("No project data found, creating empty form");
+      setTheme("");
+      setTone("");
+      setGenre("");
+      setSetting("");
+      setInitialized(true); // Prevent auto-randomization
     }
   }, [projectData?.basicData]);
 
@@ -153,22 +162,8 @@ export default function BasicForm() {
     window.alert("Form values manually reset and randomized.");
   };
 
-  // Initialize the form with random values only for new projects
-  useEffect(() => {
-    const isNewProject = sessionStorage.getItem("vn_fresh_project") === "true";
-    
-    // Only randomize if it's a new project or if all fields are empty
-    if (isNewProject || (!initialized && !theme && !tone && !genre && !setting)) {
-      console.log("Initializing form with random values");
-      randomizeForm();
-      setInitialized(true);
-      
-      // Clear the fresh project flag after using it
-      if (isNewProject) {
-        sessionStorage.removeItem("vn_fresh_project");
-      }
-    }
-  }, [initialized, theme, tone, genre, setting]);
+  // We no longer need this effect as we handle initialization in the projectData effect
+  // This was causing the duplicate randomization
 
   // Proceed to next step
   const handleNext = () => {
