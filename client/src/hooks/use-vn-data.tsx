@@ -422,14 +422,16 @@ export const useVnData = () => {
 
       // STEP 2: Generate the plot after validation passes
       // Use the API directly instead of the wrapper function
+      // Ensure we use consistent property names between frontend and backend
       const generationResponse = await apiRequest(
         "POST",
         "/api/generate/plot",
         { projectContext: {
-          basics: vnContext.projectData.basicData,
-          concept: vnContext.projectData.conceptData,
-          characters: vnContext.projectData.charactersData,
-          paths: vnContext.projectData.pathsData,
+          // Use property names that match what the server expects
+          basicData: vnContext.projectData.basicData,
+          conceptData: vnContext.projectData.conceptData,
+          charactersData: vnContext.projectData.charactersData,
+          pathsData: vnContext.projectData.pathsData,
         } },
         controller.signal,
       );
@@ -440,10 +442,28 @@ export const useVnData = () => {
         return null;
       }
 
+      // Parse the API response
       const result = await generationResponse.json();
-
+      
+      // Log the structure for debugging purposes
+      console.log('Plot generation response structure:', 
+        Object.keys(result).length > 0 
+          ? Object.keys(result) 
+          : 'Empty response');
+      
+      // Clear the abort controller
       setAbortController(null);
-
+      
+      // If the result doesn't have plotOutline property but has a different structure,
+      // try to transform it to match our expected object-based pattern
+      if (!result.plotOutline && result.plotActs) {
+        console.log('Converting plotActs to plotOutline format');
+        return {
+          plotOutline: result.plotActs
+        };
+      }
+      
+      // Return the result as is
       return result;
     } catch (error: any) {
       if ((error as Error).name !== "AbortError") {
@@ -552,11 +572,12 @@ export const useVnData = () => {
             actNumber,
             scenesCount,
             projectContext: {
-                basics: vnContext.projectData.basicData,
-                concept: vnContext.projectData.conceptData,
-                characters: vnContext.projectData.charactersData,
-                paths: vnContext.projectData.pathsData,
-                plot: vnContext.projectData.plotData,
+                // Use consistent property names that match what the server expects
+                basicData: vnContext.projectData.basicData,
+                conceptData: vnContext.projectData.conceptData,
+                charactersData: vnContext.projectData.charactersData,
+                pathsData: vnContext.projectData.pathsData,
+                plotData: vnContext.projectData.plotData,
               },
           },
           controller.signal,
@@ -647,8 +668,9 @@ export const useVnData = () => {
           {
             characterTemplates,
             projectContext: {
-              basics: vnContext.projectData.basicData,
-              concept: vnContext.projectData.conceptData,
+              // Use consistent property names that match what the server expects
+              basicData: vnContext.projectData.basicData,
+              conceptData: vnContext.projectData.conceptData,
             },
           },
           controller.signal,
@@ -808,9 +830,10 @@ export const useVnData = () => {
           {
             pathTemplates,
             projectContext: {
-                basics: vnContext.projectData.basicData,
-                concept: vnContext.projectData.conceptData,
-                characters: vnContext.projectData.charactersData,
+                // Use consistent property names that match what the server expects
+                basicData: vnContext.projectData.basicData,
+                conceptData: vnContext.projectData.conceptData,
+                charactersData: vnContext.projectData.charactersData,
               },
           },
           controller.signal,
