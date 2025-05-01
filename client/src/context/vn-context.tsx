@@ -95,6 +95,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         theme: "",
         tone: "",
         genre: "",
+        setting: "",
       },
       currentStep: 1
     };
@@ -104,7 +105,9 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     {
       // Remove old data from storage
       localStorage.removeItem("current_vn_project");
-      sessionStorage.removeItem('vn_fresh_project');
+      
+      // Set a flag to indicate this is a fresh project that needs randomization
+      sessionStorage.setItem('vn_fresh_project', 'true');
       
       // Important: Set the new project data in localStorage FIRST, before updating state
       localStorage.setItem("current_vn_project", JSON.stringify(initialProject));

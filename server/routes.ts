@@ -401,7 +401,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         Return in this exact JSON format:
         {
           "title": "Captivating and unique title",
-          "tagline": "Brief, memorable catchphrase under 10 words",
+          "tagline": "Brief, memorable catchphrase",
           "premise": "Detailed premise describing the world, main conflict, and core story without specific character names"
         }
         
@@ -571,7 +571,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create prompt for the plot generation - directly matching our expected format
       const prompt = `Given this story context:
         ${JSON.stringify(projectContext, null, 2)}
-        Return a JSON object with 5 acts (act1 through act5) with NO plotOutline wrapper. Format as follows:
+        Return a JSON object with 5 acts (act1 through act5). Format as follows:
         {
           "act1": {
             "title": "Act 1 Title",

@@ -153,12 +153,20 @@ export default function BasicForm() {
     window.alert("Form values manually reset and randomized.");
   };
 
-  // Initialize the form with random values when first loaded
+  // Initialize the form with random values only for new projects
   useEffect(() => {
-    if (!initialized && !theme && !tone && !genre && !setting) {
+    const isNewProject = sessionStorage.getItem("vn_fresh_project") === "true";
+    
+    // Only randomize if it's a new project or if all fields are empty
+    if (isNewProject || (!initialized && !theme && !tone && !genre && !setting)) {
       console.log("Initializing form with random values");
       randomizeForm();
       setInitialized(true);
+      
+      // Clear the fresh project flag after using it
+      if (isNewProject) {
+        sessionStorage.removeItem("vn_fresh_project");
+      }
     }
   }, [initialized, theme, tone, genre, setting]);
 
