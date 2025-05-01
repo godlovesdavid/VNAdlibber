@@ -254,7 +254,6 @@ export default function BasicForm() {
                         <SelectItem value="tragicomic">tragicomic</SelectItem>
                         <SelectItem value="uplifting">uplifting</SelectItem>
                         <SelectItem value="whimsical">whimsical</SelectItem>
-                        <SelectItem value="whimsical">whimsical</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

@@ -123,28 +123,35 @@ export const useVnData = () => {
           return null;
         }
 
-        // Return just the first character since we only requested one
-        // Ensure the character data has no nested objects that might cause issues
-        if (Array.isArray(result) && result.length > 0) {
-          const character = result[0];
-          console.log("Processing generated character:", character);
+        // The result is an object where the keys are character names
+        // We need to extract the first character and its name
+        if (result && typeof result === 'object') {
+          // Get the first key (character name) from the object
+          const characterNames = Object.keys(result);
           
-          // Clean character data to ensure no nested objects
-          const cleanCharacter = Object.entries(character)
-            .filter(([key]) => isNaN(Number(key))) // Remove any numeric keys
-            .reduce((obj, [key, value]) => {
-              // For non-null objects, convert to string unless it's relationshipPotential
-              if (typeof value === 'object' && value !== null && key !== 'relationshipPotential') {
-                console.warn(`Converting nested object in ${key} to string:`, value);
-                obj[key] = JSON.stringify(value);
-              } else {
-                obj[key] = value;
-              }
-              return obj;
-            }, {} as Record<string, any>);
+          if (characterNames.length > 0) {
+            const characterName = characterNames[0];
+            const character = result[characterName];
             
-          console.log("Cleaned character data:", cleanCharacter);
-          return cleanCharacter;
+            console.log("Processing generated character:", characterName, character);
+            
+            // Clean character data to ensure no nested objects
+            const cleanCharacter = Object.entries(character)
+              .filter(([key]) => isNaN(Number(key))) // Remove any numeric keys
+              .reduce((obj, [key, value]) => {
+                // For non-null objects, convert to string unless it's relationshipPotential
+                if (typeof value === 'object' && value !== null && key !== 'relationshipPotential') {
+                  console.warn(`Converting nested object in ${key} to string:`, value);
+                  obj[key] = JSON.stringify(value);
+                } else {
+                  obj[key] = value;
+                }
+                return obj;
+              }, {} as Record<string, any>);
+              
+            console.log("Cleaned character data:", cleanCharacter);
+            return cleanCharacter;
+          }
         }
         
         return null;
@@ -289,8 +296,22 @@ export const useVnData = () => {
 
         setAbortController(null);
 
-        // Return just the first path since we only requested one
-        return Array.isArray(result) && result.length > 0 ? result[0] : null;
+        // The result is an object where the keys are path titles
+        // We need to extract the first path and its title
+        if (result && typeof result === 'object') {
+          // Get the first key (path title) from the object
+          const pathTitles = Object.keys(result);
+          
+          if (pathTitles.length > 0) {
+            const pathTitle = pathTitles[0];
+            const path = result[pathTitle];
+            
+            console.log("Processing generated path:", pathTitle, path);
+            return path;
+          }
+        }
+        
+        return null;
       } catch (error: any) {
         if ((error as Error).name !== "AbortError") {
           // Try to extract error message from the error response if it exists
