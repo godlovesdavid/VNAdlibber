@@ -276,6 +276,12 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const setGeneratedAct = (actNumber: number, data: GeneratedAct) => {
     if (!projectData) return;
     
+    // Debug log to inspect the format of the received data
+    console.log(`Setting generated act ${actNumber} with data format:`, 
+      Object.keys(data).length > 0 && !Array.isArray((data as any).scenes)
+        ? 'Nested format' 
+        : 'Legacy array format');
+    
     setProjectData({
       ...projectData,
       generatedActs: {
