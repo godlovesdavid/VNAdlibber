@@ -14,7 +14,15 @@ export function MainMenu() {
 
   // Handle creating a new story
   const handleCreateNewStory = () => {
-    createNewProject();
+    // Clear all storage first
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Set a flag to indicate this is a fresh project that needs randomization
+    sessionStorage.setItem('vn_fresh_project', 'true');
+    
+    // Use direct window.location for a full page refresh to guarantee all state is cleared
+    window.location.href = '/create/basic';
   };
 
   // Handle loading project dialog

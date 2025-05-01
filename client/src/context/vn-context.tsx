@@ -143,28 +143,12 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     setProjectData(initialProject);
     resetPlayerData();
     
-    // Force a full page refresh to clear all in-memory state
-    if (typeof window !== 'undefined') {
-      // First set the location to the basic form page
-      window.location.href = '/create/basic'; 
-      
-      // Force reload the page to clear all React state
-      // This will cause a full page refresh, but it's the most reliable way to clear all forms
-      setTimeout(() => {
-        window.location.reload();
-      }, 100);
-      return; // Return early since we're redirecting
-    } else {
-      // Fallback if we can't do a full refresh
-      setLocation("/create/basic");
-    }
+    // In case the early return above didn't execute (e.g., in a testing environment)
+    // Still update the state
+    return;
     
-    // Show confirmation toast
-    toast({
-      title: "New Project Created",
-      description: "Starting with a fresh project",
-      duration: 3000,
-    });
+    // This code won't execute due to the early return above
+    // It's kept here for reference but is unreachable
   };
   
   // Step data setters
