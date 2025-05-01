@@ -55,16 +55,26 @@ export default function PlotForm() {
     const generatedPlot = await generatePlotData();
 
     if (generatedPlot && generatedPlot.plotOutline) {
+      // Store the generated plot outline in our state
+      // This follows the object-based storage pattern we're implementing throughout the app
       setPlotActs(generatedPlot.plotOutline);
 
-      // Expand the first act after generation
+      // Expand the first act after generation to show the user results immediately
       setExpandedActs({
         ...expandedActs,
         act1: true,
       });
 
-      // Log generation to console
-      console.log("Generated plot outline:", generatedPlot);
+      // Log generation to console for debugging
+      console.log("Generated plot outline using object-based pattern:", generatedPlot.plotOutline);
+    } else if (generatedPlot) {
+      // Handle case where server might return data without the expected structure
+      console.error("Unexpected plot data format:", generatedPlot);
+      toast({
+        title: "Generation Error",
+        description: "The plot data format was unexpected. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
