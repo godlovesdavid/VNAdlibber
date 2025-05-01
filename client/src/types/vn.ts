@@ -28,7 +28,7 @@ export interface Character {
 
 // Characters data containing all characters
 export interface CharactersData {
-  characters: Character[];
+  [name: string]: Character;
 }
 
 // Definition of a story route
@@ -45,7 +45,7 @@ export interface Route {
 
 // Paths data containing all routes
 export interface PathsData {
-  routes: Route[];
+  [title: string]: Route;
 }
 
 // Structure for plot acts
@@ -60,13 +60,11 @@ export interface PlotAct {
 
 // Plot outline structure
 export interface PlotData {
-  plotOutline: {
-    act1: PlotAct;
-    act2: PlotAct;
-    act3: PlotAct;
-    act4: PlotAct;
-    act5: PlotAct;
-  };
+  act1: PlotAct;
+  act2: PlotAct;
+  act3: PlotAct;
+  act4: PlotAct;
+  act5: PlotAct;
 }
 
 // Scene choice structure

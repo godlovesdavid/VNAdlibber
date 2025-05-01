@@ -49,11 +49,15 @@ export default function CharactersForm() {
 
   // Load existing data if available
   useEffect(() => {
-    if (
-      projectData?.charactersData?.characters &&
-      projectData.charactersData.characters.length > 0
-    ) {
-      setCharacters(projectData.charactersData.characters);
+    if (projectData?.charactersData && Object.keys(projectData.charactersData).length > 0) {
+      // Convert from object to array format for the form
+      const charactersArray = Object.entries(projectData.charactersData).map(
+        ([name, character]) => ({
+          ...character,
+          name // Ensure name is set properly
+        })
+      );
+      setCharacters(charactersArray);
     }
   }, [projectData]);
 
@@ -128,9 +132,14 @@ export default function CharactersForm() {
         setCharacters(updatedCharacters);
 
         // Update the project context after character generation
-        setCharactersData({
-          characters: updatedCharacters,
+        const charactersObj: Record<string, Character> = {};
+        updatedCharacters.forEach(char => {
+          if (char.name) {
+            charactersObj[char.name] = { ...char };
+          }
         });
+        
+        setCharactersData(charactersObj);
 
         // Log generation to console
         console.log(`Generated character ${index + 1}:`, generatedCharacter);
@@ -209,9 +218,16 @@ export default function CharactersForm() {
 
         // Update state and project context
         setCharacters(updatedCharacters);
-        setCharactersData({
-          characters: updatedCharacters,
+        
+        // Convert to object format for storage
+        const charactersObj: Record<string, Character> = {};
+        updatedCharacters.forEach(char => {
+          if (char.name) {
+            charactersObj[char.name] = { ...char };
+          }
         });
+        
+        setCharactersData(charactersObj);
 
         console.log("Successfully generated all characters at once");
         console.log("Updated project context with all character data");
@@ -253,10 +269,15 @@ export default function CharactersForm() {
     //   return;
     // }
 
-    // Save data
-    setCharactersData({
-      characters,
+    // Save data - transform array to object format
+    const charactersObj: Record<string, Character> = {};
+    characters.forEach(char => {
+      if (char.name) {
+        charactersObj[char.name] = { ...char };
+      }
     });
+    
+    setCharactersData(charactersObj);
 
     // Navigate to next step
     setLocation("/create/paths");
