@@ -288,14 +288,16 @@ export default function PlotForm() {
                   {expandedActs.act1 && (
                     <div className="px-4 py-3">
                       <div className="space-y-3">
-                        <div>
-                          <h5 className="text-sm font-medium text-neutral-700">
-                            Title
-                          </h5>
-                          <p className="text-neutral-600">
-                            {plotActs.act1.title}
-                          </p>
-                        </div>
+                        {plotActs.act1.title && (
+                          <div>
+                            <h5 className="text-sm font-medium text-neutral-700">
+                              Title
+                            </h5>
+                            <p className="text-neutral-600">
+                              {plotActs.act1.title}
+                            </p>
+                          </div>
+                        )}
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
                             Summary
@@ -369,14 +371,16 @@ export default function PlotForm() {
                   {expandedActs.act2 && (
                     <div className="px-4 py-3">
                       <div className="space-y-3">
-                        <div>
-                          <h5 className="text-sm font-medium text-neutral-700">
-                            Title
-                          </h5>
-                          <p className="text-neutral-600">
-                            {plotActs.act2.title}
-                          </p>
-                        </div>
+                        {plotActs.act2.title && (
+                          <div>
+                            <h5 className="text-sm font-medium text-neutral-700">
+                              Title
+                            </h5>
+                            <p className="text-neutral-600">
+                              {plotActs.act2.title}
+                            </p>
+                          </div>
+                        )}
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
                             Summary
@@ -450,14 +454,16 @@ export default function PlotForm() {
                   {expandedActs.act3 && (
                     <div className="px-4 py-3">
                       <div className="space-y-3">
-                        <div>
-                          <h5 className="text-sm font-medium text-neutral-700">
-                            Title
-                          </h5>
-                          <p className="text-neutral-600">
-                            {plotActs.act3.title}
-                          </p>
-                        </div>
+                        {plotActs.act3.title && (
+                          <div>
+                            <h5 className="text-sm font-medium text-neutral-700">
+                              Title
+                            </h5>
+                            <p className="text-neutral-600">
+                              {plotActs.act3.title}
+                            </p>
+                          </div>
+                        )}
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
                             Summary
@@ -531,14 +537,16 @@ export default function PlotForm() {
                   {expandedActs.act4 && (
                     <div className="px-4 py-3">
                       <div className="space-y-3">
-                        <div>
-                          <h5 className="text-sm font-medium text-neutral-700">
-                            Title
-                          </h5>
-                          <p className="text-neutral-600">
-                            {plotActs.act4.title}
-                          </p>
-                        </div>
+                        {plotActs.act4.title && (
+                          <div>
+                            <h5 className="text-sm font-medium text-neutral-700">
+                              Title
+                            </h5>
+                            <p className="text-neutral-600">
+                              {plotActs.act4.title}
+                            </p>
+                          </div>
+                        )}
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
                             Summary
@@ -612,14 +620,16 @@ export default function PlotForm() {
                   {expandedActs.act5 && (
                     <div className="px-4 py-3">
                       <div className="space-y-3">
-                        <div>
-                          <h5 className="text-sm font-medium text-neutral-700">
-                            Title
-                          </h5>
-                          <p className="text-neutral-600">
-                            {plotActs.act5.title}
-                          </p>
-                        </div>
+                        {plotActs.act5.title && (
+                          <div>
+                            <h5 className="text-sm font-medium text-neutral-700">
+                              Title
+                            </h5>
+                            <p className="text-neutral-600">
+                              {plotActs.act5.title}
+                            </p>
+                          </div>
+                        )}
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
                             Summary
