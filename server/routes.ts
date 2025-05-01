@@ -157,6 +157,7 @@ const generateConceptSchema = z.object({
     theme: z.string(),
     tone: z.string(),
     genre: z.string(),
+    setting: z.string(),
   }),
 });
 
@@ -175,7 +176,6 @@ const generateImageSchema = z.object({
     name: z.string(),
     image_prompt: z.string(),
   }),
-  theme: z.string().optional(),
   imageType: z.enum(["background", "character"]).default("background"),
 });
 
@@ -395,6 +395,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         Theme: ${basicData.theme}
         Tone: ${basicData.tone}
         Genre: ${basicData.genre}
+        Setting: ${basicData.setting}
         
         Create a compelling visual novel concept based on these elements.
         Return in this exact JSON format:
@@ -451,8 +452,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             "relationshipPotential": ${indices.length == 1 && indices[0] == 0 ? "null" : '"Potential relationship dynamic with protagonist"'}, 
             "conflict": "Main personal struggle or challenge"
           }${indices.length > 1 ? "," : ""}
-          ${indices.length > 1 ? "\n  \"Another Character Name\": { ... }," : ""}
-          ${indices.length > 1 ? "\n  \"Third Character Name\": { ... }" : ""}
+          ${indices.length > 1 ? '\n  "Another Character Name": { ... },' : ""}
+          ${indices.length > 1 ? '\n  "Third Character Name": { ... }' : ""}
         }
         
         Make characters feel realistic, complex, and memorable with distinct personalities.
@@ -490,7 +491,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Parse the response
         const parsed = JSON.parse(fixedContent);
         console.log("Parsed character data:", parsed);
-        
+
         // Now we're expecting an object with character names as keys
         // No format conversion needed - returning the object directly
         res.json(parsed);
@@ -535,8 +536,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             "goodEnding": "Positive resolution if player makes good choices",
             "badEnding": "Negative outcome if player makes poor choices"
           }${indices.length > 1 ? "," : ""}
-          ${indices.length > 1 ? "\n  \"Another Path Title\": { ... }," : ""}
-          ${indices.length > 1 ? "\n  \"Third Path Title\": { ... }" : ""}
+          ${indices.length > 1 ? '\n  "Another Path Title": { ... },' : ""}
+          ${indices.length > 1 ? '\n  "Third Path Title": { ... }' : ""}
         }
         
         Make each path distinct and compelling, with different story arcs, challenges, and themes.
@@ -622,7 +623,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         Generate a visual novel act structure in JSON with the exact format below:
         {
           "scene1": {
-            "name": "Act ${actNumber} Scene 1",
             "setting": "Detailed location description",
             "image_prompt": "Detailed visual description for AI image generation",
             "dialogue": [
@@ -633,7 +633,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             "choices": [
               {
                 "text": "Choice option text",
-                "description": "Brief explanation of consequences",
+                "description": "(optional) Brief explanation of consequences",
                 "delta": {"characterName": 1, "anotherCharacter": -1},
                 "next": "scene2"
               },
@@ -645,7 +645,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ]
           },
           "scene2": {
-            "name": "Act ${actNumber} Scene 2",
             "setting": "New location",
             "dialogue": [/* dialogue array */],
             "choices": [/* more choices */]
@@ -670,7 +669,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
              "failNext": "scene6"
            }
         
-        Keep the tone ${projectContext.basicData?.tone || 'consistent with the story'} and make it engaging!
+        Keep the tone ${projectContext.basicData?.tone || "consistent with the story"} and make it engaging!
       `;
 
       // Generate act using Gemini

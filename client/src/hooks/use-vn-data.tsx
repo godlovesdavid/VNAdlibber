@@ -36,9 +36,9 @@ export const useVnData = () => {
       const controller = new AbortController();
       setAbortController(controller);
 
-      const { theme, tone, genre } = vnContext.projectData.basicData;
+      const { theme, tone, genre, setting } = vnContext.projectData.basicData;
       const result = await generateConcept(
-        { theme, tone, genre },
+        { theme, tone, genre, setting },
         controller.signal,
       );
 

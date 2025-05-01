@@ -24,7 +24,7 @@ const themes = [
   "revenge_and_justice",
   "technology_vs_humanity",
   "sacrifice",
-  "trust_and_betrayal"
+  "trust_and_betrayal",
 ];
 
 const tones = [
@@ -37,7 +37,7 @@ const tones = [
   "satirical",
   "suspenseful",
   "tragicomic",
-  "whimsical"
+  "whimsical",
 ];
 
 const genres = [
@@ -51,7 +51,7 @@ const genres = [
   "thriller",
   "comedy",
   "horror",
-  "drama"
+  "drama",
 ];
 
 const settings = [
@@ -69,7 +69,7 @@ const settings = [
   "scary_place",
   "countryside",
   "post_apocalypse",
-  "virtual_reality"
+  "virtual_reality",
 ];
 
 // Helper function to get a random item from an array
@@ -86,7 +86,7 @@ export default function BasicForm() {
   const [tone, setTone] = useState("");
   const [genre, setGenre] = useState("");
   const [setting, setSetting] = useState("");
-  
+
   // State to track if the form has been initialized with random values
   const [initialized, setInitialized] = useState(false);
 
@@ -202,14 +202,25 @@ export default function BasicForm() {
             {/* Sentence-style form with dropdowns */}
             <div className="bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-medium text-gray-700">Create Your Story</h3>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <h3 className="text-xl font-medium text-gray-700">
+                  Create Your Story
+                </h3>
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={randomizeForm}
                   className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-4 h-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <path d="M3 2v6h6"></path>
                     <path d="M3 13a9 9 0 0 0 9 9 9 9 0 0 0 6.75-3"></path>
                     <path d="M14 10h7"></path>
@@ -218,11 +229,11 @@ export default function BasicForm() {
                   Randomize All
                 </Button>
               </div>
-              
+
               <div className="text-lg leading-relaxed space-y-6">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-gray-700">Compose me a</span>
-                  
+
                   {/* Tone Dropdown */}
                   <div className="inline-block">
                     <Select value={tone} onValueChange={setTone}>
@@ -233,17 +244,21 @@ export default function BasicForm() {
                         <SelectItem value="adventurous">adventurous</SelectItem>
                         <SelectItem value="dark">dark</SelectItem>
                         <SelectItem value="gritty">gritty</SelectItem>
-                        <SelectItem value="lighthearted">lighthearted</SelectItem>
+                        <SelectItem value="lighthearted">
+                          lighthearted
+                        </SelectItem>
                         <SelectItem value="melancholic">melancholic</SelectItem>
                         <SelectItem value="romantic">romantic</SelectItem>
                         <SelectItem value="satirical">satirical</SelectItem>
                         <SelectItem value="suspenseful">suspenseful</SelectItem>
                         <SelectItem value="tragicomic">tragicomic</SelectItem>
+                        <SelectItem value="uplifting">uplifting</SelectItem>
+                        <SelectItem value="whimsical">whimsical</SelectItem>
                         <SelectItem value="whimsical">whimsical</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   {/* Genre Dropdown */}
                   <div className="inline-block">
                     <Select value={genre} onValueChange={setGenre}>
@@ -251,13 +266,13 @@ export default function BasicForm() {
                         <SelectValue placeholder="genre" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="cyberpunk">cyberpunk</SelectItem>
-                        <SelectItem value="steampunk">steampunk</SelectItem>
                         <SelectItem value="mystery">mystery</SelectItem>
                         <SelectItem value="romance">romance</SelectItem>
                         <SelectItem value="science_fiction">sci-fi</SelectItem>
-                        <SelectItem value="fantasy">fantasy</SelectItem>
-                        <SelectItem value="slice_of_life">slice of life</SelectItem>
+                        <SelectItem value="adventure">adventure</SelectItem>
+                        <SelectItem value="slice_of_life">
+                          slice of life
+                        </SelectItem>
                         <SelectItem value="thriller">thriller</SelectItem>
                         <SelectItem value="comedy">comedy</SelectItem>
                         <SelectItem value="horror">horror</SelectItem>
@@ -265,9 +280,9 @@ export default function BasicForm() {
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <span className="text-gray-700">about</span>
-                  
+
                   {/* Theme Dropdown */}
                   <div className="inline-block">
                     <Select value={theme} onValueChange={setTheme}>
@@ -276,20 +291,30 @@ export default function BasicForm() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="forgiveness">forgiveness</SelectItem>
-                        <SelectItem value="freedom_vs_control">freedom vs control</SelectItem>
+                        <SelectItem value="freedom_vs_control">
+                          freedom vs control
+                        </SelectItem>
                         <SelectItem value="growth">growth</SelectItem>
                         <SelectItem value="identity">identity</SelectItem>
-                        <SelectItem value="love_vs_duty">love vs duty</SelectItem>
-                        <SelectItem value="revenge_and_justice">revenge & justice</SelectItem>
-                        <SelectItem value="technology_vs_humanity">tech vs humanity</SelectItem>
+                        <SelectItem value="love_vs_duty">
+                          love vs duty
+                        </SelectItem>
+                        <SelectItem value="revenge_and_justice">
+                          revenge & justice
+                        </SelectItem>
+                        <SelectItem value="technology_vs_humanity">
+                          tech vs humanity
+                        </SelectItem>
                         <SelectItem value="sacrifice">sacrifice</SelectItem>
-                        <SelectItem value="trust_and_betrayal">trust & betrayal</SelectItem>
+                        <SelectItem value="trust_and_betrayal">
+                          trust & betrayal
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  
+
                   <span className="text-gray-700">set in</span>
-                  
+
                   {/* Setting Dropdown */}
                   <div className="inline-block">
                     <Select value={setting} onValueChange={setSetting}>
@@ -297,9 +322,15 @@ export default function BasicForm() {
                         <SelectValue placeholder="setting" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="cyberpunk_world">cyberpunk world</SelectItem>
-                        <SelectItem value="steampunk_world">steampunk world</SelectItem>
-                        <SelectItem value="noir_setting">noir setting</SelectItem>
+                        <SelectItem value="cyberpunk_world">
+                          cyberpunk world
+                        </SelectItem>
+                        <SelectItem value="steampunk_world">
+                          steampunk world
+                        </SelectItem>
+                        <SelectItem value="noir_setting">
+                          noir setting
+                        </SelectItem>
                         <SelectItem value="modern_day">modern day</SelectItem>
                         <SelectItem value="school">school</SelectItem>
                         <SelectItem value="history">history</SelectItem>
@@ -308,10 +339,16 @@ export default function BasicForm() {
                         <SelectItem value="dystopia">dystopia</SelectItem>
                         <SelectItem value="utopia">utopia</SelectItem>
                         <SelectItem value="urban_city">urban city</SelectItem>
-                        <SelectItem value="scary_place">a scary place</SelectItem>
+                        <SelectItem value="haunted_place">
+                          a haunted place
+                        </SelectItem>
                         <SelectItem value="countryside">countryside</SelectItem>
-                        <SelectItem value="post_apocalypse">post-apocalypse</SelectItem>
-                        <SelectItem value="virtual_reality">virtual reality</SelectItem>
+                        <SelectItem value="post_apocalypse">
+                          post-apocalypse
+                        </SelectItem>
+                        <SelectItem value="virtual_reality">
+                          virtual reality
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -322,9 +359,25 @@ export default function BasicForm() {
             {/* Preview of the selected options */}
             {(theme || tone || genre || setting) && (
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <h3 className="text-sm font-medium text-blue-700 mb-2">Preview:</h3>
+                <h3 className="text-sm font-medium text-blue-700 mb-2">
+                  Preview:
+                </h3>
                 <p className="text-gray-700">
-                  Composing {tone && <span className="font-medium">{tone}</span>} {genre && <span className="font-medium">{genre}</span>} about {theme && <span className="font-medium">{theme.replace(/_/g, ' ')}</span>} set in {setting && <span className="font-medium">{setting.replace(/_/g, ' ')}</span>}.
+                  Composing{" "}
+                  {tone && <span className="font-medium">{tone}</span>}{" "}
+                  {genre && <span className="font-medium">{genre}</span>} about{" "}
+                  {theme && (
+                    <span className="font-medium">
+                      {theme.replace(/_/g, " ")}
+                    </span>
+                  )}{" "}
+                  set in{" "}
+                  {setting && (
+                    <span className="font-medium">
+                      {setting.replace(/_/g, " ")}
+                    </span>
+                  )}
+                  .
                 </p>
               </div>
             )}
@@ -333,7 +386,10 @@ export default function BasicForm() {
               <Button variant="outline" onClick={goBack}>
                 Back
               </Button>
-              <Button onClick={handleNext} disabled={!theme || !tone || !genre || !setting}>
+              <Button
+                onClick={handleNext}
+                disabled={!theme || !tone || !genre || !setting}
+              >
                 Next: Concept
               </Button>
             </div>
