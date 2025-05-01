@@ -714,35 +714,46 @@ export const useVnData = () => {
           return null;
         }
 
-        // Just return the array directly
-        if (Array.isArray(result)) {
-          // Clean each character object to prevent nested objects
-          const cleanedCharacters = result.map((character, index) => {
-            console.log(`Processing batch character ${index}:`, character);
-            
-            // Clean character data to ensure no nested objects
-            const cleanCharacter = Object.entries(character)
-              .filter(([key]) => isNaN(Number(key))) // Remove any numeric keys
-              .reduce((obj, [key, value]) => {
-                // For non-null objects, convert to string unless it's relationshipPotential
-                if (typeof value === 'object' && value !== null && key !== 'relationshipPotential') {
-                  console.warn(`Converting nested object in ${key} to string:`, value);
-                  obj[key] = JSON.stringify(value);
-                } else {
-                  obj[key] = value;
-                }
-                return obj;
-              }, {} as Record<string, any>);
-              
-            return cleanCharacter;
-          });
+        // The result is an object where keys are character names
+        if (result && typeof result === 'object') {
+          const characterNames = Object.keys(result);
           
-          console.log("Cleaned batch of characters:", cleanedCharacters);
-          return cleanedCharacters;
-        } else {
-          console.error("Unexpected response format:", result);
-          return null;
+          if (characterNames.length > 0) {
+            console.log(`Processing ${characterNames.length} characters:`, characterNames);
+            
+            // Convert object of characters to array of characters with name
+            const charactersArray = characterNames.map(name => {
+              const character = result[name];
+              console.log(`Processing batch character ${name}:`, character);
+              
+              // Clean character data to ensure no nested objects
+              const cleanCharacter = Object.entries(character)
+                .filter(([key]) => isNaN(Number(key))) // Remove any numeric keys
+                .reduce((obj, [key, value]) => {
+                  // For non-null objects, convert to string unless it's relationshipPotential
+                  if (typeof value === 'object' && value !== null && key !== 'relationshipPotential') {
+                    console.warn(`Converting nested object in ${key} to string:`, value);
+                    obj[key] = JSON.stringify(value);
+                  } else {
+                    obj[key] = value;
+                  }
+                  return obj;
+                }, {} as Record<string, any>);
+                
+              // Include the name as a property
+              return {
+                name,
+                ...cleanCharacter
+              };
+            });
+            
+            console.log("Converted characters array:", charactersArray);
+            return charactersArray;
+          }
         }
+        
+        console.error("Unexpected response format:", result);
+        return null;
       } catch (error: any) {
         if ((error as Error).name !== "AbortError") {
           // Try to extract error message from the error response if it exists
@@ -870,13 +881,32 @@ export const useVnData = () => {
 
         setAbortController(null);
 
-        // Just return the array directly
-        if (Array.isArray(result)) {
-          return result;
-        } else {
-          console.error("Unexpected response format:", result);
-          return null;
+        // The result is an object where keys are path titles
+        if (result && typeof result === 'object') {
+          const pathTitles = Object.keys(result);
+          
+          if (pathTitles.length > 0) {
+            console.log(`Processing ${pathTitles.length} paths:`, pathTitles);
+            
+            // Convert object of paths to array of paths with title
+            const pathsArray = pathTitles.map(title => {
+              const path = result[title];
+              console.log(`Processing batch path ${title}:`, path);
+              
+              // Include the title as a property
+              return {
+                title,
+                ...path
+              };
+            });
+            
+            console.log("Converted paths array:", pathsArray);
+            return pathsArray;
+          }
         }
+        
+        console.error("Unexpected response format:", result);
+        return null;
       } catch (error: any) {
         if ((error as Error).name !== "AbortError") {
           // Try to extract error message from the error response if it exists
