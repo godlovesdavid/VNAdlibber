@@ -264,8 +264,8 @@ export default function GenerateVnForm() {
                 <CardTitle className="text-lg font-semibold text-neutral-800">
                   Act {actNumber}
                   {isActGenerated(actNumber) &&
-                    projectData?.generatedActs?.[`act${actNumber}`]?.scenes &&
-                    ` (${projectData.generatedActs[`act${actNumber}`].scenes.length} scenes)`}
+                    projectData?.generatedActs?.[`act${actNumber}`] &&
+                    ` (${Object.keys(projectData.generatedActs[`act${actNumber}`]).length} scenes)`}
                 </CardTitle>
                 <CardDescription>
                   {isActGenerated(actNumber)
