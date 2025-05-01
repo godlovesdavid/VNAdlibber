@@ -433,16 +433,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`Generating ${indices.length} characters`);
 
-      // Create prompt for the character generation - directly matching our expected format
+      // Create prompt for the character generation - {name: {...}} format
       const prompt = `Given this story context:
         ${JSON.stringify(projectContext, null, 2)}
         Generate ${indices.length} detailed character${indices.length > 1 ? "s" : ""} for a visual novel in JSON format.
-        
-        ${indices.length > 1 ? "Return an array of character objects:" : "Return a single character object:"}
-        
-        ${indices.length > 1 ? "[" : ""}
-          {
-            "name": "Character full name",
+
+        Return in this exact format where the character's name is the key:
+        {
+          "Character Name": {
             "role": "${indices.length == 1 && indices[0] == 0 ? "Main Protagonist" : "Role in story (antagonist, mentor, etc.)"}",
             "occupation": "Job or daily activity",
             "gender": "Gender identity",
@@ -453,11 +451,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             "relationshipPotential": ${indices.length == 1 && indices[0] == 0 ? "null" : '"Potential relationship dynamic with protagonist"'}, 
             "conflict": "Main personal struggle or challenge"
           }${indices.length > 1 ? "," : ""}
-          ${indices.length > 1 ? "...more characters..." : ""}
-        ${indices.length > 1 ? "]" : ""}
+          ${indices.length > 1 ? "\n  \"Another Character Name\": { ... }," : ""}
+          ${indices.length > 1 ? "\n  \"Third Character Name\": { ... }" : ""}
+        }
         
         Make characters feel realistic, complex, and memorable with distinct personalities.
-        ${indices.length > 1 ? "Ensure the first character is the main protagonist." : ""}
+        ${indices.length > 1 ? "Make the first character the main protagonist." : ""}
         Keep all characters consistent with the story's theme, tone, and genre.
       `;
 
@@ -491,38 +490,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Parse the response
         const parsed = JSON.parse(fixedContent);
         console.log("Parsed character data:", parsed);
-
-        // Ensure consistent format: for single character requests, we still return an array
-        const result = Array.isArray(parsed) ? parsed : [parsed];
-
-        // Verify each character has the expected fields
-        result.forEach((character, index) => {
-          if (!character.name) {
-            console.warn(`Character ${index} missing name, setting default`);
-            character.name = `Character ${index + 1}`;
-          }
-
-          // Ensure relationshipPotential is properly formatted (null for protagonist)
-          if (index === 0) {
-            character.relationshipPotential = null;
-          }
-
-          // Check for any unexpected property types
-          Object.entries(character).forEach(([key, value]) => {
-            if (
-              typeof value === "object" &&
-              value !== null &&
-              key !== "relationshipPotential"
-            ) {
-              console.warn(
-                `Warning: Character has nested object property ${key}:`,
-                value,
-              );
-            }
-          });
-        });
-
-        res.json(result);
+        
+        // Now we're expecting an object with character names as keys
+        // No format conversion needed - returning the object directly
+        res.json(parsed);
       } catch (e) {
         console.error("Problem parsing character JSON:", e);
         console.error("Problematic content:", responseContent);
@@ -546,31 +517,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create indices array based on the number of templates
       const indices = Array.from({ length: pathTemplates.length }, (_, i) => i);
 
-      // Create prompt for the path generation - directly matching our expected format
+      // Create prompt for the path generation - {title: {...}} format
       const prompt = `Given this story context:
         ${JSON.stringify(projectContext, null, 2)}
         
         Generate exactly ${indices.length} story path${indices.length > 1 ? "s" : ""} for a visual novel in JSON format.
         Each path represents a different storyline or route the player can follow.
         
-        Return in this exact format:
+        Return in this exact format where the path title is the key:
         {
-          "paths": [
-            {
-              "title": "Path title (e.g. 'Path of Redemption')",
-              "loveInterest": ${pathTemplates[0]?.loveInterest ? `"${pathTemplates[0].loveInterest}"` : "null"},
-              "keyChoices": "Major decision points separated by commas",
-              "beginning": "How this story path begins",
-              "middle": "Mid-story conflicts and developments",
-              "climax": "The most intense moment in this path",
-              "goodEnding": "Positive resolution if player makes good choices",
-              "badEnding": "Negative outcome if player makes poor choices"
-            }
-            ${indices.length > 1 ? ",\n            /* additional paths with same structure */" : ""}
-          ]
+          "Path Title": {
+            "loveInterest": ${pathTemplates[0]?.loveInterest ? `"${pathTemplates[0].loveInterest}"` : "null"},
+            "keyChoices": "Major decision points separated by commas",
+            "beginning": "How this story path begins",
+            "middle": "Mid-story conflicts and developments",
+            "climax": "The most intense moment in this path",
+            "goodEnding": "Positive resolution if player makes good choices",
+            "badEnding": "Negative outcome if player makes poor choices"
+          }${indices.length > 1 ? "," : ""}
+          ${indices.length > 1 ? "\n  \"Another Path Title\": { ... }," : ""}
+          ${indices.length > 1 ? "\n  \"Third Path Title\": { ... }" : ""}
         }
         
         Make each path distinct and compelling, with different story arcs, challenges, and themes.
+        Use descriptive and thematic titles as the keys (e.g. 'Path of Redemption', 'Journey of Discovery').
         Ensure paths align with the overall story context and character relationships.
       `;
 
@@ -583,7 +553,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         if (responseContent === "{}") throw new Error("Empty response");
         const parsed = JSON.parse(responseContent);
-        res.json(parsed.paths);
+        // Return the direct object from the response
+        res.json(parsed);
       } catch (e) {
         console.error("Problematic JSON:", e);
       }
