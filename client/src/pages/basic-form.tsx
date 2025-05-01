@@ -27,7 +27,7 @@ const tones = [
   "suspenseful",
   "tragicomic",
   "uplifting",
-  "whimsical"
+  "whimsical",
 ];
 
 const genres = [
@@ -39,7 +39,7 @@ const genres = [
   "thriller",
   "comedy",
   "horror",
-  "drama"
+  "drama",
 ];
 
 const themes = [
@@ -51,7 +51,7 @@ const themes = [
   "revenge_and_justice",
   "technology_vs_humanity",
   "sacrifice",
-  "trust_and_betrayal"
+  "trust_and_betrayal",
 ];
 
 const settings = [
@@ -69,7 +69,7 @@ const settings = [
   "haunted_place",
   "countryside",
   "post_apocalypse",
-  "virtual_reality"
+  "virtual_reality",
 ];
 
 // Helper function to get a random item from an array
@@ -155,13 +155,13 @@ export default function BasicForm() {
     // Clear all browser storage explicitly
     localStorage.clear();
     sessionStorage.clear();
-    
+
     // Set a flag to indicate this is a fresh project that needs randomization
-    sessionStorage.setItem('vn_fresh_project', 'true');
-    
+    sessionStorage.setItem("vn_fresh_project", "true");
+
     // Use window location for a full page reload to clear all form state
-    window.location.href = '/create/basic';
-    
+    window.location.href = "/create/basic";
+
     // Toast will be shown after the redirect
   };
 
@@ -241,7 +241,7 @@ export default function BasicForm() {
 
                   {/* Tone Dropdown */}
                   <div className="inline-block">
-                    <Select value={tone} onValueChange={setTone}>
+                    <Select value={tone} onValueChange={setTone} required>
                       <SelectTrigger className="w-44 h-8 text-base border-b-2 border-blue-500 rounded-none bg-transparent focus:ring-0">
                         <SelectValue placeholder="tone" />
                       </SelectTrigger>
@@ -265,7 +265,7 @@ export default function BasicForm() {
 
                   {/* Genre Dropdown */}
                   <div className="inline-block">
-                    <Select value={genre} onValueChange={setGenre}>
+                    <Select value={genre} onValueChange={setGenre} required>
                       <SelectTrigger className="w-44 h-8 text-base border-b-2 border-green-500 rounded-none bg-transparent focus:ring-0">
                         <SelectValue placeholder="genre" />
                       </SelectTrigger>
@@ -289,7 +289,7 @@ export default function BasicForm() {
 
                   {/* Theme Dropdown */}
                   <div className="inline-block">
-                    <Select value={theme} onValueChange={setTheme}>
+                    <Select value={theme} onValueChange={setTheme} required>
                       <SelectTrigger className="w-52 h-8 text-base border-b-2 border-purple-500 rounded-none bg-transparent focus:ring-0">
                         <SelectValue placeholder="theme" />
                       </SelectTrigger>
@@ -321,7 +321,7 @@ export default function BasicForm() {
 
                   {/* Setting Dropdown */}
                   <div className="inline-block">
-                    <Select value={setting} onValueChange={setSetting}>
+                    <Select value={setting} onValueChange={setSetting} required>
                       <SelectTrigger className="w-52 h-8 text-base border-b-2 border-amber-500 rounded-none bg-transparent focus:ring-0">
                         <SelectValue placeholder="setting" />
                       </SelectTrigger>
