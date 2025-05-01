@@ -149,13 +149,22 @@ export default function CharactersForm() {
 
         // Update the project context after character generation
         const charactersObj: Record<string, Character> = {};
-        updatedCharacters.forEach(char => {
+        let protagonist = "";
+        
+        updatedCharacters.forEach((char, idx) => {
           if (char.name) {
-            charactersObj[char.name] = { ...char };
+            // Extract name but don't store it in the object
+            const { name, ...characterWithoutName } = char;
+            charactersObj[name] = characterWithoutName;
+            
+            // Store the protagonist name (first character is always protagonist)
+            if (idx === 0) {
+              protagonist = name;
+            }
           }
         });
         
-        setCharactersData(charactersObj);
+        setCharactersData(charactersObj, protagonist);
 
         // Log generation to console
         console.log(`Generated character ${index + 1}:`, generatedCharacter);
@@ -237,13 +246,22 @@ export default function CharactersForm() {
         
         // Convert to object format for storage
         const charactersObj: Record<string, Character> = {};
-        updatedCharacters.forEach(char => {
+        let protagonist = "";
+        
+        updatedCharacters.forEach((char, idx) => {
           if (char.name) {
-            charactersObj[char.name] = { ...char };
+            // Extract name but don't store it in the object
+            const { name, ...characterWithoutName } = char;
+            charactersObj[name] = characterWithoutName;
+            
+            // Store the protagonist name (first character is always protagonist)
+            if (idx === 0) {
+              protagonist = name;
+            }
           }
         });
         
-        setCharactersData(charactersObj);
+        setCharactersData(charactersObj, protagonist);
 
         console.log("Successfully generated all characters at once");
         console.log("Updated project context with all character data");
@@ -287,13 +305,23 @@ export default function CharactersForm() {
 
     // Save data - transform array to object format
     const charactersObj: Record<string, Character> = {};
-    characters.forEach(char => {
+    let protagonist = "";
+    
+    characters.forEach((char, index) => {
       if (char.name) {
-        charactersObj[char.name] = { ...char };
+        // Extract name but don't store it in the object
+        const { name, ...characterWithoutName } = char;
+        charactersObj[name] = characterWithoutName;
+        
+        // Store the protagonist name (first character is always protagonist)
+        if (index === 0) {
+          protagonist = name;
+        }
       }
     });
     
-    setCharactersData(charactersObj);
+    // Set the characters data with protagonist field
+    setCharactersData(charactersObj, protagonist);
 
     // Navigate to next step
     setLocation("/create/paths");

@@ -20,7 +20,7 @@ interface VnContextType {
   // Step data setters
   setBasicData: (data: BasicData) => void;
   setConceptData: (data: ConceptData) => void;
-  setCharactersData: (data: CharactersData) => void;
+  setCharactersData: (data: CharactersData, protagonist?: string) => void;
   setPathsData: (data: PathsData) => void;
   setPlotData: (data: PlotData) => void;
   setGeneratedAct: (actNumber: number, data: GeneratedAct) => void;
@@ -159,12 +159,13 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     });
   };
   
-  const setCharactersData = (data: CharactersData) => {
+  const setCharactersData = (data: CharactersData, protagonist?: string) => {
     if (!projectData) return;
     
     setProjectData({
       ...projectData,
       charactersData: data,
+      protagonist: protagonist || projectData.protagonist,
       currentStep: Math.max(projectData.currentStep, 3),
       updatedAt: new Date().toISOString(),
     });
