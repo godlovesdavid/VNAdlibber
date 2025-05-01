@@ -6,7 +6,7 @@ export interface GenerationResult<T> {
 }
 
 export async function generateConcept(
-  params: { theme: string; tone: string; genre: string },
+  params: { theme: string; tone: string; genre: string; setting?: string },
   signal?: AbortSignal,
 ): Promise<GenerationResult<any>> {
   const response = await apiRequest(

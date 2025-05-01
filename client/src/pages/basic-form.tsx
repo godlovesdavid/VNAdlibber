@@ -237,10 +237,10 @@ export default function BasicForm() {
                   {/* Tone Dropdown */}
                   <div className="inline-block">
                     <Select value={tone} onValueChange={setTone}>
-                      <SelectTrigger className="w-36 h-8 text-base border-b-2 border-blue-500 rounded-none bg-transparent focus:ring-0">
+                      <SelectTrigger className="w-44 h-8 text-base border-b-2 border-blue-500 rounded-none bg-transparent focus:ring-0">
                         <SelectValue placeholder="tone" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="min-w-[180px]">
                         <SelectItem value="adventurous">adventurous</SelectItem>
                         <SelectItem value="dark">dark</SelectItem>
                         <SelectItem value="gritty">gritty</SelectItem>
@@ -262,10 +262,10 @@ export default function BasicForm() {
                   {/* Genre Dropdown */}
                   <div className="inline-block">
                     <Select value={genre} onValueChange={setGenre}>
-                      <SelectTrigger className="w-36 h-8 text-base border-b-2 border-green-500 rounded-none bg-transparent focus:ring-0">
+                      <SelectTrigger className="w-44 h-8 text-base border-b-2 border-green-500 rounded-none bg-transparent focus:ring-0">
                         <SelectValue placeholder="genre" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="min-w-[180px]">
                         <SelectItem value="mystery">mystery</SelectItem>
                         <SelectItem value="romance">romance</SelectItem>
                         <SelectItem value="science_fiction">sci-fi</SelectItem>
@@ -286,10 +286,10 @@ export default function BasicForm() {
                   {/* Theme Dropdown */}
                   <div className="inline-block">
                     <Select value={theme} onValueChange={setTheme}>
-                      <SelectTrigger className="w-40 h-8 text-base border-b-2 border-purple-500 rounded-none bg-transparent focus:ring-0">
+                      <SelectTrigger className="w-52 h-8 text-base border-b-2 border-purple-500 rounded-none bg-transparent focus:ring-0">
                         <SelectValue placeholder="theme" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="min-w-[200px]">
                         <SelectItem value="forgiveness">forgiveness</SelectItem>
                         <SelectItem value="freedom_vs_control">
                           freedom vs control
@@ -318,10 +318,10 @@ export default function BasicForm() {
                   {/* Setting Dropdown */}
                   <div className="inline-block">
                     <Select value={setting} onValueChange={setSetting}>
-                      <SelectTrigger className="w-40 h-8 text-base border-b-2 border-amber-500 rounded-none bg-transparent focus:ring-0">
+                      <SelectTrigger className="w-52 h-8 text-base border-b-2 border-amber-500 rounded-none bg-transparent focus:ring-0">
                         <SelectValue placeholder="setting" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="min-w-[200px]">
                         <SelectItem value="cyberpunk_world">
                           cyberpunk world
                         </SelectItem>
@@ -355,32 +355,6 @@ export default function BasicForm() {
                 </div>
               </div>
             </div>
-
-            {/* Preview of the selected options */}
-            {(theme || tone || genre || setting) && (
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <h3 className="text-sm font-medium text-blue-700 mb-2">
-                  Preview:
-                </h3>
-                <p className="text-gray-700">
-                  Composing{" "}
-                  {tone && <span className="font-medium">{tone}</span>}{" "}
-                  {genre && <span className="font-medium">{genre}</span>} about{" "}
-                  {theme && (
-                    <span className="font-medium">
-                      {theme.replace(/_/g, " ")}
-                    </span>
-                  )}{" "}
-                  set in{" "}
-                  {setting && (
-                    <span className="font-medium">
-                      {setting.replace(/_/g, " ")}
-                    </span>
-                  )}
-                  .
-                </p>
-              </div>
-            )}
 
             <div className="pt-6 flex justify-between">
               <Button variant="outline" onClick={goBack}>
