@@ -22,7 +22,7 @@ export default function ConceptForm() {
   // Load existing data if available or clear form if starting a new project
   useEffect(() => {
     // If project data exists and has concept data
-    if (projectData?.conceptData) {
+    if (projectData?.conceptData?.title) {
       setTitle(projectData.conceptData.title || "");
       setTagline(projectData.conceptData.tagline || "");
       setPremise(projectData.conceptData.premise || "");
@@ -36,6 +36,12 @@ export default function ConceptForm() {
 
   // Go back to previous step
   const handleBack = () => {
+    // Save data
+    setConceptData({
+      title,
+      tagline,
+      premise,
+    });
     goToStep(1);
   };
 

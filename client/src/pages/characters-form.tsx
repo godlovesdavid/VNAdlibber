@@ -376,26 +376,6 @@ export default function CharactersForm() {
 
   // Proceed to next step
   const handleNext = () => {
-    // Validate characters
-    const isValid = characters.every(
-      (char) =>
-        char.name &&
-        char.role &&
-        char.occupation &&
-        char.gender &&
-        char.age &&
-        char.appearance &&
-        char.personality &&
-        char.goals &&
-        // relationshipPotential can be null
-        char.conflict,
-    );
-
-    // if (!isValid) {
-    //   alert("Please fill in all required fields for each character");
-    //   return;
-    // }
-
     console.log("Characters before saving:", characters);
     
     // Save data - transform array to object format

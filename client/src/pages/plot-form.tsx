@@ -18,7 +18,9 @@ export default function PlotForm() {
   const [isValidating, setIsValidating] = useState(false);
 
   // Plot state - using object-based storage pattern
-  const [plotActs, setPlotActs] = useState<Record<string, PlotAct> | null>(null);
+  const [plotActs, setPlotActs] = useState<Record<string, PlotAct> | null>(
+    null,
+  );
 
   // Track expanded acts
   const [expandedActs, setExpandedActs] = useState<Record<string, boolean>>({
@@ -66,20 +68,28 @@ export default function PlotForm() {
       });
 
       // Log generation to console for debugging
-      console.log("Generated plot outline using object-based pattern:", generatedPlot.plotOutline);
+      console.log(
+        "Generated plot outline using object-based pattern:",
+        generatedPlot.plotOutline,
+      );
     } else if (generatedPlot) {
       // Handle case where server might return data without the expected structure
       console.error("Unexpected plot data format:", generatedPlot);
       toast({
         title: "Generation Error",
         description: "The plot data format was unexpected. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
 
   // Go back to previous step
   const handleBack = () => {
+    // Save data using object-based pattern
+    setPlotData({
+      plotOutline: plotActs , // Keep using 'plotOutline' key to match PlotData interface
+    });
+
     goToStep(4);
   };
 
@@ -301,9 +311,11 @@ export default function PlotForm() {
                             Events
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotActs.act1.events.map((event: string, index: number) => (
-                              <li key={index}>{event}</li>
-                            ))}
+                            {plotActs.act1.events.map(
+                              (event: string, index: number) => (
+                                <li key={index}>{event}</li>
+                              ),
+                            )}
                           </ul>
                         </div>
                         <div>
@@ -380,9 +392,11 @@ export default function PlotForm() {
                             Events
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotActs.act2.events.map((event: string, index: number) => (
-                              <li key={index}>{event}</li>
-                            ))}
+                            {plotActs.act2.events.map(
+                              (event: string, index: number) => (
+                                <li key={index}>{event}</li>
+                              ),
+                            )}
                           </ul>
                         </div>
                         <div>
@@ -459,9 +473,11 @@ export default function PlotForm() {
                             Events
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotActs.act3.events.map((event: string, index: number) => (
-                              <li key={index}>{event}</li>
-                            ))}
+                            {plotActs.act3.events.map(
+                              (event: string, index: number) => (
+                                <li key={index}>{event}</li>
+                              ),
+                            )}
                           </ul>
                         </div>
                         <div>
@@ -538,9 +554,11 @@ export default function PlotForm() {
                             Events
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotActs.act4.events.map((event: string, index: number) => (
-                              <li key={index}>{event}</li>
-                            ))}
+                            {plotActs.act4.events.map(
+                              (event: string, index: number) => (
+                                <li key={index}>{event}</li>
+                              ),
+                            )}
                           </ul>
                         </div>
                         <div>
@@ -617,9 +635,11 @@ export default function PlotForm() {
                             Events
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotActs.act5.events.map((event: string, index: number) => (
-                              <li key={index}>{event}</li>
-                            ))}
+                            {plotActs.act5.events.map(
+                              (event: string, index: number) => (
+                                <li key={index}>{event}</li>
+                              ),
+                            )}
                           </ul>
                         </div>
                         <div>

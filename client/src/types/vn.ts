@@ -15,7 +15,6 @@ export interface ConceptData {
 
 // Character definition
 export interface Character {
-  // name field removed as it's redundant with the key in CharactersData
   role: string;
   occupation: string; // Added occupation field to distinguish from role
   gender: string;
@@ -34,7 +33,6 @@ export interface CharactersData {
 
 // Definition of a story route
 export interface Route {
-  title?: string; // Make title optional since it's used as the key in PathsData
   loveInterest: string | null;
   keyChoices: string; // Changed from array to a single text area
   beginning: string;

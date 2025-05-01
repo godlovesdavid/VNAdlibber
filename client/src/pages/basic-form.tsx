@@ -113,7 +113,8 @@ export default function BasicForm() {
     }
 
     // If we have project data, use it without randomizing
-    if (projectData?.basicData) {
+    if (projectData?.basicData) 
+    {
       console.log("Loading existing project data", projectData.basicData);
       setTheme(projectData.basicData.theme || "");
       setTone(projectData.basicData.tone || "");
@@ -121,14 +122,6 @@ export default function BasicForm() {
       setSetting(projectData.basicData.setting || "");
       // Explicitly set initialized to true to prevent auto-randomization
       setInitialized(true);
-    } else {
-      // Only randomize for completely new projects, not navigation
-      console.log("No project data found, creating empty form");
-      setTheme("");
-      setTone("");
-      setGenre("");
-      setSetting("");
-      setInitialized(true); // Prevent auto-randomization
     }
   }, [projectData?.basicData]);
 
