@@ -482,7 +482,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
               "null",
             );
           }
-          fixedContent = jsonrepair(fixedContent);
         } catch (repairError) {
           console.error("Could not repair JSON:", repairError);
           fixedContent = responseContent; // Fall back to original
@@ -623,7 +622,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         Generate a visual novel act structure in JSON with the exact format below:
         {
           "scene1": {
-            "setting": "Detailed location description",
+            "setting": "location name (with optionally time of day)",
             "image_prompt": "Detailed visual description for AI image generation",
             "dialogue": [
               ["Narrator", "Descriptive text about the scene"],

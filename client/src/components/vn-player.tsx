@@ -647,11 +647,11 @@ export function VnPlayer({
                   d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
               </svg>
-              <p>No background image available</p>
+              <p></p>
               <p className="text-sm text-neutral-400 mt-1">
                 {imageError
                   ? `Error: ${imageError}`
-                  : "Click 'Generate Image' to create one"}
+                  : ""}
               </p>
             </div>
           )}
@@ -661,9 +661,8 @@ export function VnPlayer({
             <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
               <div className="text-white text-center">
                 <RefreshCw className="h-12 w-12 animate-spin mx-auto mb-4" />
-                <p className="text-xl">Generating Image...</p>
+                <p className="text-xl">Generating Image</p>
                 <p className="text-sm opacity-75 mt-2">
-                  Please wait while AI creates a background for this scene
                 </p>
               </div>
             </div>
