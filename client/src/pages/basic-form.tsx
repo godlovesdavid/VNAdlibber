@@ -286,11 +286,12 @@ export default function BasicForm() {
   // Reference to track the save timeout
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Set up autosave with the FormProvider context
-  useAutosave('basic', handleAutosave);
-  
-  // Keep this empty component to avoid changing our JSX structure
-  const BasicFormAutosave = () => null;
+  // Move the useAutosave hook inside the component that's rendered within FormProvider
+  // so it has access to the form context
+  const BasicFormAutosave = () => {
+    useAutosave('basic', handleAutosave);
+    return null;
+  };
 
   // Proceed to next step
   const handleSubmit = form.handleSubmit(async (values) => {
