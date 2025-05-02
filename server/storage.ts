@@ -119,6 +119,34 @@ export class DatabaseStorage implements IStorage {
         throw new Error(`Project with id ${id} not found`);
       }
       
+      // Enhanced character data validation
+      if (projectData.charactersData) {
+        // Check if we're about to overwrite existing characters with empty data
+        if (existingProject.charactersData && 
+            Object.keys(existingProject.charactersData).length > 0 && 
+            Object.keys(projectData.charactersData).length === 0) {
+          console.warn("CRITICAL WARNING: Attempted to overwrite characters with empty data in storage");
+          console.log("Preserving existing character data in storage layer");
+          projectData.charactersData = existingProject.charactersData;
+        } else if (Object.keys(projectData.charactersData).length > 0) {
+          // We have new character data - validate it has actual content
+          let hasValidCharacters = false;
+          for (const character of Object.values(projectData.charactersData)) {
+            if (character && typeof character === 'object' && Object.keys(character).length > 0) {
+              hasValidCharacters = true;
+              break;
+            }
+          }
+          if (!hasValidCharacters) {
+            console.warn("WARNING: All incoming characters are empty objects in storage");
+            if (existingProject.charactersData && Object.keys(existingProject.charactersData).length > 0) {
+              console.log("Using existing character data instead");
+              projectData.charactersData = existingProject.charactersData;
+            }
+          }
+        }
+      }
+      
       // Make sure we don't lose required fields
       const updatedProject = {
         ...existingProject,
@@ -132,12 +160,17 @@ export class DatabaseStorage implements IStorage {
       }
       
       console.log(`Updating project with title: ${updatedProject.title}`);
+      
+      // Log character counts for debugging
+      console.log(`Character count before update: ${Object.keys(existingProject.charactersData || {}).length}`);
+      console.log(`Character count after update: ${Object.keys(updatedProject.charactersData || {}).length}`);
+      
       const [result] = await db
         .update(vnProjects)
         .set(updatedProject)
         .where(eq(vnProjects.id, id))
         .returning();
-        
+      
       console.log('Project updated successfully');
       return result;
     } catch (error) {
