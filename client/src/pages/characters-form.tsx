@@ -56,8 +56,17 @@ export default function CharactersForm() {
     number | null
   >(null);
 
-  // Load existing data if available
+  // Reference to track if we've loaded data and are in an editing session
+  const dataLoadedRef = useRef(false);
+
+  // Load existing data if available, but only on initial load
   useEffect(() => {
+    // Skip if we've already loaded data - prevents reloading deleted characters
+    if (dataLoadedRef.current) {
+      console.log("Character data already loaded, skipping reload to prevent data loss");
+      return;
+    }
+
     if (projectData?.charactersData && Object.keys(projectData.charactersData).length > 0) {
       console.log("Loading characters data from context:", projectData.charactersData);
       
@@ -90,6 +99,10 @@ export default function CharactersForm() {
       
       console.log("Final characters array to set in form:", charactersArray);
       setCharacters(charactersArray);
+      
+      // Mark that we've loaded data - we won't reload after this
+      dataLoadedRef.current = true;
+      console.log("Character data loaded, setting dataLoadedRef to true");
     }
   }, [projectData]);
   

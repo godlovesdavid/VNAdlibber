@@ -61,8 +61,16 @@ export default function PathsForm() {
     null,
   );
 
-  // Load existing data if available
+  // Reference to track if we've loaded data and are in an editing session
+  const dataLoadedRef = useRef(false);
+
+  // Load existing data if available, but only on initial load
   useEffect(() => {
+    // Skip if we've already loaded data - prevents reloading deleted paths
+    if (dataLoadedRef.current) {
+      console.log("Path data already loaded, skipping reload to prevent data loss");
+      return;
+    }
     if (projectData?.pathsData && Object.keys(projectData.pathsData).length > 0) {
       console.log("Loading paths data from context:", projectData.pathsData);
       
@@ -108,6 +116,10 @@ export default function PathsForm() {
         } else {
           console.log("No valid routes found in project data");
         }
+
+        // Mark that we've loaded data - we won't reload after this
+        dataLoadedRef.current = true;
+        console.log("Path data loaded, setting dataLoadedRef to true");
       } catch (error) {
         console.error("Error processing paths data:", error);
         // Set a default empty path if we can't load the saved ones
