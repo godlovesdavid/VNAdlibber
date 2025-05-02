@@ -227,42 +227,69 @@ export default function BasicForm() {
   // Reference to track the save timeout
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Create a direct field save handler for the form fields
+  // State to track save count for debugging
+  const [saveCount, setSaveCount] = useState(0);
+  const [lastSavedField, setLastSavedField] = useState<string>("");
+  
+  // Log project ID whenever it changes for debugging
+  useEffect(() => {
+    console.log(`🔄 Project ID changed: ${projectData?.id || 'none'}`);
+  }, [projectData?.id]);
+  
+  // Log form state changes for debugging
+  useEffect(() => {
+    console.log(`📝 Form submission state: ${form.formState.isSubmitting ? 'submitting' : 'not submitting'}`);
+    console.log(`📝 Form dirty state: ${form.formState.isDirty ? 'dirty' : 'clean'}`);
+  }, [form.formState.isSubmitting, form.formState.isDirty]);
+  
+  // Create a direct field save handler for the form fields with enhanced debugging
   const handleFieldChange = (fieldName: "theme" | "tone" | "genre" | "setting", value: string) => {
-    console.log(`Field '${fieldName}' changed to '${value}'`);
+    console.log(`🔵 Field '${fieldName}' changed to '${value}'`);
+    setLastSavedField(fieldName);
     
-    // Update the form value
-    form.setValue(fieldName, value);
+    // Update the form value with validation
+    form.setValue(fieldName, value, {
+      shouldValidate: true,
+      shouldDirty: true, 
+      shouldTouch: true
+    });
     
     // Get current form values
     const values = form.getValues();
+    console.log("📋 Current form values:", values);
     
     // Convert to BasicData type
     const formData: BasicData = {
-      theme: values.theme,
-      tone: values.tone,
-      genre: values.genre,
-      setting: values.setting
+      theme: values.theme || "",
+      tone: values.tone || "",
+      genre: values.genre || "",
+      setting: values.setting || ""
     };
     
     // Save to context immediately
-    console.log("Saving to context:", formData);
+    console.log("💾 Saving to context:", formData);
     setBasicData(formData);
     
     // Debounce the server save
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
+      console.log("🔄 Cleared previous save timeout");
     }
     
     if (projectData?.id) {
-      console.log("Setting up save timeout...");
+      console.log(`⏱️ Setting up save timeout for project ${projectData.id}...`);
       saveTimeoutRef.current = setTimeout(() => {
-        console.log("Field change timeout triggered, saving to server...");
+        console.log(`⭐ SAVE TIMEOUT TRIGGERED for field '${fieldName}', SAVING TO SERVER...`);
+        setSaveCount(prev => prev + 1);
         saveProject()
-          .then(() => console.log("SERVER SAVE SUCCESSFUL"))
-          .catch(error => console.error("SERVER SAVE FAILED:", error));
+          .then(() => {
+            console.log(`✅ SERVER SAVE #${saveCount} SUCCESSFUL!`);
+          })
+          .catch(error => console.error(`❌ SERVER SAVE #${saveCount} FAILED:`, error));
         saveTimeoutRef.current = null;
       }, 1000);
+    } else {
+      console.log("⚠️ NO PROJECT ID AVAILABLE, CANNOT SAVE TO SERVER");
     }
   };
   
