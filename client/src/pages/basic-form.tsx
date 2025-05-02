@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useRegisterFormSave } from "@/hooks/use-form-save";
@@ -147,6 +147,9 @@ export default function BasicForm() {
   };
 
   // Load or reset form values based on projectData
+  // Using a ref to track if we've already loaded the initial data to prevent loops
+  const initialDataLoadedRef = useRef(false);
+  
   useEffect(() => {
     console.log("Project data changed:", projectData?.basicData);
 
@@ -156,22 +159,28 @@ export default function BasicForm() {
       console.log("New project flag found, resetting form");
       sessionStorage.removeItem("vn_fresh_project");
       randomizeForm();
+      initialDataLoadedRef.current = true;
       return;
     }
 
-    // If we have project data, use it without randomizing
-    if (projectData?.basicData) {
-      console.log("Loading existing project data", projectData.basicData);
-      form.reset({
-        theme: projectData.basicData.theme || "",
-        tone: projectData.basicData.tone || "",
-        genre: projectData.basicData.genre || "",
-        setting: projectData.basicData.setting || "",
-      });
-      // Explicitly set initialized to true to prevent auto-randomization
-      setInitialized(true);
+    // If we've already loaded the data or there's no data to load, skip
+    if (initialDataLoadedRef.current || !projectData?.basicData) {
+      return;
     }
-  }, [projectData?.basicData, form, randomizeForm]);
+    
+    // If we have project data, use it without randomizing
+    console.log("Loading initial project data", projectData.basicData);
+    form.reset({
+      theme: projectData.basicData.theme || "",
+      tone: projectData.basicData.tone || "",
+      genre: projectData.basicData.genre || "",
+      setting: projectData.basicData.setting || "",
+    });
+    
+    // Explicitly set initialized to true to prevent auto-randomization
+    setInitialized(true);
+    initialDataLoadedRef.current = true;
+  }, [projectData, randomizeForm]);
 
   // Go back to main menu
   const goBack = () => {

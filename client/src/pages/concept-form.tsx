@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useVnData } from "@/hooks/use-vn-data";
@@ -46,17 +46,25 @@ export default function ConceptForm() {
   });
 
   // Load existing data if available or clear form if starting a new project
+  // Using a ref to track if we've already loaded the initial data to prevent loops
+  const initialDataLoadedRef = useRef(false);
+  
   useEffect(() => {
-    // If project data exists and has concept data
-    if (projectData?.conceptData) {
-      console.log("Loading existing concept data", projectData.conceptData);
-      form.reset({
-        title: projectData.conceptData.title || "",
-        tagline: projectData.conceptData.tagline || "",
-        premise: projectData.conceptData.premise || ""
-      });
+    // If we've already loaded the data or there's no data to load, skip
+    if (initialDataLoadedRef.current || !projectData?.conceptData) {
+      return;
     }
-  }, [projectData, form]);
+    
+    console.log("Loading initial concept data", projectData.conceptData);
+    form.reset({
+      title: projectData.conceptData.title || "",
+      tagline: projectData.conceptData.tagline || "",
+      premise: projectData.conceptData.premise || ""
+    });
+    
+    // Mark that we've loaded the initial data
+    initialDataLoadedRef.current = true;
+  }, [projectData]);
   
   // Helper function to save concept data
   function saveConceptData() {
