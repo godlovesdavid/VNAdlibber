@@ -25,91 +25,36 @@ export interface IStorage {
   deleteStory(id: number): Promise<void>;
 }
 
-// In-memory storage implementation
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private projects: Map<number, VnProject>;
-  private stories: Map<number, VnStory>;
-  
-  private userId: number;
-  private projectId: number;
-  private storyId: number;
-  
-  constructor() {
-    this.users = new Map();
-    this.projects = new Map();
-    this.stories = new Map();
-    
-    this.userId = 1;
-    this.projectId = 1;
-    this.storyId = 1;
-    
-    // Initialize with sample data
-    this.initializeSampleData();
-  }
-  
-  private initializeSampleData() {
-    // Create a sample user
-    const user: User = {
-      id: this.userId++,
-      username: "demo",
-      password: "password"
-    };
-    this.users.set(user.id, user);
-    
-    // Create a sample project
-    const now = new Date().toISOString();
-    const sampleProject: VnProject = {
-      id: this.projectId++,
-      userId: user.id,
-      title: "Echoes of Tomorrow",
-      createdAt: now,
-      updatedAt: now,
-      basicData: {
-        theme: "identity",
-        tone: "melancholic",
-        genre: "cyberpunk"
-      },
-      conceptData: {
-        title: "Echoes of Tomorrow",
-        tagline: "In a world where memories are currency, the truth comes at the highest price.",
-        premise: "In Neo-Kyoto, a city where memories can be traded like currency, Aki Nakamura, a memory archivist, discovers a forbidden memory that reveals a conspiracy at the heart of society. As they navigate a web of deception involving the powerful Sato Corporation, they must choose between exposing the truth or protecting those they love."
-      },
-      charactersData: {},
-      pathsData: {},
-      plotData: {},
-      generatedActs: {},
-      playerData: {},
-      currentStep: 2
-    };
-    this.projects.set(sampleProject.id, sampleProject);
-  }
-  
+import { db } from "./db";
+import { eq } from "drizzle-orm";
+
+// Database storage implementation
+export class DatabaseStorage implements IStorage {
   // User methods
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
   
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
   }
   
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.userId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const [user] = await db.insert(users).values(insertUser).returning();
     return user;
   }
   
   // VN Project methods
   async getProjects(): Promise<VnProject[]> {
-    return Array.from(this.projects.values());
+    const projects = await db.select().from(vnProjects);
+    return projects;
   }
   
   async getProject(id: number): Promise<VnProject | undefined> {
-    return this.projects.get(id);
+    const [project] = await db.select().from(vnProjects).where(eq(vnProjects.id, id));
+    return project;
   }
   
   async createProject(insertProject: InsertVnProject): Promise<VnProject> {
@@ -138,16 +83,9 @@ export class MemStorage implements IStorage {
         insertProject.updatedAt = new Date().toISOString();
       }
       
-      const id = this.projectId++;
-      console.log(`Creating new project with ID: ${id}, title: ${insertProject.title}`);
-      
       // Ensure all required fields for VnProject are present
-      const project: VnProject = {
-        id,
-        userId: insertProject.userId || null,
-        title: insertProject.title,
-        createdAt: insertProject.createdAt,
-        updatedAt: insertProject.updatedAt,
+      const projectToInsert = {
+        ...insertProject,
         basicData: insertProject.basicData || {},
         conceptData: insertProject.conceptData || {},
         charactersData: insertProject.charactersData || {},
@@ -158,9 +96,10 @@ export class MemStorage implements IStorage {
         currentStep: insertProject.currentStep || 1
       };
       
-      this.projects.set(id, project);
+      console.log(`Creating new project with title: ${projectToInsert.title}`);
+      const [project] = await db.insert(vnProjects).values(projectToInsert).returning();
+      console.log(`Project created successfully with ID: ${project.id}`);
       
-      console.log(`Project created successfully, now have ${this.projects.size} projects`);
       return project;
     } catch (error) {
       console.error("Error in createProject:", error);
@@ -172,7 +111,8 @@ export class MemStorage implements IStorage {
     try {
       console.log(`Updating project with ID: ${id}`);
       
-      const existingProject = this.projects.get(id);
+      // Get existing project
+      const [existingProject] = await db.select().from(vnProjects).where(eq(vnProjects.id, id));
       
       if (!existingProject) {
         console.error(`Project with id ${id} not found`);
@@ -180,22 +120,26 @@ export class MemStorage implements IStorage {
       }
       
       // Make sure we don't lose required fields
-      if (!projectData.title) {
-        projectData.title = existingProject.title;
-      }
-      
-      const updatedProject: VnProject = {
+      const updatedProject = {
         ...existingProject,
         ...projectData,
-        id,
         updatedAt: new Date().toISOString()
       };
       
-      console.log(`Updating project with title: ${updatedProject.title}`);
-      this.projects.set(id, updatedProject);
-      console.log('Project updated successfully');
+      // Title is required
+      if (!updatedProject.title) {
+        updatedProject.title = existingProject.title;
+      }
       
-      return updatedProject;
+      console.log(`Updating project with title: ${updatedProject.title}`);
+      const [result] = await db
+        .update(vnProjects)
+        .set(updatedProject)
+        .where(eq(vnProjects.id, id))
+        .returning();
+        
+      console.log('Project updated successfully');
+      return result;
     } catch (error) {
       console.error("Error in updateProject:", error);
       throw error;
@@ -203,44 +147,27 @@ export class MemStorage implements IStorage {
   }
   
   async deleteProject(id: number): Promise<void> {
-    this.projects.delete(id);
+    // First delete any stories associated with this project
+    await db.delete(vnStories).where(eq(vnStories.projectId, id));
     
-    // Also delete any associated stories
-    // Use Array.from to avoid Iterator issue
-    const storiesToCheck = Array.from(this.stories.entries());
-    for (const [storyId, story] of storiesToCheck) {
-      if (story.projectId === id) {
-        this.stories.delete(storyId);
-      }
-    }
+    // Then delete the project
+    await db.delete(vnProjects).where(eq(vnProjects.id, id));
   }
   
   // VN Story methods
   async getStories(): Promise<VnStory[]> {
-    return Array.from(this.stories.values());
+    return await db.select().from(vnStories);
   }
   
   async getStory(id: number): Promise<VnStory | undefined> {
-    return this.stories.get(id);
+    const [story] = await db.select().from(vnStories).where(eq(vnStories.id, id));
+    return story;
   }
   
   async createStory(insertStory: InsertVnStory): Promise<VnStory> {
     try {
-      const id = this.storyId++;
-      
-      // Ensure all required fields for VnStory are present
-      const story: VnStory = {
-        id,
-        userId: insertStory.userId || null,
-        projectId: insertStory.projectId || null,
-        title: insertStory.title,
-        createdAt: insertStory.createdAt,
-        actData: insertStory.actData,
-        actNumber: insertStory.actNumber
-      };
-      
-      this.stories.set(id, story);
-      console.log(`Story created successfully with ID: ${id}`);
+      const [story] = await db.insert(vnStories).values(insertStory).returning();
+      console.log(`Story created successfully with ID: ${story.id}`);
       return story;
     } catch (error) {
       console.error("Error in createStory:", error);
@@ -249,9 +176,9 @@ export class MemStorage implements IStorage {
   }
   
   async deleteStory(id: number): Promise<void> {
-    this.stories.delete(id);
+    await db.delete(vnStories).where(eq(vnStories.id, id));
   }
 }
 
 // Export a singleton instance of the storage
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
