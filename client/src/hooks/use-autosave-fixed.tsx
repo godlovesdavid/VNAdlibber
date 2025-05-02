@@ -46,13 +46,18 @@ export const useAutosave = (
         }
         
         // Save locally
+        console.log(`[Autosave] Saving ${formId} form data...`, currentValues);
         saveFunction(currentValues);
         lastSavedRef.current = currentValues;
+        console.log(`[Autosave] ${formId} form data saved locally`);
         
         // Save to server if project exists
         if (projectData?.id) {
           try {
+            console.log(`[Autosave] Saving ${formId} to server (project ID: ${projectData.id})...`);
             await saveProject();
+            console.log(`[Autosave] ${formId} saved to server successfully`);
+            
             if (showToast) {
               toast({
                 title: "Project Saved",
@@ -61,8 +66,10 @@ export const useAutosave = (
               });
             }
           } catch (err) {
-            console.error("Failed to save project", err);
+            console.error(`[Autosave] Failed to save ${formId} to server:`, err);
           }
+        } else {
+          console.log(`[Autosave] Server save skipped for ${formId} (no project ID yet)`);
         }
       } catch (error) {
         console.error("Error in autosave", error);

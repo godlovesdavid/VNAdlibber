@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useVnData } from "@/hooks/use-vn-data";
 import { useRegisterFormSave } from "@/hooks/use-form-save";
-import { useStateAutosave } from "@/hooks/use-state-autosave";
+// We can't use autosave yet since this form doesn't use react-hook-form
 import { CreationProgress } from "@/components/creation-progress";
 import { NavBar } from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
@@ -128,8 +128,8 @@ export default function CharactersForm() {
   // Register with form save system
   useRegisterFormSave('characters', saveCharacterData);
   
-  // Setup autosave
-  useStateAutosave('characters', saveCharacterData, 10000);
+  // For now, we'll rely on manual saves on navigation and generate
+  // We'll implement proper autosave when we convert this form to react-hook-form
 
   // Add a new character card
   const addCharacter = () => {
