@@ -211,12 +211,33 @@ export default function CharactersForm() {
       return;
     }
 
+    console.log(`Removing character at index ${index}`);
+    const characterToRemove = characters[index];
+    console.log("Character being removed:", characterToRemove);
+    
     const updatedCharacters = [...characters];
     updatedCharacters.splice(index, 1);
     setCharacters(updatedCharacters);
     
-    // We don't need to call saveCharacterData here
-    // The useAutosave hook will handle saving at the specified interval
+    // Immediately save after removing a character to ensure it's removed from storage
+    console.log("Immediately saving after character removal");
+    const { charactersObj, protagonist } = saveCharacterData();
+    console.log("Updated characters after removal:", charactersObj);
+    
+    // Also save to server if we have a project ID to ensure the removal is persisted
+    if (projectData?.id) {
+      console.log("Saving to server after character removal");
+      saveProject().then(() => {
+        console.log("Saved to server after character removal");
+        toast({
+          title: "Character Removed",
+          description: `${characterToRemove.name || 'Character'} has been removed`,
+          duration: 2000,
+        });
+      }).catch(err => {
+        console.error("Error saving after character removal:", err);
+      });
+    }
   };
 
   // Update character field

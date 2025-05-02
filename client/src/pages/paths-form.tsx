@@ -46,7 +46,7 @@ export default function PathsForm() {
   // Form state for routes using our form-specific interface
   const [routes, setRoutes] = useState<RouteForm[]>([
     {
-      title: "",
+      title: "Main Path", // Give a default title so it always saves
       loveInterest: null,
       keyChoices: "",
       beginning: "",
@@ -112,7 +112,7 @@ export default function PathsForm() {
         console.error("Error processing paths data:", error);
         // Set a default empty path if we can't load the saved ones
         setRoutes([{
-          title: "",
+          title: "Main Path", // Give a default title so it always saves
           loveInterest: null,
           keyChoices: "",
           beginning: "",
@@ -216,11 +216,15 @@ export default function PathsForm() {
       alert("You can only create up to 3 paths.");
       return;
     }
+    
+    // Create a default path title based on path number
+    const pathNumber = routes.length + 1;
+    const defaultTitle = `Path ${pathNumber}`;
 
     setRoutes([
       ...routes,
       {
-        title: "",
+        title: defaultTitle,
         loveInterest: null,
         keyChoices: "",
         beginning: "",
