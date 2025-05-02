@@ -245,55 +245,29 @@ export default function BasicForm() {
   // Register with form save system
   useRegisterFormSave('basic', saveBasicData);
   
-  // Use a direct watch approach with our own debouncing
-  useEffect(() => {
-    // Create a debounced save function
-    let saveTimeout: NodeJS.Timeout | null = null;
+  // Set up autosave functionality
+  useAutosave('basic', (values) => {
+    console.log("Project saved with current form data from basic");
     
-    // Set up a subscription to form value changes
-    const subscription = form.watch((values) => {
-      // Clear existing timeout to debounce
-      if (saveTimeout) {
-        clearTimeout(saveTimeout);
-      }
-      
-      // Set new timeout
-      saveTimeout = setTimeout(() => {
-        // Get the current form values
-        const currentValues = form.getValues();
-        console.log("Form watch autosave triggered with data:", currentValues);
-        
-        // Convert to BasicData type
-        const formData: BasicData = {
-          theme: currentValues.theme || "",
-          tone: currentValues.tone || "",
-          genre: currentValues.genre || "",
-          setting: currentValues.setting || ""
-        };
-        
-        // Save to context
-        setBasicData(formData);
-        
-        // Save to server if we have a project ID
-        if (projectData?.id) {
-          console.log("Saving to server via form watch...");
-          saveProject().then(() => {
-            console.log("Saved to server successfully via form watch");
-          }).catch(err => {
-            console.error("Error saving to server:", err);
-          });
-        }
-      }, 2000); // 2 second debounce
-    });
-    
-    // Clean up
-    return () => {
-      subscription.unsubscribe();
-      if (saveTimeout) {
-        clearTimeout(saveTimeout);
-      }
+    // Convert to BasicData type
+    const formData: BasicData = {
+      theme: values.theme || "",
+      tone: values.tone || "",
+      genre: values.genre || "",
+      setting: values.setting || ""
     };
-  }, [form, projectData?.id, saveProject]);
+    
+    // Save to context
+    setBasicData(formData);
+    
+    // Save to server if we have a project ID
+    if (projectData?.id) {
+      console.log("Saving to server via autosave hook...");
+      saveProject().catch(err => {
+        console.error("Error saving to server:", err);
+      });
+    }
+  }, 2000);
   
   // Keep this empty component to avoid changing our JSX structure
   const BasicFormAutosave = () => null;
