@@ -269,14 +269,28 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       updatedAt: new Date().toISOString(),
     });
 
-    // Verify the data was successfully set
+    // We can't verify the data was set by checking projectData immediately
+    // because React state updates are asynchronous
+    console.log("Characters data being set. Will be visible after state update");
+    
+    // Use localStorage to verify the update happened
     setTimeout(() => {
-      console.log("Characters data after update:", projectData?.charactersData);
-    }, 0);
+      try {
+        const savedProject = localStorage.getItem("current_vn_project");
+        if (savedProject) {
+          const parsed = JSON.parse(savedProject);
+          console.log("Characters saved to localStorage:", parsed.charactersData);
+        }
+      } catch (err) {
+        console.error("Error checking localStorage:", err);
+      }
+    }, 100);
   };
 
   const setPathsData = (data: PathsData) => {
     if (!projectData) return;
+    
+    console.log("Setting paths data in context:", data);
 
     setProjectData({
       ...projectData,
@@ -284,6 +298,23 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       currentStep: Math.max(projectData.currentStep, 4),
       updatedAt: new Date().toISOString(),
     });
+    
+    // We can't verify the data was set by checking projectData immediately
+    // because React state updates are asynchronous
+    console.log("Paths data being set. Will be visible after state update");
+    
+    // Use localStorage to verify the update happened
+    setTimeout(() => {
+      try {
+        const savedProject = localStorage.getItem("current_vn_project");
+        if (savedProject) {
+          const parsed = JSON.parse(savedProject);
+          console.log("Paths saved to localStorage:", parsed.pathsData);
+        }
+      } catch (err) {
+        console.error("Error checking localStorage:", err);
+      }
+    }, 100);
   };
 
   const setPlotData = (data: PlotData) => {
@@ -371,6 +402,20 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     try {
+      // First, check if we have characters and paths data
+      console.log("Checking project data before saving...");
+      console.log("Characters data:", {
+        hasData: projectData.charactersData && Object.keys(projectData.charactersData).length > 0,
+        characterCount: projectData.charactersData ? Object.keys(projectData.charactersData).length : 0,
+        characterNames: projectData.charactersData ? Object.keys(projectData.charactersData) : []
+      });
+      
+      console.log("Paths data:", {
+        hasData: projectData.pathsData && Object.keys(projectData.pathsData).length > 0,
+        pathCount: projectData.pathsData ? Object.keys(projectData.pathsData).length : 0,
+        pathNames: projectData.pathsData ? Object.keys(projectData.pathsData) : []
+      });
+      
       console.log("Saving project to server...", {
         id: projectData.id,
         title: projectData.title,
@@ -388,11 +433,25 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
         dataToSave.title = dataToSave.conceptData?.title || "Untitled Project";
       }
       
+      // For debugging, save a copy to localStorage before API call
+      try {
+        localStorage.setItem("vn_pre_save_data", JSON.stringify(dataToSave));
+      } catch (e) {
+        console.warn("Could not save pre-save data to localStorage", e);
+      }
+      
       console.log("Submitting data to API...");
       const response = await apiRequest("POST", "/api/projects", dataToSave);
 
       const savedProject = await response.json();
-      console.log("Project saved successfully:", { id: savedProject.id, title: savedProject.title });
+      console.log("Project saved successfully:", {
+        id: savedProject.id,
+        title: savedProject.title,
+        savedCharacterCount: savedProject.charactersData ? Object.keys(savedProject.charactersData).length : 0,
+        savedPathCount: savedProject.pathsData ? Object.keys(savedProject.pathsData).length : 0,
+      });
+      
+      // Set the project data in state
       setProjectData(savedProject);
 
       // Store in localStorage as well

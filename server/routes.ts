@@ -278,17 +278,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/projects", async (req, res) => {
     try {
       const projectData = req.body;
-      console.log("Received project data:", JSON.stringify(projectData, null, 2));
+      
+      // Filter out the large data objects for console logging
+      const logData = {
+        id: projectData.id,
+        title: projectData.title,
+        currentStep: projectData.currentStep,
+        hasCharacters: projectData.charactersData && Object.keys(projectData.charactersData || {}).length > 0,
+        characterCount: Object.keys(projectData.charactersData || {}).length,
+        pathCount: Object.keys(projectData.pathsData || {}).length,
+        updatedAt: projectData.updatedAt
+      };
+      
+      console.log("Received project data:", logData);
 
       // If project has an ID, update it
       if (projectData.id) {
         console.log(`Updating existing project with ID: ${projectData.id}`);
+        
         try {
+          // Run debug check on project data BEFORE update
+          const existingProject = await storage.getProject(projectData.id);
+          if (existingProject) {
+            console.log(`Existing project before update:`, {
+              id: existingProject.id,
+              title: existingProject.title,
+              characterCount: Object.keys(existingProject.charactersData || {}).length,
+              pathCount: Object.keys(existingProject.pathsData || {}).length
+            });
+            
+            // If the incoming project is missing characters that the existing one has
+            if (existingProject.charactersData && 
+                Object.keys(existingProject.charactersData).length > 0 && 
+                (!projectData.charactersData || Object.keys(projectData.charactersData).length === 0)) {
+              console.warn("WARNING: Incoming project data is missing characters that exist in the database");
+              console.log("Preserving existing characters data from database");
+              projectData.charactersData = existingProject.charactersData;
+            }
+            
+            // If the incoming project is missing paths that the existing one has
+            if (existingProject.pathsData && 
+                Object.keys(existingProject.pathsData).length > 0 && 
+                (!projectData.pathsData || Object.keys(projectData.pathsData).length === 0)) {
+              console.warn("WARNING: Incoming project data is missing paths that exist in the database");
+              console.log("Preserving existing paths data from database");
+              projectData.pathsData = existingProject.pathsData;
+            }
+          } else {
+            console.log(`No existing project found with ID: ${projectData.id}`);
+          }
+          
           const updatedProject = await storage.updateProject(
             projectData.id,
             projectData,
           );
-          console.log("Project updated successfully");
+          
+          console.log("Project updated successfully:", {
+            id: updatedProject.id,
+            title: updatedProject.title,
+            characterCount: Object.keys(updatedProject.charactersData || {}).length,
+            pathCount: Object.keys(updatedProject.pathsData || {}).length
+          });
+          
           return res.json(updatedProject);
         } catch (updateError) {
           console.error("Error updating project:", updateError);
