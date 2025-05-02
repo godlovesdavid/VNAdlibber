@@ -77,12 +77,12 @@ export const useAutosave = (
   // Setup watch subscription for form changes
   useEffect(() => {
     // Skip if form is not available, but try again in 500ms
-    if (!form || !form.watch || !form.getValues) {
+    if (!form || typeof form.watch !== 'function' || typeof form.getValues !== 'function') {
       console.warn(`[Autosave] ${formId} - FormContext not ready, retrying in 500ms`);
       
       // Retry with a delay to allow form context to initialize
       const retryTimer = setTimeout(() => {
-        const formIsReady = form && form.watch && form.getValues;
+        const formIsReady = form && typeof form.watch === 'function' && typeof form.getValues === 'function';
         if (formIsReady) {
           console.log(`[Autosave] ${formId} - FormContext now available after retry`);
           // We can't trigger a re-render here, but the form will be ready on the next render
@@ -142,7 +142,7 @@ export const useAutosave = (
   return {
     // Force an immediate save
     performSave: () => {
-      if (!form || !form.getValues) return;
+      if (!form || typeof form.getValues !== 'function') return;
       const values = form.getValues();
       console.log(`[Autosave] ${formId} - Manual save triggered`);
       performSave(values);

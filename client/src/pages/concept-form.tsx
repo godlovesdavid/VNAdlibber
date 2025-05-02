@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useVnData } from "@/hooks/use-vn-data";
 import { useRegisterFormSave } from "@/hooks/use-form-save";
-import { useAutosave } from "@/hooks/use-autosave-fixed";
 import { CreationProgress } from "@/components/creation-progress";
 import { NavBar } from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
@@ -49,131 +48,62 @@ export default function ConceptForm() {
   // Load existing data if available or clear form if starting a new project
   useEffect(() => {
     // If project data exists and has concept data
-    if (projectData?.conceptData?.title) {
-      setTitle(projectData.conceptData.title || "");
-      setTagline(projectData.conceptData.tagline || "");
-      setPremise(projectData.conceptData.premise || "");
-    } else {
-      // Clear form values if no project data or it's a new project
-      setTitle("");
-      setTagline("");
-      setPremise("");
+    if (projectData?.conceptData) {
+      console.log("Loading existing concept data", projectData.conceptData);
+      form.reset({
+        title: projectData.conceptData.title || "",
+        tagline: projectData.conceptData.tagline || "",
+        premise: projectData.conceptData.premise || ""
+      });
     }
-  }, [projectData]);
+  }, [projectData, form]);
   
   // Helper function to save concept data
   function saveConceptData() {
-    setConceptData({
-      title,
-      tagline,
-      premise,
-    });
-    return { title, tagline, premise };
+    const values = form.getValues();
+    console.log("Saving concept data", values);
+    setConceptData(values);
+    return values;
   }
   
   // Register with form save system
   useRegisterFormSave('concept', saveConceptData);
   
-  // Setup autosave with state watch
-  const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
-  
-  // Effect to watch for title changes
+  // Setup autosave using the watch method directly
   useEffect(() => {
-    if (debounceTimeout) {
-      clearTimeout(debounceTimeout);
-    }
-    
-    const timeout = setTimeout(() => {
-      console.log("[AutosaveEffect] Title changed, saving data");
-      saveConceptData();
-      
-      // Save to server if project exists
-      if (projectData?.id) {
-        console.log("[AutosaveEffect] Saving to server...");
-        saveProject().then(() => {
-          console.log("[AutosaveEffect] Saved to server successfully");
-        }).catch(err => {
-          console.error("[AutosaveEffect] Error saving to server:", err);
-        });
-      }
-    }, 2000); // 2 seconds debounce
-    
-    setDebounceTimeout(timeout);
-    
-    return () => {
-      if (timeout) clearTimeout(timeout);
-    };
-  }, [title, projectData?.id, saveProject]);
-  
-  // Effect to watch for tagline changes
-  useEffect(() => {
-    if (debounceTimeout) {
-      clearTimeout(debounceTimeout);
-    }
-    
-    const timeout = setTimeout(() => {
-      console.log("[AutosaveEffect] Tagline changed, saving data");
-      saveConceptData();
-      
-      // Save to server if project exists
-      if (projectData?.id) {
-        console.log("[AutosaveEffect] Saving to server...");
-        saveProject().then(() => {
-          console.log("[AutosaveEffect] Saved to server successfully");
-        }).catch(err => {
-          console.error("[AutosaveEffect] Error saving to server:", err);
-        });
-      }
-    }, 2000); // 2 seconds debounce
-    
-    setDebounceTimeout(timeout);
-    
-    return () => {
-      if (timeout) clearTimeout(timeout);
-    };
-  }, [tagline, projectData?.id, saveProject]);
-  
-  // Effect to watch for premise changes
-  useEffect(() => {
-    if (debounceTimeout) {
-      clearTimeout(debounceTimeout);
-    }
-    
-    const timeout = setTimeout(() => {
-      console.log("[AutosaveEffect] Premise changed, saving data");
-      saveConceptData();
-      
-      // Save to server if project exists
-      if (projectData?.id) {
-        console.log("[AutosaveEffect] Saving to server...");
-        saveProject().then(() => {
-          console.log("[AutosaveEffect] Saved to server successfully");
-        }).catch(err => {
-          console.error("[AutosaveEffect] Error saving to server:", err);
-        });
-      }
-    }, 2000); // 2 seconds debounce
-    
-    setDebounceTimeout(timeout);
-    
-    return () => {
-      if (timeout) clearTimeout(timeout);
-    };
-  }, [premise, projectData?.id, saveProject]);
-  
-  // Log autosave status
-  useEffect(() => {
-    console.log("[ConceptForm] Autosave enabled with state watch (2 second debounce)");
-  }, []);
+    // Subscribe to form changes
+    const subscription = form.watch(() => {
+      // Use debounce inside this callback
+      const handler = setTimeout(() => {
+        const values = form.getValues();
+        console.log("[AutosaveEffect] Form changed, saving data:", values);
+        saveConceptData();
+        
+        // Save to server if we have a project ID
+        if (projectData?.id) {
+          console.log("[AutosaveEffect] Saving to server...");
+          saveProject().then(() => {
+            console.log("[AutosaveEffect] Saved to server successfully");
+          }).catch(err => {
+            console.error("[AutosaveEffect] Error saving to server:", err);
+          });
+        }
+      }, 2000); // ← 2 seconds debounce
+
+      // Clear previous debounce timeout
+      return () => clearTimeout(handler);
+    });
+
+    console.log("[ConceptForm] Autosave with Watch method enabled (2 second debounce)");
+
+    // Clean up subscription on unmount
+    return () => subscription.unsubscribe();
+  }, [form, saveProject, projectData?.id]);
 
   // Go back to previous step
   const handleBack = async () => {
-    // Save data
-    setConceptData({
-      title,
-      tagline,
-      premise,
-    });
+    // Save data before navigating
+    saveConceptData();
     
     // Save to server if we have a project ID
     if (projectData?.id) {
@@ -188,19 +118,9 @@ export default function ConceptForm() {
   };
 
   // Proceed to next step
-  const handleNext = async () => {
-    // Validate form
-    if (!title || !tagline || !premise) {
-      alert("Please fill in all required fields");
-      return;
-    }
-
+  const handleNext = form.handleSubmit(async (data) => {
     // Save data
-    setConceptData({
-      title,
-      tagline,
-      premise,
-    });
+    setConceptData(data);
     
     // Save to server if we have a project ID
     if (projectData?.id) {
@@ -213,16 +133,17 @@ export default function ConceptForm() {
 
     // Navigate to next step
     setLocation("/create/characters");
-  };
+  });
 
   // Generate concept using AI
   const handleGenerateConcept = async () => {
     const generatedConcept = await generateConceptData();
 
     if (generatedConcept) {
-      setTitle(generatedConcept.title);
-      setTagline(generatedConcept.tagline);
-      setPremise(generatedConcept.premise);
+      // Update form with generated values
+      form.setValue('title', generatedConcept.title);
+      form.setValue('tagline', generatedConcept.tagline);
+      form.setValue('premise', generatedConcept.premise);
       
       // Save the generated concept data
       setConceptData({
@@ -260,124 +181,140 @@ export default function ConceptForm() {
             title, tagline, and premise.
           </p>
 
-          <div className="space-y-6">
-            {/* Title */}
-            <div className="form-group">
-              <label
-                htmlFor="title"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Title
-              </label>
-              <p className="text-xs text-gray-500 mb-2">
-                Create a memorable title for your visual novel
-              </p>
-              <Input
-                id="title"
-                placeholder="e.g. Chronicles of the Hidden City"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
+          <Form {...form}>
+            <form onSubmit={handleNext} className="space-y-6">
+              {/* Title */}
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Title
+                    </FormLabel>
+                    <p className="text-xs text-gray-500 mb-2">
+                      Create a memorable title for your visual novel
+                    </p>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        placeholder="e.g. Chronicles of the Hidden City"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            {/* Tagline */}
-            <div className="form-group">
-              <label
-                htmlFor="tagline"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Tagline
-              </label>
-              <p className="text-xs text-gray-500 mb-2">
-                A single sentence that captures the essence of your story
-              </p>
-              <Input
-                id="tagline"
-                placeholder="e.g. When secrets become weapons, who can you trust?"
-                value={tagline}
-                onChange={(e) => setTagline(e.target.value)}
+              {/* Tagline */}
+              <FormField
+                control={form.control}
+                name="tagline"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Tagline
+                    </FormLabel>
+                    <p className="text-xs text-gray-500 mb-2">
+                      A single sentence that captures the essence of your story
+                    </p>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        placeholder="e.g. When secrets become weapons, who can you trust?"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            {/* Premise */}
-            <div className="form-group">
-              <label
-                htmlFor="premise"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Premise
-              </label>
-              <p className="text-xs text-gray-500 mb-2">
-                Brief description of your story's setting and central conflict
-              </p>
-              <Textarea
-                id="premise"
-                rows={4}
-                placeholder="e.g. In a city where memories can be traded like currency, a young archivist discovers a forbidden memory that reveals a conspiracy at the heart of society. As they navigate a web of deception, they must choose between exposing the truth or protecting those they love."
-                value={premise}
-                onChange={(e) => setPremise(e.target.value)}
+              {/* Premise */}
+              <FormField
+                control={form.control}
+                name="premise"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Premise
+                    </FormLabel>
+                    <p className="text-xs text-gray-500 mb-2">
+                      Brief description of your story's setting and central conflict
+                    </p>
+                    <FormControl>
+                      <Textarea 
+                        {...field} 
+                        rows={4}
+                        placeholder="e.g. In a city where memories can be traded like currency, a young archivist discovers a forbidden memory that reveals a conspiracy at the heart of society. As they navigate a web of deception, they must choose between exposing the truth or protecting those they love."
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <div className="pt-6 flex justify-between">
-              <Button variant="outline" onClick={handleBack}>
-                Back
-              </Button>
-              <div className="flex space-x-3">
-                <Button
-                  variant="outline"
-                  className="border-primary text-primary hover:bg-primary-100"
-                  onClick={handleGenerateConcept}
-                  disabled={isGenerating}
-                >
-                  {isGenerating ? (
-                    <>
-                      <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Wand2 className="mr-2 h-4 w-4" />
-                      Generate
-                    </>
-                  )}
+              <div className="pt-6 flex justify-between">
+                <Button type="button" variant="outline" onClick={handleBack}>
+                  Back
                 </Button>
-                <Button onClick={handleNext}>Next: Characters</Button>
+                <div className="flex space-x-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="border-primary text-primary hover:bg-primary-100"
+                    onClick={handleGenerateConcept}
+                    disabled={isGenerating}
+                  >
+                    {isGenerating ? (
+                      <>
+                        <svg
+                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Wand2 className="mr-2 h-4 w-4" />
+                        Generate
+                      </>
+                    )}
+                  </Button>
+                  <Button type="submit">Next: Characters</Button>
+                </div>
               </div>
-            </div>
 
-            {isGenerating && (
-              <div className="pt-3 flex justify-end">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-red-600 border-red-300 hover:bg-red-50"
-                  onClick={cancelGeneration}
-                >
-                  Cancel Generation
-                </Button>
-              </div>
-            )}
-          </div>
+              {isGenerating && (
+                <div className="pt-3 flex justify-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-red-600 border-red-300 hover:bg-red-50"
+                    onClick={cancelGeneration}
+                  >
+                    Cancel Generation
+                  </Button>
+                </div>
+              )}
+            </form>
+          </Form>
         </div>
       </div>
     </>
