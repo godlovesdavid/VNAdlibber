@@ -6,6 +6,7 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAutosave } from "@/hooks/use-simple-autosave";
+import { SimpleFormTest } from "@/components/simple-form-test";
 import {
   Form,
   FormControl,
