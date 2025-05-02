@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useVnData } from "@/hooks/use-vn-data";
-import { useFormSave } from "@/hooks/use-form-save";
+import { useFormSave, useRegisterFormSave } from "@/hooks/use-form-save";
 import { CreationProgress } from "@/components/creation-progress";
 import { NavBar } from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
@@ -71,11 +71,30 @@ export default function PathsForm() {
     }
   }, [projectData]);
   
-  // Use the useRegisterFormSave hook to register our save function
-  useRegisterFormSave('paths', () => {
-    console.log('Saving paths form data via form save system');
-    savePathData();
-  });
+  // Helper function to save path data
+  const savePathData = () => {
+    // Convert array to object format for storage
+    const pathsObj: Record<string, Route> = {};
+    
+    routes.forEach(route => {
+      // Only process routes that have a title
+      if (route.title) {
+        // Extract the title and create a clean copy without it
+        const { title, ...routeProps } = route;
+        
+        // Store with title as key and the rest of the properties as value
+        pathsObj[title] = routeProps;
+      }
+    });
+    
+    // Set the paths data in the context
+    setPathsData(pathsObj);
+    
+    return pathsObj;
+  };
+  
+  // Register with form save system
+  useRegisterFormSave('paths', savePathData);
 
   // Add a new path card
   const addPath = () => {
@@ -131,28 +150,6 @@ export default function PathsForm() {
     setRoutes(updatedRoutes);
   };
 
-  // Helper function to save path data
-  const savePathData = (routesToSave: (Route & { title: string })[] = routes) => {
-    // Convert array to object format for storage
-    const pathsObj: Record<string, Route> = {};
-    
-    routesToSave.forEach(route => {
-      // Only process routes that have a title
-      if (route.title) {
-        // Extract the title and create a clean copy without it
-        const { title, ...routeProps } = route;
-        
-        // Store with title as key and the rest of the properties as value
-        pathsObj[title] = routeProps;
-      }
-    });
-    
-    // Set the paths data in the context
-    setPathsData(pathsObj);
-    
-    return pathsObj;
-  };
-
   // Generate path details using AI
   const handleGeneratePath = async (index: number) => {
     setGeneratingPathIndex(index);
@@ -167,8 +164,8 @@ export default function PathsForm() {
       };
       setRoutes(updatedRoutes);
 
-      // Update the project context after path generation
-      savePathData(updatedRoutes);
+      // Update the project context after generation
+      savePathData();
 
       // Log generation to console
       console.log(`🔥 Generated path ${index + 1}:`, generatedPath);
@@ -217,8 +214,8 @@ export default function PathsForm() {
         // Update state and project context
         setRoutes(updatedRoutes);
         
-        // Save the path data using our helper function
-        savePathData(updatedRoutes);
+        // Save the path data to the context
+        savePathData();
 
         console.log("Successfully generated all paths at once");
         console.log("Updated project context with all path data");
@@ -244,23 +241,6 @@ export default function PathsForm() {
 
   // Proceed to next step
   const handleNext = () => {
-    // // Validate paths
-    // const isValid = routes.every(
-    //   (route) =>
-    //     route.title &&
-    //     route.keyChoices.trim() &&
-    //     route.beginning &&
-    //     route.middle &&
-    //     route.climax &&
-    //     route.goodEnding &&
-    //     route.badEnding,
-    // );
-
-    // if (!isValid) {
-    //   alert("Please fill in all required fields for each path");
-    //   return;
-    // }
-
     // Save data using our helper function
     savePathData();
 
@@ -444,7 +424,7 @@ export default function PathsForm() {
                         </label>
                         <Textarea
                           rows={3}
-                          placeholder="Description of positive resolution"
+                          placeholder="Description of the positive resolution"
                           value={route.goodEnding}
                           onChange={(e) =>
                             updatePath(index, "goodEnding", e.target.value)
@@ -458,7 +438,7 @@ export default function PathsForm() {
                         </label>
                         <Textarea
                           rows={3}
-                          placeholder="Description of negative outcome"
+                          placeholder="Description of the negative resolution"
                           value={route.badEnding}
                           onChange={(e) =>
                             updatePath(index, "badEnding", e.target.value)
@@ -471,38 +451,19 @@ export default function PathsForm() {
 
                 <CardFooter className="flex justify-end">
                   <Button
-                    variant="ghost"
-                    className="text-primary hover:text-primary/80 text-sm"
                     onClick={() => handleGeneratePath(index)}
-                    disabled={isGenerating}
+                    variant="outline"
+                    className="text-primary border-primary hover:bg-primary/10 flex items-center gap-2"
+                    disabled={generatingPathIndex !== null}
                   >
-                    {generatingPathIndex === index && isGenerating ? (
+                    {generatingPathIndex === index ? (
                       <>
-                        <svg
-                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
+                        <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
                         Generating...
                       </>
                     ) : (
                       <>
-                        <Wand2 className="mr-1 h-4 w-4" /> Generate Path
+                        <Wand2 className="h-4 w-4" /> Auto-Complete
                       </>
                     )}
                   </Button>
@@ -510,73 +471,49 @@ export default function PathsForm() {
               </Card>
             ))}
 
-            <div className="pt-6 flex flex-col space-y-4">
-              <div className="flex justify-center gap-4">
-                <Button
-                  onClick={addPath}
-                  variant="secondary"
-                  className="flex items-center"
-                  disabled={routes.length >= 3}
-                >
-                  <Plus className="mr-1 h-4 w-4" /> Add Path
-                </Button>
-
-                <Button
-                  onClick={handleGenerateAllPaths}
-                  variant="secondary"
-                  className="flex items-center text-primary border-primary hover:bg-primary/10"
-                  disabled={isGenerating || routes.length === 0}
-                >
-                  <Wand2 className="mr-1 h-4 w-4" />
-                  {generatingPathIndex === -1 && isGenerating ? (
-                    <>
-                      <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      Generating All...
-                    </>
-                  ) : (
-                    <>Generate All Paths</>
-                  )}
-                </Button>
-              </div>
-              <div className="flex justify-between">
-                <Button variant="outline" onClick={handleBack}>
-                  Back
-                </Button>
-                <Button onClick={handleNext}>Next: Plot</Button>
-              </div>
-            </div>
-
-            {isGenerating && generatingPathIndex !== null && (
-              <div className="pt-3 flex justify-end">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-red-600 border-red-300 hover:bg-red-50"
-                  onClick={cancelGeneration}
-                >
-                  Cancel Generation
-                </Button>
-              </div>
+            {routes.length < 3 && (
+              <Button
+                onClick={addPath}
+                variant="outline"
+                className="w-full py-8 border-dashed border-gray-300 hover:border-primary hover:bg-gray-50 flex items-center justify-center gap-2"
+              >
+                <Plus className="h-4 w-4" /> Add New Path
+              </Button>
             )}
+          </div>
+
+          <div className="mt-8 flex justify-between">
+            <Button
+              onClick={handleBack}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              Back
+            </Button>
+
+            <div className="flex gap-3">
+              <Button
+                onClick={handleGenerateAllPaths}
+                variant="outline"
+                className="flex items-center gap-2"
+                disabled={generatingPathIndex !== null || routes.length === 0}
+              >
+                {generatingPathIndex === -1 ? (
+                  <>
+                    <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
+                    Generating All...
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="h-4 w-4" /> Generate All Paths
+                  </>
+                )}
+              </Button>
+
+              <Button onClick={handleNext} className="flex items-center gap-2">
+                Next
+              </Button>
+            </div>
           </div>
         </div>
       </div>
