@@ -721,6 +721,23 @@ export const useVnData = () => {
           if (characterNames.length > 0) {
             console.log(`Processing ${characterNames.length} characters:`, characterNames);
             
+            // If using array format already, check and use it directly
+            if (Array.isArray(result)) {
+              console.log("Result is already an array, using directly:", result);
+              return result.map(char => {
+                // If the character has numeric keys, clean them up
+                if (Object.keys(char).some(key => !isNaN(Number(key)))) {
+                  return Object.entries(char)
+                    .filter(([key]) => isNaN(Number(key)))
+                    .reduce((obj, [key, value]) => {
+                      obj[key] = value;
+                      return obj;
+                    }, {} as Record<string, any>);
+                }
+                return char;
+              });
+            }
+            
             // Convert object of characters to array of characters with name
             const charactersArray = characterNames.map(name => {
               const character = result[name];

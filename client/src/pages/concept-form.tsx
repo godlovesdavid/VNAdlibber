@@ -5,6 +5,7 @@ import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useVnData } from "@/hooks/use-vn-data";
 import { useRegisterFormSave } from "@/hooks/use-form-save";
+import type { ConceptData } from "@/types";
 import { CreationProgress } from "@/components/creation-progress";
 import { NavBar } from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
@@ -78,13 +79,40 @@ export default function ConceptForm() {
   // Register with form save system
   useRegisterFormSave('concept', saveConceptData);
   
-  // Declare an autosave function component to be used inside FormProvider
+  // Declare autosave function component to be used inside FormProvider
   const ConceptFormAutosave = () => {
+    // Create a typed handler function
+    function handleTypedData(formData: Record<string, any>): ConceptData | null {
+      if (!formData) return null;
+
+      // Check if it has all required fields
+      const hasAllFields = ['title', 'tagline', 'premise'].every(field => 
+        field in formData && typeof formData[field] === 'string'
+      );
+
+      if (hasAllFields) {
+        return {
+          title: formData.title as string,
+          tagline: formData.tagline as string,
+          premise: formData.premise as string
+        };
+      }
+      return null;
+    }
+
+    // The actual autosave handler
     const handleAutosave = (data: Record<string, any>) => {
       if (!data) return;
       
       console.log("Concept autosave triggered with data:", data);
-      setConceptData(data);
+      
+      // Type checking to ensure data matches ConceptData
+      const typedData = handleTypedData(data);
+      if (typedData) {
+        setConceptData(typedData);
+      } else {
+        console.warn("Autosave data doesn't match ConceptData format:", data);
+      }
       
       // Save to server if we have a project ID
       if (projectData?.id) {
