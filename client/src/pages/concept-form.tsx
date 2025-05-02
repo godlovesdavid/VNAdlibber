@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Wand2 } from "lucide-react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ConceptData } from "@/types/vn";
 import {
   Form,
   FormControl,
@@ -71,6 +72,19 @@ export default function ConceptForm() {
     const values = form.getValues();
     console.log("Saving concept data", values);
     setConceptData(values);
+    
+    // Save to server if we have a project ID
+    if (projectData?.id) {
+      // Save immediately without waiting for the promise
+      saveProject()
+        .then(() => {
+          console.log("Concept data saved to server successfully");
+        })
+        .catch(error => {
+          console.error("Error saving concept data to server:", error);
+        });
+    }
+    
     return values;
   }
   
@@ -86,7 +100,13 @@ export default function ConceptForm() {
       shouldTouch: true
     });
     
-    // No auto-saving to context or server
+    // Save the field to the context
+    const singleFieldUpdate = {
+      [fieldName]: value
+    } as ConceptData;
+    
+    console.log(`Saving field ${fieldName} with value:`, value);
+    setConceptData(singleFieldUpdate);
   };
 
   // Go back to previous step
@@ -296,6 +316,19 @@ export default function ConceptForm() {
                         Generate
                       </>
                     )}
+                  </Button>
+                  <Button 
+                    type="button" 
+                    variant="secondary"
+                    onClick={() => {
+                      saveConceptData();
+                      if (projectData?.id) {
+                        saveProject()
+                          .then(() => console.log("Saved concept data manually"));
+                      }
+                    }}
+                  >
+                    Save
                   </Button>
                   <Button type="submit">Next: Characters</Button>
                 </div>

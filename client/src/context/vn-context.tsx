@@ -164,10 +164,28 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
   const setConceptData = (data: ConceptData) => {
     if (!projectData) return;
 
+    // If data contains a single field, merge it with existing data
+    const keys = Object.keys(data).filter(key => data[key as keyof ConceptData]);
+    let mergedData: ConceptData;
+    
+    if (keys.length === 1 && projectData.conceptData) {
+      // This is a single field update
+      mergedData = { ...projectData.conceptData };
+      const key = keys[0] as keyof ConceptData;
+      mergedData[key] = data[key] || "";
+    } else {
+      // This is a full form update, merge with existing data
+      mergedData = {
+        title: data.title || projectData.conceptData?.title || "",
+        tagline: data.tagline || projectData.conceptData?.tagline || "",
+        premise: data.premise || projectData.conceptData?.premise || ""
+      };
+    }
+
     setProjectData({
       ...projectData,
-      title: data.title || projectData.title,
-      conceptData: data,
+      title: mergedData.title || projectData.title,
+      conceptData: mergedData,
       currentStep: Math.max(projectData.currentStep, 2),
       updatedAt: new Date().toISOString(),
     });
