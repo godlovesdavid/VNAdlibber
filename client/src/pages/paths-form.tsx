@@ -24,6 +24,11 @@ import {
 import { Wand2, Trash, Plus } from "lucide-react";
 import { Route } from "@/types/vn";
 
+// Extended interface for form use that includes a title property
+interface RouteForm extends Route {
+  title: string; // Title is used as the key in the PathsData object
+}
+
 export default function PathsForm() {
   const [, setLocation] = useLocation();
   const { projectData, setPathsData, goToStep } = useVnContext();
@@ -121,6 +126,25 @@ export default function PathsForm() {
     setRoutes(updatedRoutes);
   };
 
+  // Helper function to save path data
+  const savePathData = (routesToSave: Route[] = routes) => {
+    // Convert array to object format for storage
+    const pathsObj: Record<string, Route> = {};
+    routesToSave.forEach(route => {
+      if (route.title) {
+        // Create a copy of the route without the redundant title property
+        const { title, ...routeWithoutTitle } = route;
+        // Store with title as key but don't include title in the value
+        pathsObj[title] = routeWithoutTitle;
+      }
+    });
+    
+    // Set the paths data in the context
+    setPathsData(pathsObj);
+    
+    return pathsObj;
+  };
+
   // Generate path details using AI
   const handleGeneratePath = async (index: number) => {
     setGeneratingPathIndex(index);
@@ -136,14 +160,7 @@ export default function PathsForm() {
       setRoutes(updatedRoutes);
 
       // Update the project context after path generation
-      const pathsObj: Record<string, Route> = {};
-      updatedRoutes.forEach(route => {
-        if (route.title) {
-          pathsObj[route.title] = { ...route };
-        }
-      });
-      
-      setPathsData(pathsObj);
+      savePathData(updatedRoutes);
 
       // Log generation to console
       console.log(`🔥 Generated path ${index + 1}:`, generatedPath);
@@ -192,18 +209,8 @@ export default function PathsForm() {
         // Update state and project context
         setRoutes(updatedRoutes);
         
-        // Convert to object format for storage
-        const pathsObj: Record<string, Route> = {};
-        updatedRoutes.forEach(route => {
-          if (route.title) {
-            // Create a copy of the route without the redundant title property
-            const { title, ...routeWithoutTitle } = route;
-            // Store with title as key but don't include title in the value
-            pathsObj[title] = routeWithoutTitle;
-          }
-        });
-        
-        setPathsData(pathsObj);
+        // Save the path data using our helper function
+        savePathData(updatedRoutes);
 
         console.log("Successfully generated all paths at once");
         console.log("Updated project context with all path data");
@@ -220,6 +227,10 @@ export default function PathsForm() {
 
   // Go back to previous step
   const handleBack = () => {
+    // Save data before navigating back
+    savePathData();
+    
+    // Navigate to previous step
     goToStep(3);
   };
 
@@ -242,18 +253,8 @@ export default function PathsForm() {
     //   return;
     // }
 
-    // Save data - transform array to object format
-    const pathsObj: Record<string, Route> = {};
-    routes.forEach(route => {
-      if (route.title) {
-        // Create a copy of the route without the redundant title property
-        const { title, ...routeWithoutTitle } = route;
-        // Store with title as key but don't include title in the value
-        pathsObj[title] = routeWithoutTitle;
-      }
-    });
-    
-    setPathsData(pathsObj);
+    // Save data using our helper function
+    savePathData();
 
     // Navigate to next step
     setLocation("/create/plot");
