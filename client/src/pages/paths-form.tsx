@@ -30,7 +30,7 @@ import { Route } from "@/types/vn";
 
 export default function PathsForm() {
   const [, setLocation] = useLocation();
-  const { projectData, setPathsData, goToStep } = useVnContext();
+  const { projectData, setPathsData, goToStep, saveProject } = useVnContext();
   const {
     generatePathData,
     generateMultiplePathsData,
@@ -231,18 +231,36 @@ export default function PathsForm() {
   };
 
   // Go back to previous step
-  const handleBack = () => {
+  const handleBack = async () => {
     // Save data before navigating back
     savePathData();
+    
+    // Save to server if we have a project ID
+    if (projectData?.id) {
+      try {
+        await saveProject();
+      } catch (error) {
+        console.error("Error saving project:", error);
+      }
+    }
     
     // Navigate to previous step
     goToStep(3);
   };
 
   // Proceed to next step
-  const handleNext = () => {
+  const handleNext = async () => {
     // Save data using our helper function
     savePathData();
+    
+    // Save to server if we have a project ID
+    if (projectData?.id) {
+      try {
+        await saveProject();
+      } catch (error) {
+        console.error("Error saving project:", error);
+      }
+    }
 
     // Navigate to next step
     setLocation("/create/plot");

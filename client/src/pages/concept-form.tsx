@@ -188,6 +188,10 @@ export default function ConceptForm() {
                       <Input 
                         {...field} 
                         placeholder="e.g. Chronicles of the Hidden City"
+                        onChange={(e) => {
+                          field.onChange(e);
+                          handleFieldChange("title", e.target.value);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -211,6 +215,10 @@ export default function ConceptForm() {
                       <Input 
                         {...field} 
                         placeholder="e.g. When secrets become weapons, who can you trust?"
+                        onChange={(e) => {
+                          field.onChange(e);
+                          handleFieldChange("tagline", e.target.value);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -235,6 +243,10 @@ export default function ConceptForm() {
                         {...field} 
                         rows={4}
                         placeholder="e.g. In a city where memories can be traded like currency, a young archivist discovers a forbidden memory that reveals a conspiracy at the heart of society. As they navigate a web of deception, they must choose between exposing the truth or protecting those they love."
+                        onChange={(e) => {
+                          field.onChange(e);
+                          handleFieldChange("premise", e.target.value);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
