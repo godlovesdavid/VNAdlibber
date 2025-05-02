@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
-import { useAutosave } from "@/hooks/use-autosave-fixed";
+import { useAutosave } from "@/hooks/use-simple-autosave";
+import { useForm, FormProvider } from "react-hook-form";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useVnData } from "@/hooks/use-vn-data";
@@ -10,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Wand2 } from "lucide-react";
-import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -78,53 +78,25 @@ export default function ConceptForm() {
   // Register with form save system
   useRegisterFormSave('concept', saveConceptData);
   
-  // Setup simple direct autosave on form change with console logs
-  useEffect(() => {
-    console.log("Setting up direct form watch for autosave in concept form");
-    
-    // Create a timeout reference to implement debouncing
-    let saveTimeout: NodeJS.Timeout | null = null;
-    
-    // Subscribe to form changes
-    const subscription = form.watch((data) => {
-      // Log the change
-      console.log("Concept form field changed, planning autosave");
+  // Declare an autosave function component to be used inside FormProvider
+  const ConceptFormAutosave = () => {
+    useAutosave((data) => {
+      console.log("Concept autosave triggered with data:", data);
+      setConceptData(data);
       
-      // Clear any existing timeout to debounce repeated changes
-      if (saveTimeout) {
-        clearTimeout(saveTimeout);
+      // Save to server if we have a project ID
+      if (projectData?.id) {
+        console.log("Saving concept to server...");
+        saveProject().then(() => {
+          console.log("Saved concept to server successfully");
+        }).catch(err => {
+          console.error("Error saving concept to server:", err);
+        });
       }
-      
-      // Set a new timeout to save after delay
-      saveTimeout = setTimeout(() => {
-        // Get latest values
-        const currentValues = form.getValues();
-        console.log("Concept autosave executing, saving data:", currentValues);
-        
-        // Save data
-        setConceptData(currentValues);
-        
-        // Save to server if we have a project ID
-        if (projectData?.id) {
-          console.log("Saving concept to server...");
-          saveProject().then(() => {
-            console.log("Saved concept to server successfully");
-          }).catch(err => {
-            console.error("Error saving concept to server:", err);
-          });
-        }
-      }, 2000); // 2 second debounce
     });
     
-    // Clean up on unmount
-    return () => {
-      console.log("Cleaning up concept form watch subscription");
-      subscription.unsubscribe();
-      if (saveTimeout) {
-        clearTimeout(saveTimeout);
-      }
-    };
-  }, [form, setConceptData, saveProject, projectData?.id]);
+    return null; // This component doesn't render anything
+  };
 
   // Go back to previous step
   const handleBack = async () => {
@@ -207,7 +179,8 @@ export default function ConceptForm() {
             title, tagline, and premise.
           </p>
 
-          <Form {...form}>
+          <FormProvider {...form}>
+            <ConceptFormAutosave />
             <form onSubmit={handleNext} className="space-y-6">
               {/* Title */}
               <FormField
@@ -340,7 +313,7 @@ export default function ConceptForm() {
                 </div>
               )}
             </form>
-          </Form>
+          </FormProvider>
         </div>
       </div>
     </>
