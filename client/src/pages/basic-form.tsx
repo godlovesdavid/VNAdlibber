@@ -150,8 +150,16 @@ export default function BasicForm() {
     
     console.log("[BasicForm] Random values set:", randomValues);
     
+    // Make sure the BasicData type is preserved correctly
+    const typedData: BasicData = {
+      theme: randomValues.theme,
+      tone: randomValues.tone,
+      genre: randomValues.genre,
+      setting: randomValues.setting
+    };
+    
     // Save the randomized values to context
-    setBasicData(randomValues);
+    setBasicData(typedData);
     
     // Only save the project to the server if explicitly requested by user
     // and not during initial form setup
@@ -237,34 +245,58 @@ export default function BasicForm() {
   // Register with form save system
   useRegisterFormSave('basic', saveBasicData);
   
-  // Declare an autosave function component to be used inside FormProvider
-  const BasicFormAutosave = () => {
-    useAutosave((values) => {
-      console.log("Autosave triggered with data:", values);
-      
-      // Convert to BasicData type
-      const formData: BasicData = {
-        theme: values.theme as string,
-        tone: values.tone as string,
-        genre: values.genre as string,
-        setting: values.setting as string
-      };
-      
-      setBasicData(formData);
-      
-      // Save to server if we have a project ID
-      if (projectData?.id) {
-        console.log("Saving to server...");
-        saveProject().then(() => {
-          console.log("Saved to server successfully");
-        }).catch(err => {
-          console.error("Error saving to server:", err);
-        });
+  // Use a direct watch approach with our own debouncing
+  useEffect(() => {
+    // Create a debounced save function
+    let saveTimeout: NodeJS.Timeout | null = null;
+    
+    // Set up a subscription to form value changes
+    const subscription = form.watch((values) => {
+      // Clear existing timeout to debounce
+      if (saveTimeout) {
+        clearTimeout(saveTimeout);
       }
+      
+      // Set new timeout
+      saveTimeout = setTimeout(() => {
+        // Get the current form values
+        const currentValues = form.getValues();
+        console.log("Form watch autosave triggered with data:", currentValues);
+        
+        // Convert to BasicData type
+        const formData: BasicData = {
+          theme: currentValues.theme || "",
+          tone: currentValues.tone || "",
+          genre: currentValues.genre || "",
+          setting: currentValues.setting || ""
+        };
+        
+        // Save to context
+        setBasicData(formData);
+        
+        // Save to server if we have a project ID
+        if (projectData?.id) {
+          console.log("Saving to server via form watch...");
+          saveProject().then(() => {
+            console.log("Saved to server successfully via form watch");
+          }).catch(err => {
+            console.error("Error saving to server:", err);
+          });
+        }
+      }, 2000); // 2 second debounce
     });
     
-    return null; // This component doesn't render anything
-  };
+    // Clean up
+    return () => {
+      subscription.unsubscribe();
+      if (saveTimeout) {
+        clearTimeout(saveTimeout);
+      }
+    };
+  }, [form, projectData?.id, saveProject]);
+  
+  // Keep this empty component to avoid changing our JSX structure
+  const BasicFormAutosave = () => null;
 
   // Proceed to next step
   const handleSubmit = form.handleSubmit(async (values) => {
