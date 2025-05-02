@@ -56,15 +56,37 @@ export default function CharactersForm() {
     number | null
   >(null);
 
-  // Reference to track if we've loaded data and are in an editing session
-  const dataLoadedRef = useRef(false);
-
-  // Load existing data if available, but only on initial load
+  // Use localStorage to remember the loading state across navigation
+  const projectId = projectData?.id;
+  const localStorageKey = `character-form-loaded-${projectId}`;
+  
+  // Check local storage on component mount to see if we've already loaded this project's characters
   useEffect(() => {
-    // Skip if we've already loaded data - prevents reloading deleted characters
-    if (dataLoadedRef.current) {
-      console.log("Character data already loaded, skipping reload to prevent data loss");
-      return;
+    if (projectId) {
+      try {
+        const loaded = localStorage.getItem(localStorageKey) === 'true';
+        if (loaded) {
+          console.log(`Found previous load flag for project ${projectId} characters`);
+        }
+      } catch (err) {
+        console.error("Error accessing localStorage:", err);
+      }
+    }
+  }, []);
+  
+  // Load existing data if available, but only if not previously loaded for this project
+  useEffect(() => {
+    // Check if we've already loaded this project's characters
+    if (projectId) {
+      try {
+        const loaded = localStorage.getItem(localStorageKey) === 'true';
+        if (loaded) {
+          console.log(`Characters for project ${projectId} already loaded, skipping reload`);
+          return;
+        }
+      } catch (err) {
+        console.error("Error accessing localStorage:", err);
+      }
     }
 
     if (projectData?.charactersData && Object.keys(projectData.charactersData).length > 0) {
@@ -100,9 +122,15 @@ export default function CharactersForm() {
       console.log("Final characters array to set in form:", charactersArray);
       setCharacters(charactersArray);
       
-      // Mark that we've loaded data - we won't reload after this
-      dataLoadedRef.current = true;
-      console.log("Character data loaded, setting dataLoadedRef to true");
+      // Mark that we've loaded data in localStorage so it persists across navigation
+      if (projectId) {
+        try {
+          localStorage.setItem(localStorageKey, 'true');
+          console.log(`Saved load state to localStorage for project ${projectId} characters`);
+        } catch (err) {
+          console.error("Error setting localStorage:", err);
+        }
+      }
     }
   }, [projectData]);
   
@@ -154,8 +182,7 @@ export default function CharactersForm() {
     return { charactersObj, protagonist };
   }
   
-  // Track if initial data has been loaded, to prevent infinite cycles
-  const initialDataLoadedRef = useRef(false);
+  // No longer need initialDataLoadedRef since we use localStorage
   
   // Register with form save system
   useRegisterFormSave('characters', saveCharacterData);
@@ -247,6 +274,18 @@ export default function CharactersForm() {
           description: `${characterToRemove.name || 'Character'} has been removed`,
           duration: 2000,
         });
+        
+        // Update localStorage to mark that we've made changes
+        try {
+          // If this was the last character, we should reset the load flag
+          // so that if a new character is added, we'll reload the data
+          if (updatedCharacters.length === 0) {
+            localStorage.removeItem(localStorageKey);
+            console.log(`Removed load flag from localStorage for project ${projectId} - all characters deleted`);
+          }
+        } catch (err) {
+          console.error("Error updating localStorage:", err);
+        }
       }).catch(err => {
         console.error("Error saving after character removal:", err);
       });

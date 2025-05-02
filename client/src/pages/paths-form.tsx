@@ -61,15 +61,37 @@ export default function PathsForm() {
     null,
   );
 
-  // Reference to track if we've loaded data and are in an editing session
-  const dataLoadedRef = useRef(false);
-
-  // Load existing data if available, but only on initial load
+  // Use localStorage to remember the loading state across navigation
+  const projectId = projectData?.id;
+  const localStorageKey = `path-form-loaded-${projectId}`;
+  
+  // Check local storage on component mount to see if we've already loaded this project's paths
   useEffect(() => {
-    // Skip if we've already loaded data - prevents reloading deleted paths
-    if (dataLoadedRef.current) {
-      console.log("Path data already loaded, skipping reload to prevent data loss");
-      return;
+    if (projectId) {
+      try {
+        const loaded = localStorage.getItem(localStorageKey) === 'true';
+        if (loaded) {
+          console.log(`Found previous load flag for project ${projectId} paths`);
+        }
+      } catch (err) {
+        console.error("Error accessing localStorage:", err);
+      }
+    }
+  }, []);
+  
+  // Load existing data if available, but only if not previously loaded for this project
+  useEffect(() => {
+    // Check if we've already loaded this project's paths
+    if (projectId) {
+      try {
+        const loaded = localStorage.getItem(localStorageKey) === 'true';
+        if (loaded) {
+          console.log(`Paths for project ${projectId} already loaded, skipping reload`);
+          return;
+        }
+      } catch (err) {
+        console.error("Error accessing localStorage:", err);
+      }
     }
     if (projectData?.pathsData && Object.keys(projectData.pathsData).length > 0) {
       console.log("Loading paths data from context:", projectData.pathsData);
@@ -117,9 +139,15 @@ export default function PathsForm() {
           console.log("No valid routes found in project data");
         }
 
-        // Mark that we've loaded data - we won't reload after this
-        dataLoadedRef.current = true;
-        console.log("Path data loaded, setting dataLoadedRef to true");
+        // Mark that we've loaded data in localStorage so it persists across navigation
+        if (projectId) {
+          try {
+            localStorage.setItem(localStorageKey, 'true');
+            console.log(`Saved load state to localStorage for project ${projectId} paths`);
+          } catch (err) {
+            console.error("Error setting localStorage:", err);
+          }
+        }
       } catch (error) {
         console.error("Error processing paths data:", error);
         // Set a default empty path if we can't load the saved ones
@@ -134,9 +162,15 @@ export default function PathsForm() {
           badEnding: "",
         }]);
         
-        // Even with an error, we've attempted to load, so mark as loaded
-        dataLoadedRef.current = true;
-        console.log("Path data loaded (with default values), setting dataLoadedRef to true");
+        // Even with an error, we've attempted to load, so mark as loaded in localStorage
+        if (projectId) {
+          try {
+            localStorage.setItem(localStorageKey, 'true');
+            console.log(`Saved load state to localStorage for project ${projectId} paths (with default values)`);
+          } catch (err) {
+            console.error("Error setting localStorage:", err);
+          }
+        }
       }
     } else {
       console.log("No paths data found in project data");
@@ -223,8 +257,7 @@ export default function PathsForm() {
     return null; // This component doesn't render anything
   };
   
-  // Track if initial data has been loaded, to prevent infinite cycles
-  const initialDataLoadedRef = useRef(false);
+  // No longer need initialDataLoadedRef since we use localStorage
 
   // Add a new path card
   const addPath = () => {
@@ -282,6 +315,18 @@ export default function PathsForm() {
           description: `${pathToRemove.title || 'Path'} has been removed`,
           duration: 2000,
         });
+        
+        // Update localStorage to mark that we've made changes
+        try {
+          // If this was the last path, we should reset the load flag
+          // so that if a new path is added, we'll reload the data
+          if (updatedRoutes.length === 0) {
+            localStorage.removeItem(localStorageKey);
+            console.log(`Removed load flag from localStorage for project ${projectId} - all paths deleted`);
+          }
+        } catch (err) {
+          console.error("Error updating localStorage:", err);
+        }
       }).catch(err => {
         console.error("Error saving after path removal:", err);
       });
