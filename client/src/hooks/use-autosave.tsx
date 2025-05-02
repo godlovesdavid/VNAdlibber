@@ -14,7 +14,7 @@ import { useVnContext } from '@/context/vn-context';
 export function useAutosave(
   formId: string,
   saveFunction: (data: any) => void,
-  interval = 30000, // 30 seconds default
+  interval = 2000, 
   showToast = true
 ) {
   const { toast } = useToast();
@@ -34,6 +34,8 @@ export function useAutosave(
     
     // Function to save form data
     const performSave = async () => {
+      alert('got here')
+      console.log('got here')
       if (!form.getValues) return;
       
       try {

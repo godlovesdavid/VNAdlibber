@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useVnData } from "@/hooks/use-vn-data";
 import { useRegisterFormSave } from "@/hooks/use-form-save";
-import { useAutosave } from "@/hooks/use-autosave";
+import { useStateAutosave } from "@/hooks/use-state-autosave";
 import { CreationProgress } from "@/components/creation-progress";
 import { NavBar } from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
@@ -129,7 +129,7 @@ export default function CharactersForm() {
   useRegisterFormSave('characters', saveCharacterData);
   
   // Setup autosave
-  useAutosave('characters', saveCharacterData, 30000);
+  useStateAutosave('characters', saveCharacterData, 10000);
 
   // Add a new character card
   const addCharacter = () => {
