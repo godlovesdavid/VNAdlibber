@@ -120,7 +120,7 @@ export default function BasicForm() {
 
   // Function to randomize all form values
   const randomizeForm = () => {
-    console.log("Randomizing form values");
+    console.log("[BasicForm] Randomizing form values");
     const randomValues = {
       theme: getRandomItem(themes),
       tone: getRandomItem(tones),
@@ -128,16 +128,20 @@ export default function BasicForm() {
       setting: getRandomItem(settings),
     };
     
+    // Update form with random values
     form.reset(randomValues);
     setInitialized(true);
     
-    // Save the randomized values
+    console.log("[BasicForm] Random values set:", randomValues);
+    
+    // Save the randomized values to context
     setBasicData(randomValues);
     
     // Only save the project to the server if explicitly requested by user
     // and not during initial form setup
     const isInitialSetup = sessionStorage.getItem("vn_fresh_project") === "true";
     if (projectData?.id && !isInitialSetup) {
+      console.log("[BasicForm] Saving randomized values to server");
       saveProject();
     }
   };
@@ -199,8 +203,11 @@ export default function BasicForm() {
   // Register with form save system
   useRegisterFormSave('basic', saveBasicData);
   
-  // Setup autosave
-  useAutosave('basic', saveBasicData, 30000);
+  // Setup autosave - will automatically save form values every 30 seconds
+  const { performSave } = useAutosave('basic', saveBasicData, 30000, true);
+  
+  // Log for debugging
+  console.log('[BasicForm] Autosave hook installed');
 
   // Proceed to next step
   const handleSubmit = form.handleSubmit(async (data) => {

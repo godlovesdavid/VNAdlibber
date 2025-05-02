@@ -26,11 +26,17 @@ export const useAutosave = (
 
   // Setup autosave timer
   useEffect(() => {
-    // Skip setup if form is not available
-    if (!form) {
-      console.warn("useAutosave called outside FormProvider");
+    console.log(`[Autosave] Setting up autosave for ${formId} (interval: ${interval}ms)`);
+    
+    // Skip setup if form is not available or doesn't have getValues
+    if (!form || typeof form.getValues !== 'function') {
+      console.warn(`[Autosave] useAutosave - FormContext not ready for ${formId}`);
+      // We'll retry on form changes instead of failing completely
       return;
     }
+    
+    console.log(`[Autosave] Form context available for ${formId}`);
+
     
     // Function to save form data
     const performSave = async () => {
@@ -72,7 +78,18 @@ export const useAutosave = (
           console.log(`[Autosave] Server save skipped for ${formId} (no project ID yet)`);
         }
       } catch (error) {
-        console.error("Error in autosave", error);
+        // Log detailed error information
+        console.error(`[Autosave] Error in ${formId} autosave:`, error);
+        
+        // Show error toast to user
+        if (showToast) {
+          toast({
+            title: "Autosave Failed",
+            description: `Could not save ${formId} data automatically`,
+            variant: "destructive",
+            duration: 3000,
+          });
+        }
       }
     };
     
@@ -81,12 +98,18 @@ export const useAutosave = (
       clearInterval(timerRef.current);
     }
     
-    // Setup new timer
-    timerRef.current = setInterval(performSave, interval);
+    // Setup new timer with interval tracking
+    console.log(`[Autosave] Starting autosave timer for ${formId} every ${interval/1000} seconds`);
+    timerRef.current = setInterval(() => {
+      console.log(`[Autosave] Autosave interval triggered for ${formId}`);
+      performSave();
+    }, interval);
     
     // Initialize last saved values
     if (form.getValues) {
-      lastSavedRef.current = form.getValues();
+      const initialValues = form.getValues();
+      lastSavedRef.current = initialValues;
+      console.log(`[Autosave] Initialized ${formId} with values:`, initialValues);
     }
     
     // Cleanup on unmount
