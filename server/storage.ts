@@ -75,6 +75,11 @@ export class MemStorage implements IStorage {
         tagline: "In a world where memories are currency, the truth comes at the highest price.",
         premise: "In Neo-Kyoto, a city where memories can be traded like currency, Aki Nakamura, a memory archivist, discovers a forbidden memory that reveals a conspiracy at the heart of society. As they navigate a web of deception involving the powerful Sato Corporation, they must choose between exposing the truth or protecting those they love."
       },
+      charactersData: {},
+      pathsData: {},
+      plotData: {},
+      generatedActs: {},
+      playerData: {},
       currentStep: 2
     };
     this.projects.set(sampleProject.id, sampleProject);
@@ -112,7 +117,17 @@ export class MemStorage implements IStorage {
       // Ensure we have required fields
       if (!insertProject.title) {
         console.log("Adding default title for project");
-        insertProject.title = insertProject.conceptData?.title || "Untitled Project";
+        let defaultTitle = "Untitled Project";
+        
+        // Try to get title from concept data if it exists
+        if (insertProject.conceptData && typeof insertProject.conceptData === 'object') {
+          const conceptData = insertProject.conceptData as Record<string, any>;
+          if (conceptData.title && typeof conceptData.title === 'string') {
+            defaultTitle = conceptData.title;
+          }
+        }
+        
+        insertProject.title = defaultTitle;
       }
       
       if (!insertProject.createdAt) {
@@ -126,7 +141,23 @@ export class MemStorage implements IStorage {
       const id = this.projectId++;
       console.log(`Creating new project with ID: ${id}, title: ${insertProject.title}`);
       
-      const project: VnProject = { ...insertProject, id };
+      // Ensure all required fields for VnProject are present
+      const project: VnProject = {
+        id,
+        userId: insertProject.userId || null,
+        title: insertProject.title,
+        createdAt: insertProject.createdAt,
+        updatedAt: insertProject.updatedAt,
+        basicData: insertProject.basicData || {},
+        conceptData: insertProject.conceptData || {},
+        charactersData: insertProject.charactersData || {},
+        pathsData: insertProject.pathsData || {},
+        plotData: insertProject.plotData || {},
+        generatedActs: insertProject.generatedActs || {},
+        playerData: insertProject.playerData || {},
+        currentStep: insertProject.currentStep || 1
+      };
+      
       this.projects.set(id, project);
       
       console.log(`Project created successfully, now have ${this.projects.size} projects`);
@@ -175,7 +206,9 @@ export class MemStorage implements IStorage {
     this.projects.delete(id);
     
     // Also delete any associated stories
-    for (const [storyId, story] of this.stories.entries()) {
+    // Use Array.from to avoid Iterator issue
+    const storiesToCheck = Array.from(this.stories.entries());
+    for (const [storyId, story] of storiesToCheck) {
       if (story.projectId === id) {
         this.stories.delete(storyId);
       }
@@ -192,10 +225,27 @@ export class MemStorage implements IStorage {
   }
   
   async createStory(insertStory: InsertVnStory): Promise<VnStory> {
-    const id = this.storyId++;
-    const story: VnStory = { ...insertStory, id };
-    this.stories.set(id, story);
-    return story;
+    try {
+      const id = this.storyId++;
+      
+      // Ensure all required fields for VnStory are present
+      const story: VnStory = {
+        id,
+        userId: insertStory.userId || null,
+        projectId: insertStory.projectId || null,
+        title: insertStory.title,
+        createdAt: insertStory.createdAt,
+        actData: insertStory.actData,
+        actNumber: insertStory.actNumber
+      };
+      
+      this.stories.set(id, story);
+      console.log(`Story created successfully with ID: ${id}`);
+      return story;
+    } catch (error) {
+      console.error("Error in createStory:", error);
+      throw error;
+    }
   }
   
   async deleteStory(id: number): Promise<void> {
