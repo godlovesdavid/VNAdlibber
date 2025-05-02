@@ -11,12 +11,12 @@ import { useVnContext } from '@/context/vn-context';
  * @param interval - Interval in milliseconds between autosaves (default: 30 seconds)
  * @param showToast - Whether to show a toast notification on autosave (default: true)
  */
-export function useAutosave(
+export const useAutosave = (
   formId: string,
   saveFunction: (data: any) => void,
   interval = 30000, // 30 seconds default
   showToast = true
-) {
+) => {
   const { toast } = useToast();
   const form = useFormContext();
   const { projectData, saveProject } = useVnContext();
@@ -25,7 +25,7 @@ export function useAutosave(
 
   // Setup autosave timer
   useEffect(() => {
-    // Even without a project ID, we should set up autosave for new projects
+    // Set up autosave for all projects
     const performAutosave = () => {
       const currentValues = form.getValues();
       
@@ -34,7 +34,7 @@ export function useAutosave(
         return;
       }
 
-      // Save the form data
+      // Save the form data locally
       saveFunction(currentValues);
       lastSavedRef.current = currentValues;
       
@@ -49,7 +49,7 @@ export function useAutosave(
             if (showToast) {
               toast({
                 title: "Project Saved",
-                description: `${formId} form has been automatically saved to server`,
+                description: `${formId} form saved to server`,
                 duration: 2000,
               });
             }
@@ -69,7 +69,7 @@ export function useAutosave(
         // Just show a toast for local save if no project exists yet
         toast({
           title: "Autosaved",
-          description: `${formId} form has been automatically saved locally`,
+          description: `${formId} form saved locally`,
           duration: 2000,
         });
       }
@@ -83,7 +83,7 @@ export function useAutosave(
     // Set up new timer
     timerRef.current = setInterval(performAutosave, interval);
 
-    // Initial autosave after loading
+    // Initial autosave after loading if form is dirty
     if (form.formState.isDirty) {
       performAutosave();
     }

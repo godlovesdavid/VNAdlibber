@@ -5,7 +5,7 @@ import { useRegisterFormSave } from "@/hooks/use-form-save";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useAutosave } from "@/hooks/use-autosave";
+import { useAutosave } from "@/hooks/use-autosave-fixed";
 import {
   Form,
   FormControl,
@@ -102,7 +102,7 @@ type BasicFormValues = z.infer<typeof basicFormSchema>;
 
 export default function BasicForm() {
   const [, setLocation] = useLocation();
-  const { projectData, setBasicData } = useVnContext();
+  const { projectData, setBasicData, saveProject } = useVnContext();
   
   // State to track if the form has been initialized with random values
   const [initialized, setInitialized] = useState(false);
@@ -133,6 +133,11 @@ export default function BasicForm() {
     
     // Save the randomized values
     setBasicData(randomValues);
+    
+    // Save the project to the server (if it has an ID)
+    if (projectData?.id) {
+      saveProject();
+    }
   };
 
   // Load or reset form values based on projectData
@@ -160,7 +165,7 @@ export default function BasicForm() {
       // Explicitly set initialized to true to prevent auto-randomization
       setInitialized(true);
     }
-  }, [projectData?.basicData, form]);
+  }, [projectData?.basicData, form, randomizeForm]);
 
   // Go back to main menu
   const goBack = () => {
@@ -196,9 +201,18 @@ export default function BasicForm() {
   useAutosave('basic', saveBasicData, 30000);
 
   // Proceed to next step
-  const handleSubmit = form.handleSubmit((data) => {
+  const handleSubmit = form.handleSubmit(async (data) => {
     // Save data
     setBasicData(data);
+    
+    // Save project to server if it has an ID
+    if (projectData?.id) {
+      try {
+        await saveProject();
+      } catch (error) {
+        console.error("Error saving project:", error);
+      }
+    }
 
     // Navigate to next step
     setLocation("/create/concept");
