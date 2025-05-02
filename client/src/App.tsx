@@ -39,10 +39,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <VnProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+        <FormSaveProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </FormSaveProvider>
       </VnProvider>
     </QueryClientProvider>
   );

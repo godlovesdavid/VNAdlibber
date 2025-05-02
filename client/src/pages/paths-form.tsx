@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useVnData } from "@/hooks/use-vn-data";
+import { useFormSave } from "@/hooks/use-form-save";
 import { CreationProgress } from "@/components/creation-progress";
 import { NavBar } from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
@@ -36,7 +37,7 @@ export default function PathsForm() {
     isGenerating,
     cancelGeneration,
   } = useVnData();
-
+  
   // Form state - for each route we add a title field that's used as the key when saving
   const [routes, setRoutes] = useState<(Route & { title: string })[]>([
     {
@@ -69,6 +70,12 @@ export default function PathsForm() {
       setRoutes(routesArray);
     }
   }, [projectData]);
+  
+  // Use the useRegisterFormSave hook to register our save function
+  useRegisterFormSave('paths', () => {
+    console.log('Saving paths form data via form save system');
+    savePathData();
+  });
 
   // Add a new path card
   const addPath = () => {
