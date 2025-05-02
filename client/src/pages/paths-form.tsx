@@ -133,6 +133,10 @@ export default function PathsForm() {
           goodEnding: "",
           badEnding: "",
         }]);
+        
+        // Even with an error, we've attempted to load, so mark as loaded
+        dataLoadedRef.current = true;
+        console.log("Path data loaded (with default values), setting dataLoadedRef to true");
       }
     } else {
       console.log("No paths data found in project data");
@@ -255,9 +259,33 @@ export default function PathsForm() {
       return;
     }
 
+    console.log(`Removing path at index ${index}`);
+    const pathToRemove = routes[index];
+    console.log("Path being removed:", pathToRemove);
+    
     const updatedRoutes = [...routes];
     updatedRoutes.splice(index, 1);
     setRoutes(updatedRoutes);
+    
+    // Immediately save after removing a path to ensure it's removed from storage
+    console.log("Immediately saving after path removal");
+    const savedPaths = savePathData();
+    console.log("Updated paths after removal:", savedPaths);
+    
+    // Also save to server if we have a project ID to ensure the removal is persisted
+    if (projectData?.id) {
+      console.log("Saving to server after path removal");
+      saveProject().then(() => {
+        console.log("Saved to server after path removal");
+        toast({
+          title: "Path Removed",
+          description: `${pathToRemove.title || 'Path'} has been removed`,
+          duration: 2000,
+        });
+      }).catch(err => {
+        console.error("Error saving after path removal:", err);
+      });
+    }
   };
 
   // Update path field
