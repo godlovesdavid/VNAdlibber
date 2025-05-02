@@ -24,9 +24,9 @@ import {
 import { Wand2, Trash, Plus } from "lucide-react";
 import { Route } from "@/types/vn";
 
-// Extended interface for form use that includes a title property
-interface RouteForm extends Route {
-  title: string; // Title is used as the key in the PathsData object
+// Form route interface - includes title field which isn't in the Route interface
+interface RouteWithTitle extends Route {
+  title: string; // Title field for the form (will be used as key in PathsData)  
 }
 
 export default function PathsForm() {
@@ -40,7 +40,7 @@ export default function PathsForm() {
   } = useVnData();
 
   // Form state
-  const [routes, setRoutes] = useState<Route[]>([
+  const [routes, setRoutes] = useState<RouteForm[]>([
     {
       title: "",
       loveInterest: null,
@@ -107,7 +107,7 @@ export default function PathsForm() {
   };
 
   // Update path field
-  const updatePath = (index: number, field: keyof Route, value: any) => {
+  const updatePath = (index: number, field: keyof RouteForm, value: any) => {
     const updatedRoutes = [...routes];
     updatedRoutes[index] = {
       ...updatedRoutes[index],
