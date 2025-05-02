@@ -371,7 +371,7 @@ export default function CharactersForm() {
 
   // Go back to previous step
   const handleBack = () => {
-    // Save data before navigating - transform array to object format
+    // Save data - transform array to object format
     const charactersObj: Record<string, Character> = {};
     let protagonist = "";
     
@@ -400,28 +400,20 @@ export default function CharactersForm() {
     // Set the characters data with protagonist field
     setCharactersData(charactersObj, protagonist);
     
+    // Navigate to previous step
     goToStep(2);
   };
 
   // Proceed to next step
   const handleNext = () => {
-    console.log("Characters before saving:", characters);
-    
     // Save data - transform array to object format
     const charactersObj: Record<string, Character> = {};
     let protagonist = "";
     
     characters.forEach((char, index) => {
       if (char.name) {
-        console.log(`Processing character for save: ${char.name}`);
-        
         // Extract name but don't store it in the object
         const { name, ...characterWithoutName } = char;
-        console.log(`Character without name:`, characterWithoutName);
-        
-        // Check for nested properties or array-like numeric keys
-        const hasNumericKeys = Object.keys(characterWithoutName).some(key => !isNaN(Number(key)));
-        console.log(`Has numeric keys: ${hasNumericKeys}`);
         
         // Remove any numeric keys that might be causing unintended nesting
         const cleanCharacter = Object.entries(characterWithoutName)
@@ -431,8 +423,6 @@ export default function CharactersForm() {
             return obj;
           }, {} as Record<string, any>) as Character;
           
-        console.log(`Clean character:`, cleanCharacter);
-        
         charactersObj[name] = cleanCharacter;
         
         // Store the protagonist name (first character is always protagonist)
@@ -441,9 +431,6 @@ export default function CharactersForm() {
         }
       }
     });
-    
-    console.log("Final characters object to save:", charactersObj);
-    console.log("Setting protagonist to:", protagonist);
     
     // Set the characters data with protagonist field
     setCharactersData(charactersObj, protagonist);
