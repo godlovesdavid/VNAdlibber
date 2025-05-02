@@ -134,8 +134,10 @@ export default function BasicForm() {
     // Save the randomized values
     setBasicData(randomValues);
     
-    // Save the project to the server (if it has an ID)
-    if (projectData?.id) {
+    // Only save the project to the server if explicitly requested by user
+    // and not during initial form setup
+    const isInitialSetup = sessionStorage.getItem("vn_fresh_project") === "true";
+    if (projectData?.id && !isInitialSetup) {
       saveProject();
     }
   };

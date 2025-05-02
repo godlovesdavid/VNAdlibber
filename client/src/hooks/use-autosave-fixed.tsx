@@ -20,92 +20,83 @@ export const useAutosave = (
   const { toast } = useToast();
   const form = useFormContext();
   const { projectData, saveProject } = useVnContext();
+  
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const lastSavedRef = useRef<any>(null);
 
   // Setup autosave timer
   useEffect(() => {
-    // Set up autosave for all projects
-    const performAutosave = () => {
-      const currentValues = form.getValues();
+    // Skip setup if form is not available
+    if (!form) {
+      console.warn("useAutosave called outside FormProvider");
+      return;
+    }
+    
+    // Function to save form data
+    const performSave = async () => {
+      if (!form.getValues) return;
       
-      // Skip if values haven't changed since last save
-      if (JSON.stringify(currentValues) === JSON.stringify(lastSavedRef.current)) {
-        return;
-      }
-
-      // Save the form data locally
-      saveFunction(currentValues);
-      lastSavedRef.current = currentValues;
-      
-      // If we have a project with an ID, save it to the server
-      if (projectData?.id) {
-        // Debounce the save to avoid too many server requests
-        setTimeout(async () => {
+      try {
+        // Get current values
+        const currentValues = form.getValues();
+        
+        // Skip if nothing changed
+        if (JSON.stringify(currentValues) === JSON.stringify(lastSavedRef.current)) {
+          return;
+        }
+        
+        // Save locally
+        saveFunction(currentValues);
+        lastSavedRef.current = currentValues;
+        
+        // Save to server if project exists
+        if (projectData?.id) {
           try {
-            // Call the saveProject function from context
             await saveProject();
-            
             if (showToast) {
               toast({
                 title: "Project Saved",
-                description: `${formId} form saved to server`,
+                description: `${formId} saved automatically`,
                 duration: 2000,
               });
             }
-          } catch (error) {
-            console.error("Error saving project in autosave:", error);
-            if (showToast) {
-              toast({
-                title: "Save Error",
-                description: "Could not save to server. Changes saved locally only.",
-                variant: "destructive",
-                duration: 3000,
-              });
-            }
+          } catch (err) {
+            console.error("Failed to save project", err);
           }
-        }, 500);  // 500ms debounce
-      } else if (showToast) {
-        // Just show a toast for local save if no project exists yet
-        toast({
-          title: "Autosaved",
-          description: `${formId} form saved locally`,
-          duration: 2000,
-        });
+        }
+      } catch (error) {
+        console.error("Error in autosave", error);
       }
     };
-
+    
     // Clear any existing timer
     if (timerRef.current) {
       clearInterval(timerRef.current);
     }
-
-    // Set up new timer
-    timerRef.current = setInterval(performAutosave, interval);
-
-    // Initial autosave after loading if form is dirty
-    if (form.formState.isDirty) {
-      performAutosave();
+    
+    // Setup new timer
+    timerRef.current = setInterval(performSave, interval);
+    
+    // Initialize last saved values
+    if (form.getValues) {
+      lastSavedRef.current = form.getValues();
     }
-
-    // Store initial values
-    lastSavedRef.current = form.getValues();
-
-    // Clean up timer on unmount
+    
+    // Cleanup on unmount
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
-        timerRef.current = null;
       }
     };
-  }, [formId, saveFunction, form, interval, projectData?.id, showToast, toast, saveProject]);
-
-  // Return controls for manual saving
+  }, [formId, form, interval, saveFunction, saveProject, projectData?.id, showToast, toast]);
+  
+  // Return utility functions
   return {
     performSave: () => {
-      const currentValues = form.getValues();
-      saveFunction(currentValues);
-      lastSavedRef.current = currentValues;
+      if (!form || !form.getValues) return;
+      const values = form.getValues();
+      saveFunction(values);
+      lastSavedRef.current = values;
     },
     setLastSaved: (values: any) => {
       lastSavedRef.current = values;
