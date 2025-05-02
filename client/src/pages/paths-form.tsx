@@ -32,7 +32,8 @@ import { Route } from "@/types/vn";
 
 export default function PathsForm() {
   const [, setLocation] = useLocation();
-  const { projectData, setPathsData, goToStep } = useVnContext();
+  const { projectData, setPathsData, goToStep, saveProject } = useVnContext();
+  const { toast } = useToast();
   const {
     generatePathData,
     generateMultiplePathsData,
@@ -97,6 +98,39 @@ export default function PathsForm() {
   
   // Register with form save system
   useRegisterFormSave('paths', savePathData);
+  
+  // Path form autosave component
+  const PathFormAutosave = () => {
+    const handleAutosave = (data: Record<string, any>) => {
+      console.log("Path autosave triggered with routes:", routes);
+      
+      // Save path data to context
+      const result = savePathData();
+      
+      // Save to server if we have a project ID
+      if (projectData?.id) {
+        console.log("Saving paths to server...");
+        saveProject().then(() => {
+          console.log("Saved paths to server successfully");
+          toast({
+            title: "Saved",
+            description: `Saved ${Object.keys(result).length} paths automatically`,
+            duration: 2000,
+          });
+        }).catch(err => {
+          console.error("Error saving paths to server:", err);
+        });
+      }
+    };
+    
+    // Set up autosave to run every 10 seconds
+    useAutosave('paths', handleAutosave, 10000);
+    
+    return null; // This component doesn't render anything
+  };
+  
+  // Track if initial data has been loaded, to prevent infinite cycles
+  const initialDataLoadedRef = useRef(false);
 
   // Add a new path card
   const addPath = () => {
@@ -267,6 +301,7 @@ export default function PathsForm() {
     <>
       <NavBar />
       <CreationProgress currentStep={4} />
+      <PathFormAutosave />
 
       <div className="pt-16">
         <div className="creation-container max-w-4xl mx-auto p-6">
