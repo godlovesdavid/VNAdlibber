@@ -1,6 +1,7 @@
 import { useFormContext } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { useVnContext } from "@/context/vn-context";
+import { BasicData } from "@/types/vn";
 
 export function SimpleFormTest() {
   const { register, getValues } = useFormContext();
@@ -8,7 +9,15 @@ export function SimpleFormTest() {
   
   const handleSave = () => {
     // This will get triggered by a button click
-    const formData = getValues();
+    const values = getValues();
+    
+    // Convert to BasicData type
+    const formData: BasicData = {
+      theme: values.theme as string,
+      tone: values.tone as string,
+      genre: values.genre as string,
+      setting: values.setting as string
+    };
     
     // Save the data
     console.log("Manually saving form data:", formData);

@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAutosave } from "@/hooks/use-simple-autosave";
 import { SimpleFormTest } from "@/components/simple-form-test";
+import { BasicData } from "@/types/vn";
 import {
   Form,
   FormControl,
@@ -220,8 +221,17 @@ export default function BasicForm() {
   // Helper function to save basic data
   function saveBasicData() {
     const values = form.getValues();
-    setBasicData(values);
-    return values;
+    
+    // Convert to BasicData type
+    const formData: BasicData = {
+      theme: values.theme as string,
+      tone: values.tone as string,
+      genre: values.genre as string,
+      setting: values.setting as string
+    };
+    
+    setBasicData(formData);
+    return formData;
   }
   
   // Register with form save system
@@ -229,9 +239,18 @@ export default function BasicForm() {
   
   // Declare an autosave function component to be used inside FormProvider
   const BasicFormAutosave = () => {
-    useAutosave((data) => {
-      console.log("Autosave triggered with data:", data);
-      setBasicData(data);
+    useAutosave((values) => {
+      console.log("Autosave triggered with data:", values);
+      
+      // Convert to BasicData type
+      const formData: BasicData = {
+        theme: values.theme as string,
+        tone: values.tone as string,
+        genre: values.genre as string,
+        setting: values.setting as string
+      };
+      
+      setBasicData(formData);
       
       // Save to server if we have a project ID
       if (projectData?.id) {
@@ -248,9 +267,17 @@ export default function BasicForm() {
   };
 
   // Proceed to next step
-  const handleSubmit = form.handleSubmit(async (data) => {
+  const handleSubmit = form.handleSubmit(async (values) => {
+    // Convert to BasicData type
+    const formData: BasicData = {
+      theme: values.theme as string,
+      tone: values.tone as string,
+      genre: values.genre as string,
+      setting: values.setting as string
+    };
+    
     // Save data
-    setBasicData(data);
+    setBasicData(formData);
     
     // Save project to server if it has an ID
     if (projectData?.id) {
@@ -512,6 +539,9 @@ export default function BasicForm() {
                   Reset Form (Debug)
                 </Button>
               </div>
+              
+              {/* Simple form test using register directly */}
+              <SimpleFormTest />
             </form>
           </FormProvider>
         </div>
