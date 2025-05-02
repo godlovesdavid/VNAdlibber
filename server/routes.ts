@@ -307,13 +307,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
               pathCount: Object.keys(existingProject.pathsData || {}).length
             });
             
-            // If the incoming project is missing characters that the existing one has
-            if (existingProject.charactersData && 
-                Object.keys(existingProject.charactersData).length > 0 && 
-                (!projectData.charactersData || Object.keys(projectData.charactersData).length === 0)) {
-              console.warn("WARNING: Incoming project data is missing characters that exist in the database");
-              console.log("Preserving existing characters data from database");
-              projectData.charactersData = existingProject.charactersData;
+            // Handle character data carefully
+            if (existingProject.charactersData && Object.keys(existingProject.charactersData).length > 0) {
+              // If incoming has character data, check if it's valid
+              if (projectData.charactersData && Object.keys(projectData.charactersData).length > 0) {
+                // Both have character data - log what we're doing
+                console.log("Incoming project has character data with keys:", Object.keys(projectData.charactersData));
+                
+                // Check for suspicious empty objects that might be causing issues
+                const allEmpty = Object.values(projectData.charactersData || {}).every((char: any) => 
+                  !char || Object.keys(char).length === 0 || 
+                  (Object.keys(char).length === 1 && Object.keys(char)[0] === "name")
+                );
+                
+                if (allEmpty) {
+                  console.warn("WARNING: Incoming project data has empty character objects");
+                  console.log("Preserving existing characters data from database");
+                  projectData.charactersData = existingProject.charactersData;
+                }
+              } else {
+                // Incoming is missing characters that exist in the database
+                console.warn("WARNING: Incoming project data is missing characters that exist in the database");
+                console.log("Preserving existing characters data from database");
+                projectData.charactersData = existingProject.charactersData;
+              }
+            } else if (projectData.charactersData && Object.keys(projectData.charactersData).length > 0) {
+              // Database has no characters but incoming does
+              console.log("New character data detected in incoming project");
+              console.log("Character names:", Object.keys(projectData.charactersData));
+              
+              // Extra validation to prevent saving empty character objects
+              const validCharacters: Record<string, any> = {};
+              let hasValidCharacters = false;
+              
+              Object.entries(projectData.charactersData || {}).forEach(([name, character]: [string, any]) => {
+                if (character && Object.keys(character).length > 0) {
+                  validCharacters[name] = character;
+                  hasValidCharacters = true;
+                  console.log(`Valid character detected: ${name} with fields: ${Object.keys(character).join(', ')}`);
+                }
+              });
+              
+              if (hasValidCharacters) {
+                projectData.charactersData = validCharacters;
+                console.log("Setting valid character data in project");
+              } else {
+                console.warn("WARNING: All character objects were empty, setting empty character data");
+                projectData.charactersData = {};
+              }
             }
             
             // If the incoming project is missing paths that the existing one has

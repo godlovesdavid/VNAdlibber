@@ -260,6 +260,28 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
 
     console.log("Sanitized character data for storage:", sanitizedData);
 
+    // Safety check - don't proceed if sanitized data is empty
+    if (Object.keys(sanitizedData).length === 0) {
+      console.warn("WARNING: Sanitized character data is empty");
+      return; // Don't update the project data with empty sanitized data
+    }
+    
+    // Store sanitized data in localStorage first as a backup
+    try {
+      const currentProject = localStorage.getItem("current_vn_project");
+      if (currentProject) {
+        const parsed = JSON.parse(currentProject);
+        parsed.charactersData = sanitizedData;
+        if (protagonist) {
+          parsed.protagonist = protagonist;
+        }
+        localStorage.setItem("current_vn_project", JSON.stringify(parsed));
+        console.log("Character data backed up to localStorage");
+      }
+    } catch (err) {
+      console.error("Error backing up character data to localStorage:", err);
+    }
+    
     // Set the new data while preserving the rest
     setProjectData({
       ...projectData,
@@ -268,6 +290,30 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       currentStep: Math.max(projectData.currentStep, 3),
       updatedAt: new Date().toISOString(),
     });
+    
+    // Check if storage was successful
+    setTimeout(() => {
+      // If we're still missing character data after setting it
+      if (!projectData.charactersData || Object.keys(projectData.charactersData).length === 0) {
+        console.warn("WARNING: Character data not saved in context after setting it");
+        // Try saving directly - manual save backup approach
+        const savePayload = {
+          ...projectData,
+          charactersData: sanitizedData,
+          protagonist: protagonist || projectData.protagonist,
+          updatedAt: new Date().toISOString()
+        };
+        
+        try {
+          localStorage.setItem("vn_manual_save_backup", JSON.stringify(savePayload));
+          console.log("Created manual save backup in localStorage");
+        } catch (err) {
+          console.error("Failed to create manual save backup", err);
+        }
+      }
+    }, 500); // Check after a short delay
+    
+    console.log("Character data set complete");
 
     // We can't verify the data was set by checking projectData immediately
     // because React state updates are asynchronous
