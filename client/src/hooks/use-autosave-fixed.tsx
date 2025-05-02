@@ -4,164 +4,155 @@ import { useToast } from '@/hooks/use-toast';
 import { useVnContext } from '@/context/vn-context';
 
 /**
- * A hook that automatically saves form data at regular intervals
+ * A hook that automatically saves form data when the form values change
+ * Uses a debounce mechanism to avoid excessive saves
  * 
  * @param formId - Identifier for the form
  * @param saveFunction - Function to be called to save the form data
- * @param interval - Interval in milliseconds between autosaves (default: 30 seconds)
+ * @param debounceMs - Debounce time in milliseconds (default: 2000 ms = 2 seconds)
  * @param showToast - Whether to show a toast notification on autosave (default: true)
  */
 export const useAutosave = (
   formId: string,
   saveFunction: (data: any) => void,
-  interval = 30000, // 30 seconds default
+  debounceMs = 2000, // 2 seconds default debounce
   showToast = true
 ) => {
   const { toast } = useToast();
   const form = useFormContext();
   const { projectData, saveProject } = useVnContext();
   
-  // State to track if the hook is ready
-  const [isReady, setIsReady] = useState(false);
-  
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const lastSavedRef = useRef<any>(null);
-  const initAttemptsRef = useRef(0);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const formReadyRef = useRef<boolean>(false);
 
-  // Effect to check if form is ready and retry if needed
-  useEffect(() => {
-    // If already ready, skip this effect
-    if (isReady) return;
-    
-    console.log(`[Autosave] Checking form readiness for ${formId}...`);
-    
-    // Check if form is available with getValues method
-    if (form && typeof form.getValues === 'function') {
-      console.log(`[Autosave] Form context is ready for ${formId}`);
-      setIsReady(true);
-    } else {
-      // Form not ready yet, setup retry with increasing backoff
-      initAttemptsRef.current += 1;
-      const delay = Math.min(1000 * initAttemptsRef.current, 3000); // Max 3 second delay
+  // Save form data to server and local state
+  const performSave = async (values: any) => {
+    try {
+      // Skip if nothing changed
+      if (JSON.stringify(values) === JSON.stringify(lastSavedRef.current)) {
+        console.log(`[Autosave] ${formId} - No changes detected, skipping save`);
+        return;
+      }
       
-      console.warn(`[Autosave] FormContext not ready for ${formId}, retry #${initAttemptsRef.current} in ${delay}ms`);
+      // Update local state
+      console.log(`[Autosave] ${formId} - Saving form data locally...`, values);
+      saveFunction(values);
+      lastSavedRef.current = values;
       
-      // Try again after delay
-      const timeoutId = setTimeout(() => {
-        // This will trigger this effect again
-        if (!isReady) {
-          console.log(`[Autosave] Retrying form readiness check for ${formId}...`);
-          setIsReady(false); // Force re-render
-        }
-      }, delay);
-      
-      return () => clearTimeout(timeoutId);
-    }
-  }, [form, formId, isReady]);
-
-  // Setup autosave timer when form is ready
-  useEffect(() => {
-    // Only proceed if ready
-    if (!isReady) return;
-    
-    console.log(`[Autosave] Setting up autosave for ${formId} (interval: ${interval}ms)`);
-    console.log(`[Autosave] Form context available for ${formId}`);
-
-    
-    // Function to save form data
-    const performSave = async () => {
-      if (!form.getValues) return;
-      
-      try {
-        // Get current values
-        const currentValues = form.getValues();
-        
-        // Skip if nothing changed
-        if (JSON.stringify(currentValues) === JSON.stringify(lastSavedRef.current)) {
-          return;
-        }
-        
-        // Save locally
-        console.log(`[Autosave] Saving ${formId} form data...`, currentValues);
-        saveFunction(currentValues);
-        lastSavedRef.current = currentValues;
-        console.log(`[Autosave] ${formId} form data saved locally`);
-        
-        // Save to server if project exists
-        if (projectData?.id) {
-          try {
-            console.log(`[Autosave] Saving ${formId} to server (project ID: ${projectData.id})...`);
-            await saveProject();
-            console.log(`[Autosave] ${formId} saved to server successfully`);
-            
-            if (showToast) {
-              toast({
-                title: "Project Saved",
-                description: `${formId} saved automatically`,
-                duration: 2000,
-              });
-            }
-          } catch (err) {
-            console.error(`[Autosave] Failed to save ${formId} to server:`, err);
+      // Save to server if project exists
+      if (projectData?.id) {
+        try {
+          console.log(`[Autosave] ${formId} - Saving to server (project ID: ${projectData.id})...`);
+          await saveProject();
+          console.log(`[Autosave] ${formId} - Saved to server successfully`);
+          
+          if (showToast) {
+            toast({
+              title: "Changes Saved",
+              description: `${formId} saved automatically`,
+              duration: 2000,
+            });
           }
+        } catch (err) {
+          console.error(`[Autosave] ${formId} - Failed to save to server:`, err);
+        }
+      } else {
+        console.log(`[Autosave] ${formId} - Server save skipped (no project ID yet)`);
+      }
+    } catch (error) {
+      console.error(`[Autosave] ${formId} - Error during save:`, error);
+      
+      if (showToast) {
+        toast({
+          title: "Save Failed",
+          description: `Could not save ${formId} changes automatically`,
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
+    }
+  };
+
+  // Setup watch subscription for form changes
+  useEffect(() => {
+    // Skip if form is not available, but try again in 500ms
+    if (!form || !form.watch || !form.getValues) {
+      console.warn(`[Autosave] ${formId} - FormContext not ready, retrying in 500ms`);
+      
+      // Retry with a delay to allow form context to initialize
+      const retryTimer = setTimeout(() => {
+        const formIsReady = form && form.watch && form.getValues;
+        if (formIsReady) {
+          console.log(`[Autosave] ${formId} - FormContext now available after retry`);
+          // We can't trigger a re-render here, but the form will be ready on the next render
         } else {
-          console.log(`[Autosave] Server save skipped for ${formId} (no project ID yet)`);
+          console.error(`[Autosave] ${formId} - FormContext still not available after retry`);
         }
-      } catch (error) {
-        // Log detailed error information
-        console.error(`[Autosave] Error in ${formId} autosave:`, error);
-        
-        // Show error toast to user
-        if (showToast) {
-          toast({
-            title: "Autosave Failed",
-            description: `Could not save ${formId} data automatically`,
-            variant: "destructive",
-            duration: 3000,
-          });
-        }
+      }, 500);
+      
+      return () => clearTimeout(retryTimer);
+    }
+
+    console.log(`[Autosave] ${formId} - Setting up autosave with ${debounceMs}ms debounce`);
+    
+    // Initialize with current values
+    const initialValues = form.getValues();
+    lastSavedRef.current = initialValues;
+    formReadyRef.current = true;
+    console.log(`[Autosave] ${formId} - Initialized with values:`, initialValues);
+
+    // Subscribe to form changes
+    const subscription = form.watch((_, { name, type }) => {
+      // Log the change event for debugging
+      console.log(`[Autosave] ${formId} - Form change detected:`, { field: name, type });
+      
+      // Clear previous timeout to implement debouncing
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
       }
-    };
+      
+      // Set new timeout
+      timeoutRef.current = setTimeout(() => {
+        const currentValues = form.getValues();
+        console.log(`[Autosave] ${formId} - Debounce completed, saving values:`, currentValues);
+        performSave(currentValues);
+      }, debounceMs);
+      
+      // Return cleanup function for this specific subscription callback
+      return () => {
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+      };
+    });
     
-    // Clear any existing timer
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
-    
-    // Setup new timer with interval tracking
-    console.log(`[Autosave] Starting autosave timer for ${formId} every ${interval/1000} seconds`);
-    timerRef.current = setInterval(() => {
-      console.log(`[Autosave] Autosave interval triggered for ${formId}`);
-      performSave();
-    }, interval);
-    
-    // Initialize last saved values
-    if (form.getValues) {
-      const initialValues = form.getValues();
-      lastSavedRef.current = initialValues;
-      console.log(`[Autosave] Initialized ${formId} with values:`, initialValues);
-    }
-    
-    // Cleanup on unmount
+    // Cleanup subscription when component unmounts
     return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
+      console.log(`[Autosave] ${formId} - Cleaning up autosave`);
+      subscription.unsubscribe();
+      
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
       }
     };
-  }, [formId, form, interval, saveFunction, saveProject, projectData?.id, showToast, toast, isReady]);
+  }, [form, formId, debounceMs, saveFunction, saveProject, projectData?.id, showToast, toast]);
   
-  // Return utility functions and state
+  // Return utility functions
   return {
+    // Force an immediate save
     performSave: () => {
       if (!form || !form.getValues) return;
       const values = form.getValues();
-      saveFunction(values);
-      lastSavedRef.current = values;
+      console.log(`[Autosave] ${formId} - Manual save triggered`);
+      performSave(values);
     },
+    // Update what's considered the "last saved" state
     setLastSaved: (values: any) => {
       lastSavedRef.current = values;
+      console.log(`[Autosave] ${formId} - Last saved state updated manually`);
     },
-    isReady, // Expose whether the autosave is ready
-    formId   // Expose the form ID for debugging
+    // Form ID for debugging
+    formId
   };
 };

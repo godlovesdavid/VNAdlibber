@@ -49,18 +49,11 @@ export default function ConceptForm() {
   // Register with form save system
   useRegisterFormSave('concept', saveConceptData);
   
-  // Setup autosave - will automatically save form values every 30 seconds
-  const { performSave, isReady, formId } = useAutosave('concept', saveConceptData, 10000, true);
+  // Setup autosave - will automatically save form values on change with 2 second debounce
+  const { performSave, formId } = useAutosave('concept', saveConceptData, 2000, true);
   
-  // Log for debugging
-  console.log(`[ConceptForm] Autosave hook installed for form '${formId}' (isReady: ${isReady ? 'yes' : 'no'})`);
-  
-  // Effect to log when autosave becomes ready
-  useEffect(() => {
-    if (isReady) {
-      console.log('[ConceptForm] Autosave is now READY and will save automatically');
-    }
-  }, [isReady]);
+  // Log autosave status
+  console.log(`[ConceptForm] Autosave hook installed for form '${formId}' with 2 second debounce`);
 
   // Go back to previous step
   const handleBack = async () => {
