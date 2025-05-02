@@ -459,8 +459,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Generating ${indices.length} characters`);
 
       // Check if names are provided in character templates
-      const characterNames = characterTemplates.map(char => char.name || null)
-        .filter(name => name !== null && name !== "");
+      const characterNames = characterTemplates.map((char: any) => char.name || null)
+        .filter((name: string | null) => name !== null && name !== "");
         
       console.log("Provided character names:", characterNames);
       
