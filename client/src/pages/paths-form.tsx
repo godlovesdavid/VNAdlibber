@@ -27,8 +27,10 @@ import {
 import { Wand2, Trash, Plus } from "lucide-react";
 import { Route } from "@/types/vn";
 
-// No need for a special interface - we'll use the same approach as characters form
-// where we add a title field to the form state but it's not part of the Route interface
+// Define a form-specific interface similar to the characters form
+interface RouteForm extends Route {
+  title: string; // Only used in the form, not stored in the context
+}
 
 export default function PathsForm() {
   const [, setLocation] = useLocation();
@@ -41,8 +43,8 @@ export default function PathsForm() {
     cancelGeneration,
   } = useVnData();
   
-  // Form state - for each route we add a title field that's used as the key when saving
-  const [routes, setRoutes] = useState<(Route & { title: string })[]>([
+  // Form state for routes using our form-specific interface
+  const [routes, setRoutes] = useState<RouteForm[]>([
     {
       title: "",
       loveInterest: null,
@@ -74,21 +76,28 @@ export default function PathsForm() {
     }
   }, [projectData]);
   
-  // Helper function to save path data
+  // Helper function to save path data - follows same pattern as characters form
   const savePathData = () => {
+    console.log("Saving path data...");
+    
     // Convert array to object format for storage
     const pathsObj: Record<string, Route> = {};
     
     routes.forEach(route => {
       // Only process routes that have a title
       if (route.title) {
+        console.log(`Processing path with title: ${route.title}`);
         // Extract the title and create a clean copy without it
         const { title, ...routeProps } = route;
         
         // Store with title as key and the rest of the properties as value
         pathsObj[title] = routeProps;
+      } else {
+        console.log("Skipping path with no title");
       }
     });
+    
+    console.log("Final paths object to save:", pathsObj);
     
     // Set the paths data in the context
     setPathsData(pathsObj);
@@ -167,7 +176,7 @@ export default function PathsForm() {
   };
 
   // Update path field
-  const updatePath = (index: number, field: keyof (Route & { title: string }), value: any) => {
+  const updatePath = (index: number, field: keyof RouteForm, value: any) => {
     const updatedRoutes = [...routes];
     updatedRoutes[index] = {
       ...updatedRoutes[index],
@@ -277,8 +286,18 @@ export default function PathsForm() {
 
   // Proceed to next step
   const handleNext = () => {
+    console.log("Next button clicked");
+    
     // Save data using our helper function
-    savePathData();
+    const savedData = savePathData();
+    console.log("Paths saved on next:", savedData);
+    
+    // Also explicitly save the project
+    if (projectData?.id) {
+      saveProject()
+        .then(() => console.log("Project saved to server"))
+        .catch(err => console.error("Error saving project:", err));
+    }
 
     // Navigate to next step
     setLocation("/create/plot");
