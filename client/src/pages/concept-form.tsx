@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import { useAutosave } from "@/hooks/use-simple-autosave";
 import { useForm, FormProvider } from "react-hook-form";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
@@ -78,27 +77,16 @@ export default function ConceptForm() {
   // Register with form save system
   useRegisterFormSave('concept', saveConceptData);
   
-  // Declare an autosave function component to be used inside FormProvider
-  const ConceptFormAutosave = () => {
-    const handleAutosave = (data: Record<string, any>) => {
-      if (!data) return;
-      
-      console.log("Concept autosave triggered with data:", data);
-      setConceptData(data);
-      
-      // Save to server if we have a project ID
-      if (projectData?.id) {
-        console.log("Saving concept to server...");
-        saveProject().then(() => {
-          console.log("Saved concept to server successfully");
-        }).catch(err => {
-          console.error("Error saving concept to server:", err);
-        });
-      }
-    };
+  // Add functions to update field values
+  const handleFieldChange = (fieldName: "title" | "tagline" | "premise", value: string) => {
+    // Update the form value with validation
+    form.setValue(fieldName, value, {
+      shouldValidate: true,
+      shouldDirty: true, 
+      shouldTouch: true
+    });
     
-    useAutosave('concept', handleAutosave);
-    return null; // This component doesn't render anything
+    // No auto-saving to context or server
   };
 
   // Go back to previous step
@@ -183,7 +171,6 @@ export default function ConceptForm() {
           </p>
 
           <FormProvider {...form}>
-            <ConceptFormAutosave />
             <form onSubmit={handleNext} className="space-y-6">
               {/* Title */}
               <FormField
