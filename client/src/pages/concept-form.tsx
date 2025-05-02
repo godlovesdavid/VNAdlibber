@@ -40,9 +40,9 @@ export default function ConceptForm() {
   const form = useForm<ConceptFormValues>({
     resolver: zodResolver(conceptFormSchema),
     defaultValues: {
-      title: "",
-      tagline: "",
-      premise: "",
+      title: projectData?.conceptData?.title || "",
+      tagline: projectData?.conceptData?.tagline || "",
+      premise: projectData?.conceptData?.premise || "",
     },
   });
 
@@ -78,8 +78,53 @@ export default function ConceptForm() {
   // Register with form save system
   useRegisterFormSave('concept', saveConceptData);
   
-  // Use the improved autosave hook for automatic form saving - pass form instance directly
-  useAutosave('concept-form', saveConceptData, 2000, true, form);
+  // Setup simple direct autosave on form change with console logs
+  useEffect(() => {
+    console.log("Setting up direct form watch for autosave in concept form");
+    
+    // Create a timeout reference to implement debouncing
+    let saveTimeout: NodeJS.Timeout | null = null;
+    
+    // Subscribe to form changes
+    const subscription = form.watch((data) => {
+      // Log the change
+      console.log("Concept form field changed, planning autosave");
+      
+      // Clear any existing timeout to debounce repeated changes
+      if (saveTimeout) {
+        clearTimeout(saveTimeout);
+      }
+      
+      // Set a new timeout to save after delay
+      saveTimeout = setTimeout(() => {
+        // Get latest values
+        const currentValues = form.getValues();
+        console.log("Concept autosave executing, saving data:", currentValues);
+        
+        // Save data
+        setConceptData(currentValues);
+        
+        // Save to server if we have a project ID
+        if (projectData?.id) {
+          console.log("Saving concept to server...");
+          saveProject().then(() => {
+            console.log("Saved concept to server successfully");
+          }).catch(err => {
+            console.error("Error saving concept to server:", err);
+          });
+        }
+      }, 2000); // 2 second debounce
+    });
+    
+    // Clean up on unmount
+    return () => {
+      console.log("Cleaning up concept form watch subscription");
+      subscription.unsubscribe();
+      if (saveTimeout) {
+        clearTimeout(saveTimeout);
+      }
+    };
+  }, [form, setConceptData, saveProject, projectData?.id]);
 
   // Go back to previous step
   const handleBack = async () => {

@@ -110,13 +110,27 @@ export default function BasicForm() {
   // Define the form with React Hook Form
   const form = useForm<BasicFormValues>({
     resolver: zodResolver(basicFormSchema),
+    // Use existing values from context or empty strings as defaults
     defaultValues: {
-      theme: "",
-      tone: "",
-      genre: "",
-      setting: "",
+      theme: projectData?.basicData?.theme || "",
+      tone: projectData?.basicData?.tone || "",
+      genre: projectData?.basicData?.genre || "",
+      setting: projectData?.basicData?.setting || "",
     },
   });
+  
+  // Effects to update form when project data changes
+  useEffect(() => {
+    if (projectData?.basicData) {
+      console.log("Loading existing basic data:", projectData.basicData);
+      form.reset({
+        theme: projectData.basicData.theme || "",
+        tone: projectData.basicData.tone || "",
+        genre: projectData.basicData.genre || "",
+        setting: projectData.basicData.setting || "",
+      });
+    }
+  }, [projectData?.basicData, form]);
 
   // Function to randomize all form values
   const randomizeForm = () => {
@@ -212,8 +226,53 @@ export default function BasicForm() {
   // Register with form save system
   useRegisterFormSave('basic', saveBasicData);
   
-  // Use the improved autosave hook for automatic form saving - pass form instance directly
-  useAutosave('basic-form', saveBasicData, 2000, true, form);
+  // Setup simple direct autosave on form change with console logs
+  useEffect(() => {
+    console.log("Setting up direct form watch for autosave");
+    
+    // Create a timeout reference to implement debouncing
+    let saveTimeout: NodeJS.Timeout | null = null;
+    
+    // Subscribe to form changes
+    const subscription = form.watch((data) => {
+      // Log the change
+      console.log("Form field changed, planning autosave");
+      
+      // Clear any existing timeout to debounce repeated changes
+      if (saveTimeout) {
+        clearTimeout(saveTimeout);
+      }
+      
+      // Set a new timeout to save after delay
+      saveTimeout = setTimeout(() => {
+        // Get latest values
+        const currentValues = form.getValues();
+        console.log("Autosave executing, saving data:", currentValues);
+        
+        // Save data
+        setBasicData(currentValues);
+        
+        // Save to server if we have a project ID
+        if (projectData?.id) {
+          console.log("Saving to server...");
+          saveProject().then(() => {
+            console.log("Saved to server successfully");
+          }).catch(err => {
+            console.error("Error saving to server:", err);
+          });
+        }
+      }, 2000); // 2 second debounce
+    });
+    
+    // Clean up on unmount
+    return () => {
+      console.log("Cleaning up form watch subscription");
+      subscription.unsubscribe();
+      if (saveTimeout) {
+        clearTimeout(saveTimeout);
+      }
+    };
+  }, [form, setBasicData, saveProject, projectData?.id]);
 
   // Proceed to next step
   const handleSubmit = form.handleSubmit(async (data) => {
