@@ -1,10 +1,28 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
-async function throwIfResNotOk(res: Response) {
+/**
+ * Helper for determining API URL prefix based on current environment
+ */
+function getApiBaseUrl(): string {
+  // Use the base URL from where the app is running
+  const isLocalDevServer = window.location.port === '3000' || window.location.port === '5173';
+  
+  if (isLocalDevServer) {
+    return 'http://localhost:5000';
+  }
+  
+  // When deployed, the frontend and backend are on the same origin
+  return '';
+}
+
+/**
+ * Helper to throw meaningful errors from API responses
+ */
+async function throwIfResNotOk(res: Response): Promise<void> {
   if (!res.ok) {
     // Try to parse as JSON first
-    let errorResponse;
-    let errorMessage;
+    let errorResponse: any;
+    let errorMessage: string;
     
     try {
       // Clone the response before trying to read it
@@ -43,6 +61,9 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+/**
+ * Generic API request function
+ */
 export async function apiRequest(
   method: string,
   url: string,
@@ -50,9 +71,13 @@ export async function apiRequest(
   signal?: AbortSignal | undefined,
 ): Promise<Response> {
   try {
-    console.log(`API Request: ${method} ${url}`, data);
+    // Ensure we use the correct API base URL
+    const baseUrl = getApiBaseUrl();
+    const fullUrl = url.startsWith('/api/') ? `${baseUrl}${url}` : url;
     
-    const res = await fetch(url, {
+    console.log(`API Request: ${method} ${fullUrl}`, data);
+    
+    const res = await fetch(fullUrl, {
       method,
       headers: data ? { "Content-Type": "application/json" } : {},
       body: data ? JSON.stringify(data) : undefined,
@@ -70,19 +95,27 @@ export async function apiRequest(
   }
 }
 
+/**
+ * Types for query handling
+ */
 type UnauthorizedBehavior = "returnNull" | "throw";
+
+/**
+ * Query function to use with TanStack Query
+ */
 export const getQueryFn: <T>(options: {
   on401: UnauthorizedBehavior;
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
     try {
-      console.log('Query request:', queryKey[0]);
-      
-      // Check if we're using a local development port (3000) instead of the actual server port (5000)
+      // Ensure we use the correct API base URL
+      const baseUrl = getApiBaseUrl();
       let url = queryKey[0] as string;
+      
+      // Add API base URL if this is an API request
       if (url.startsWith('/api/')) {
-        url = `http://localhost:5000${url}`;
+        url = `${baseUrl}${url}`;
       }
       
       console.log('Fetching from URL:', url);
@@ -107,6 +140,9 @@ export const getQueryFn: <T>(options: {
     }
   };
 
+/**
+ * Create the query client for the application
+ */
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

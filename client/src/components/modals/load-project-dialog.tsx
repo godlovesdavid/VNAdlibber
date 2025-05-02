@@ -51,10 +51,18 @@ export function LoadProjectDialog({ open, onOpenChange }: LoadProjectDialogProps
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<number | null>(null);
   
+  // Force refetch when dialog opens
+  useEffect(() => {
+    if (open) {
+      console.log('LoadProjectDialog opened - forcing refetch');
+      setTimeout(() => refetch(), 500); // Slight delay to ensure dialog is rendered
+    }
+  }, [open]);
+
   // Fetch projects
   const { data: projects = [], isLoading, error, refetch } = useQuery<any[]>({
     queryKey: ['/api/projects'],
-    enabled: open, // Only fetch when dialog is open
+    enabled: true, // Always fetch when component mounts
   });
   
   // Log project data when it changes
