@@ -327,146 +327,148 @@ export default function BasicForm() {
             world and atmosphere.
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Sentence-style form with dropdowns */}
-            <div className="bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-medium text-gray-700">
-                  Create Your Story
-                </h3>
+          <FormProvider {...form}>
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {/* Sentence-style form with dropdowns */}
+              <div className="bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-medium text-gray-700">
+                    Create Your Story
+                  </h3>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    type="button"
+                    onClick={randomizeForm}
+                    className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-4 h-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M3 2v6h6"></path>
+                      <path d="M3 13a9 9 0 0 0 9 9 9 9 0 0 0 6.75-3"></path>
+                      <path d="M14 10h7"></path>
+                      <path d="M21 10v7"></path>
+                    </svg>
+                    Randomize All
+                  </Button>
+                </div>
+
+                <div className="text-lg leading-relaxed space-y-6">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-gray-700">Compose me a</span>
+
+                    {/* Tone Dropdown */}
+                    <div className="inline-block">
+                      <Select 
+                        value={form.getValues().tone} 
+                        onValueChange={(value) => handleFieldChange("tone", value)}
+                      >
+                        <SelectTrigger className="w-44 h-8 text-base border-b-2 border-blue-500 rounded-none bg-transparent focus:ring-0">
+                          <SelectValue placeholder="tone" />
+                        </SelectTrigger>
+                        <SelectContent className="min-w-[180px]">
+                          {tones.map((tone) => (
+                            <SelectItem key={tone} value={tone}>{tone}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Genre Dropdown */}
+                    <div className="inline-block">
+                      <Select 
+                        value={form.getValues().genre} 
+                        onValueChange={(value) => handleFieldChange("genre", value)}
+                      >
+                        <SelectTrigger className="w-44 h-8 text-base border-b-2 border-green-500 rounded-none bg-transparent focus:ring-0">
+                          <SelectValue placeholder="genre" />
+                        </SelectTrigger>
+                        <SelectContent className="min-w-[180px]">
+                          {genres.map((genre) => (
+                            <SelectItem key={genre} value={genre}>{genre}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <span className="text-gray-700">about</span>
+
+                    {/* Theme Dropdown */}
+                    <div className="inline-block">
+                      <Select 
+                        value={form.getValues().theme} 
+                        onValueChange={(value) => handleFieldChange("theme", value)}
+                      >
+                        <SelectTrigger className="w-52 h-8 text-base border-b-2 border-purple-500 rounded-none bg-transparent focus:ring-0">
+                          <SelectValue placeholder="theme" />
+                        </SelectTrigger>
+                        <SelectContent className="min-w-[200px]">
+                          {themes.map((theme) => (
+                            <SelectItem key={theme} value={theme}>{theme}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <span className="text-gray-700">set in</span>
+
+                    {/* Setting Dropdown */}
+                    <div className="inline-block">
+                      <Select 
+                        value={form.getValues().setting} 
+                        onValueChange={(value) => handleFieldChange("setting", value)}
+                      >
+                        <SelectTrigger className="w-52 h-8 text-base border-b-2 border-amber-500 rounded-none bg-transparent focus:ring-0">
+                          <SelectValue placeholder="setting" />
+                        </SelectTrigger>
+                        <SelectContent className="min-w-[200px]">
+                          {settings.map((setting) => (
+                            <SelectItem key={setting} value={setting}>{setting}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-6 flex justify-between">
+                <Button variant="outline" type="button" onClick={goBack}>
+                  Back
+                </Button>
+                <Button 
+                  type="submit"
+                  disabled={!form.formState.isValid}
+                >
+                  Next: Concept
+                </Button>
+              </div>
+
+              {/* Debug button - remove in production */}
+              <div className="text-center mt-4">
                 <Button
                   variant="outline"
                   size="sm"
                   type="button"
-                  onClick={randomizeForm}
-                  className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
+                  onClick={handleManualReset}
+                  className="text-xs text-gray-500"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-4 h-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M3 2v6h6"></path>
-                    <path d="M3 13a9 9 0 0 0 9 9 9 9 0 0 0 6.75-3"></path>
-                    <path d="M14 10h7"></path>
-                    <path d="M21 10v7"></path>
-                  </svg>
-                  Randomize All
+                  Reset Form (Debug)
                 </Button>
               </div>
-
-              <div className="text-lg leading-relaxed space-y-6">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-gray-700">Compose me a</span>
-
-                  {/* Tone Dropdown */}
-                  <div className="inline-block">
-                    <Select 
-                      value={form.getValues().tone} 
-                      onValueChange={(value) => handleFieldChange("tone", value)}
-                    >
-                      <SelectTrigger className="w-44 h-8 text-base border-b-2 border-blue-500 rounded-none bg-transparent focus:ring-0">
-                        <SelectValue placeholder="tone" />
-                      </SelectTrigger>
-                      <SelectContent className="min-w-[180px]">
-                        {tones.map((tone) => (
-                          <SelectItem key={tone} value={tone}>{tone}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Genre Dropdown */}
-                  <div className="inline-block">
-                    <Select 
-                      value={form.getValues().genre} 
-                      onValueChange={(value) => handleFieldChange("genre", value)}
-                    >
-                      <SelectTrigger className="w-44 h-8 text-base border-b-2 border-green-500 rounded-none bg-transparent focus:ring-0">
-                        <SelectValue placeholder="genre" />
-                      </SelectTrigger>
-                      <SelectContent className="min-w-[180px]">
-                        {genres.map((genre) => (
-                          <SelectItem key={genre} value={genre}>{genre}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <span className="text-gray-700">about</span>
-
-                  {/* Theme Dropdown */}
-                  <div className="inline-block">
-                    <Select 
-                      value={form.getValues().theme} 
-                      onValueChange={(value) => handleFieldChange("theme", value)}
-                    >
-                      <SelectTrigger className="w-52 h-8 text-base border-b-2 border-purple-500 rounded-none bg-transparent focus:ring-0">
-                        <SelectValue placeholder="theme" />
-                      </SelectTrigger>
-                      <SelectContent className="min-w-[200px]">
-                        {themes.map((theme) => (
-                          <SelectItem key={theme} value={theme}>{theme}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <span className="text-gray-700">set in</span>
-
-                  {/* Setting Dropdown */}
-                  <div className="inline-block">
-                    <Select 
-                      value={form.getValues().setting} 
-                      onValueChange={(value) => handleFieldChange("setting", value)}
-                    >
-                      <SelectTrigger className="w-52 h-8 text-base border-b-2 border-amber-500 rounded-none bg-transparent focus:ring-0">
-                        <SelectValue placeholder="setting" />
-                      </SelectTrigger>
-                      <SelectContent className="min-w-[200px]">
-                        {settings.map((setting) => (
-                          <SelectItem key={setting} value={setting}>{setting}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-6 flex justify-between">
-              <Button variant="outline" type="button" onClick={goBack}>
-                Back
-              </Button>
-              <Button 
-                type="submit"
-                disabled={!form.formState.isValid}
-              >
-                Next: Concept
-              </Button>
-            </div>
-
-            {/* Debug button - remove in production */}
-            <div className="text-center mt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                type="button"
-                onClick={handleManualReset}
-                className="text-xs text-gray-500"
-              >
-                Reset Form (Debug)
-              </Button>
-            </div>
-            
-            {/* Simple form test using register directly */}
-            <SimpleFormTest />
-          </form>
+              
+              {/* Simple form test using register directly */}
+              <SimpleFormTest />
+            </form>
+          </FormProvider>
         </div>
       </div>
     </>
