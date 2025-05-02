@@ -458,10 +458,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`Generating ${indices.length} characters`);
 
+      // Check if names are provided in character templates
+      const characterNames = characterTemplates.map(char => char.name || null)
+        .filter(name => name !== null && name !== "");
+        
+      console.log("Provided character names:", characterNames);
+      
       // Create prompt for the character generation - {name: {...}} format
       const prompt = `Given this story context:
         ${JSON.stringify(projectContext, null, 2)}
         Generate ${indices.length} detailed character${indices.length > 1 ? "s" : ""} for a visual novel in JSON format.
+
+        ${characterNames.length > 0 ? `Use these provided character names: ${characterNames.join(", ")}` : "Create appropriate character names based on the story context."}
 
         Return in this exact format where the character's name is the key:
         {
