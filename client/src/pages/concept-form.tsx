@@ -100,13 +100,28 @@ export default function ConceptForm() {
       shouldTouch: true
     });
     
-    // Save the field to the context
-    const singleFieldUpdate = {
-      [fieldName]: value
-    } as ConceptData;
+    // Create a complete object with existing data plus the updated field
+    const existingValues = form.getValues();
+    
+    // Create the updated concept data object
+    const updatedData: ConceptData = {
+      title: fieldName === "title" ? value : existingValues.title,
+      tagline: fieldName === "tagline" ? value : existingValues.tagline,
+      premise: fieldName === "premise" ? value : existingValues.premise
+    };
     
     console.log(`Saving field ${fieldName} with value:`, value);
-    setConceptData(singleFieldUpdate);
+    console.log("Full concept data being saved:", updatedData);
+    
+    // Set the complete data in the context
+    setConceptData(updatedData);
+    
+    // Save to server immediately if we have a project ID
+    if (projectData?.id) {
+      saveProject()
+        .then(() => console.log("Field change saved to server"))
+        .catch(error => console.error("Error saving field change:", error));
+    }
   };
 
   // Go back to previous step
