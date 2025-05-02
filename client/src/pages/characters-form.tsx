@@ -89,6 +89,9 @@ export default function CharactersForm() {
       setCharacters(charactersArray);
     }
   }, [projectData]);
+  
+  // Register with form save system
+  useRegisterFormSave('characters', saveCharacterData);
 
   // Add a new character card
   const addCharacter = () => {
