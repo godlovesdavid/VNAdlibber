@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useAutosave } from "@/hooks/use-autosave-fixed";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useVnData } from "@/hooks/use-vn-data";
@@ -77,36 +78,8 @@ export default function ConceptForm() {
   // Register with form save system
   useRegisterFormSave('concept', saveConceptData);
   
-  // Setup autosave using the watch method directly
-  useEffect(() => {
-    // Subscribe to form changes
-    const subscription = form.watch(() => {
-      // Use debounce inside this callback
-      const handler = setTimeout(() => {
-        const values = form.getValues();
-        console.log("[AutosaveEffect] Form changed, saving data:", values);
-        saveConceptData();
-        
-        // Save to server if we have a project ID
-        if (projectData?.id) {
-          console.log("[AutosaveEffect] Saving to server...");
-          saveProject().then(() => {
-            console.log("[AutosaveEffect] Saved to server successfully");
-          }).catch(err => {
-            console.error("[AutosaveEffect] Error saving to server:", err);
-          });
-        }
-      }, 2000); // ← 2 seconds debounce
-
-      // Clear previous debounce timeout
-      return () => clearTimeout(handler);
-    });
-
-    console.log("[ConceptForm] Autosave with Watch method enabled (2 second debounce)");
-
-    // Clean up subscription on unmount
-    return () => subscription.unsubscribe();
-  }, [form, saveProject, projectData?.id]);
+  // Use the improved autosave hook for automatic form saving
+  useAutosave('concept-form', saveConceptData, 2000, true);
 
   // Go back to previous step
   const handleBack = async () => {
