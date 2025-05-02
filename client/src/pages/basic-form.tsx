@@ -5,7 +5,6 @@ import { useRegisterFormSave } from "@/hooks/use-form-save";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { SimpleFormTest } from "@/components/simple-form-test";
 import { BasicData } from "@/types/vn";
 import {
   Form,
@@ -218,14 +217,15 @@ export default function BasicForm() {
   function saveBasicData() {
     const values = form.getValues();
     
-    // Convert to BasicData type
+    // Convert to BasicData type - preserve existing values
     const formData: BasicData = {
-      theme: values.theme,
-      tone: values.tone,
-      genre: values.genre,
-      setting: values.setting
+      theme: values.theme || projectData?.basicData?.theme || "",
+      tone: values.tone || projectData?.basicData?.tone || "",
+      genre: values.genre || projectData?.basicData?.genre || "",
+      setting: values.setting || projectData?.basicData?.setting || ""
     };
     
+    console.log("💾 saveBasicData function called, saving data:", formData);
     setBasicData(formData);
     return formData;
   }
@@ -267,12 +267,12 @@ export default function BasicForm() {
     const values = form.getValues();
     console.log("📋 Current form values:", values);
     
-    // Convert to BasicData type
+    // Convert to BasicData type - preserve any existing values not being edited
     const formData: BasicData = {
-      theme: values.theme || "",
-      tone: values.tone || "",
-      genre: values.genre || "",
-      setting: values.setting || ""
+      theme: values.theme || projectData?.basicData?.theme || "",
+      tone: values.tone || projectData?.basicData?.tone || "",
+      genre: values.genre || projectData?.basicData?.genre || "",
+      setting: values.setting || projectData?.basicData?.setting || ""
     };
     
     // Save to context immediately
@@ -339,12 +339,12 @@ export default function BasicForm() {
   const handleSubmit = form.handleSubmit(async (values) => {
     console.log("📝 Form submitted with values:", values);
     
-    // Convert to BasicData type
+    // Convert to BasicData type - preserve existing values  
     const formData: BasicData = {
-      theme: values.theme || "",
-      tone: values.tone || "",
-      genre: values.genre || "",
-      setting: values.setting || ""
+      theme: values.theme || projectData?.basicData?.theme || "",
+      tone: values.tone || projectData?.basicData?.tone || "",
+      genre: values.genre || projectData?.basicData?.genre || "",
+      setting: values.setting || projectData?.basicData?.setting || ""
     };
     
     // Save data to context
@@ -533,8 +533,14 @@ export default function BasicForm() {
                 </Button>
               </div>
               
-              {/* Simple form test using register directly */}
-              <SimpleFormTest />
+              {/* Debug data display */}
+              <div className="bg-gray-50 rounded p-3 my-2 text-xs text-gray-500">
+                <h4 className="font-bold mb-1">Form Debug Info:</h4>
+                <p>Project ID: {projectData?.id || 'None'}</p>
+                <p>Last saved field: {lastSavedField}</p>
+                <p>Save count: {saveCount}</p>
+                <p>Form valid: {form.formState.isValid ? 'Yes' : 'No'}</p>
+              </div>
             </form>
           </FormProvider>
         </div>
