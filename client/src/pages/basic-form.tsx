@@ -204,10 +204,17 @@ export default function BasicForm() {
   useRegisterFormSave('basic', saveBasicData);
   
   // Setup autosave - will automatically save form values every 30 seconds
-  const { performSave } = useAutosave('basic', saveBasicData, 30000, true);
+  const { performSave, isReady, formId } = useAutosave('basic', saveBasicData, 10000, true);
   
   // Log for debugging
-  console.log('[BasicForm] Autosave hook installed');
+  console.log(`[BasicForm] Autosave hook installed for form '${formId}' (isReady: ${isReady ? 'yes' : 'no'})`);
+  
+  // Effect to log when autosave becomes ready
+  useEffect(() => {
+    if (isReady) {
+      console.log('[BasicForm] Autosave is now READY and will save automatically');
+    }
+  }, [isReady]);
 
   // Proceed to next step
   const handleSubmit = form.handleSubmit(async (data) => {

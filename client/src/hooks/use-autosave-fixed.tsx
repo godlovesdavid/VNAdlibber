@@ -21,20 +21,50 @@ export const useAutosave = (
   const form = useFormContext();
   const { projectData, saveProject } = useVnContext();
   
+  // State to track if the hook is ready
+  const [isReady, setIsReady] = useState(false);
+  
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const lastSavedRef = useRef<any>(null);
+  const initAttemptsRef = useRef(0);
 
-  // Setup autosave timer
+  // Effect to check if form is ready and retry if needed
   useEffect(() => {
-    console.log(`[Autosave] Setting up autosave for ${formId} (interval: ${interval}ms)`);
+    // If already ready, skip this effect
+    if (isReady) return;
     
-    // Skip setup if form is not available or doesn't have getValues
-    if (!form || typeof form.getValues !== 'function') {
-      console.warn(`[Autosave] useAutosave - FormContext not ready for ${formId}`);
-      // We'll retry on form changes instead of failing completely
-      return;
+    console.log(`[Autosave] Checking form readiness for ${formId}...`);
+    
+    // Check if form is available with getValues method
+    if (form && typeof form.getValues === 'function') {
+      console.log(`[Autosave] Form context is ready for ${formId}`);
+      setIsReady(true);
+    } else {
+      // Form not ready yet, setup retry with increasing backoff
+      initAttemptsRef.current += 1;
+      const delay = Math.min(1000 * initAttemptsRef.current, 3000); // Max 3 second delay
+      
+      console.warn(`[Autosave] FormContext not ready for ${formId}, retry #${initAttemptsRef.current} in ${delay}ms`);
+      
+      // Try again after delay
+      const timeoutId = setTimeout(() => {
+        // This will trigger this effect again
+        if (!isReady) {
+          console.log(`[Autosave] Retrying form readiness check for ${formId}...`);
+          setIsReady(false); // Force re-render
+        }
+      }, delay);
+      
+      return () => clearTimeout(timeoutId);
     }
+  }, [form, formId, isReady]);
+
+  // Setup autosave timer when form is ready
+  useEffect(() => {
+    // Only proceed if ready
+    if (!isReady) return;
     
+    console.log(`[Autosave] Setting up autosave for ${formId} (interval: ${interval}ms)`);
     console.log(`[Autosave] Form context available for ${formId}`);
 
     
@@ -118,9 +148,9 @@ export const useAutosave = (
         clearInterval(timerRef.current);
       }
     };
-  }, [formId, form, interval, saveFunction, saveProject, projectData?.id, showToast, toast]);
+  }, [formId, form, interval, saveFunction, saveProject, projectData?.id, showToast, toast, isReady]);
   
-  // Return utility functions
+  // Return utility functions and state
   return {
     performSave: () => {
       if (!form || !form.getValues) return;
@@ -130,6 +160,8 @@ export const useAutosave = (
     },
     setLastSaved: (values: any) => {
       lastSavedRef.current = values;
-    }
+    },
+    isReady, // Expose whether the autosave is ready
+    formId   // Expose the form ID for debugging
   };
 };
