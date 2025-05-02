@@ -40,7 +40,7 @@ export default function PathsForm() {
   } = useVnData();
 
   // Form state
-  const [routes, setRoutes] = useState<RouteForm[]>([
+  const [routes, setRoutes] = useState<RouteWithTitle[]>([
     {
       title: "",
       loveInterest: null,
@@ -107,7 +107,7 @@ export default function PathsForm() {
   };
 
   // Update path field
-  const updatePath = (index: number, field: keyof RouteForm, value: any) => {
+  const updatePath = (index: number, field: keyof RouteWithTitle, value: any) => {
     const updatedRoutes = [...routes];
     updatedRoutes[index] = {
       ...updatedRoutes[index],
@@ -127,15 +127,18 @@ export default function PathsForm() {
   };
 
   // Helper function to save path data
-  const savePathData = (routesToSave: Route[] = routes) => {
+  const savePathData = (routesToSave: RouteWithTitle[] = routes) => {
     // Convert array to object format for storage
     const pathsObj: Record<string, Route> = {};
-    routesToSave.forEach(route => {
-      if (route.title) {
-        // Create a copy of the route without the redundant title property
-        const { title, ...routeWithoutTitle } = route;
-        // Store with title as key but don't include title in the value
-        pathsObj[title] = routeWithoutTitle;
+    
+    routesToSave.forEach(routeWithTitle => {
+      // Only process routes that have a title
+      if (routeWithTitle.title) {
+        // Extract the title and create a clean copy without it
+        const { title, ...routeProps } = routeWithTitle;
+        
+        // Store with title as key and the rest of the properties as value
+        pathsObj[title] = routeProps;
       }
     });
     
