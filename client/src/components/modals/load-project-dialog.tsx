@@ -57,6 +57,15 @@ export function LoadProjectDialog({ open, onOpenChange }: LoadProjectDialogProps
     enabled: open, // Only fetch when dialog is open
   });
   
+  // Log project data when it changes
+  useEffect(() => {
+    if (projects && projects.length > 0) {
+      console.log('Projects loaded successfully:', projects);
+    } else if (projects && projects.length === 0) {
+      console.log('No projects found in the database');
+    }
+  }, [projects]);
+  
   // Handle project selection
   const handleSelectProject = async (projectId: number) => {
     try {

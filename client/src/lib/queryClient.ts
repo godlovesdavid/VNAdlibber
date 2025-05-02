@@ -76,16 +76,35 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
-      credentials: "include",
-    });
+    try {
+      console.log('Query request:', queryKey[0]);
+      
+      // Check if we're using a local development port (3000) instead of the actual server port (5000)
+      let url = queryKey[0] as string;
+      if (url.startsWith('/api/')) {
+        url = `http://localhost:5000${url}`;
+      }
+      
+      console.log('Fetching from URL:', url);
+      
+      const res = await fetch(url, {
+        credentials: "include",
+      });
+      
+      console.log('Query response status:', res.status);
 
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
+      if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+        return null;
+      }
+
+      await throwIfResNotOk(res);
+      const data = await res.json();
+      console.log('Query data:', data);
+      return data;
+    } catch (error) {
+      console.error('Query error:', error);
+      throw error;
     }
-
-    await throwIfResNotOk(res);
-    return await res.json();
   };
 
 export const queryClient = new QueryClient({
