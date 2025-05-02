@@ -2,11 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useRegisterFormSave } from "@/hooks/use-form-save";
-import { useForm, FormProvider, useFormContext } from "react-hook-form";
+import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useAutosave } from "@/hooks/use-simple-autosave";
 import { SimpleFormTest } from "@/components/simple-form-test";
+import { AutoSaveForm } from "@/components/auto-save-form";
 import { BasicData } from "@/types/vn";
 import {
   Form,
@@ -286,75 +286,29 @@ export default function BasicForm() {
   // Reference to track the save timeout
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Move the useAutosave hook inside the component that's rendered within FormProvider
-  // so it has access to the form context
-  const BasicFormAutosave = () => {
-    console.log("BasicFormAutosave component rendering");
-    const { watch, getValues } = useFormContext();
+  // Create a save handler for the AutoSaveForm component
+  const handleAutoSave = (formValues: Record<string, any>) => {
+    // Convert to BasicData type
+    const formData: BasicData = {
+      theme: formValues.theme || "",
+      tone: formValues.tone || "",
+      genre: formValues.genre || "",
+      setting: formValues.setting || ""
+    };
     
-    // Use a direct watch approach with our own debouncing
-    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-    const lastSavedRef = useRef<Record<string, any> | null>(null);
+    // Save to context
+    console.log("Auto-save handling form data:", formData);
+    setBasicData(formData);
     
-    useEffect(() => {
-      console.log("BasicFormAutosave effect running");
-      
-      const subscription = watch((values) => {
-        console.log("Form values changed:", values);
-        
-        // Clear existing timeout to debounce
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-        }
-        
-        // Set new timeout
-        timeoutRef.current = setTimeout(() => {
-          const currentValues = getValues();
-          console.log("Autosave timeout triggered with values:", currentValues);
-          
-          // Check if values actually changed
-          if (JSON.stringify(currentValues) !== JSON.stringify(lastSavedRef.current)) {
-            // Convert to BasicData type
-            const formData: BasicData = {
-              theme: currentValues.theme || "",
-              tone: currentValues.tone || "",
-              genre: currentValues.genre || "",
-              setting: currentValues.setting || ""
-            };
-            
-            // Save to context
-            console.log("Saving data to context:", formData);
-            setBasicData(formData);
-            lastSavedRef.current = {...currentValues};
-            
-            // Save to server if we have a project ID
-            if (projectData?.id) {
-              console.log("Autosave saving to server, project ID:", projectData.id);
-              saveProject()
-                .then(() => console.log("Autosave successfully saved to server"))
-                .catch(err => console.error("Autosave error saving to server:", err));
-            } else {
-              console.log("Autosave: No project ID available, skipping server save");
-            }
-          } else {
-            console.log("Autosave: Values unchanged, skipping save");
-          }
-          
-          timeoutRef.current = null;
-        }, 1000); // 1 second debounce
-      });
-      
-      // Clean up
-      return () => {
-        console.log("BasicFormAutosave effect cleanup");
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-        }
-        subscription.unsubscribe();
-      };
-    }, [watch, getValues, projectData?.id]);
-    
-    return null;
+    // Save to server if we have a project ID
+    if (projectData?.id) {
+      console.log("Auto-save saving to server, project ID:", projectData.id);
+      saveProject()
+        .then(() => console.log("Auto-save server save successful"))
+        .catch(error => console.error("Auto-save server save failed:", error));
+    } else {
+      console.log("Auto-save: No project ID available yet, context save only");
+    }
   };
 
   // Proceed to next step
@@ -399,7 +353,12 @@ export default function BasicForm() {
           </p>
 
           <FormProvider {...form}>
-            <BasicFormAutosave />
+            <AutoSaveForm 
+              onSave={handleAutoSave} 
+              projectId={projectData?.id} 
+              formId="basic" 
+              debounceMs={1000} 
+            />
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* Sentence-style form with dropdowns */}
               <div className="bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200">
