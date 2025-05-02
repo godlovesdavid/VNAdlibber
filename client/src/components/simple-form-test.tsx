@@ -12,9 +12,10 @@ export function SimpleFormTest() {
   // Set up a manual watch effect to debounce saves
   // Create a ref to track last saved values
   const lastSavedValues = useRef<Record<string, any> | null>(null);
+  // Add a save timeout ref for server saves
+  const serverSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   useEffect(() => {
-
     const subscription = watch((values) => {
       // Clear existing timeout to debounce
       if (timeoutRef.current) {
@@ -44,6 +45,25 @@ export function SimpleFormTest() {
           lastSavedValues.current = {...currentValues};
           
           console.log("SimpleFormTest saved updated values");
+          
+          // Save to server if we have a project ID (with additional delay)
+          if (projectData?.id) {
+            // Clear existing server save timeout
+            if (serverSaveTimeoutRef.current) {
+              clearTimeout(serverSaveTimeoutRef.current);
+            }
+            
+            // Set new server save timeout with additional delay
+            serverSaveTimeoutRef.current = setTimeout(() => {
+              console.log("SimpleFormTest saving to server...");
+              saveProject().then(() => {
+                console.log("SimpleFormTest saved to server successfully");
+              }).catch(err => {
+                console.error("SimpleFormTest error saving to server:", err);
+              });
+              serverSaveTimeoutRef.current = null;
+            }, 500); // Extra 500ms after the form save (2s total from input)
+          }
         }
         
         timeoutRef.current = null;
@@ -55,34 +75,45 @@ export function SimpleFormTest() {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
+      if (serverSaveTimeoutRef.current) {
+        clearTimeout(serverSaveTimeoutRef.current);
+      }
       subscription.unsubscribe();
     };
-  }, [watch, getValues, setBasicData]);
+  }, [watch, getValues, setBasicData, projectData?.id, saveProject]);
   
   const handleSave = () => {
-    // This will get triggered by a button click
-    const values = getValues();
-    
-    // Convert to BasicData type
-    const formData: BasicData = {
-      theme: values.theme || "",
-      tone: values.tone || "",
-      genre: values.genre || "",
-      setting: values.setting || ""
-    };
-    
-    // Save the data
-    console.log("Manually saving form data:", formData);
-    setBasicData(formData);
-    
-    // Save to server if we have a project ID
-    if (projectData?.id) {
-      console.log("Saving to server via manual save...");
-      saveProject().then(() => {
-        console.log("Saved to server successfully via manual save");
-      }).catch(err => {
-        console.error("Error saving to server:", err);
-      });
+    try {
+      // This will get triggered by a button click
+      const values = getValues();
+      console.log("Manual save button clicked, values:", values);
+      
+      // Update the lastSavedValues ref to prevent duplicate saves
+      lastSavedValues.current = {...values};
+      
+      // Convert to BasicData type
+      const formData: BasicData = {
+        theme: values.theme || "",
+        tone: values.tone || "",
+        genre: values.genre || "",
+        setting: values.setting || ""
+      };
+      
+      // Save the data to context
+      console.log("Manually saving form data:", formData);
+      setBasicData(formData);
+      
+      // Always perform direct server save
+      console.log("Manual save: saving to server...");
+      saveProject()
+        .then((result) => {
+          console.log("Manual save: server save successful", result);
+        })
+        .catch(err => {
+          console.error("Manual save: server save error:", err);
+        });
+    } catch (error) {
+      console.error("Error in manual save:", error);
     }
   };
   
