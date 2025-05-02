@@ -130,6 +130,9 @@ export default function BasicForm() {
     
     form.reset(randomValues);
     setInitialized(true);
+    
+    // Save the randomized values
+    setBasicData(randomValues);
   };
 
   // Load or reset form values based on projectData
