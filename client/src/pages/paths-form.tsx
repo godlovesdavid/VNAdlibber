@@ -64,34 +64,103 @@ export default function PathsForm() {
   // Load existing data if available
   useEffect(() => {
     if (projectData?.pathsData && Object.keys(projectData.pathsData).length > 0) {
-      // Convert from object to array format for the form
-      // Since we removed the title property from stored routes, we need to add it back for UI display
-      const routesArray = Object.entries(projectData.pathsData).map(
-        ([title, route]) => ({
-          ...route,
-          title // Add the title from the key for the form
-        })
-      );
-      setRoutes(routesArray);
+      console.log("Loading paths data from context:", projectData.pathsData);
+      
+      try {
+        // Convert from object to array format for the form
+        // Since we removed the title property from stored routes, we need to add it back for UI display
+        const routesArray = Object.entries(projectData.pathsData).map(
+          ([title, route]) => {
+            console.log(`Processing path with title: '${title}':`, route);
+            
+            // Check if the route data has numeric indices (which could happen from API)
+            const hasNumericKeys = Object.keys(route).some(key => !isNaN(Number(key)));
+            if (hasNumericKeys) {
+              console.log("Found numeric keys in route data:", 
+                Object.keys(route).filter(key => !isNaN(Number(key))));
+              
+              // Clean up the route data before using it
+              const cleanRoute = Object.entries(route)
+                .filter(([key]) => isNaN(Number(key)))
+                .reduce((obj, [key, value]) => {
+                  obj[key] = value;
+                  return obj;
+                }, {} as Record<string, any>) as Route;
+                
+              return {
+                ...cleanRoute,
+                title // Add the title from the key for the form
+              };
+            }
+            
+            return {
+              ...route,
+              title // Add the title from the key for the form
+            };
+          }
+        );
+        
+        console.log("Converted routes array:", routesArray);
+        
+        if (routesArray.length > 0) {
+          setRoutes(routesArray);
+          console.log("Successfully set routes from project data");
+        } else {
+          console.log("No valid routes found in project data");
+        }
+      } catch (error) {
+        console.error("Error processing paths data:", error);
+        // Set a default empty path if we can't load the saved ones
+        setRoutes([{
+          title: "",
+          loveInterest: null,
+          keyChoices: "",
+          beginning: "",
+          middle: "",
+          climax: "",
+          goodEnding: "",
+          badEnding: "",
+        }]);
+      }
+    } else {
+      console.log("No paths data found in project data");
     }
   }, [projectData]);
   
-  // Helper function to save path data - follows same pattern as characters form
-  const savePathData = () => {
+  // Helper function to save path data - matching the structure of saveCharacterData
+  function savePathData() {
     console.log("Saving path data...");
     
     // Convert array to object format for storage
     const pathsObj: Record<string, Route> = {};
     
+    // Check if there's any data to save
+    if (routes.length === 0) {
+      console.log("No paths to save");
+      return pathsObj;
+    }
+    
+    // Log the routes array before processing
+    console.log("Paths to save:", routes);
+    
     routes.forEach(route => {
       // Only process routes that have a title
       if (route.title) {
         console.log(`Processing path with title: ${route.title}`);
-        // Extract the title and create a clean copy without it
-        const { title, ...routeProps } = route;
+        
+        // Extract title but don't store it in the object
+        const { title, ...routeWithoutTitle } = route;
+        
+        // Remove any numeric keys that might be causing unintended nesting
+        const cleanRoute = Object.entries(routeWithoutTitle)
+          .filter(([key]) => isNaN(Number(key)))
+          .reduce((obj, [key, value]) => {
+            obj[key] = value;
+            return obj;
+          }, {} as Record<string, any>) as Route;
         
         // Store with title as key and the rest of the properties as value
-        pathsObj[title] = routeProps;
+        pathsObj[title] = cleanRoute;
       } else {
         console.log("Skipping path with no title");
       }
@@ -103,7 +172,7 @@ export default function PathsForm() {
     setPathsData(pathsObj);
     
     return pathsObj;
-  };
+  }
   
   // Register with form save system
   useRegisterFormSave('paths', savePathData);
@@ -197,27 +266,62 @@ export default function PathsForm() {
 
   // Generate path details using AI
   const handleGeneratePath = async (index: number) => {
+    console.log(`Generating path details for index ${index}...`);
     setGeneratingPathIndex(index);
 
-    const generatedPath = await generatePathData(index, routes[index]);
+    try {
+      console.log("Calling generatePathData for single path...");
+      console.log("Current path before generation:", routes[index]);
+      
+      const generatedPath = await generatePathData(index, routes[index]);
+      console.log("generatePathData returned:", generatedPath);
 
-    if (generatedPath) {
-      const updatedRoutes = [...routes];
-      updatedRoutes[index] = {
-        ...updatedRoutes[index],
-        ...generatedPath,
-      };
-      setRoutes(updatedRoutes);
+      if (generatedPath) {
+        console.log("Checking generated path structure for numeric keys...");
+        const hasNumericKeysInGenerated = Object.keys(generatedPath).some(key => !isNaN(Number(key)));
+        console.log(`Generated path has numeric keys: ${hasNumericKeysInGenerated}`);
+        
+        if (hasNumericKeysInGenerated) {
+          console.log("Numeric keys found in generated path:", 
+            Object.keys(generatedPath).filter(key => !isNaN(Number(key))));
+        }
+        
+        const updatedRoutes = [...routes];
+        console.log("Before merge:", updatedRoutes[index]);
+        
+        updatedRoutes[index] = {
+          ...updatedRoutes[index],
+          ...generatedPath,
+        };
+        
+        console.log("After merge:", updatedRoutes[index]);
+        setRoutes(updatedRoutes);
 
-      // Update the project context after generation
-      savePathData();
+        // Update the project context after generation
+        const savedData = savePathData();
+        console.log(`Saved paths data after generation:`, savedData);
+        
+        // Save to server if we have a project ID
+        if (projectData?.id) {
+          try {
+            await saveProject();
+            console.log(`Saved path ${index + 1} data to server`);
+          } catch (error) {
+            console.error("Error saving project after path generation:", error);
+          }
+        }
 
-      // Log generation to console
-      console.log(`🔥 Generated path ${index + 1}:`, generatedPath);
-      console.log(`🔥 Updated project context with path ${index + 1} data`);
+        // Log generation to console
+        console.log(`🔥 Generated path ${index + 1}:`, generatedPath);
+        console.log(`🔥 Updated project context with path ${index + 1} data`);
+      } else {
+        console.log(`Failed to generate path ${index + 1}`);
+      }
+    } catch (error) {
+      console.error("Error in handleGeneratePath:", error);
+    } finally {
+      setGeneratingPathIndex(null);
     }
-
-    setGeneratingPathIndex(null);
   };
 
   // Generate all paths
@@ -244,23 +348,54 @@ export default function PathsForm() {
         loveInterest: route.loveInterest,
       }));
 
-      console.log(`Generating ${pathTemplates.length} paths at once...`);
+      console.log(`Generating ${pathTemplates.length} paths at once with templates:`, pathTemplates);
 
       // Generate all paths in one API call
       const generatedPaths = await generateMultiplePathsData(pathTemplates);
-
+      console.log("Received generated paths:", generatedPaths);
+      
       if (generatedPaths && Array.isArray(generatedPaths)) {
+        // Check for numeric keys in generated paths
+        generatedPaths.forEach((path, idx) => {
+          const hasNumericKeys = Object.keys(path).some(key => !isNaN(Number(key)));
+          if (hasNumericKeys) {
+            console.log(`Generated path ${idx} has numeric keys:`, 
+              Object.keys(path).filter(key => !isNaN(Number(key))));
+          }
+        });
+        
         // Merge the generated paths with existing path data
-        const updatedRoutes = allRoutes.map((route, idx) => ({
-          ...route,
-          ...generatedPaths[idx],
-        }));
+        const updatedRoutes = allRoutes.map((route, idx) => {
+          console.log(`Merging path ${idx}:`);
+          console.log("Original:", route);
+          console.log("Generated:", generatedPaths[idx]);
+          
+          // Merge the data
+          const merged = {
+            ...route,
+            ...generatedPaths[idx],
+          };
+          
+          console.log("Result:", merged);
+          return merged;
+        });
 
         // Update state and project context
         setRoutes(updatedRoutes);
         
-        // Save the path data to the context
-        savePathData();
+        // Save the path data to the context with our enhanced clean-up function
+        const savedData = savePathData();
+        console.log("Paths saved after batch generation:", savedData);
+        
+        // Save to server if we have a project ID
+        if (projectData?.id) {
+          try {
+            await saveProject();
+            console.log("Saved all paths data to server");
+          } catch (error) {
+            console.error("Error saving project after batch path generation:", error);
+          }
+        }
 
         console.log("Successfully generated all paths at once");
         console.log("Updated project context with all path data");
