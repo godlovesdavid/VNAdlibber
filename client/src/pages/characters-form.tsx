@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useVnData } from "@/hooks/use-vn-data";
 import { useRegisterFormSave } from "@/hooks/use-form-save";
+import { useAutosave } from "@/hooks/use-autosave";
 import { CreationProgress } from "@/components/creation-progress";
 import { NavBar } from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,7 @@ import { Character } from "@/types/vn";
 
 export default function CharactersForm() {
   const [, setLocation] = useLocation();
-  const { projectData, setCharactersData, goToStep } = useVnContext();
+  const { projectData, setCharactersData, goToStep, saveProject } = useVnContext();
   const {
     generateCharacterData,
     generateMultipleCharactersData,
@@ -126,6 +127,9 @@ export default function CharactersForm() {
   
   // Register with form save system
   useRegisterFormSave('characters', saveCharacterData);
+  
+  // Setup autosave
+  useAutosave('characters', saveCharacterData, 30000);
 
   // Add a new character card
   const addCharacter = () => {
@@ -149,6 +153,9 @@ export default function CharactersForm() {
         conflict: "",
       },
     ]);
+    
+    // We don't need to call saveCharacterData here
+    // The useAutosave hook will handle saving at the specified interval
   };
 
   // Remove a character
@@ -161,6 +168,9 @@ export default function CharactersForm() {
     const updatedCharacters = [...characters];
     updatedCharacters.splice(index, 1);
     setCharacters(updatedCharacters);
+    
+    // We don't need to call saveCharacterData here
+    // The useAutosave hook will handle saving at the specified interval
   };
 
   // Update character field
@@ -175,6 +185,9 @@ export default function CharactersForm() {
       [field]: value,
     };
     setCharacters(updatedCharacters);
+    
+    // We don't need to call saveCharacterData or saveProject here
+    // The useAutosave hook will handle saving at the specified interval
   };
 
   // Generate character details using AI
@@ -254,6 +267,16 @@ export default function CharactersForm() {
         console.log("Setting protagonist to:", protagonist);
         
         setCharactersData(charactersObj, protagonist);
+        
+        // Save to server if we have a project ID
+        if (projectData?.id) {
+          try {
+            await saveProject();
+            console.log(`Saved character ${index + 1} data to server`);
+          } catch (error) {
+            console.error("Error saving project after character generation:", error);
+          }
+        }
 
         // Log generation to console
         console.log(`Generated character ${index + 1}:`, generatedCharacter);
@@ -393,6 +416,16 @@ export default function CharactersForm() {
         console.log("Setting protagonist to:", protagonist);
         
         setCharactersData(charactersObj, protagonist);
+        
+        // Save to server if we have a project ID
+        if (projectData?.id) {
+          try {
+            await saveProject();
+            console.log("Saved all character data to server");
+          } catch (error) {
+            console.error("Error saving project after batch character generation:", error);
+          }
+        }
 
         console.log("Successfully generated all characters at once");
         console.log("Updated project context with all character data");
@@ -408,18 +441,36 @@ export default function CharactersForm() {
   };
 
   // Go back to previous step
-  const handleBack = () => {
+  const handleBack = async () => {
     // Save data
     saveCharacterData();
+    
+    // Save project to server if it has an ID
+    if (projectData?.id) {
+      try {
+        await saveProject();
+      } catch (error) {
+        console.error("Error saving project:", error);
+      }
+    }
     
     // Navigate to previous step
     goToStep(2);
   };
 
   // Proceed to next step
-  const handleNext = () => {
+  const handleNext = async () => {
     // Save data
     saveCharacterData();
+    
+    // Save project to server if it has an ID
+    if (projectData?.id) {
+      try {
+        await saveProject();
+      } catch (error) {
+        console.error("Error saving project:", error);
+      }
+    }
 
     // Navigate to next step
     setLocation("/create/paths");
