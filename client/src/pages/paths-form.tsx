@@ -24,10 +24,8 @@ import {
 import { Wand2, Trash, Plus } from "lucide-react";
 import { Route } from "@/types/vn";
 
-// Form route interface - includes title field which isn't in the Route interface
-interface RouteWithTitle extends Route {
-  title: string; // Title field for the form (will be used as key in PathsData)  
-}
+// No need for a special interface - we'll use the same approach as characters form
+// where we add a title field to the form state but it's not part of the Route interface
 
 export default function PathsForm() {
   const [, setLocation] = useLocation();
@@ -39,8 +37,8 @@ export default function PathsForm() {
     cancelGeneration,
   } = useVnData();
 
-  // Form state
-  const [routes, setRoutes] = useState<RouteWithTitle[]>([
+  // Form state - for each route we add a title field that's used as the key when saving
+  const [routes, setRoutes] = useState<(Route & { title: string })[]>([
     {
       title: "",
       loveInterest: null,
@@ -107,7 +105,7 @@ export default function PathsForm() {
   };
 
   // Update path field
-  const updatePath = (index: number, field: keyof RouteWithTitle, value: any) => {
+  const updatePath = (index: number, field: keyof (Route & { title: string }), value: any) => {
     const updatedRoutes = [...routes];
     updatedRoutes[index] = {
       ...updatedRoutes[index],
@@ -127,15 +125,15 @@ export default function PathsForm() {
   };
 
   // Helper function to save path data
-  const savePathData = (routesToSave: RouteWithTitle[] = routes) => {
+  const savePathData = (routesToSave: (Route & { title: string })[] = routes) => {
     // Convert array to object format for storage
     const pathsObj: Record<string, Route> = {};
     
-    routesToSave.forEach(routeWithTitle => {
+    routesToSave.forEach(route => {
       // Only process routes that have a title
-      if (routeWithTitle.title) {
+      if (route.title) {
         // Extract the title and create a clean copy without it
-        const { title, ...routeProps } = routeWithTitle;
+        const { title, ...routeProps } = route;
         
         // Store with title as key and the rest of the properties as value
         pathsObj[title] = routeProps;
