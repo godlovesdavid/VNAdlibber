@@ -361,6 +361,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
   // Save project to server
   const saveProject = async () => {
     if (!projectData) {
+      console.error("Cannot save: No project data available");
       toast({
         title: "Error",
         description: "No project data to save",
@@ -370,27 +371,46 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     try {
+      console.log("Saving project to server...", {
+        id: projectData.id,
+        title: projectData.title,
+        currentStep: projectData.currentStep
+      });
       
       setSaveLoading(true);
-      const response = await apiRequest("POST", "/api/projects", {
+      const dataToSave = {
         ...projectData,
         updatedAt: new Date().toISOString(),
-      });
+      };
+      
+      // Make sure we have required fields
+      if (!dataToSave.title) {
+        dataToSave.title = dataToSave.conceptData?.title || "Untitled Project";
+      }
+      
+      console.log("Submitting data to API...");
+      const response = await apiRequest("POST", "/api/projects", dataToSave);
 
       const savedProject = await response.json();
+      console.log("Project saved successfully:", { id: savedProject.id, title: savedProject.title });
       setProjectData(savedProject);
+
+      // Store in localStorage as well
+      localStorage.setItem("current_vn_project", JSON.stringify(savedProject));
 
       toast({
         title: "Success",
         description: "Project saved successfully",
       });
+      return savedProject; // Return the saved project for chaining
     } catch (error) {
       console.error("Error saving project:", error);
       toast({
         title: "Error",
-        description: "Failed to save project",
+        description: error instanceof Error ? error.message : "Failed to save project",
         variant: "destructive",
       });
+      throw error; // Rethrow to allow caller to handle
     } finally {
       setSaveLoading(false);
     }

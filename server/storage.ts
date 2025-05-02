@@ -108,28 +108,67 @@ export class MemStorage implements IStorage {
   }
   
   async createProject(insertProject: InsertVnProject): Promise<VnProject> {
-    const id = this.projectId++;
-    const project: VnProject = { ...insertProject, id };
-    this.projects.set(id, project);
-    return project;
+    try {
+      // Ensure we have required fields
+      if (!insertProject.title) {
+        console.log("Adding default title for project");
+        insertProject.title = insertProject.conceptData?.title || "Untitled Project";
+      }
+      
+      if (!insertProject.createdAt) {
+        insertProject.createdAt = new Date().toISOString();
+      }
+      
+      if (!insertProject.updatedAt) {
+        insertProject.updatedAt = new Date().toISOString();
+      }
+      
+      const id = this.projectId++;
+      console.log(`Creating new project with ID: ${id}, title: ${insertProject.title}`);
+      
+      const project: VnProject = { ...insertProject, id };
+      this.projects.set(id, project);
+      
+      console.log(`Project created successfully, now have ${this.projects.size} projects`);
+      return project;
+    } catch (error) {
+      console.error("Error in createProject:", error);
+      throw error;
+    }
   }
   
   async updateProject(id: number, projectData: Partial<VnProject>): Promise<VnProject> {
-    const existingProject = this.projects.get(id);
-    
-    if (!existingProject) {
-      throw new Error(`Project with id ${id} not found`);
+    try {
+      console.log(`Updating project with ID: ${id}`);
+      
+      const existingProject = this.projects.get(id);
+      
+      if (!existingProject) {
+        console.error(`Project with id ${id} not found`);
+        throw new Error(`Project with id ${id} not found`);
+      }
+      
+      // Make sure we don't lose required fields
+      if (!projectData.title) {
+        projectData.title = existingProject.title;
+      }
+      
+      const updatedProject: VnProject = {
+        ...existingProject,
+        ...projectData,
+        id,
+        updatedAt: new Date().toISOString()
+      };
+      
+      console.log(`Updating project with title: ${updatedProject.title}`);
+      this.projects.set(id, updatedProject);
+      console.log('Project updated successfully');
+      
+      return updatedProject;
+    } catch (error) {
+      console.error("Error in updateProject:", error);
+      throw error;
     }
-    
-    const updatedProject: VnProject = {
-      ...existingProject,
-      ...projectData,
-      id,
-      updatedAt: new Date().toISOString()
-    };
-    
-    this.projects.set(id, updatedProject);
-    return updatedProject;
   }
   
   async deleteProject(id: number): Promise<void> {

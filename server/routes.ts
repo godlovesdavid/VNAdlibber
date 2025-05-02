@@ -278,22 +278,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/projects", async (req, res) => {
     try {
       const projectData = req.body;
+      console.log("Received project data:", JSON.stringify(projectData, null, 2));
 
       // If project has an ID, update it
       if (projectData.id) {
-        const updatedProject = await storage.updateProject(
-          projectData.id,
-          projectData,
-        );
-        return res.json(updatedProject);
+        console.log(`Updating existing project with ID: ${projectData.id}`);
+        try {
+          const updatedProject = await storage.updateProject(
+            projectData.id,
+            projectData,
+          );
+          console.log("Project updated successfully");
+          return res.json(updatedProject);
+        } catch (updateError) {
+          console.error("Error updating project:", updateError);
+          return res.status(500).json({ 
+            message: "Failed to update project", 
+            error: updateError instanceof Error ? updateError.message : String(updateError) 
+          });
+        }
       }
 
       // Otherwise create a new project
-      const newProject = await storage.createProject(projectData);
-      res.status(201).json(newProject);
+      console.log("Creating new project");
+      try {
+        const newProject = await storage.createProject(projectData);
+        console.log("Project created successfully with ID:", newProject.id);
+        res.status(201).json(newProject);
+      } catch (createError) {
+        console.error("Error creating project:", createError);
+        res.status(500).json({ 
+          message: "Failed to create project", 
+          error: createError instanceof Error ? createError.message : String(createError) 
+        });
+      }
     } catch (error) {
-      console.error("Error saving project:", error);
-      res.status(500).json({ message: "Failed to save project" });
+      console.error("Error processing project request:", error);
+      res.status(500).json({ 
+        message: "Failed to save project", 
+        error: error instanceof Error ? error.message : String(error) 
+      });
     }
   });
 
