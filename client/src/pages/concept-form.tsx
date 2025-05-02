@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useVnData } from "@/hooks/use-vn-data";
 import { useRegisterFormSave } from "@/hooks/use-form-save";
+import { useAutosave } from "@/hooks/use-autosave-fixed";
 import { CreationProgress } from "@/components/creation-progress";
 import { NavBar } from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,7 @@ import { Wand2 } from "lucide-react";
 
 export default function ConceptForm() {
   const [, setLocation] = useLocation();
-  const { projectData, setConceptData, goToStep } = useVnContext();
+  const { projectData, setConceptData, goToStep, saveProject } = useVnContext();
   const { generateConceptData, isGenerating, cancelGeneration } = useVnData();
 
   // Form state
@@ -47,20 +48,33 @@ export default function ConceptForm() {
   
   // Register with form save system
   useRegisterFormSave('concept', saveConceptData);
+  
+  // Setup autosave
+  useAutosave('concept', saveConceptData, 30000);
 
   // Go back to previous step
-  const handleBack = () => {
+  const handleBack = async () => {
     // Save data
     setConceptData({
       title,
       tagline,
       premise,
     });
+    
+    // Save to server if we have a project ID
+    if (projectData?.id) {
+      try {
+        await saveProject();
+      } catch (error) {
+        console.error("Error saving project:", error);
+      }
+    }
+    
     goToStep(1);
   };
 
   // Proceed to next step
-  const handleNext = () => {
+  const handleNext = async () => {
     // Validate form
     if (!title || !tagline || !premise) {
       alert("Please fill in all required fields");
@@ -73,6 +87,15 @@ export default function ConceptForm() {
       tagline,
       premise,
     });
+    
+    // Save to server if we have a project ID
+    if (projectData?.id) {
+      try {
+        await saveProject();
+      } catch (error) {
+        console.error("Error saving project:", error);
+      }
+    }
 
     // Navigate to next step
     setLocation("/create/characters");
@@ -86,6 +109,22 @@ export default function ConceptForm() {
       setTitle(generatedConcept.title);
       setTagline(generatedConcept.tagline);
       setPremise(generatedConcept.premise);
+      
+      // Save the generated concept data
+      setConceptData({
+        title: generatedConcept.title,
+        tagline: generatedConcept.tagline,
+        premise: generatedConcept.premise,
+      });
+      
+      // Save to server if we have a project ID
+      if (projectData?.id) {
+        try {
+          await saveProject();
+        } catch (error) {
+          console.error("Error saving project after generation:", error);
+        }
+      }
 
       // Log generation to console
       console.log("Generated concept:", generatedConcept);
