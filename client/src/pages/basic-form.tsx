@@ -2,10 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useRegisterFormSave } from "@/hooks/use-form-save";
-import { useForm } from "react-hook-form";
+import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useAutosave } from "@/hooks/use-autosave-fixed";
+import { useAutosave } from "@/hooks/use-simple-autosave";
 import {
   Form,
   FormControl,
@@ -226,53 +226,25 @@ export default function BasicForm() {
   // Register with form save system
   useRegisterFormSave('basic', saveBasicData);
   
-  // Setup simple direct autosave on form change with console logs
-  useEffect(() => {
-    console.log("Setting up direct form watch for autosave");
-    
-    // Create a timeout reference to implement debouncing
-    let saveTimeout: NodeJS.Timeout | null = null;
-    
-    // Subscribe to form changes
-    const subscription = form.watch((data) => {
-      // Log the change
-      console.log("Form field changed, planning autosave");
+  // Declare an autosave function component to be used inside FormProvider
+  const BasicFormAutosave = () => {
+    useAutosave((data) => {
+      console.log("Autosave triggered with data:", data);
+      setBasicData(data);
       
-      // Clear any existing timeout to debounce repeated changes
-      if (saveTimeout) {
-        clearTimeout(saveTimeout);
+      // Save to server if we have a project ID
+      if (projectData?.id) {
+        console.log("Saving to server...");
+        saveProject().then(() => {
+          console.log("Saved to server successfully");
+        }).catch(err => {
+          console.error("Error saving to server:", err);
+        });
       }
-      
-      // Set a new timeout to save after delay
-      saveTimeout = setTimeout(() => {
-        // Get latest values
-        const currentValues = form.getValues();
-        console.log("Autosave executing, saving data:", currentValues);
-        
-        // Save data
-        setBasicData(currentValues);
-        
-        // Save to server if we have a project ID
-        if (projectData?.id) {
-          console.log("Saving to server...");
-          saveProject().then(() => {
-            console.log("Saved to server successfully");
-          }).catch(err => {
-            console.error("Error saving to server:", err);
-          });
-        }
-      }, 2000); // 2 second debounce
     });
     
-    // Clean up on unmount
-    return () => {
-      console.log("Cleaning up form watch subscription");
-      subscription.unsubscribe();
-      if (saveTimeout) {
-        clearTimeout(saveTimeout);
-      }
-    };
-  }, [form, setBasicData, saveProject, projectData?.id]);
+    return null; // This component doesn't render anything
+  };
 
   // Proceed to next step
   const handleSubmit = form.handleSubmit(async (data) => {
@@ -307,7 +279,8 @@ export default function BasicForm() {
             world and atmosphere.
           </p>
 
-          <Form {...form}>
+          <FormProvider {...form}>
+            <BasicFormAutosave />
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* Sentence-style form with dropdowns */}
               <div className="bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200">
@@ -539,7 +512,7 @@ export default function BasicForm() {
                 </Button>
               </div>
             </form>
-          </Form>
+          </FormProvider>
         </div>
       </div>
     </>
