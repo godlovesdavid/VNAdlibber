@@ -10,31 +10,44 @@ export function SimpleFormTest() {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Set up a manual watch effect to debounce saves
+  // Create a ref to track last saved values
+  const lastSavedValues = useRef<Record<string, any> | null>(null);
+  
   useEffect(() => {
+
     const subscription = watch((values) => {
       // Clear existing timeout to debounce
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
       
-      // Set a new timeout for debounced save
+      // Set a new timeout for debounced save with a longer delay (1.5s)
+      // to avoid conflicting with BasicForm's 1s delay
       timeoutRef.current = setTimeout(() => {
         const currentValues = getValues();
         console.log("SimpleFormTest debounced save with values:", currentValues);
         
-        // Convert to BasicData type
-        const formData: BasicData = {
-          theme: currentValues.theme || "",
-          tone: currentValues.tone || "", 
-          genre: currentValues.genre || "",
-          setting: currentValues.setting || ""
-        };
-        
-        // Save to context
-        setBasicData(formData);
+        // Check if values have changed to avoid unnecessary saves
+        if (JSON.stringify(currentValues) !== JSON.stringify(lastSavedValues.current)) {
+          // Convert to BasicData type
+          const formData: BasicData = {
+            theme: currentValues.theme || "",
+            tone: currentValues.tone || "", 
+            genre: currentValues.genre || "",
+            setting: currentValues.setting || ""
+          };
+          
+          // Save to context
+          setBasicData(formData);
+          
+          // Update last saved values
+          lastSavedValues.current = {...currentValues};
+          
+          console.log("SimpleFormTest saved updated values");
+        }
         
         timeoutRef.current = null;
-      }, 1000);
+      }, 1500); // Use 1.5s delay to avoid race condition with BasicForm's 1s delay
     });
     
     // Clean up

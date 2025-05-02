@@ -265,11 +265,26 @@ export default function BasicForm() {
     // Save to server if we have a project ID
     if (projectData?.id) {
       console.log("Saving to server via autosave hook...");
-      saveProject().catch(err => {
-        console.error("Error saving to server:", err);
-      });
+      // Debounce the server save with 1 second delay (from last input)
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+      
+      saveTimeoutRef.current = setTimeout(() => {
+        saveProject()
+          .then(() => {
+            console.log("Project saved to server successfully");
+          })
+          .catch(err => {
+            console.error("Error saving to server:", err);
+          });
+        saveTimeoutRef.current = null;
+      }, 1000);
     }
   };
+  
+  // Reference to track the save timeout
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Set up autosave with the FormProvider context
   useAutosave('basic', handleAutosave);
