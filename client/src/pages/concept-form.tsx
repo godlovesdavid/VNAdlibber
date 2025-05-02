@@ -34,6 +34,19 @@ export default function ConceptForm() {
       setPremise("");
     }
   }, [projectData]);
+  
+  // Helper function to save concept data
+  function saveConceptData() {
+    setConceptData({
+      title,
+      tagline,
+      premise,
+    });
+    return { title, tagline, premise };
+  }
+  
+  // Register with form save system
+  useRegisterFormSave('concept', saveConceptData);
 
   // Go back to previous step
   const handleBack = () => {

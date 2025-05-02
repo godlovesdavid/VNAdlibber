@@ -90,6 +90,40 @@ export default function CharactersForm() {
     }
   }, [projectData]);
   
+  // Helper function to save character data (defined with function declaration for hoisting)
+  function saveCharacterData() {
+    // Transform array to object format
+    const charactersObj: Record<string, Character> = {};
+    let protagonist = "";
+    
+    characters.forEach((char, index) => {
+      if (char.name) {
+        // Extract name but don't store it in the object
+        const { name, ...characterWithoutName } = char;
+        
+        // Remove any numeric keys that might be causing unintended nesting
+        const cleanCharacter = Object.entries(characterWithoutName)
+          .filter(([key]) => isNaN(Number(key)))
+          .reduce((obj, [key, value]) => {
+            obj[key] = value;
+            return obj;
+          }, {} as Record<string, any>) as Character;
+          
+        charactersObj[name] = cleanCharacter;
+        
+        // Store the protagonist name (first character is always protagonist)
+        if (index === 0) {
+          protagonist = name;
+        }
+      }
+    });
+    
+    // Set the characters data with protagonist field
+    setCharactersData(charactersObj, protagonist);
+    
+    return { charactersObj, protagonist };
+  }
+  
   // Register with form save system
   useRegisterFormSave('characters', saveCharacterData);
 
@@ -371,40 +405,6 @@ export default function CharactersForm() {
       console.log("Finished generation, resetting index");
       setGeneratingCharacterIndex(null);
     }
-  };
-
-  // Helper function to save character data
-  const saveCharacterData = () => {
-    // Transform array to object format
-    const charactersObj: Record<string, Character> = {};
-    let protagonist = "";
-    
-    characters.forEach((char, index) => {
-      if (char.name) {
-        // Extract name but don't store it in the object
-        const { name, ...characterWithoutName } = char;
-        
-        // Remove any numeric keys that might be causing unintended nesting
-        const cleanCharacter = Object.entries(characterWithoutName)
-          .filter(([key]) => isNaN(Number(key)))
-          .reduce((obj, [key, value]) => {
-            obj[key] = value;
-            return obj;
-          }, {} as Record<string, any>) as Character;
-          
-        charactersObj[name] = cleanCharacter;
-        
-        // Store the protagonist name (first character is always protagonist)
-        if (index === 0) {
-          protagonist = name;
-        }
-      }
-    });
-    
-    // Set the characters data with protagonist field
-    setCharactersData(charactersObj, protagonist);
-    
-    return { charactersObj, protagonist };
   };
 
   // Go back to previous step
