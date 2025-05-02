@@ -176,8 +176,65 @@ export default function CharactersForm() {
     console.log("Final character data to save:", charactersObj);
     console.log("Setting protagonist to:", protagonist);
     
+    // CRITICAL FIX: Always check if character data has actual content
+    if (Object.keys(charactersObj).length === 0) {
+      console.error("CRITICAL: No character data to save after processing");
+      toast({
+        title: "Warning",
+        description: "No character data to save. Please add at least one character with a name.",
+        variant: "default",
+      });
+      return { charactersObj: {}, protagonist: "" };
+    }
+    
+    // Save directly to localStorage first as backup
+    try {
+      const currentProject = localStorage.getItem("current_vn_project");
+      if (currentProject) {
+        const parsed = JSON.parse(currentProject);
+        parsed.charactersData = charactersObj;
+        parsed.protagonist = protagonist;
+        localStorage.setItem("current_vn_project", JSON.stringify(parsed));
+        console.log("Saved characters to localStorage as backup");
+      }
+    } catch (err) {
+      console.error("Error saving to localStorage:", err);
+    }
+    
     // Set the characters data with protagonist field
     setCharactersData(charactersObj, protagonist);
+    
+    // Double check with manual saving if needed
+    setTimeout(async () => {
+      if (projectData?.id) {
+        // Verify characters were saved in context
+        if (!projectData.charactersData || Object.keys(projectData.charactersData).length === 0) {
+          console.warn("Characters not detected in project data after setting - performing manual direct save");
+          try {
+            // Create a manual save payload
+            const manualSavePayload = {
+              ...projectData,
+              charactersData: charactersObj,
+              protagonist: protagonist,
+              updatedAt: new Date().toISOString()
+            };
+            
+            // Make direct API call
+            const response = await fetch("/api/projects", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(manualSavePayload)
+            });
+            
+            if (response.ok) {
+              console.log("Manual character save successful");
+            }
+          } catch (err) {
+            console.error("Manual character save failed:", err);
+          }
+        }
+      }
+    }, 500);
     
     return { charactersObj, protagonist };
   }
@@ -490,7 +547,7 @@ export default function CharactersForm() {
           return merged;
         });
 
-        // Update state and project context
+        // Update state
         setCharacters(updatedCharacters);
         
         // Convert to object format for storage
@@ -534,17 +591,89 @@ export default function CharactersForm() {
         console.log("Final characters object to save:", charactersObj);
         console.log("Setting protagonist to:", protagonist);
         
+        // CRITICAL FIX: Always check if character data has actual content
+        if (Object.keys(charactersObj).length === 0) {
+          console.error("CRITICAL: No character data to save after processing");
+          toast({
+            title: "Error",
+            description: "Failed to process character data properly. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        // Save directly to localStorage first as backup
+        try {
+          const currentProject = localStorage.getItem("current_vn_project");
+          if (currentProject) {
+            const parsed = JSON.parse(currentProject);
+            parsed.charactersData = charactersObj;
+            parsed.protagonist = protagonist;
+            localStorage.setItem("current_vn_project", JSON.stringify(parsed));
+            console.log("Saved characters to localStorage as backup");
+          }
+        } catch (err) {
+          console.error("Error saving to localStorage:", err);
+        }
+        
+        // Set in context
         setCharactersData(charactersObj, protagonist);
         
-        // Save to server if we have a project ID
-        if (projectData?.id) {
-          try {
-            await saveProject();
-            console.log("Saved all character data to server");
-          } catch (error) {
-            console.error("Error saving project after batch character generation:", error);
+        // Double check state update
+        setTimeout(async () => {
+          // Save to server if we have a project ID
+          if (projectData?.id) {
+            try {
+              // Do a final check before saving to server
+              if (!projectData.charactersData || Object.keys(projectData.charactersData).length === 0) {
+                console.warn("Character data not in projectData yet, saving directly");
+                
+                // Create a manual save payload
+                const manualSavePayload = {
+                  ...projectData,
+                  charactersData: charactersObj,
+                  protagonist: protagonist,
+                  updatedAt: new Date().toISOString()
+                };
+                
+                // Make direct API call
+                const response = await fetch("/api/projects", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(manualSavePayload)
+                });
+                
+                if (response.ok) {
+                  const result = await response.json();
+                  console.log("Manual save successful:", result);
+                  toast({
+                    title: "Saved",
+                    description: `Saved ${Object.keys(charactersObj).length} characters to server`,
+                    duration: 2000,
+                  });
+                } else {
+                  throw new Error("Server returned error on manual save");
+                }
+              } else {
+                // Use normal save method
+                await saveProject();
+                console.log("Saved all character data to server using normal method");
+                toast({
+                  title: "Saved",
+                  description: `Saved ${Object.keys(charactersObj).length} characters to server`,
+                  duration: 2000,
+                });
+              }
+            } catch (error) {
+              console.error("Error saving project after batch character generation:", error);
+              toast({
+                title: "Error",
+                description: "Failed to save character data to server. Please try again.",
+                variant: "destructive",
+              });
+            }
           }
-        }
+        }, 500); // Give React state time to update
 
         console.log("Successfully generated all characters at once");
         console.log("Updated project context with all character data");
