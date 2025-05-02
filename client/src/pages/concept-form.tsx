@@ -78,8 +78,8 @@ export default function ConceptForm() {
   // Register with form save system
   useRegisterFormSave('concept', saveConceptData);
   
-  // Use the improved autosave hook for automatic form saving
-  useAutosave('concept-form', saveConceptData, 2000, true);
+  // Use the improved autosave hook for automatic form saving - pass form instance directly
+  useAutosave('concept-form', saveConceptData, 2000, true, form);
 
   // Go back to previous step
   const handleBack = async () => {

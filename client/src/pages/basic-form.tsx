@@ -212,8 +212,8 @@ export default function BasicForm() {
   // Register with form save system
   useRegisterFormSave('basic', saveBasicData);
   
-  // Use the improved autosave hook for automatic form saving
-  useAutosave('basic-form', saveBasicData, 2000, true);
+  // Use the improved autosave hook for automatic form saving - pass form instance directly
+  useAutosave('basic-form', saveBasicData, 2000, true, form);
 
   // Proceed to next step
   const handleSubmit = form.handleSubmit(async (data) => {

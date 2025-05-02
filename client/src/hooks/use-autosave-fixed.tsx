@@ -16,10 +16,12 @@ export const useAutosave = (
   formId: string,
   saveFunction: (data: any) => void,
   debounceMs = 2000, // 2 seconds default debounce
-  showToast = true
+  showToast = true,
+  customForm?: { watch: Function, getValues: Function } // Allow passing the form instance directly
 ) => {
   const { toast } = useToast();
-  const form = useFormContext();
+  const contextForm = useFormContext();
+  const form = customForm || contextForm; // Use passed form or form context
   const { projectData, saveProject } = useVnContext();
   
   const lastSavedRef = useRef<any>(null);
@@ -103,7 +105,7 @@ export const useAutosave = (
     console.log(`[Autosave] ${formId} - Initialized with values:`, initialValues);
 
     // Subscribe to form changes
-    const subscription = form.watch((_, { name, type }) => {
+    const subscription = form.watch((formValue: any, { name, type }: { name: string, type: string }) => {
       // Log the change event for debugging
       console.log(`[Autosave] ${formId} - Form change detected:`, { field: name, type });
       
