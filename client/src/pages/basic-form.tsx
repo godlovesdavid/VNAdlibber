@@ -134,8 +134,8 @@ export default function BasicForm() {
   }, [projectData?.basicData, form]);
 
   // Function to randomize all form values
-  const randomizeForm = () => {
-    console.log("[BasicForm] Randomizing form values");
+  const randomizeForm = async () => {
+    console.log("🎲 [BasicForm] Randomizing form values");
     const randomValues = {
       theme: getRandomItem(themes),
       tone: getRandomItem(tones),
@@ -147,7 +147,7 @@ export default function BasicForm() {
     form.reset(randomValues);
     setInitialized(true);
     
-    console.log("[BasicForm] Random values set:", randomValues);
+    console.log("✨ [BasicForm] Random values set:", randomValues);
     
     // Make sure the BasicData type is preserved correctly
     const typedData: BasicData = {
@@ -160,12 +160,21 @@ export default function BasicForm() {
     // Save the randomized values to context
     setBasicData(typedData);
     
-    // Only save the project to the server if explicitly requested by user
-    // and not during initial form setup
-    const isInitialSetup = sessionStorage.getItem("vn_fresh_project") === "true";
-    if (projectData?.id && !isInitialSetup) {
-      console.log("[BasicForm] Saving randomized values to server");
-      saveProject();
+    // Force create a new project if none exists
+    if (!projectData?.id) {
+      try {
+        console.log("🆕 No project ID found, creating new project...");
+        await saveProject();
+        console.log("✅ New project created with form data", projectData?.id);
+      } catch (error) {
+        console.error("❌ Failed to create new project:", error);
+      }
+    } else {
+      // Save the project to the server
+      console.log(`💾 Saving randomized values to server for project ${projectData.id}`);
+      saveProject()
+        .then(() => console.log("✅ Server save successful"))
+        .catch(error => console.error("❌ Server save failed:", error));
     }
   };
 
@@ -243,7 +252,7 @@ export default function BasicForm() {
   }, [form.formState.isSubmitting, form.formState.isDirty]);
   
   // Create a direct field save handler for the form fields with enhanced debugging
-  const handleFieldChange = (fieldName: "theme" | "tone" | "genre" | "setting", value: string) => {
+  const handleFieldChange = async (fieldName: "theme" | "tone" | "genre" | "setting", value: string) => {
     console.log(`🔵 Field '${fieldName}' changed to '${value}'`);
     setLastSavedField(fieldName);
     
@@ -270,6 +279,18 @@ export default function BasicForm() {
     console.log("💾 Saving to context:", formData);
     setBasicData(formData);
     
+    // If we don't have a project ID yet, create one first
+    if (!projectData?.id) {
+      try {
+        console.log("🆕 Creating new project from field change...");
+        await saveProject();
+        console.log("✅ New project created successfully from field change, ID:", projectData?.id);
+      } catch (error) {
+        console.error("❌ Failed to create new project from field change:", error);
+        return; // Stop here if we can't create a project
+      }
+    }
+    
     // Debounce the server save
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
@@ -281,15 +302,16 @@ export default function BasicForm() {
       saveTimeoutRef.current = setTimeout(() => {
         console.log(`⭐ SAVE TIMEOUT TRIGGERED for field '${fieldName}', SAVING TO SERVER...`);
         setSaveCount(prev => prev + 1);
+        const currentCount = saveCount + 1;
         saveProject()
           .then(() => {
-            console.log(`✅ SERVER SAVE #${saveCount} SUCCESSFUL!`);
+            console.log(`✅ SERVER SAVE #${currentCount} SUCCESSFUL!`);
           })
-          .catch(error => console.error(`❌ SERVER SAVE #${saveCount} FAILED:`, error));
+          .catch(error => console.error(`❌ SERVER SAVE #${currentCount} FAILED:`, error));
         saveTimeoutRef.current = null;
       }, 1000);
     } else {
-      console.log("⚠️ NO PROJECT ID AVAILABLE, CANNOT SAVE TO SERVER");
+      console.log("⚠️ NO PROJECT ID AVAILABLE EVEN AFTER CREATION ATTEMPT, CANNOT SAVE TO SERVER");
     }
   };
   
@@ -315,27 +337,46 @@ export default function BasicForm() {
 
   // Proceed to next step
   const handleSubmit = form.handleSubmit(async (values) => {
+    console.log("📝 Form submitted with values:", values);
+    
     // Convert to BasicData type
     const formData: BasicData = {
-      theme: values.theme,
-      tone: values.tone,
-      genre: values.genre,
-      setting: values.setting
+      theme: values.theme || "",
+      tone: values.tone || "",
+      genre: values.genre || "",
+      setting: values.setting || ""
     };
     
-    // Save data
+    // Save data to context
+    console.log("💾 Saving submitted form data to context");
     setBasicData(formData);
     
-    // Save project to server if it has an ID
+    // Make sure we have a project ID - if not, create one
+    if (!projectData?.id) {
+      try {
+        console.log("🆕 Creating new project from form submit...");
+        await saveProject();
+        console.log("✅ New project created from form submit, ID:", projectData?.id);
+      } catch (error) {
+        console.error("❌ Failed to create project on form submit:", error);
+      }
+    }
+    
+    // Now save to server if we have a project ID (either existing or newly created)
     if (projectData?.id) {
       try {
+        console.log(`📦 Saving project ${projectData.id} on form submit...`);
         await saveProject();
+        console.log("✅ Project saved successfully on form submit");
       } catch (error) {
-        console.error("Error saving project:", error);
+        console.error("❌ Error saving project on form submit:", error);
       }
+    } else {
+      console.warn("⚠️ No project ID available for form submit, data saved to context only");
     }
 
     // Navigate to next step
+    console.log("🛑 Navigating to next step: concept form");
     setLocation("/create/concept");
   });
 
