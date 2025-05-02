@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useVnData } from "@/hooks/use-vn-data";
 import { useRegisterFormSave } from "@/hooks/use-form-save";
+import { useToast } from "@/hooks/use-toast";
 // We can't use autosave yet since this form doesn't use react-hook-form
 import { CreationProgress } from "@/components/creation-progress";
 import { NavBar } from "@/components/nav-bar";
@@ -22,6 +23,7 @@ import { Character } from "@/types/vn";
 export default function CharactersForm() {
   const [, setLocation] = useLocation();
   const { projectData, setCharactersData, goToStep, saveProject } = useVnContext();
+  const { toast } = useToast();
   const {
     generateCharacterData,
     generateMultipleCharactersData,
