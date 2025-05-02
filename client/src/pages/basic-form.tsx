@@ -1,7 +1,19 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useRegisterFormSave } from "@/hooks/use-form-save";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useAutosave } from "@/hooks/use-autosave";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { CreationProgress } from "@/components/creation-progress";
 import { NavBar } from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
@@ -77,26 +89,46 @@ function getRandomItem(array: string[]): string {
   return array[Math.floor(Math.random() * array.length)];
 }
 
+// Define form validation schema with zod
+const basicFormSchema = z.object({
+  theme: z.string().min(1, { message: "Theme is required" }),
+  tone: z.string().min(1, { message: "Tone is required" }),
+  genre: z.string().min(1, { message: "Genre is required" }),
+  setting: z.string().min(1, { message: "Setting is required" }),
+});
+
+// Define the form values type
+type BasicFormValues = z.infer<typeof basicFormSchema>;
+
 export default function BasicForm() {
   const [, setLocation] = useLocation();
   const { projectData, setBasicData } = useVnContext();
-
-  // Use state with empty default values
-  const [theme, setTheme] = useState("");
-  const [tone, setTone] = useState("");
-  const [genre, setGenre] = useState("");
-  const [setting, setSetting] = useState("");
-
+  
   // State to track if the form has been initialized with random values
   const [initialized, setInitialized] = useState(false);
+  
+  // Define the form with React Hook Form
+  const form = useForm<BasicFormValues>({
+    resolver: zodResolver(basicFormSchema),
+    defaultValues: {
+      theme: "",
+      tone: "",
+      genre: "",
+      setting: "",
+    },
+  });
 
   // Function to randomize all form values
   const randomizeForm = () => {
     console.log("Randomizing form values");
-    setTheme(getRandomItem(themes));
-    setTone(getRandomItem(tones));
-    setGenre(getRandomItem(genres));
-    setSetting(getRandomItem(settings));
+    const randomValues = {
+      theme: getRandomItem(themes),
+      tone: getRandomItem(tones),
+      genre: getRandomItem(genres),
+      setting: getRandomItem(settings),
+    };
+    
+    form.reset(randomValues);
     setInitialized(true);
   };
 
@@ -114,17 +146,18 @@ export default function BasicForm() {
     }
 
     // If we have project data, use it without randomizing
-    if (projectData?.basicData) 
-    {
+    if (projectData?.basicData) {
       console.log("Loading existing project data", projectData.basicData);
-      setTheme(projectData.basicData.theme || "");
-      setTone(projectData.basicData.tone || "");
-      setGenre(projectData.basicData.genre || "");
-      setSetting(projectData.basicData.setting || "");
+      form.reset({
+        theme: projectData.basicData.theme || "",
+        tone: projectData.basicData.tone || "",
+        genre: projectData.basicData.genre || "",
+        setting: projectData.basicData.setting || "",
+      });
       // Explicitly set initialized to true to prevent auto-randomization
       setInitialized(true);
     }
-  }, [projectData?.basicData]);
+  }, [projectData?.basicData, form]);
 
   // Go back to main menu
   const goBack = () => {
@@ -146,42 +179,27 @@ export default function BasicForm() {
     window.alert("Form values manually reset and randomized.");
   };
 
-  // We no longer need this effect as we handle initialization in the projectData effect
-  // This was causing the duplicate randomization
-
   // Helper function to save basic data
   function saveBasicData() {
-    setBasicData({
-      theme,
-      tone,
-      genre,
-      setting,
-    });
-    return { theme, tone, genre, setting };
+    const values = form.getValues();
+    setBasicData(values);
+    return values;
   }
   
   // Register with form save system
   useRegisterFormSave('basic', saveBasicData);
+  
+  // Setup autosave
+  useAutosave('basic', saveBasicData, 30000);
 
   // Proceed to next step
-  const handleNext = () => {
-    // Validate form
-    if (!theme || !tone || !genre || !setting) {
-      alert("Please fill in all required fields");
-      return;
-    }
-
+  const handleSubmit = form.handleSubmit((data) => {
     // Save data
-    setBasicData({
-      theme,
-      tone,
-      genre,
-      setting,
-    });
+    setBasicData(data);
 
     // Navigate to next step
     setLocation("/create/concept");
-  };
+  });
 
   return (
     <>
