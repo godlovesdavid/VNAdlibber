@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useVnData } from "@/hooks/use-vn-data";
 import { useRegisterFormSave } from "@/hooks/use-form-save";
 import { useToast } from "@/hooks/use-toast";
-// We can't use autosave yet since this form doesn't use react-hook-form
+import { useAutosave } from "@/hooks/use-simple-autosave";
 import { CreationProgress } from "@/components/creation-progress";
 import { NavBar } from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
@@ -141,11 +141,41 @@ export default function CharactersForm() {
     return { charactersObj, protagonist };
   }
   
+  // Track if initial data has been loaded, to prevent infinite cycles
+  const initialDataLoadedRef = useRef(false);
+  
   // Register with form save system
   useRegisterFormSave('characters', saveCharacterData);
   
-  // For now, we'll rely on manual saves on navigation and generate
-  // We'll implement proper autosave when we convert this form to react-hook-form
+  // Character form autosave component
+  const CharacterFormAutosave = () => {
+    const handleAutosave = (data: Record<string, any>) => {
+      console.log("Character autosave triggered with characters:", characters);
+      
+      // Save character data to context
+      const result = saveCharacterData();
+      
+      // Save to server if we have a project ID
+      if (projectData?.id) {
+        console.log("Saving characters to server...");
+        saveProject().then(() => {
+          console.log("Saved characters to server successfully");
+          toast({
+            title: "Saved",
+            description: `Saved ${Object.keys(result.charactersObj).length} characters automatically`,
+            duration: 2000,
+          });
+        }).catch(err => {
+          console.error("Error saving characters to server:", err);
+        });
+      }
+    };
+    
+    // Set up autosave to run every 10 seconds
+    useAutosave('characters', handleAutosave, 10000);
+    
+    return null; // This component doesn't render anything
+  };
 
   // Add a new character card
   const addCharacter = () => {
@@ -496,6 +526,7 @@ export default function CharactersForm() {
     <>
       <NavBar />
       <CreationProgress currentStep={3} />
+      <CharacterFormAutosave />
 
       <div className="pt-16">
         <div className="creation-container max-w-4xl mx-auto p-6">
@@ -802,47 +833,7 @@ export default function CharactersForm() {
                 <Button variant="outline" onClick={handleBack}>
                   Back
                 </Button>
-                <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    onClick={async () => {
-                      // Save character data first
-                      const characterData = saveCharacterData();
-                      
-                      // Show a toast message based on the data
-                      const characterCount = Object.keys(characterData.charactersObj).length;
-                      if (characterCount === 0) {
-                        toast({
-                          title: "No Characters",
-                          description: "Please add at least one character with a name.",
-                          variant: "destructive",
-                        });
-                        return;
-                      }
-                      
-                      // Then save project
-                      try {
-                        await saveProject();
-                        console.log("Character data saved successfully");
-                        
-                        // Show success toast
-                        toast({
-                          title: "Characters Saved",
-                          description: `Saved ${characterCount} character${characterCount > 1 ? 's' : ''} successfully.`,
-                        });
-                      } catch (error) {
-                        console.error("Error saving character data:", error);
-                        toast({
-                          title: "Error",
-                          description: "Failed to save character data. Please try again.",
-                          variant: "destructive",
-                        });
-                      }
-                    }}
-                    className="border-primary text-primary hover:bg-primary/10"
-                  >
-                    Save Characters
-                  </Button>
+                <div className="flex justify-end">
                   <Button onClick={handleNext}>Next: Paths</Button>
                 </div>
               </div>
