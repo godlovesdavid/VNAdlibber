@@ -213,12 +213,11 @@ export default function BasicForm() {
     initialDataLoadedRef.current = true;
   }, [projectData, randomizeForm]);
 
-  // Helper function to save basic data
+  // Helper function to save basic data - simple version that just saves the form values
   function saveBasicData() {
     const values = form.getValues();
-    console.log("💾 saveBasicData function called, values from form:", values);
     
-    // Send complete data to context which will handle merging
+    // Get all form values
     const formData: BasicData = {
       theme: values.theme || "",
       tone: values.tone || "",
@@ -226,50 +225,16 @@ export default function BasicForm() {
       setting: values.setting || ""
     };
     
-    // Only save non-empty values to prevent clearing values
-    const nonEmptyValues: Partial<BasicData> = {};
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value) {
-        nonEmptyValues[key as keyof BasicData] = value;
-      }
-    });
-    
-    if (Object.keys(nonEmptyValues).length > 0) {
-      console.log("📨 Saving non-empty values to context:", nonEmptyValues);  
-      setBasicData(nonEmptyValues as BasicData);
-    } else {
-      console.log("⚠️ No non-empty values to save");
-    }
-    
+    // Save to context
+    setBasicData(formData);
     return formData;
   }
   
   // Register with form save system
   useRegisterFormSave('basic', saveBasicData);
   
-  // Reference to track the save timeout
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // State to track save count for debugging
-  const [saveCount, setSaveCount] = useState(0);
-  const [lastSavedField, setLastSavedField] = useState<string>("");
-  
-  // Log project ID whenever it changes for debugging
-  useEffect(() => {
-    console.log(`🔄 Project ID changed: ${projectData?.id || 'none'}`);
-  }, [projectData?.id]);
-  
-  // Log form state changes for debugging
-  useEffect(() => {
-    console.log(`📝 Form submission state: ${form.formState.isSubmitting ? 'submitting' : 'not submitting'}`);
-    console.log(`📝 Form dirty state: ${form.formState.isDirty ? 'dirty' : 'clean'}`);
-  }, [form.formState.isSubmitting, form.formState.isDirty]);
-  
-  // Create a direct field save handler for the form fields with enhanced debugging
-  const handleFieldChange = async (fieldName: "theme" | "tone" | "genre" | "setting", value: string) => {
-    console.log(`🔵 Field '${fieldName}' changed to '${value}'`);
-    setLastSavedField(fieldName);
-    
+  // Simple field change handler that just updates the form value
+  const handleFieldChange = (fieldName: "theme" | "tone" | "genre" | "setting", value: string) => {
     // Update the form value with validation
     form.setValue(fieldName, value, {
       shouldValidate: true,
@@ -277,50 +242,9 @@ export default function BasicForm() {
       shouldTouch: true
     });
     
-    // Create a sparse object with just the changed field
-    // Let the context merge it with existing values
+    // Save the individual field to context
     const partialData: Partial<BasicData> = { [fieldName]: value };
-    
-    // Log for debugging
-    console.log("📝 Sending partial update for field '" + fieldName + "':", partialData);
-    
-    // Save to context - rely on context to merge with existing values
     setBasicData(partialData as BasicData);
-    
-    // If we don't have a project ID yet, create one first
-    if (!projectData?.id) {
-      try {
-        console.log("🆕 Creating new project from field change...");
-        await saveProject();
-        console.log("✅ New project created successfully from field change, ID:", projectData?.id);
-      } catch (error) {
-        console.error("❌ Failed to create new project from field change:", error);
-        return; // Stop here if we can't create a project
-      }
-    }
-    
-    // Debounce the server save
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-      console.log("🔄 Cleared previous save timeout");
-    }
-    
-    if (projectData?.id) {
-      console.log(`⏱️ Setting up save timeout for project ${projectData.id}...`);
-      saveTimeoutRef.current = setTimeout(() => {
-        console.log(`⭐ SAVE TIMEOUT TRIGGERED for field '${fieldName}', SAVING TO SERVER...`);
-        setSaveCount(prev => prev + 1);
-        const currentCount = saveCount + 1;
-        saveProject()
-          .then(() => {
-            console.log(`✅ SERVER SAVE #${currentCount} SUCCESSFUL!`);
-          })
-          .catch(error => console.error(`❌ SERVER SAVE #${currentCount} FAILED:`, error));
-        saveTimeoutRef.current = null;
-      }, 1000);
-    } else {
-      console.log("⚠️ NO PROJECT ID AVAILABLE EVEN AFTER CREATION ATTEMPT, CANNOT SAVE TO SERVER");
-    }
   };
   
   // Go back to main menu
@@ -345,46 +269,26 @@ export default function BasicForm() {
 
   // Proceed to next step
   const handleSubmit = form.handleSubmit(async (values) => {
-    console.log("📝 Form submitted with values:", values);
+    // Save form data to context
+    const formData: BasicData = {
+      theme: values.theme || "",
+      tone: values.tone || "",
+      genre: values.genre || "",
+      setting: values.setting || ""
+    };
     
-    // Only submit non-empty values to prevent clearing existing values
-    const nonEmptyValues: Partial<BasicData> = {};
+    setBasicData(formData);
     
-    if (values.theme) nonEmptyValues.theme = values.theme;
-    if (values.tone) nonEmptyValues.tone = values.tone;
-    if (values.genre) nonEmptyValues.genre = values.genre;
-    if (values.setting) nonEmptyValues.setting = values.setting;
-    
-    // Save data to context
-    console.log("💾 Saving submitted form data to context:", nonEmptyValues);
-    setBasicData(nonEmptyValues as BasicData);
-    
-    // Make sure we have a project ID - if not, create one
+    // If needed, create a project
     if (!projectData?.id) {
       try {
-        console.log("🆕 Creating new project from form submit...");
         await saveProject();
-        console.log("✅ New project created from form submit, ID:", projectData?.id);
       } catch (error) {
-        console.error("❌ Failed to create project on form submit:", error);
+        console.error("Failed to create project on form submit:", error);
       }
-    }
-    
-    // Now save to server if we have a project ID (either existing or newly created)
-    if (projectData?.id) {
-      try {
-        console.log(`📦 Saving project ${projectData.id} on form submit...`);
-        await saveProject();
-        console.log("✅ Project saved successfully on form submit");
-      } catch (error) {
-        console.error("❌ Error saving project on form submit:", error);
-      }
-    } else {
-      console.warn("⚠️ No project ID available for form submit, data saved to context only");
     }
 
     // Navigate to next step
-    console.log("🛑 Navigating to next step: concept form");
     setLocation("/create/concept");
   });
 
@@ -539,15 +443,6 @@ export default function BasicForm() {
                 >
                   Reset Form (Debug)
                 </Button>
-              </div>
-              
-              {/* Debug data display */}
-              <div className="bg-gray-50 rounded p-3 my-2 text-xs text-gray-500">
-                <h4 className="font-bold mb-1">Form Debug Info:</h4>
-                <p>Project ID: {projectData?.id || 'None'}</p>
-                <p>Last saved field: {lastSavedField}</p>
-                <p>Save count: {saveCount}</p>
-                <p>Form valid: {form.formState.isValid ? 'Yes' : 'No'}</p>
               </div>
             </form>
           </FormProvider>

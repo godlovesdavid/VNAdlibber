@@ -133,20 +133,26 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
   const setBasicData = (data: BasicData) => {
     if (!projectData) return;
     
-    // Log the incoming data and current data for debugging
-    console.log("📥 setBasicData called with:", data);
-    console.log("📊 Current basicData in context:", projectData.basicData);
+    // If data contains a single field, merge it with existing data
+    const keys = Object.keys(data).filter(key => data[key as keyof BasicData]);
+    let mergedData: BasicData;
     
-    // Merge new data with existing data, new takes precedence but preserve existing values
-    const mergedData: BasicData = {
-      theme: data.theme || projectData.basicData?.theme || "",
-      tone: data.tone || projectData.basicData?.tone || "",
-      genre: data.genre || projectData.basicData?.genre || "",
-      setting: data.setting || projectData.basicData?.setting || ""
-    };
-    
-    console.log("🔄 Merged basicData to save:", mergedData);
+    if (keys.length === 1 && projectData.basicData) {
+      // This is a single field update
+      mergedData = { ...projectData.basicData };
+      const key = keys[0] as keyof BasicData;
+      mergedData[key] = data[key] || "";
+    } else {
+      // This is a full form update, just use the data directly
+      mergedData = {
+        theme: data.theme || projectData.basicData?.theme || "", 
+        tone: data.tone || projectData.basicData?.tone || "",
+        genre: data.genre || projectData.basicData?.genre || "",
+        setting: data.setting || projectData.basicData?.setting || ""
+      };
+    }
 
+    // Update the project data with merged values
     setProjectData({
       ...projectData,
       basicData: mergedData,
