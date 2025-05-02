@@ -132,30 +132,10 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
   // Step data setters
   const setBasicData = (data: BasicData) => {
     if (!projectData) return;
-    
-    // If data contains a single field, merge it with existing data
-    const keys = Object.keys(data).filter(key => data[key as keyof BasicData]);
-    let mergedData: BasicData;
-    
-    if (keys.length === 1 && projectData.basicData) {
-      // This is a single field update
-      mergedData = { ...projectData.basicData };
-      const key = keys[0] as keyof BasicData;
-      mergedData[key] = data[key] || "";
-    } else {
-      // This is a full form update, just use the data directly
-      mergedData = {
-        theme: data.theme || projectData.basicData?.theme || "", 
-        tone: data.tone || projectData.basicData?.tone || "",
-        genre: data.genre || projectData.basicData?.genre || "",
-        setting: data.setting || projectData.basicData?.setting || ""
-      };
-    }
 
-    // Update the project data with merged values
     setProjectData({
       ...projectData,
-      basicData: mergedData,
+      basicData: data,
       currentStep: Math.max(projectData.currentStep, 1),
       updatedAt: new Date().toISOString(),
     });
@@ -164,28 +144,10 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
   const setConceptData = (data: ConceptData) => {
     if (!projectData) return;
 
-    // If data contains a single field, merge it with existing data
-    const keys = Object.keys(data).filter(key => data[key as keyof ConceptData]);
-    let mergedData: ConceptData;
-    
-    if (keys.length === 1 && projectData.conceptData) {
-      // This is a single field update
-      mergedData = { ...projectData.conceptData };
-      const key = keys[0] as keyof ConceptData;
-      mergedData[key] = data[key] || "";
-    } else {
-      // This is a full form update, merge with existing data
-      mergedData = {
-        title: data.title || projectData.conceptData?.title || "",
-        tagline: data.tagline || projectData.conceptData?.tagline || "",
-        premise: data.premise || projectData.conceptData?.premise || ""
-      };
-    }
-
     setProjectData({
       ...projectData,
-      title: mergedData.title || projectData.title,
-      conceptData: mergedData,
+      title: data.title || projectData.title,
+      conceptData: data,
       currentStep: Math.max(projectData.currentStep, 2),
       updatedAt: new Date().toISOString(),
     });

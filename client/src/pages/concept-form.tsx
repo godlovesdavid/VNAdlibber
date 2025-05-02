@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useAutosave } from "@/hooks/use-simple-autosave";
 import { useForm, FormProvider } from "react-hook-form";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
@@ -12,7 +13,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Wand2 } from "lucide-react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ConceptData } from "@/types/vn";
 import {
   Form,
   FormControl,
@@ -72,56 +72,33 @@ export default function ConceptForm() {
     const values = form.getValues();
     console.log("Saving concept data", values);
     setConceptData(values);
-    
-    // Save to server if we have a project ID
-    if (projectData?.id) {
-      // Save immediately without waiting for the promise
-      saveProject()
-        .then(() => {
-          console.log("Concept data saved to server successfully");
-        })
-        .catch(error => {
-          console.error("Error saving concept data to server:", error);
-        });
-    }
-    
     return values;
   }
   
   // Register with form save system
   useRegisterFormSave('concept', saveConceptData);
   
-  // Add functions to update field values
-  const handleFieldChange = (fieldName: "title" | "tagline" | "premise", value: string) => {
-    // Update the form value with validation
-    form.setValue(fieldName, value, {
-      shouldValidate: true,
-      shouldDirty: true, 
-      shouldTouch: true
-    });
-    
-    // Create a complete object with existing data plus the updated field
-    const existingValues = form.getValues();
-    
-    // Create the updated concept data object
-    const updatedData: ConceptData = {
-      title: fieldName === "title" ? value : existingValues.title,
-      tagline: fieldName === "tagline" ? value : existingValues.tagline,
-      premise: fieldName === "premise" ? value : existingValues.premise
+  // Declare an autosave function component to be used inside FormProvider
+  const ConceptFormAutosave = () => {
+    const handleAutosave = (data: Record<string, any>) => {
+      if (!data) return;
+      
+      console.log("Concept autosave triggered with data:", data);
+      setConceptData(data);
+      
+      // Save to server if we have a project ID
+      if (projectData?.id) {
+        console.log("Saving concept to server...");
+        saveProject().then(() => {
+          console.log("Saved concept to server successfully");
+        }).catch(err => {
+          console.error("Error saving concept to server:", err);
+        });
+      }
     };
     
-    console.log(`Saving field ${fieldName} with value:`, value);
-    console.log("Full concept data being saved:", updatedData);
-    
-    // Set the complete data in the context
-    setConceptData(updatedData);
-    
-    // Save to server immediately if we have a project ID
-    if (projectData?.id) {
-      saveProject()
-        .then(() => console.log("Field change saved to server"))
-        .catch(error => console.error("Error saving field change:", error));
-    }
+    useAutosave('concept', handleAutosave);
+    return null; // This component doesn't render anything
   };
 
   // Go back to previous step
@@ -206,6 +183,7 @@ export default function ConceptForm() {
           </p>
 
           <FormProvider {...form}>
+            <ConceptFormAutosave />
             <form onSubmit={handleNext} className="space-y-6">
               {/* Title */}
               <FormField
@@ -223,10 +201,6 @@ export default function ConceptForm() {
                       <Input 
                         {...field} 
                         placeholder="e.g. Chronicles of the Hidden City"
-                        onChange={(e) => {
-                          field.onChange(e);
-                          handleFieldChange("title", e.target.value);
-                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -250,10 +224,6 @@ export default function ConceptForm() {
                       <Input 
                         {...field} 
                         placeholder="e.g. When secrets become weapons, who can you trust?"
-                        onChange={(e) => {
-                          field.onChange(e);
-                          handleFieldChange("tagline", e.target.value);
-                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -278,10 +248,6 @@ export default function ConceptForm() {
                         {...field} 
                         rows={4}
                         placeholder="e.g. In a city where memories can be traded like currency, a young archivist discovers a forbidden memory that reveals a conspiracy at the heart of society. As they navigate a web of deception, they must choose between exposing the truth or protecting those they love."
-                        onChange={(e) => {
-                          field.onChange(e);
-                          handleFieldChange("premise", e.target.value);
-                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -331,19 +297,6 @@ export default function ConceptForm() {
                         Generate
                       </>
                     )}
-                  </Button>
-                  <Button 
-                    type="button" 
-                    variant="secondary"
-                    onClick={() => {
-                      saveConceptData();
-                      if (projectData?.id) {
-                        saveProject()
-                          .then(() => console.log("Saved concept data manually"));
-                      }
-                    }}
-                  >
-                    Save
                   </Button>
                   <Button type="submit">Next: Characters</Button>
                 </div>

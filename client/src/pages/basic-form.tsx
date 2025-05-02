@@ -5,6 +5,8 @@ import { useRegisterFormSave } from "@/hooks/use-form-save";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useAutosave } from "@/hooks/use-simple-autosave";
+import { SimpleFormTest } from "@/components/simple-form-test";
 import { BasicData } from "@/types/vn";
 import {
   Form,
@@ -133,8 +135,8 @@ export default function BasicForm() {
   }, [projectData?.basicData, form]);
 
   // Function to randomize all form values
-  const randomizeForm = async () => {
-    console.log("🎲 [BasicForm] Randomizing form values");
+  const randomizeForm = () => {
+    console.log("[BasicForm] Randomizing form values");
     const randomValues = {
       theme: getRandomItem(themes),
       tone: getRandomItem(tones),
@@ -146,7 +148,7 @@ export default function BasicForm() {
     form.reset(randomValues);
     setInitialized(true);
     
-    console.log("✨ [BasicForm] Random values set:", randomValues);
+    console.log("[BasicForm] Random values set:", randomValues);
     
     // Make sure the BasicData type is preserved correctly
     const typedData: BasicData = {
@@ -159,21 +161,12 @@ export default function BasicForm() {
     // Save the randomized values to context
     setBasicData(typedData);
     
-    // Force create a new project if none exists
-    if (!projectData?.id) {
-      try {
-        console.log("🆕 No project ID found, creating new project...");
-        await saveProject();
-        console.log("✅ New project created with form data", projectData?.id);
-      } catch (error) {
-        console.error("❌ Failed to create new project:", error);
-      }
-    } else {
-      // Save the project to the server
-      console.log(`💾 Saving randomized values to server for project ${projectData.id}`);
-      saveProject()
-        .then(() => console.log("✅ Server save successful"))
-        .catch(error => console.error("❌ Server save failed:", error));
+    // Only save the project to the server if explicitly requested by user
+    // and not during initial form setup
+    const isInitialSetup = sessionStorage.getItem("vn_fresh_project") === "true";
+    if (projectData?.id && !isInitialSetup) {
+      console.log("[BasicForm] Saving randomized values to server");
+      saveProject();
     }
   };
 
@@ -213,40 +206,6 @@ export default function BasicForm() {
     initialDataLoadedRef.current = true;
   }, [projectData, randomizeForm]);
 
-  // Helper function to save basic data - simple version that just saves the form values
-  function saveBasicData() {
-    const values = form.getValues();
-    
-    // Get all form values
-    const formData: BasicData = {
-      theme: values.theme || "",
-      tone: values.tone || "",
-      genre: values.genre || "",
-      setting: values.setting || ""
-    };
-    
-    // Save to context
-    setBasicData(formData);
-    return formData;
-  }
-  
-  // Register with form save system
-  useRegisterFormSave('basic', saveBasicData);
-  
-  // Simple field change handler that just updates the form value
-  const handleFieldChange = (fieldName: "theme" | "tone" | "genre" | "setting", value: string) => {
-    // Update the form value with validation
-    form.setValue(fieldName, value, {
-      shouldValidate: true,
-      shouldDirty: true, 
-      shouldTouch: true
-    });
-    
-    // Save the individual field to context
-    const partialData: Partial<BasicData> = { [fieldName]: value };
-    setBasicData(partialData as BasicData);
-  };
-  
   // Go back to main menu
   const goBack = () => {
     setLocation("/");
@@ -267,9 +226,32 @@ export default function BasicForm() {
     window.alert("Form values manually reset and randomized.");
   };
 
-  // Proceed to next step
-  const handleSubmit = form.handleSubmit(async (values) => {
-    // Save form data to context
+  // Helper function to save basic data
+  function saveBasicData() {
+    const values = form.getValues();
+    
+    // Convert to BasicData type
+    const formData: BasicData = {
+      theme: values.theme as string,
+      tone: values.tone as string,
+      genre: values.genre as string,
+      setting: values.setting as string
+    };
+    
+    setBasicData(formData);
+    return formData;
+  }
+  
+  // Register with form save system
+  useRegisterFormSave('basic', saveBasicData);
+  
+  // Create a typed save function for the autosave hook
+  const handleAutosave = (values: Record<string, any>) => {
+    if (!values) return;
+    
+    console.log("Project saved with current form data from basic");
+    
+    // Convert to BasicData type
     const formData: BasicData = {
       theme: values.theme || "",
       tone: values.tone || "",
@@ -277,14 +259,58 @@ export default function BasicForm() {
       setting: values.setting || ""
     };
     
+    // Save to context
     setBasicData(formData);
     
-    // If needed, create a project
-    if (!projectData?.id) {
+    // Save to server if we have a project ID
+    if (projectData?.id) {
+      console.log("Saving to server via autosave hook...");
+      // Debounce the server save with 1 second delay (from last input)
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+      
+      saveTimeoutRef.current = setTimeout(() => {
+        saveProject()
+          .then(() => {
+            console.log("Project saved to server successfully");
+          })
+          .catch(err => {
+            console.error("Error saving to server:", err);
+          });
+        saveTimeoutRef.current = null;
+      }, 1000);
+    }
+  };
+  
+  // Reference to track the save timeout
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Set up autosave with the FormProvider context
+  useAutosave('basic', handleAutosave);
+  
+  // Keep this empty component to avoid changing our JSX structure
+  const BasicFormAutosave = () => null;
+
+  // Proceed to next step
+  const handleSubmit = form.handleSubmit(async (values) => {
+    // Convert to BasicData type
+    const formData: BasicData = {
+      theme: values.theme as string,
+      tone: values.tone as string,
+      genre: values.genre as string,
+      setting: values.setting as string
+    };
+    
+    // Save data
+    setBasicData(formData);
+    
+    // Save project to server if it has an ID
+    if (projectData?.id) {
       try {
         await saveProject();
       } catch (error) {
-        console.error("Failed to create project on form submit:", error);
+        console.error("Error saving project:", error);
       }
     }
 
@@ -308,6 +334,7 @@ export default function BasicForm() {
           </p>
 
           <FormProvider {...form}>
+            <BasicFormAutosave />
             <form onSubmit={handleSubmit} className="space-y-8">
               {/* Sentence-style form with dropdowns */}
               <div className="bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200">
@@ -347,74 +374,168 @@ export default function BasicForm() {
 
                     {/* Tone Dropdown */}
                     <div className="inline-block">
-                      <Select 
-                        value={form.getValues().tone} 
-                        onValueChange={(value) => handleFieldChange("tone", value)}
-                      >
-                        <SelectTrigger className="w-44 h-8 text-base border-b-2 border-blue-500 rounded-none bg-transparent focus:ring-0">
-                          <SelectValue placeholder="tone" />
-                        </SelectTrigger>
-                        <SelectContent className="min-w-[180px]">
-                          {tones.map((tone) => (
-                            <SelectItem key={tone} value={tone}>{tone}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormField
+                        control={form.control}
+                        name="tone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <Select 
+                              value={field.value} 
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger className="w-44 h-8 text-base border-b-2 border-blue-500 rounded-none bg-transparent focus:ring-0">
+                                <SelectValue placeholder="tone" />
+                              </SelectTrigger>
+                              <SelectContent className="min-w-[180px]">
+                                <SelectItem value="adventurous">adventurous</SelectItem>
+                                <SelectItem value="dark">dark</SelectItem>
+                                <SelectItem value="gritty">gritty</SelectItem>
+                                <SelectItem value="lighthearted">
+                                  lighthearted
+                                </SelectItem>
+                                <SelectItem value="melancholic">melancholic</SelectItem>
+                                <SelectItem value="romantic">romantic</SelectItem>
+                                <SelectItem value="satirical">satirical</SelectItem>
+                                <SelectItem value="suspenseful">suspenseful</SelectItem>
+                                <SelectItem value="tragicomic">tragicomic</SelectItem>
+                                <SelectItem value="uplifting">uplifting</SelectItem>
+                                <SelectItem value="whimsical">whimsical</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
 
                     {/* Genre Dropdown */}
                     <div className="inline-block">
-                      <Select 
-                        value={form.getValues().genre} 
-                        onValueChange={(value) => handleFieldChange("genre", value)}
-                      >
-                        <SelectTrigger className="w-44 h-8 text-base border-b-2 border-green-500 rounded-none bg-transparent focus:ring-0">
-                          <SelectValue placeholder="genre" />
-                        </SelectTrigger>
-                        <SelectContent className="min-w-[180px]">
-                          {genres.map((genre) => (
-                            <SelectItem key={genre} value={genre}>{genre}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormField
+                        control={form.control}
+                        name="genre"
+                        render={({ field }) => (
+                          <FormItem>
+                            <Select 
+                              value={field.value} 
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger className="w-44 h-8 text-base border-b-2 border-green-500 rounded-none bg-transparent focus:ring-0">
+                                <SelectValue placeholder="genre" />
+                              </SelectTrigger>
+                              <SelectContent className="min-w-[180px]">
+                                <SelectItem value="mystery">mystery</SelectItem>
+                                <SelectItem value="romance">romance</SelectItem>
+                                <SelectItem value="sci_fi">sci-fi</SelectItem>
+                                <SelectItem value="adventure">adventure</SelectItem>
+                                <SelectItem value="slice_of_life">
+                                  slice of life
+                                </SelectItem>
+                                <SelectItem value="thriller">thriller</SelectItem>
+                                <SelectItem value="comedy">comedy</SelectItem>
+                                <SelectItem value="horror">horror</SelectItem>
+                                <SelectItem value="drama">drama</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
 
                     <span className="text-gray-700">about</span>
 
                     {/* Theme Dropdown */}
                     <div className="inline-block">
-                      <Select 
-                        value={form.getValues().theme} 
-                        onValueChange={(value) => handleFieldChange("theme", value)}
-                      >
-                        <SelectTrigger className="w-52 h-8 text-base border-b-2 border-purple-500 rounded-none bg-transparent focus:ring-0">
-                          <SelectValue placeholder="theme" />
-                        </SelectTrigger>
-                        <SelectContent className="min-w-[200px]">
-                          {themes.map((theme) => (
-                            <SelectItem key={theme} value={theme}>{theme}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormField
+                        control={form.control}
+                        name="theme"
+                        render={({ field }) => (
+                          <FormItem>
+                            <Select 
+                              value={field.value} 
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger className="w-52 h-8 text-base border-b-2 border-purple-500 rounded-none bg-transparent focus:ring-0">
+                                <SelectValue placeholder="theme" />
+                              </SelectTrigger>
+                              <SelectContent className="min-w-[200px]">
+                                <SelectItem value="forgiveness">forgiveness</SelectItem>
+                                <SelectItem value="freedom_vs_control">
+                                  freedom vs control
+                                </SelectItem>
+                                <SelectItem value="growth">growth</SelectItem>
+                                <SelectItem value="identity">identity</SelectItem>
+                                <SelectItem value="love_vs_duty">
+                                  love vs duty
+                                </SelectItem>
+                                <SelectItem value="revenge_and_justice">
+                                  revenge & justice
+                                </SelectItem>
+                                <SelectItem value="technology_vs_humanity">
+                                  tech vs humanity
+                                </SelectItem>
+                                <SelectItem value="sacrifice">sacrifice</SelectItem>
+                                <SelectItem value="trust_and_betrayal">
+                                  trust & betrayal
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
 
                     <span className="text-gray-700">set in</span>
 
                     {/* Setting Dropdown */}
                     <div className="inline-block">
-                      <Select 
-                        value={form.getValues().setting} 
-                        onValueChange={(value) => handleFieldChange("setting", value)}
-                      >
-                        <SelectTrigger className="w-52 h-8 text-base border-b-2 border-amber-500 rounded-none bg-transparent focus:ring-0">
-                          <SelectValue placeholder="setting" />
-                        </SelectTrigger>
-                        <SelectContent className="min-w-[200px]">
-                          {settings.map((setting) => (
-                            <SelectItem key={setting} value={setting}>{setting}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormField
+                        control={form.control}
+                        name="setting"
+                        render={({ field }) => (
+                          <FormItem>
+                            <Select 
+                              value={field.value} 
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger className="w-52 h-8 text-base border-b-2 border-amber-500 rounded-none bg-transparent focus:ring-0">
+                                <SelectValue placeholder="setting" />
+                              </SelectTrigger>
+                              <SelectContent className="min-w-[200px]">
+                                <SelectItem value="cyberpunk_world">
+                                  cyberpunk world
+                                </SelectItem>
+                                <SelectItem value="steampunk_world">
+                                  steampunk world
+                                </SelectItem>
+                                <SelectItem value="noir_setting">
+                                  noir setting
+                                </SelectItem>
+                                <SelectItem value="modern_day">modern day</SelectItem>
+                                <SelectItem value="school">school</SelectItem>
+                                <SelectItem value="history">history</SelectItem>
+                                <SelectItem value="mythology">mythology</SelectItem>
+                                <SelectItem value="space">space</SelectItem>
+                                <SelectItem value="dystopia">dystopia</SelectItem>
+                                <SelectItem value="utopia">utopia</SelectItem>
+                                <SelectItem value="urban_city">urban city</SelectItem>
+                                <SelectItem value="haunted_place">
+                                  a haunted place
+                                </SelectItem>
+                                <SelectItem value="countryside">countryside</SelectItem>
+                                <SelectItem value="post_apocalypse">
+                                  post-apocalypse
+                                </SelectItem>
+                                <SelectItem value="virtual_reality">
+                                  virtual reality
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
                   </div>
                 </div>
@@ -444,6 +565,9 @@ export default function BasicForm() {
                   Reset Form (Debug)
                 </Button>
               </div>
+              
+              {/* Simple form test using register directly */}
+              <SimpleFormTest />
             </form>
           </FormProvider>
         </div>

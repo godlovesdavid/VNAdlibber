@@ -6,16 +6,17 @@ interface RunPodStatusResponse {
 }
 export async function generateSceneBackgroundImage(
   sceneId: string,
-  image_prompt: string,
+  bg: string,
 ): Promise<{ url: string }> {
   try {
     console.log("🎨 START: Generating image background for scene:", sceneId);
+    console.log("- bg:", { bg });
 
     if (!process.env.RUNPOD_API_KEY) {
       throw new Error("RUNPOD_API_KEY is required for image generation");
     }
 
-    const prompt = generateBackgroundPrompt(image_prompt);
+    const prompt = generateBackgroundPrompt(bg);
     const width = 512;
     const height = 512;
     const guidance_scale = 7.5;
@@ -100,6 +101,6 @@ async function pollForCompletion(
   throw new Error(`Job did not complete after ${maxAttempts} polling attempts`);
 }
 
-function generateBackgroundPrompt(image_prompt: string): string {
-  return image_prompt;
+function generateBackgroundPrompt(bg: string, theme?: string): string {
+  return bg;
 }
