@@ -10,16 +10,41 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Wand2 } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
+// Define the schema for the form
+const conceptFormSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  tagline: z.string().min(1, "Tagline is required"),
+  premise: z.string().min(1, "Premise is required"),
+});
+
+type ConceptFormValues = z.infer<typeof conceptFormSchema>;
 
 export default function ConceptForm() {
   const [, setLocation] = useLocation();
   const { projectData, setConceptData, goToStep, saveProject } = useVnContext();
   const { generateConceptData, isGenerating, cancelGeneration } = useVnData();
 
-  // Form state
-  const [title, setTitle] = useState("");
-  const [tagline, setTagline] = useState("");
-  const [premise, setPremise] = useState("");
+  // Initialize React Hook Form
+  const form = useForm<ConceptFormValues>({
+    resolver: zodResolver(conceptFormSchema),
+    defaultValues: {
+      title: "",
+      tagline: "",
+      premise: "",
+    },
+  });
 
   // Load existing data if available or clear form if starting a new project
   useEffect(() => {
@@ -49,11 +74,97 @@ export default function ConceptForm() {
   // Register with form save system
   useRegisterFormSave('concept', saveConceptData);
   
-  // Setup autosave - will automatically save form values on change with 2 second debounce
-  const { performSave, formId } = useAutosave('concept', saveConceptData, 2000, true);
+  // Setup autosave with state watch
+  const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
+  
+  // Effect to watch for title changes
+  useEffect(() => {
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout);
+    }
+    
+    const timeout = setTimeout(() => {
+      console.log("[AutosaveEffect] Title changed, saving data");
+      saveConceptData();
+      
+      // Save to server if project exists
+      if (projectData?.id) {
+        console.log("[AutosaveEffect] Saving to server...");
+        saveProject().then(() => {
+          console.log("[AutosaveEffect] Saved to server successfully");
+        }).catch(err => {
+          console.error("[AutosaveEffect] Error saving to server:", err);
+        });
+      }
+    }, 2000); // 2 seconds debounce
+    
+    setDebounceTimeout(timeout);
+    
+    return () => {
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [title, projectData?.id, saveProject]);
+  
+  // Effect to watch for tagline changes
+  useEffect(() => {
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout);
+    }
+    
+    const timeout = setTimeout(() => {
+      console.log("[AutosaveEffect] Tagline changed, saving data");
+      saveConceptData();
+      
+      // Save to server if project exists
+      if (projectData?.id) {
+        console.log("[AutosaveEffect] Saving to server...");
+        saveProject().then(() => {
+          console.log("[AutosaveEffect] Saved to server successfully");
+        }).catch(err => {
+          console.error("[AutosaveEffect] Error saving to server:", err);
+        });
+      }
+    }, 2000); // 2 seconds debounce
+    
+    setDebounceTimeout(timeout);
+    
+    return () => {
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [tagline, projectData?.id, saveProject]);
+  
+  // Effect to watch for premise changes
+  useEffect(() => {
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout);
+    }
+    
+    const timeout = setTimeout(() => {
+      console.log("[AutosaveEffect] Premise changed, saving data");
+      saveConceptData();
+      
+      // Save to server if project exists
+      if (projectData?.id) {
+        console.log("[AutosaveEffect] Saving to server...");
+        saveProject().then(() => {
+          console.log("[AutosaveEffect] Saved to server successfully");
+        }).catch(err => {
+          console.error("[AutosaveEffect] Error saving to server:", err);
+        });
+      }
+    }, 2000); // 2 seconds debounce
+    
+    setDebounceTimeout(timeout);
+    
+    return () => {
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [premise, projectData?.id, saveProject]);
   
   // Log autosave status
-  console.log(`[ConceptForm] Autosave hook installed for form '${formId}' with 2 second debounce`);
+  useEffect(() => {
+    console.log("[ConceptForm] Autosave enabled with state watch (2 second debounce)");
+  }, []);
 
   // Go back to previous step
   const handleBack = async () => {
