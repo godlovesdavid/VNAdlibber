@@ -216,17 +216,31 @@ export default function BasicForm() {
   // Helper function to save basic data
   function saveBasicData() {
     const values = form.getValues();
+    console.log("💾 saveBasicData function called, values from form:", values);
     
-    // Convert to BasicData type - preserve existing values
+    // Send complete data to context which will handle merging
     const formData: BasicData = {
-      theme: values.theme || projectData?.basicData?.theme || "",
-      tone: values.tone || projectData?.basicData?.tone || "",
-      genre: values.genre || projectData?.basicData?.genre || "",
-      setting: values.setting || projectData?.basicData?.setting || ""
+      theme: values.theme || "",
+      tone: values.tone || "",
+      genre: values.genre || "",
+      setting: values.setting || ""
     };
     
-    console.log("💾 saveBasicData function called, saving data:", formData);
-    setBasicData(formData);
+    // Only save non-empty values to prevent clearing values
+    const nonEmptyValues: Partial<BasicData> = {};
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value) {
+        nonEmptyValues[key as keyof BasicData] = value;
+      }
+    });
+    
+    if (Object.keys(nonEmptyValues).length > 0) {
+      console.log("📨 Saving non-empty values to context:", nonEmptyValues);  
+      setBasicData(nonEmptyValues as BasicData);
+    } else {
+      console.log("⚠️ No non-empty values to save");
+    }
+    
     return formData;
   }
   
@@ -263,21 +277,15 @@ export default function BasicForm() {
       shouldTouch: true
     });
     
-    // Get current form values
-    const values = form.getValues();
-    console.log("📋 Current form values:", values);
+    // Create a sparse object with just the changed field
+    // Let the context merge it with existing values
+    const partialData: Partial<BasicData> = { [fieldName]: value };
     
-    // Convert to BasicData type - preserve any existing values not being edited
-    const formData: BasicData = {
-      theme: values.theme || projectData?.basicData?.theme || "",
-      tone: values.tone || projectData?.basicData?.tone || "",
-      genre: values.genre || projectData?.basicData?.genre || "",
-      setting: values.setting || projectData?.basicData?.setting || ""
-    };
+    // Log for debugging
+    console.log("📝 Sending partial update for field '" + fieldName + "':", partialData);
     
-    // Save to context immediately
-    console.log("💾 Saving to context:", formData);
-    setBasicData(formData);
+    // Save to context - rely on context to merge with existing values
+    setBasicData(partialData as BasicData);
     
     // If we don't have a project ID yet, create one first
     if (!projectData?.id) {
@@ -339,17 +347,17 @@ export default function BasicForm() {
   const handleSubmit = form.handleSubmit(async (values) => {
     console.log("📝 Form submitted with values:", values);
     
-    // Convert to BasicData type - preserve existing values  
-    const formData: BasicData = {
-      theme: values.theme || projectData?.basicData?.theme || "",
-      tone: values.tone || projectData?.basicData?.tone || "",
-      genre: values.genre || projectData?.basicData?.genre || "",
-      setting: values.setting || projectData?.basicData?.setting || ""
-    };
+    // Only submit non-empty values to prevent clearing existing values
+    const nonEmptyValues: Partial<BasicData> = {};
+    
+    if (values.theme) nonEmptyValues.theme = values.theme;
+    if (values.tone) nonEmptyValues.tone = values.tone;
+    if (values.genre) nonEmptyValues.genre = values.genre;
+    if (values.setting) nonEmptyValues.setting = values.setting;
     
     // Save data to context
-    console.log("💾 Saving submitted form data to context");
-    setBasicData(formData);
+    console.log("💾 Saving submitted form data to context:", nonEmptyValues);
+    setBasicData(nonEmptyValues as BasicData);
     
     // Make sure we have a project ID - if not, create one
     if (!projectData?.id) {

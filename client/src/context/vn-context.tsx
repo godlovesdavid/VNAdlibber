@@ -132,10 +132,24 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
   // Step data setters
   const setBasicData = (data: BasicData) => {
     if (!projectData) return;
+    
+    // Log the incoming data and current data for debugging
+    console.log("📥 setBasicData called with:", data);
+    console.log("📊 Current basicData in context:", projectData.basicData);
+    
+    // Merge new data with existing data, new takes precedence but preserve existing values
+    const mergedData: BasicData = {
+      theme: data.theme || projectData.basicData?.theme || "",
+      tone: data.tone || projectData.basicData?.tone || "",
+      genre: data.genre || projectData.basicData?.genre || "",
+      setting: data.setting || projectData.basicData?.setting || ""
+    };
+    
+    console.log("🔄 Merged basicData to save:", mergedData);
 
     setProjectData({
       ...projectData,
-      basicData: data,
+      basicData: mergedData,
       currentStep: Math.max(projectData.currentStep, 1),
       updatedAt: new Date().toISOString(),
     });
