@@ -11,7 +11,13 @@ export function SaveProjectButton() {
   
   const handleSave = async () => {
     // Get the current page path
-    const path = location.split('/').pop() || '';
+    let path = location.split('/').pop() || '';
+    
+    // Map characters-form to characters for form saving
+    if (path === 'characters') {
+      path = 'characters';
+      console.log('Saving character form data');
+    }
     
     // Try to save the current form data
     saveCurrentForm(path);

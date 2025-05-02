@@ -93,9 +93,20 @@ export default function CharactersForm() {
   
   // Helper function to save character data (defined with function declaration for hoisting)
   function saveCharacterData() {
+    console.log("Save character data called");
+    
     // Transform array to object format
     const charactersObj: Record<string, Character> = {};
     let protagonist = "";
+    
+    // Check if there's any data to save
+    if (characters.length === 0) {
+      console.log("No characters to save");
+      return { charactersObj, protagonist };
+    }
+    
+    // Log the characters array before processing
+    console.log("Characters to save:", characters);
     
     characters.forEach((char, index) => {
       if (char.name) {
@@ -118,6 +129,9 @@ export default function CharactersForm() {
         }
       }
     });
+    
+    console.log("Final character data to save:", charactersObj);
+    console.log("Setting protagonist to:", protagonist);
     
     // Set the characters data with protagonist field
     setCharactersData(charactersObj, protagonist);
@@ -786,7 +800,49 @@ export default function CharactersForm() {
                 <Button variant="outline" onClick={handleBack}>
                   Back
                 </Button>
-                <Button onClick={handleNext}>Next: Paths</Button>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={async () => {
+                      // Save character data first
+                      const characterData = saveCharacterData();
+                      
+                      // Show a toast message based on the data
+                      const characterCount = Object.keys(characterData.charactersObj).length;
+                      if (characterCount === 0) {
+                        toast({
+                          title: "No Characters",
+                          description: "Please add at least one character with a name.",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      
+                      // Then save project
+                      try {
+                        await saveProject();
+                        console.log("Character data saved successfully");
+                        
+                        // Show success toast
+                        toast({
+                          title: "Characters Saved",
+                          description: `Saved ${characterCount} character${characterCount > 1 ? 's' : ''} successfully.`,
+                        });
+                      } catch (error) {
+                        console.error("Error saving character data:", error);
+                        toast({
+                          title: "Error",
+                          description: "Failed to save character data. Please try again.",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                    className="border-primary text-primary hover:bg-primary/10"
+                  >
+                    Save Characters
+                  </Button>
+                  <Button onClick={handleNext}>Next: Paths</Button>
+                </div>
               </div>
             </div>
 
