@@ -80,7 +80,9 @@ export default function ConceptForm() {
   
   // Declare an autosave function component to be used inside FormProvider
   const ConceptFormAutosave = () => {
-    useAutosave((data) => {
+    const handleAutosave = (data: Record<string, any>) => {
+      if (!data) return;
+      
       console.log("Concept autosave triggered with data:", data);
       setConceptData(data);
       
@@ -93,8 +95,9 @@ export default function ConceptForm() {
           console.error("Error saving concept to server:", err);
         });
       }
-    });
+    };
     
+    useAutosave('concept', handleAutosave);
     return null; // This component doesn't render anything
   };
 

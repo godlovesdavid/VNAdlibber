@@ -245,8 +245,10 @@ export default function BasicForm() {
   // Register with form save system
   useRegisterFormSave('basic', saveBasicData);
   
-  // Set up autosave functionality
-  useAutosave('basic', (values) => {
+  // Create a typed save function for the autosave hook
+  const handleAutosave = (values: Record<string, any>) => {
+    if (!values) return;
+    
     console.log("Project saved with current form data from basic");
     
     // Convert to BasicData type
@@ -267,7 +269,10 @@ export default function BasicForm() {
         console.error("Error saving to server:", err);
       });
     }
-  }, 2000);
+  };
+  
+  // Set up autosave with the FormProvider context
+  useAutosave('basic', handleAutosave);
   
   // Keep this empty component to avoid changing our JSX structure
   const BasicFormAutosave = () => null;

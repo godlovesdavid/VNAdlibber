@@ -2,10 +2,49 @@ import { useFormContext } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { useVnContext } from "@/context/vn-context";
 import { BasicData } from "@/types/vn";
+import { useEffect, useRef } from "react";
 
 export function SimpleFormTest() {
-  const { register, getValues } = useFormContext();
+  const { register, getValues, watch } = useFormContext();
   const { setBasicData, projectData, saveProject } = useVnContext();
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Set up a manual watch effect to debounce saves
+  useEffect(() => {
+    const subscription = watch((values) => {
+      // Clear existing timeout to debounce
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      
+      // Set a new timeout for debounced save
+      timeoutRef.current = setTimeout(() => {
+        const currentValues = getValues();
+        console.log("SimpleFormTest debounced save with values:", currentValues);
+        
+        // Convert to BasicData type
+        const formData: BasicData = {
+          theme: currentValues.theme || "",
+          tone: currentValues.tone || "", 
+          genre: currentValues.genre || "",
+          setting: currentValues.setting || ""
+        };
+        
+        // Save to context
+        setBasicData(formData);
+        
+        timeoutRef.current = null;
+      }, 1000);
+    });
+    
+    // Clean up
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      subscription.unsubscribe();
+    };
+  }, [watch, getValues, setBasicData]);
   
   const handleSave = () => {
     // This will get triggered by a button click
@@ -13,10 +52,10 @@ export function SimpleFormTest() {
     
     // Convert to BasicData type
     const formData: BasicData = {
-      theme: values.theme as string,
-      tone: values.tone as string,
-      genre: values.genre as string,
-      setting: values.setting as string
+      theme: values.theme || "",
+      tone: values.tone || "",
+      genre: values.genre || "",
+      setting: values.setting || ""
     };
     
     // Save the data
@@ -81,7 +120,7 @@ export function SimpleFormTest() {
         </Button>
       </div>
       <p className="text-xs text-gray-500 mt-2">
-        This form should automatically save when fields change thanks to FormProvider + useAutosave hook.
+        This form should automatically save when fields change thanks to our custom debouncing.
         The button is just for manual testing.
       </p>
     </div>
