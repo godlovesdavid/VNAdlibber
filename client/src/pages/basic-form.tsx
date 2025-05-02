@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
+import { useRegisterFormSave } from "@/hooks/use-form-save";
 import { CreationProgress } from "@/components/creation-progress";
 import { NavBar } from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
@@ -147,6 +148,20 @@ export default function BasicForm() {
 
   // We no longer need this effect as we handle initialization in the projectData effect
   // This was causing the duplicate randomization
+
+  // Helper function to save basic data
+  function saveBasicData() {
+    setBasicData({
+      theme,
+      tone,
+      genre,
+      setting,
+    });
+    return { theme, tone, genre, setting };
+  }
+  
+  // Register with form save system
+  useRegisterFormSave('basic', saveBasicData);
 
   // Proceed to next step
   const handleNext = () => {
