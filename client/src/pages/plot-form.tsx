@@ -781,7 +781,7 @@ export default function PlotForm() {
             </Button>
 
             <div className="flex space-x-3">
-              <Button
+              {/* <Button
                 variant="outline"
                 className="flex items-center"
                 onClick={handleValidate}
@@ -816,7 +816,7 @@ export default function PlotForm() {
                     <CheckCircle className="mr-1 h-4 w-4" /> AI Validate
                   </>
                 )}
-              </Button>
+              </Button> */}
 
               <Button onClick={handleNext} disabled={isValidating || isGenerating}>
                 {isValidating ? (
