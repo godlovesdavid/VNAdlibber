@@ -81,7 +81,15 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
   // Update localStorage when project data changes
   useEffect(() => {
     if (projectData) {
+      // Store the current working project (with or without ID) in localStorage
+      // This is just for maintaining current working state, not for database persistence
       localStorage.setItem("current_vn_project", JSON.stringify(projectData));
+      
+      // If this project has an ID, also store it in sessionStorage for persistence tracking
+      if (projectData.id) {
+        sessionStorage.setItem("current_project_id", projectData.id.toString());
+        console.log(`Tracking project ID: ${projectData.id} in sessionStorage`);
+      }
     }
   }, [projectData]);
   
@@ -396,9 +404,15 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
         throw new Error('No project data to save');
       }
       
+      // Check if we have a stored ID in session storage
+      // This is more reliable than the dataToSave.id since createNewProject may have cleared the ID from projectData
+      const storedProjectId = sessionStorage.getItem('current_project_id');
+      
       // 2. Make sure we have all required fields with defaults
       const finalDataToSave = {
         ...dataToSave,
+        // Use the stored ID if available (for updates)
+        ...(storedProjectId ? { id: parseInt(storedProjectId) } : {}),
         basicData: dataToSave.basicData || {},
         conceptData: dataToSave.conceptData || {},
         charactersData: dataToSave.charactersData || {},
@@ -419,7 +433,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
         response = await apiRequest("POST", "/api/projects", finalDataToSave);
       } else {
         // It's a new project
-        console.log('Creating new project');
+        console.log('Creating new project in database');
         response = await apiRequest("POST", "/api/projects", finalDataToSave);
       }
       
@@ -427,6 +441,11 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       
       // 4. Update state with saved data, ensuring we preserve the ID
       console.log('Received saved project from server with ID:', savedProject.id); 
+      
+      // Store the ID in session storage for future saves
+      sessionStorage.setItem('current_project_id', savedProject.id.toString());
+      
+      // Update React state
       setProjectData(savedProject);
       
       // 5. Also update localStorage for consistency
@@ -464,6 +483,10 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
           genre: "",
         };
       }
+
+      // Store the project ID in session storage for persistence tracking
+      sessionStorage.setItem('current_project_id', projectId.toString());
+      console.log(`Loaded project ID ${projectId} and stored in sessionStorage`);
 
       // IMPORTANT: Force localStorage update with the loaded project FIRST
       localStorage.setItem("current_vn_project", JSON.stringify(loadedProject));
@@ -512,6 +535,27 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
   const deleteProject = async (projectId: number) => {
     try {
       await apiRequest("DELETE", `/api/projects/${projectId}`);
+      
+      // Check if the deleted project is the currently active one
+      const currentId = sessionStorage.getItem('current_project_id');
+      if (currentId && parseInt(currentId) === projectId) {
+        // If we're deleting the active project, clear the ID from sessionStorage
+        console.log(`Clearing active project ID ${projectId} from sessionStorage`);
+        sessionStorage.removeItem('current_project_id');
+        
+        // Also clear localStorage if it contains this project
+        const localProject = localStorage.getItem("current_vn_project");
+        if (localProject) {
+          try {
+            const parsed = JSON.parse(localProject);
+            if (parsed.id === projectId) {
+              localStorage.removeItem("current_vn_project");
+            }
+          } catch (e) {
+            // Ignore parsing errors
+          }
+        }
+      }
 
       toast({
         title: "Success",
