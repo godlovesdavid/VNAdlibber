@@ -299,14 +299,22 @@ export default function GenerateVnForm() {
                   projectData?.plotData?.plotOutline && (
                     <div className="border border-neutral-200 rounded-md p-4">
                       <h4 className="text-md font-medium text-neutral-700 mb-2">
-                        {projectData.plotData.plotOutline[
-                          `act${actNumber}` as keyof typeof projectData.plotData.plotOutline
-                        ]?.title || `Act ${actNumber}`}
+                        {(() => {
+                          const actKey = `act${actNumber}` as keyof typeof projectData.plotData.plotOutline;
+                          const actData = projectData.plotData.plotOutline[actKey];
+                          return typeof actData === 'object' && actData !== null && 'title' in actData 
+                            ? actData.title 
+                            : `Act ${actNumber}`;
+                        })()}
                       </h4>
                       <p className="text-sm text-neutral-600 mb-4">
-                        {projectData.plotData.plotOutline[
-                          `act${actNumber}` as keyof typeof projectData.plotData.plotOutline
-                        ]?.summary || "No summary available"}
+                        {(() => {
+                          const actKey = `act${actNumber}` as keyof typeof projectData.plotData.plotOutline;
+                          const actData = projectData.plotData.plotOutline[actKey];
+                          return typeof actData === 'object' && actData !== null && 'summary' in actData 
+                            ? actData.summary 
+                            : "No summary available";
+                        })()}
                       </p>
                     </div>
                   )}

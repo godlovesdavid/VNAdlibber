@@ -167,11 +167,12 @@ export class MemStorage implements IStorage {
     this.projects.delete(id);
     
     // Also delete any associated stories
-    for (const [storyId, story] of this.stories.entries()) {
+    // Convert Map.entries() to Array first to avoid TypeScript iteration issues
+    Array.from(this.stories.entries()).forEach(([storyId, story]) => {
       if (story.projectId === id) {
         this.stories.delete(storyId);
       }
-    }
+    });
   }
   
   // VN Story methods
