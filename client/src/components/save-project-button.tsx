@@ -8,26 +8,36 @@ export function SaveProjectButton() {
   const [location] = useLocation();
   
   const handleSave = async () => {
-    // Before saving to database, make sure the current form's data is in the context
-    // Check what form we're on and call the appropriate helper function
-    await saveFormToContext(location);
-    
-    // Then save everything to the database
-    await saveProject();
+    try {
+      // Before saving to database, make sure the current form's data is in the context
+      console.log('Save button clicked - saving form to context first');
+      await saveFormToContext(location);
+      
+      // Add a longer delay to ensure context is updated
+      console.log('Waiting for context to update...');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Then save everything to the database
+      console.log('Saving to database now');
+      await saveProject();
+    } catch (error) {
+      console.error('Error during save process:', error);
+    }
   };
   
   // Helper function to save the current form's data to the context
   const saveFormToContext = async (path: string) => {
     // Get the form data based on the current route
-    if (!projectData) return;
+    if (!projectData) {
+      console.log('No project data available to save');
+      return;
+    }
 
     // Each route path corresponds to a specific form
     // We'll dispatch a custom event to trigger the form to save to context
+    console.log('Dispatching save-form-to-context event');
     const event = new CustomEvent('save-form-to-context');
     document.dispatchEvent(event);
-    
-    // Small delay to ensure state updates have propagated
-    await new Promise(resolve => setTimeout(resolve, 50));
   };
   
   return (

@@ -360,25 +360,57 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Save project to server
   const saveProject = async () => {
-    if (!projectData) {
-      toast({
-        title: "Error",
-        description: "No project data to save",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
-      
       setSaveLoading(true);
-      const response = await apiRequest("POST", "/api/projects", {
-        ...projectData,
-        updatedAt: new Date().toISOString(),
-      });
-
+      
+      // 1. Always check localStorage first for most up-to-date data
+      // This addresses race conditions between form data saves and API requests
+      console.log('Loading project data to save');
+      
+      // Use projectData as default but prioritize localStorage
+      let dataToSave = projectData;
+      
+      // Check localStorage for most recent data
+      const localStorageData = localStorage.getItem("current_vn_project");
+      if (localStorageData) {
+        try {
+          const parsedData = JSON.parse(localStorageData);
+          console.log('Using localStorage data for saving:', parsedData.basicData);
+          dataToSave = parsedData;
+        } catch (e) {
+          console.error('Failed to parse localStorage data:', e);
+        }
+      }
+      
+      if (!dataToSave) {
+        throw new Error('No project data to save');
+      }
+      
+      // 2. Make sure we have all required fields with defaults
+      const finalDataToSave = {
+        ...dataToSave,
+        basicData: dataToSave.basicData || {},
+        conceptData: dataToSave.conceptData || {},
+        charactersData: dataToSave.charactersData || {},
+        pathsData: dataToSave.pathsData || {},
+        plotData: dataToSave.plotData || {},
+        playerData: dataToSave.playerData || defaultPlayerData,
+        currentStep: dataToSave.currentStep || 1,
+        updatedAt: new Date().toISOString()
+      };
+      
+      console.log('Saving data to server:', finalDataToSave.basicData);
+      
+      // 3. Send to API
+      const response = await apiRequest("POST", "/api/projects", finalDataToSave);
       const savedProject = await response.json();
+      
+      // 4. Update state with saved data
+      console.log('Received saved project from server:', savedProject.basicData); 
       setProjectData(savedProject);
+      
+      // 5. Also update localStorage for consistency
+      localStorage.setItem("current_vn_project", JSON.stringify(savedProject));
 
       toast({
         title: "Success",
