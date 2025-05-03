@@ -77,7 +77,7 @@ export function CreationProgress({ currentStep }: CreationProgressProps) {
   
   return (
     <div className="pt-16 px-4 pb-4 bg-white shadow-sm">
-      <div className="progress-bar flex items-center justify-between max-w-4xl mx-auto py-3">
+      <div className="progress-bar flex items-center justify-between max-w-3xl mx-auto py-3">
         {[1, 2, 3, 4, 5, 6].map((step) => (
           <div key={step} className="flex items-center">
             <Tooltip>
@@ -114,7 +114,7 @@ export function CreationProgress({ currentStep }: CreationProgressProps) {
         ))}
       </div>
       
-      <div className="flex justify-between text-xs text-neutral-500 max-w-4xl mx-auto px-1">
+      <div className="flex justify-between text-xs text-neutral-500 max-w-3xl mx-auto px-1">
         <span>Basic</span>
         <span>Concept</span>
         <span>Characters</span>

@@ -17,8 +17,6 @@ import { formatDistanceToNow } from "date-fns";
 // Import the function from vn-context
 import { calculateCurrentStep } from "@/context/vn-context";
 
-// Use the imported helper function
-
 interface LoadProjectDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;

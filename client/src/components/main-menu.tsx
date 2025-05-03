@@ -84,7 +84,7 @@ export function MainMenu() {
           Share Stories
         </Button>
 
-        <Button 
+        {/* <Button 
           onClick={handleTestPlayer} 
           className="w-full flex items-center justify-center bg-green-600 text-white hover:bg-green-700 py-6"
           variant="default"
@@ -92,7 +92,7 @@ export function MainMenu() {
         >
           <Beaker className="mr-2 h-5 w-5" />
           Test VN Player
-        </Button>
+        </Button> */}
       </div>
 
       {/* Load Project Dialog */}

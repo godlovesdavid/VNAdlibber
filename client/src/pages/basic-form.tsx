@@ -429,7 +429,7 @@ export default function BasicForm() {
             </div>
 
             {/* Debug button - remove in production */}
-            <div className="text-center mt-4">
+            {/* <div className="text-center mt-4">
               <Button
                 variant="outline"
                 size="sm"
@@ -438,7 +438,7 @@ export default function BasicForm() {
               >
                 Reset Form (Debug)
               </Button>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
