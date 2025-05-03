@@ -202,9 +202,6 @@ export function VnPlayer({
     Array<{ speaker: string; text: string }>
   >([]);
   const [clickableContent, setClickableContent] = useState(true);
-  
-  // Image generation toggle state
-  const [imageGenerationEnabled, setImageGenerationEnabled] = useState(true);
 
   // Text animation state
   const [textSpeed, setTextSpeed] = useState<"slow" | "medium" | "fast">(
@@ -313,18 +310,18 @@ export function VnPlayer({
     error: imageError,
     generateImage,
   } = useImageGeneration(currentScene, {
-    autoGenerate: imageGenerationEnabled, // Use the state to control auto-generation
+    autoGenerate: false,
     debug: false,
     generationDelay: 100, // Added slight delay to prevent rapid generation during transitions
   });
 
   // image generation
   useEffect(() => {
-    if (shouldGenerateImage.current && currentScene && imageGenerationEnabled) {
+    if (shouldGenerateImage.current && currentScene) {
       shouldGenerateImage.current = false;
       generateImage(true);
     }
-  }, [currentScene, generateImage, imageGenerationEnabled]);
+  }, [currentScene, generateImage]);
 
   //initialize player with first scene
   useEffect(() => {
@@ -599,21 +596,6 @@ export function VnPlayer({
       );
     };
   }, [mode, isTextAnimating]);
-  
-  // Listen for image generation toggle events from the player navbar
-  useEffect(() => {
-    const handleImageGenerationToggle = (e: CustomEvent) => {
-      const isEnabled = e.detail;
-      console.log("Image generation toggled:", isEnabled);
-      setImageGenerationEnabled(isEnabled);
-    };
-    
-    window.addEventListener("vnToggleImageGeneration", handleImageGenerationToggle as EventListener);
-    
-    return () => {
-      window.removeEventListener("vnToggleImageGeneration", handleImageGenerationToggle as EventListener);
-    };
-  }, []);
 
   // Log current scene and image state for debugging
   useEffect(() => {
@@ -680,7 +662,7 @@ export function VnPlayer({
                 // Force true to regenerate even if cached
                 generateImage(true);
               }}
-              disabled={isGenerating || !imageGenerationEnabled}
+              disabled={isGenerating}
               style={{ pointerEvents: "auto" }} // Ensure pointer events are enabled
             >
               {isGenerating ? (
@@ -688,12 +670,6 @@ export function VnPlayer({
                   <RefreshCw className="h-3 w-3 md:h-4 md:w-4 animate-spin mr-1 md:mr-2" />
                   <span className="hidden sm:inline">Generating...</span>
                   <span className="sm:hidden">Gen...</span>
-                </>
-              ) : !imageGenerationEnabled ? (
-                <>
-                  <ImageIcon className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
-                  <span className="hidden sm:inline">Images Off</span>
-                  <span className="sm:hidden">Off</span>
                 </>
               ) : (
                 <>
