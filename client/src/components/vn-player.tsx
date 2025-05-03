@@ -757,8 +757,8 @@ export function VnPlayer({
             currentScene.choices.length > 0 && (
               <div
                 className={cn(
-                  "vn-choices mt-4 sm:mt-6 md:mt-8 grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 animate-fadeIn",
-                  "max-w-4xl mx-auto", // Set maximum width and center the choices container
+                  "vn-choices mt-4 sm:mt-6 md:mt-8 flex flex-col sm:grid sm:grid-cols-1 md:grid-cols-1 gap-3 sm:gap-4 animate-fadeIn",
+                  "w-full max-w-3xl mx-auto px-2 sm:px-4", // Set maximum width and center the choices container
                   !clickableContent && "opacity-50 pointer-events-none",
                 )}
               >
@@ -814,13 +814,13 @@ export function VnPlayer({
                       )}
                       <div className="flex flex-col items-center w-full overflow-hidden">
                         {/* Main choice text */}
-                        <div className="text-center break-words hyphens-auto text-xs sm:text-sm md:text-base w-full max-w-full">
+                        <div className="text-center whitespace-normal break-words text-xs sm:text-sm md:text-base w-full max-w-full">
                           {choice.text || `Option ${index + 1}`}
                         </div>
 
                         {/* Description text (if present) */}
                         {choice.description && (
-                          <div className="text-xs md:text-sm text-neutral-400 mt-1 italic text-center break-words hyphens-auto w-full font-dialogue overflow-hidden text-ellipsis">
+                          <div className="text-xs md:text-sm text-neutral-400 mt-1 italic text-center whitespace-normal break-words w-full font-dialogue overflow-hidden text-ellipsis">
                             {choice.description}
                           </div>
                         )}
