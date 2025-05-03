@@ -512,10 +512,8 @@ export function VnPlayer({
     setCurrentDialogueIndex,
     setShowChoices,
     setDisplayedText,
+    shouldGenerateImage,
     isRateLimited,
-    isGenerating,
-    imageGenerationEnabled, 
-    generateImageDirectly
   ]);
 
   // Handle restart
