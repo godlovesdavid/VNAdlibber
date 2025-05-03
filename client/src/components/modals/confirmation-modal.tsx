@@ -1,13 +1,13 @@
-import React from 'react';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ConfirmationModalProps {
   open: boolean;
@@ -17,6 +17,8 @@ interface ConfirmationModalProps {
   confirmText?: string;
   cancelText?: string;
   onConfirm: () => void;
+  onCancel?: () => void;
+  variant?: "default" | "destructive";
 }
 
 export function ConfirmationModal({
@@ -24,35 +26,44 @@ export function ConfirmationModal({
   onOpenChange,
   title,
   description,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
+  confirmText = "Continue",
+  cancelText = "Cancel",
   onConfirm,
+  onCancel,
+  variant = "default",
 }: ConfirmationModalProps) {
+  
+  const handleCancel = () => {
+    onOpenChange(false);
+    onCancel?.();
+  };
+  
+  const handleConfirm = () => {
+    onOpenChange(false);
+    onConfirm();
+  };
+  
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
-        <DialogFooter className="sm:justify-between">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-          >
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {description}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={handleCancel}>
             {cancelText}
-          </Button>
-          <Button
-            onClick={() => {
-              onConfirm();
-              onOpenChange(false);
-            }}
-            variant="default"
+          </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleConfirm}
+            className={variant === "destructive" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
           >
             {confirmText}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

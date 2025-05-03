@@ -98,7 +98,7 @@ function SceneBackground({
   const [actualUrl, setActualUrl] = useState(imageUrl);
 
   // Fallback URL in case of loading failures - using data URI for guaranteed compatibility
-  // const fallbackUrl = `data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221024%22%20height%3D%22768%22%20viewBox%3D%220%200%201024%20768%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E`;
+  const fallbackUrl = `data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221024%22%20height%3D%22768%22%20viewBox%3D%220%200%201024%20768%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E`;
 
   useEffect(() => {
     // Reset states when URL changes
@@ -112,7 +112,7 @@ function SceneBackground({
     setHasError(true);
     setIsLoading(false);
     // Use fallback URL
-    // setActualUrl(fallbackUrl);
+    setActualUrl(fallbackUrl);
   };
 
   const handleImageLoad = () => {
