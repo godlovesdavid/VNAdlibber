@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Share, Copy, X, Facebook, Twitter, Mail, Loader2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -12,208 +11,197 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
+import { Loader2, Copy, Facebook, Twitter, Mail, Check, Share as ShareIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ShareStoryDialogProps {
   projectId: number;
   projectTitle: string;
-  trigger?: React.ReactNode;
+  // Acts are numbered 1-5
+  actNumber?: number;
+  trigger: React.ReactNode;
 }
 
-interface ShareResponse {
-  shareId: string;
-  storyId: number;
-  url: string;
-}
-
-export function ShareStoryDialog({ projectId, projectTitle, trigger }: ShareStoryDialogProps) {
-  const [shareUrl, setShareUrl] = useState<string>('');
-  const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
+export function ShareStoryDialog({
+  projectId,
+  projectTitle,
+  actNumber = 1,
+  trigger,
+}: ShareStoryDialogProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [shareLink, setShareLink] = useState<string>('');
+  const [copied, setCopied] = useState(false);
   const { toast } = useToast();
-  const baseUrl = window.location.origin;
 
-  const shareStory = async () => {
+  // Function to generate a share link
+  const generateShareLink = async () => {
+    setIsLoading(true);
     try {
-      setLoading(true);
-      
+      // Call your API endpoint to generate a share ID
       const response = await fetch('/api/share', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ projectId })
+        body: JSON.stringify({
+          projectId,
+          actNumber,
+          title: projectTitle,
+        }),
       });
-      
+
       if (!response.ok) {
-        throw new Error('Failed to share story');
+        throw new Error('Failed to generate share link');
       }
+
+      const data = await response.json();
       
-      const data: ShareResponse = await response.json();
-      const fullShareUrl = `${baseUrl}${data.url}`;
-      setShareUrl(fullShareUrl);
-      
-      toast({
-        title: 'Success!',
-        description: 'Your story has been shared successfully.',
-      });
+      // Construct the full share URL
+      const shareUrl = `${window.location.origin}/play/shared/${data.shareId}`;
+      setShareLink(shareUrl);
     } catch (error) {
       console.error('Error sharing story:', error);
       toast({
         title: 'Error',
-        description: 'Failed to share your story. Please try again.',
+        description: 'Failed to generate share link',
         variant: 'destructive',
       });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
+  // Function to handle dialog open/close
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (open) {
+      // Generate share link when dialog opens
+      generateShareLink();
+    } else {
+      // Reset state when dialog closes
+      setShareLink('');
+      setCopied(false);
+    }
+  };
+
+  // Function to copy link to clipboard
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(shareUrl).then(
-      () => {
-        toast({
-          title: 'Copied!',
-          description: 'Share link copied to clipboard.',
-        });
-      },
-      (err) => {
-        console.error('Could not copy text: ', err);
-        toast({
-          title: 'Error',
-          description: 'Failed to copy to clipboard.',
-          variant: 'destructive',
-        });
-      }
-    );
+    navigator.clipboard.writeText(shareLink);
+    setCopied(true);
+    toast({
+      title: 'Copied!',
+      description: 'Link copied to clipboard',
+    });
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleOpenChange = (newOpen: boolean) => {
-    setOpen(newOpen);
-    if (newOpen) {
-      setShareUrl('');
-      shareStory();
+  // Function to open social sharing
+  const shareToSocial = (platform: 'twitter' | 'facebook' | 'email') => {
+    const text = `Check out my visual novel: ${projectTitle}`;
+    const url = shareLink;
+
+    let shareUrl = '';
+
+    switch (platform) {
+      case 'twitter':
+        shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+        break;
+      case 'facebook':
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+        break;
+      case 'email':
+        shareUrl = `mailto:?subject=${encodeURIComponent(text)}&body=${encodeURIComponent(`${text}\n\n${url}`)}`;
+        break;
     }
-  };
 
-  const shareToTwitter = () => {
-    const text = `Check out my visual novel "${projectTitle}" created with VN Adlibber!`;
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
-    window.open(url, '_blank');
-  };
-
-  const shareToFacebook = () => {
-    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
-    window.open(url, '_blank');
-  };
-
-  const shareByEmail = () => {
-    const subject = `Check out my visual novel "${projectTitle}"`;
-    const body = `I created a visual novel with VN Adlibber. You can play it here: ${shareUrl}`;
-    window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(shareUrl, '_blank');
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        {trigger || (
-          <Button variant="outline" className="gap-2">
-            <Share className="w-4 h-4" />
-            Share
-          </Button>
-        )}
+        {trigger}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Share your story</DialogTitle>
+          <DialogTitle>Share This Story</DialogTitle>
           <DialogDescription>
             Share your visual novel with friends and on social media.
           </DialogDescription>
         </DialogHeader>
-        
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-6">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <p className="mt-4 text-sm text-center text-muted-foreground">
-              Generating share link...
-            </p>
-          </div>
-        ) : shareUrl ? (
-          <>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="link" className="text-right">
-                  Link
-                </Label>
-                <div className="col-span-3 flex items-center gap-2">
-                  <Input
-                    id="link"
-                    value={shareUrl}
-                    readOnly
-                    className="h-9"
-                  />
-                  <Button variant="outline" size="icon" onClick={copyToClipboard}>
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </div>
+        <div className="flex items-center space-x-2 mt-4">
+          <div className="grid flex-1 gap-2">
+            <Label htmlFor="share-link" className="sr-only">
+              Share Link
+            </Label>
+            {isLoading ? (
+              <div className="h-10 rounded-md border border-input bg-background flex items-center justify-center">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="ml-2 text-sm">Generating link...</span>
               </div>
-            </div>
-
-            <Separator className="my-2" />
-            
-            <div className="mb-4">
-              <h4 className="mb-2 text-sm font-medium">Share on social media</h4>
-              <div className="flex space-x-2">
-                <Button 
-                  onClick={shareToTwitter}
-                  variant="outline" 
-                  size="icon" 
-                  className="rounded-full bg-[#1DA1F2] hover:bg-[#1DA1F2]/90 text-white"
-                >
-                  <Twitter className="h-4 w-4" />
-                </Button>
-                <Button 
-                  onClick={shareToFacebook}
-                  variant="outline" 
-                  size="icon" 
-                  className="rounded-full bg-[#1877F2] hover:bg-[#1877F2]/90 text-white"
-                >
-                  <Facebook className="h-4 w-4" />
-                </Button>
-                <Button 
-                  onClick={shareByEmail}
-                  variant="outline" 
-                  size="icon" 
-                  className="rounded-full"
-                >
-                  <Mail className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="py-6 text-center text-muted-foreground">
-            <p>Failed to generate share link. Please try again.</p>
+            ) : (
+              <Input
+                id="share-link"
+                value={shareLink}
+                readOnly
+                className="h-10"
+              />
+            )}
           </div>
-        )}
-        
-        <DialogFooter className="sm:justify-between">
-          <Button
-            variant="secondary"
-            onClick={() => setOpen(false)}
+          <Button 
+            type="button" 
+            size="sm" 
+            className="px-3" 
+            onClick={copyToClipboard}
+            disabled={isLoading || !shareLink}
           >
-            <X className="mr-2 h-4 w-4" />
-            Close
+            {copied ? (
+              <Check className="h-4 w-4" />
+            ) : (
+              <Copy className="h-4 w-4" />
+            )}
+            <span className="sr-only">Copy</span>
           </Button>
-          {shareUrl && (
-            <Button
-              onClick={() => window.open(shareUrl, '_blank')}
-              className="gap-2"
-            >
-              Preview
-            </Button>
-          )}
+        </div>
+        
+        <div className="flex justify-center space-x-4 mt-4">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => shareToSocial('twitter')}
+            disabled={isLoading || !shareLink}
+            className="h-10 w-10 rounded-full"
+          >
+            <Twitter className="h-4 w-4" />
+            <span className="sr-only">Share on Twitter</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => shareToSocial('facebook')}
+            disabled={isLoading || !shareLink}
+            className="h-10 w-10 rounded-full"
+          >
+            <Facebook className="h-4 w-4" />
+            <span className="sr-only">Share on Facebook</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => shareToSocial('email')}
+            disabled={isLoading || !shareLink}
+            className="h-10 w-10 rounded-full"
+          >
+            <Mail className="h-4 w-4" />
+            <span className="sr-only">Share via Email</span>
+          </Button>
+        </div>
+
+        <DialogFooter className="sm:justify-start">
+          <DialogDescription className="text-xs text-muted-foreground">
+            Anyone with this link will be able to view this story.
+          </DialogDescription>
         </DialogFooter>
       </DialogContent>
     </Dialog>

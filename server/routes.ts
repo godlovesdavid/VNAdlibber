@@ -373,7 +373,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Share a project/story by creating a shareable link
   app.post("/api/share", async (req, res) => {
     try {
-      const { projectId } = req.body;
+      const { projectId, actNumber: requestedActNumber, title } = req.body;
       
       if (!projectId) {
         return res.status(400).json({ error: 'No project ID provided' });
@@ -387,35 +387,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Generate a unique share ID
-      const shareId = generateShareId();
+      const shareId = generateShareId(12); // Use longer IDs to reduce collision chance
       const now = new Date().toISOString();
       
-      // For each act in the project, create a shared story
       // Type assertion for the generatedActs property
       interface ProjectWithGeneratedActs extends Omit<typeof project, 'generatedActs'> {
         generatedActs?: Record<string, any>;
       }
       const typedProject = project as ProjectWithGeneratedActs;
       const generatedActs = typedProject.generatedActs || {};
-      const actKeys = Object.keys(generatedActs);
       
-      if (actKeys.length === 0) {
-        return res.status(400).json({ error: 'No generated acts found in this project' });
+      // Determine which act to share
+      let actKey: string;
+      let actNum: number;
+      
+      if (requestedActNumber && requestedActNumber >= 1 && requestedActNumber <= 5) {
+        // Use the requested act number if provided
+        actKey = `act${requestedActNumber}`;
+        actNum = requestedActNumber;
+      } else {
+        // Otherwise use the first available act
+        const actKeys = Object.keys(generatedActs);
+        
+        if (actKeys.length === 0) {
+          return res.status(400).json({ error: 'No generated acts found in this project' });
+        }
+        
+        actKey = actKeys[0];
+        // Extract the number from the actKey (e.g., "act1" -> 1)
+        actNum = parseInt(actKey.replace('act', ''), 10);
       }
       
-      // Create a story entry for the first act
-      const actNumber = parseInt(actKeys[0], 10);
-      const actData = generatedActs[actKeys[0]];
+      // Make sure the requested act exists
+      if (!generatedActs[actKey]) {
+        return res.status(400).json({ error: `Act ${actNum} not found in this project` });
+      }
+      
+      const actData = generatedActs[actKey];
+      const storyTitle = title || project.title || `Visual Novel Act ${actNum}`;
       
       // Create a new story entry in the database
       const story = await storage.createStory({
         shareId,
         projectId: project.id,
         userId: project.userId,
-        title: project.title,
+        title: storyTitle,
         createdAt: now,
         actData,
-        actNumber
+        actNumber: actNum
       });
       
       // Return the share ID and related information
