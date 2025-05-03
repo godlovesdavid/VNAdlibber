@@ -196,10 +196,24 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createProject(insertProject: InsertVnProject): Promise<VnProject> {
+    // Ensure all required fields are present with proper defaults
+    const projectToInsert = {
+      ...insertProject,
+      basicData: insertProject.basicData || {},
+      conceptData: insertProject.conceptData || {},
+      charactersData: insertProject.charactersData || {},
+      pathsData: insertProject.pathsData || {},
+      plotData: insertProject.plotData || {},
+      playerData: insertProject.playerData || {},
+      currentStep: insertProject.currentStep || 1
+    };
+
+    // Insert the project
     const [project] = await db
       .insert(vnProjects)
-      .values(insertProject)
+      .values(projectToInsert)
       .returning();
+    
     return project;
   }
 
@@ -210,14 +224,27 @@ export class DatabaseStorage implements IStorage {
       updatedAt: new Date().toISOString()
     };
 
+    // Get the existing project first to ensure we properly handle null fields
+    const existingProject = await this.getProject(id);
+    if (!existingProject) {
+      throw new Error(`Project with id ${id} not found`);
+    }
+
+    // Merge with existing data to ensure all required fields are present
+    const mergedData = {
+      ...existingProject,
+      ...dataToUpdate
+    };
+
+    // Perform the update
     const [updatedProject] = await db
       .update(vnProjects)
-      .set(dataToUpdate)
+      .set(mergedData)
       .where(eq(vnProjects.id, id))
       .returning();
 
     if (!updatedProject) {
-      throw new Error(`Project with id ${id} not found`);
+      throw new Error(`Update failed for project with id ${id}`);
     }
 
     return updatedProject;
