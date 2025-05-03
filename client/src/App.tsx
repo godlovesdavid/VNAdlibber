@@ -16,6 +16,7 @@ import PlaySelection from "@/pages/play-selection";
 import Player from "@/pages/player";
 import TestPlayer from "@/pages/test-player";
 import { FontDemoPage } from "@/pages/font-demo-page";
+import SharedPlayer from "@/pages/shared-player";
 
 function Router() {
   return (
@@ -29,6 +30,7 @@ function Router() {
       <Route path="/create/generate-vn" component={GenerateVnForm} />
       <Route path="/play" component={PlaySelection} />
       <Route path="/player/:actId" component={Player} />
+      <Route path="/play/:shareId" component={SharedPlayer} />
       <Route path="/test-player" component={TestPlayer} />
       <Route path="/font-demo" component={FontDemoPage} />
       <Route component={NotFound} />

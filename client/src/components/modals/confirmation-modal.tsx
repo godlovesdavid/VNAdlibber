@@ -1,13 +1,13 @@
+import React from 'react';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface ConfirmationModalProps {
   open: boolean;
@@ -17,8 +17,6 @@ interface ConfirmationModalProps {
   confirmText?: string;
   cancelText?: string;
   onConfirm: () => void;
-  onCancel?: () => void;
-  variant?: "default" | "destructive";
 }
 
 export function ConfirmationModal({
@@ -26,44 +24,35 @@ export function ConfirmationModal({
   onOpenChange,
   title,
   description,
-  confirmText = "Continue",
-  cancelText = "Cancel",
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
   onConfirm,
-  onCancel,
-  variant = "default",
 }: ConfirmationModalProps) {
-  
-  const handleCancel = () => {
-    onOpenChange(false);
-    onCancel?.();
-  };
-  
-  const handleConfirm = () => {
-    onOpenChange(false);
-    onConfirm();
-  };
-  
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {description}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel onClick={handleCancel}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="sm:justify-between">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
             {cancelText}
-          </AlertDialogCancel>
-          <AlertDialogAction
-            onClick={handleConfirm}
-            className={variant === "destructive" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+          </Button>
+          <Button
+            onClick={() => {
+              onConfirm();
+              onOpenChange(false);
+            }}
+            variant="default"
           >
             {confirmText}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

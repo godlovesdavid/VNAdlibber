@@ -46,6 +46,8 @@ export const vnStories = pgTable("vn_stories", {
   createdAt: text("created_at").notNull(),
   actData: jsonb("act_data").notNull(),
   actNumber: integer("act_number").notNull(),
+  // Field for sharing stories
+  shareId: text("share_id").unique(),
 });
 
 export const insertVnStorySchema = createInsertSchema(vnStories).omit({

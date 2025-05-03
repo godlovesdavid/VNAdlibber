@@ -24,6 +24,7 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog }: Pl
   const [showDataEditor, setShowDataEditor] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const [activeTextSpeed, setActiveTextSpeed] = useState<'slow' | 'normal' | 'fast'>('normal'); // Track active text speed button
+  const [imageGenerationEnabled, setImageGenerationEnabled] = useState(true); // Track image generation state
   
   // Create a copy of the player data for editing
   const [editableData, setEditableData] = useState({
@@ -81,6 +82,23 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog }: Pl
     // Clean up event listener on unmount
     return () => {
       window.removeEventListener('vnSetTextSpeed', handlePlayerTextSpeedChange as EventListener);
+    };
+  }, []);
+  
+  // Listen for image generation toggle events
+  useEffect(() => {
+    // When VN player components toggle image generation, sync with our UI
+    const handleImageGenerationChange = (e: CustomEvent) => {
+      const isEnabled = e.detail;
+      setImageGenerationEnabled(isEnabled);
+    };
+    
+    // Listen for image generation toggle events
+    window.addEventListener('vnToggleImageGeneration', handleImageGenerationChange as EventListener);
+    
+    // Clean up event listener on unmount
+    return () => {
+      window.removeEventListener('vnToggleImageGeneration', handleImageGenerationChange as EventListener);
     };
   }, []);
   
@@ -297,10 +315,31 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog }: Pl
                 <div className="space-y-2">
                   <h3 className="text-sm font-medium">Image Generation</h3>
                   <div className="grid grid-cols-2 gap-2">
-                    <Button variant="outline" size="sm">Off</Button>
-                    <Button variant="outline" size="sm" disabled>On</Button>
+                    <Button 
+                      variant={!imageGenerationEnabled ? 'default' : 'outline'} 
+                      size="sm"
+                      onClick={() => {
+                        // Dispatch event to disable image generation
+                        window.dispatchEvent(new CustomEvent('vnToggleImageGeneration', { detail: false }));
+                        // Update state to track active button
+                        setImageGenerationEnabled(false);
+                      }}
+                    >
+                      Off
+                    </Button>
+                    <Button 
+                      variant={imageGenerationEnabled ? 'default' : 'outline'} 
+                      size="sm"
+                      onClick={() => {
+                        // Dispatch event to enable image generation
+                        window.dispatchEvent(new CustomEvent('vnToggleImageGeneration', { detail: true }));
+                        // Update state to track active button
+                        setImageGenerationEnabled(true);
+                      }}
+                    >
+                      On
+                    </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground">Coming soon</p>
                 </div>
                 
                 <div className="space-y-2">
