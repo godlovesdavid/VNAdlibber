@@ -741,10 +741,10 @@ export function VnPlayer({
           {currentScene.dialogue.length > 0 &&
             currentDialogueIndex < currentScene.dialogue.length && (
               <div className="vn-dialogue">
-                <p className="character-name text-primary-300 font-semibold mb-1 sm:mb-2 text-sm sm:text-base md:text-lg">
+                <p className="character-name text-primary-300 font-semibold mb-1 sm:mb-2 text-sm sm:text-base md:text-lg font-vn">
                   {currentScene.dialogue[currentDialogueIndex][0]}
                 </p>
-                <p className="text-white text-sm sm:text-base md:text-lg whitespace-pre-line">
+                <p className="text-white text-sm sm:text-base md:text-lg whitespace-pre-line font-dialogue">
                   {typeof dialogueText === 'string' ? dialogueText : JSON.stringify(dialogueText)}
                 </p>
               </div>
@@ -806,13 +806,13 @@ export function VnPlayer({
                       )}
                       <div className="flex flex-col items-center">
                         {/* Main choice text */}
-                        <div className="text-center break-words text-xs sm:text-sm md:text-base">
+                        <div className="text-center break-words text-xs sm:text-sm md:text-base font-vn">
                           {choice.text || `Option ${index + 1}`}
                         </div>
 
                         {/* Description text (if present) */}
                         {choice.description && (
-                          <div className="text-xs md:text-sm text-neutral-400 mt-1 italic text-center break-words max-w-full">
+                          <div className="text-xs md:text-sm text-neutral-400 mt-1 italic text-center break-words max-w-full font-dialogue">
                             {choice.description}
                           </div>
                         )}

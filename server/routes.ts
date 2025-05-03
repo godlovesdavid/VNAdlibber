@@ -682,15 +682,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         Important guidelines:
-        1. Use branching paths with 2-3 choices per scene
-        2. Final scene should have choices: null
-        3. Include relationship changes via delta values
-        4. Use plenty of dialogue (10-15 lines per scene)
-        5. Use "???" for mystery characters
-        6. Include image_prompt only for new settings
-        7. All scene keys must be sceneN where N is a number (scene1, scene2, etc.)
-        8. The 'next' property in choices must refer to scene keys (scene1, scene2, etc.) not full scene names
-        9. For conditional choices, use this format:
+        - Do not generate any other act except Act ${actNumber}.
+        - Create approximately ${scenesCount} scenes for Act ${actNumber}, or more if necessary to convey Act ${actNumber}.
+        - Include branching paths based on 2-4 choices. Choices that continue the dialogue conversation in the same scene are marked with a letter e.g. Act ${actNumber} Scene 1b (although they are technically different scenes).
+        - Final scene of act should have choices set to null value. Otherwise, ensure the scene has a choice that connects to another valid scene name.
+        - Relationships, inventory items, or skills can be added or subtracted by "delta" values.
+        - Pack each scene with ample dialogue to express the story (5-15+ lines). Be inventive and creative about event details, while ensuring consistency with the plot outline.
+        - Use of a narrator is encouraged to explain the scene or provide context.
+        - The protagonist may think in parentheses.
+        - Unknown characters are named "???" until revealed.
+        - "image_prompt" is only required when visiting the setting for the first time.
+        - Maintain the given tone (${projectContext.basics.tone}) consistent with the story context.
+        - You may optionally include [emotion] or [action] tags before dialogue when it enhances the scene.
+        - If a choice increases or decreases a relationship, reflect it subtly in the dialogue tone.
+        - For conditional choices, use this format:
            {
              "text": "Try to convince guard",
              "condition": {"guardRelationship": 2},
@@ -698,7 +703,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
              "failNext": "scene6"
            }
         
-        Keep the tone ${projectContext.basicData?.tone || "consistent with the story"} and make it engaging!
+        Make it engaging!
       `;
 
       // Generate act using Gemini

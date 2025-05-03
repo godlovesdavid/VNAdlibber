@@ -99,8 +99,9 @@ export function FontDemo() {
               </div>
             </div>
             <div className="bg-primary/10 p-4 rounded-md">
-              <h5 className="font-vn text-lg mb-2">Quicksand (UI elements)</h5>
+              <h5 className="font-vn text-lg mb-2">Quicksand (UI elements & character names)</h5>
               <p className="font-dialogue">Lora (dialogue text)</p>
+              <p className="mt-2 text-sm text-neutral-500">This combination creates a perfect balance for visual novels</p>
             </div>
           </Card>
         </div>

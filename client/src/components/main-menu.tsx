@@ -41,9 +41,7 @@ export function MainMenu() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-neutral-50 px-4 py-8">
       <div className="w-full max-w-md mx-auto text-center mb-12">
-        <div className="mb-1">
-          <img src={logoImage} alt="Ai Ad-libber" className="h-20 sm:h-24 md:h-28 mx-auto" />
-        </div>
+        <h1 className="text-4xl font-bold text-primary mb-2 font-title">Visual Novel Ad-libber</h1>
         <p className="text-muted-foreground font-vn">Dream up your own VN with AI!</p>
       </div>
       
