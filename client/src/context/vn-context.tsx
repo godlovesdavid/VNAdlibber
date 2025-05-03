@@ -90,6 +90,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.removeItem("current_vn_project");
 
     // Create a new project with initial empty data
+    // IMPORTANT: Do NOT include an ID field for new projects
+    // This ensures it won't try to update an existing record in the database
     const initialProject: VnProjectData = {
       title: "Untitled Project",
       createdAt: new Date().toISOString(),
@@ -108,23 +110,31 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       charactersData: {},
       pathsData: {},
       plotData: {},
+      generatedActs: {},
+      playerData: defaultPlayerData,
       currentStep: 1,
     };
-    // Save the new project data to localStorage
+    
+    // Save the new project data to localStorage only
+    // No database interaction at this point
     localStorage.setItem("current_vn_project", JSON.stringify(initialProject));
+    
     // Update state with the new project data
     setProjectData(initialProject);
+    
+    // Clear any previous project ID tracking
+    sessionStorage.removeItem('current_project_id');
     
     // Set a flag to indicate this is a fresh project that needs randomization
     sessionStorage.setItem('vn_fresh_project', 'true');
     
     // Navigate to the first step
     setLocation("/create/basic");
-    // Show confirmation toast if needed
-
+    
+    // Show confirmation toast
     toast({
       title: "New Project Created",
-      description: "Starting with a fresh project",
+      description: "Starting with a fresh project. Changes will be saved when you click Save Project.",
       duration: 3000,
     });
   };
@@ -401,12 +411,22 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       
       console.log('Saving data to server:', finalDataToSave.basicData);
       
-      // 3. Send to API
-      const response = await apiRequest("POST", "/api/projects", finalDataToSave);
+      // 3. Send to API - determine if it's an update or new project
+      let response;
+      if (finalDataToSave.id) {
+        // It's an existing project, use the ID to update it
+        console.log(`Updating existing project with ID ${finalDataToSave.id}`);
+        response = await apiRequest("POST", "/api/projects", finalDataToSave);
+      } else {
+        // It's a new project
+        console.log('Creating new project');
+        response = await apiRequest("POST", "/api/projects", finalDataToSave);
+      }
+      
       const savedProject = await response.json();
       
-      // 4. Update state with saved data
-      console.log('Received saved project from server:', savedProject.basicData); 
+      // 4. Update state with saved data, ensuring we preserve the ID
+      console.log('Received saved project from server with ID:', savedProject.id); 
       setProjectData(savedProject);
       
       // 5. Also update localStorage for consistency
