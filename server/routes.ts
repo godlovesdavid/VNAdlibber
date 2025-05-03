@@ -359,6 +359,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to save story" });
     }
   });
+  
+  // Helper function to generate a unique ID for shared stories
+  function generateShareId(length = 8) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return result;
+  }
+  
+  // Share a project/story by creating a shareable link
+  app.post("/api/share", async (req, res) => {
+    try {
+      const { projectId } = req.body;
+      
+      if (!projectId) {
+        return res.status(400).json({ error: 'No project ID provided' });
+      }
+      
+      // Get the project from storage
+      const project = await storage.getProject(projectId);
+      
+      if (!project) {
+        return res.status(404).json({ error: 'Project not found' });
+      }
+      
+      // Generate a unique share ID
+      const shareId = generateShareId();
+      const now = new Date().toISOString();
+      
+      // For each act in the project, create a shared story
+      // Type assertion for the generatedActs property
+      interface ProjectWithGeneratedActs extends Omit<typeof project, 'generatedActs'> {
+        generatedActs?: Record<string, any>;
+      }
+      const typedProject = project as ProjectWithGeneratedActs;
+      const generatedActs = typedProject.generatedActs || {};
+      const actKeys = Object.keys(generatedActs);
+      
+      if (actKeys.length === 0) {
+        return res.status(400).json({ error: 'No generated acts found in this project' });
+      }
+      
+      // Create a story entry for the first act
+      const actNumber = parseInt(actKeys[0], 10);
+      const actData = generatedActs[actKeys[0]];
+      
+      // Create a new story entry in the database
+      const story = await storage.createStory({
+        shareId,
+        projectId: project.id,
+        userId: project.userId,
+        title: project.title,
+        createdAt: now,
+        actData,
+        actNumber
+      });
+      
+      // Return the share ID and related information
+      res.json({ 
+        shareId, 
+        storyId: story.id,
+        url: `/play/${shareId}`
+      });
+    } catch (error) {
+      console.error('Error sharing story:', error);
+      res.status(500).json({ error: 'Failed to share story' });
+    }
+  });
+  
+  // Get a shared story by its share ID
+  app.get("/api/play/:shareId", async (req, res) => {
+    try {
+      const { shareId } = req.params;
+      
+      // Get the story with the matching share ID
+      const story = await storage.getStoryByShareId(shareId);
+      
+      if (!story) {
+        return res.status(404).json({ error: 'Shared story not found' });
+      }
+      
+      // Return the story data
+      res.json({ story });
+    } catch (error) {
+      console.error('Error retrieving shared story:', error);
+      res.status(500).json({ error: 'Failed to retrieve shared story' });
+    }
+  });
 
   // Unified validation endpoint for all content types
   app.post("/api/validate", async (req, res) => {

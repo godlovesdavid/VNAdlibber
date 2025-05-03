@@ -335,7 +335,8 @@ export class DatabaseStorage implements IStorage {
       ...insertStory,
       // Make sure foreign keys are null if undefined
       userId: insertStory.userId || null,
-      projectId: insertStory.projectId || null
+      projectId: insertStory.projectId || null,
+      shareId: insertStory.shareId || null
     };
     
     const [story] = await db
