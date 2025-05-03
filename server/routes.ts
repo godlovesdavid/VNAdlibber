@@ -664,27 +664,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 "text": "Choice option text",
                 "description": "(optional) Brief explanation of consequences",
                 "delta": {"characterName": 1, "anotherCharacter": -1},
-                "next": "scene2"
+                "next": "scene1a"
               },
               {
                 "text": "Alternative choice",
                 "delta": {"characterName": -1},
-                "next": "scene3"
+                "next": "scene2"
               }
             ]
-          },
-          "scene2": {
-            "setting": "New location",
-            "dialogue": [/* dialogue array */],
-            "choices": [/* more choices */]
           }
-          /* Include approximately ${scenesCount} scenes, named scene1, scene2, scene3, etc. */
         }
 
         Important guidelines:
         - Do not generate any other act except Act ${actNumber}.
         - Create approximately ${scenesCount} scenes for Act ${actNumber}, or more if necessary to convey Act ${actNumber}.
-        - Include branching paths based on 2-4 choices. Choices that continue the dialogue conversation in the same scene are marked with a letter e.g. Act ${actNumber} Scene 1b (although they are technically different scenes).
+        - Include branching paths based on 2-4 choices. Choices that continue the dialogue conversation in the same scene are marked with a letter e.g. scene1b (although they are technically different scenes).
         - Final scene of act should have choices set to null value. Otherwise, ensure the scene has a choice that connects to another valid scene name.
         - Relationships, inventory items, or skills can be added or subtracted by "delta" values.
         - Pack each scene with ample dialogue to express the story (5-15+ lines). Be inventive and creative about event details, while ensuring consistency with the plot outline.
@@ -692,7 +686,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         - The protagonist may think in parentheses.
         - Unknown characters are named "???" until revealed.
         - "image_prompt" is only required when visiting the setting for the first time.
-        - Maintain the given tone (${projectContext.basics.tone}) consistent with the story context.
+        - Maintain the given tone (${projectContext.basicData.tone}) consistent with the story context.
         - You may optionally include [emotion] or [action] tags before dialogue when it enhances the scene.
         - If a choice increases or decreases a relationship, reflect it subtly in the dialogue tone.
         - For conditional choices, use this format:

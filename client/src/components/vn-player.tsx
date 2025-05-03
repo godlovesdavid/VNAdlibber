@@ -757,8 +757,12 @@ export function VnPlayer({
             currentScene.choices.length > 0 && (
               <div
                 className={cn(
-                  "vn-choices mt-4 sm:mt-6 md:mt-8 flex flex-col sm:grid sm:grid-cols-1 md:grid-cols-1 gap-3 sm:gap-4 animate-fadeIn",
+                  "vn-choices mt-4 sm:mt-6 md:mt-8 animate-fadeIn",
                   "w-full max-w-3xl mx-auto px-2 sm:px-4", // Set maximum width and center the choices container
+                  // Apply different layouts based on number of choices
+                  currentScene.choices && currentScene.choices.length <= 2
+                    ? "flex flex-col sm:grid sm:grid-cols-1 gap-3 sm:gap-4"
+                    : "grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3",
                   !clickableContent && "opacity-50 pointer-events-none",
                 )}
               >
@@ -772,7 +776,10 @@ export function VnPlayer({
                       key={index}
                       variant="outline"
                       className={cn(
-                        "px-3 py-3 md:px-5 md:py-4 rounded-md text-center transition-colors h-auto relative w-full text-sm md:text-base",
+                        // Adjust padding based on number of choices
+                        currentScene.choices && currentScene.choices.length <= 2
+                          ? "px-3 py-3 md:px-5 md:py-4 rounded-md text-center transition-colors h-auto relative w-full text-sm md:text-base"
+                          : "px-2 py-2 md:px-3 md:py-3 rounded-md text-center transition-colors h-auto relative w-full text-xs sm:text-sm md:text-base",
                         // Animation with staggered delay based on index
                         "animate-fadeInUp",
                         // Apply staggered animation delay based on index
@@ -820,7 +827,14 @@ export function VnPlayer({
 
                         {/* Description text (if present) */}
                         {choice.description && (
-                          <div className="text-xs md:text-sm text-neutral-400 mt-1 italic text-center whitespace-normal break-words w-full font-dialogue overflow-hidden text-ellipsis">
+                          <div className={cn(
+                            "italic text-center whitespace-normal break-words w-full font-dialogue overflow-hidden text-ellipsis",
+                            "text-neutral-400 mt-1",
+                            // Adjust text size based on number of choices
+                            currentScene.choices && currentScene.choices.length <= 2
+                              ? "text-xs md:text-sm" 
+                              : "text-[0.65rem] sm:text-xs"
+                          )}>
                             {choice.description}
                           </div>
                         )}
