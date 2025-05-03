@@ -224,7 +224,7 @@ export function VnPlayer({
       // Convert object to string if needed
       const text = typeof textContent === 'string'
         ? textContent
-        : (textContent?.text || JSON.stringify(textContent));
+        : ((textContent as {text?: string})?.text || JSON.stringify(textContent));
         
       // Skip animation if text speed is set to fast
       if (textSpeed === "fast") {
@@ -293,7 +293,7 @@ export function VnPlayer({
         setDisplayedText(dialogueContent);
       } else if (dialogueContent && typeof dialogueContent === 'object') {
         // Use the text property if it exists, otherwise stringify the object
-        setDisplayedText(dialogueContent.text || JSON.stringify(dialogueContent));
+        setDisplayedText((dialogueContent as {text?: string})?.text || JSON.stringify(dialogueContent));
       } else {
         // Fallback for any other case
         setDisplayedText(String(dialogueContent || ''));
@@ -420,7 +420,7 @@ export function VnPlayer({
       if (typeof dialogueContent === 'string') {
         textToLog = dialogueContent;
       } else if (dialogueContent && typeof dialogueContent === 'object') {
-        textToLog = dialogueContent.text || JSON.stringify(dialogueContent);
+        textToLog = (dialogueContent as {text?: string})?.text || JSON.stringify(dialogueContent);
       } else {
         textToLog = String(dialogueContent || '');
       }
@@ -445,7 +445,7 @@ export function VnPlayer({
         if (typeof dialogueContent === 'string') {
           textToLog = dialogueContent;
         } else if (dialogueContent && typeof dialogueContent === 'object') {
-          textToLog = dialogueContent.text || JSON.stringify(dialogueContent);
+          textToLog = (dialogueContent as {text?: string})?.text || JSON.stringify(dialogueContent);
         } else {
           textToLog = String(dialogueContent || '');
         }
@@ -627,7 +627,7 @@ export function VnPlayer({
   // Handle case where dialogue content is an object instead of a string
   const originalDialogueText = typeof rawDialogueContent === 'string' 
     ? rawDialogueContent 
-    : (rawDialogueContent?.text || JSON.stringify(rawDialogueContent));
+    : ((rawDialogueContent as {text?: string})?.text || JSON.stringify(rawDialogueContent));
   const dialogueText = isTextAnimating ? displayedText : originalDialogueText;
 
   return (
