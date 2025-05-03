@@ -174,9 +174,9 @@ export default function Player() {
   // Use the unified player with mode parameter based on source
   return (
     <div className="relative">
-      {/* Share button floating at top right */}
+      {/* Share button floating at bottom left */}
       {projectData?.id && actId !== "imported" && (
-        <div className="absolute top-4 right-4 z-10">
+        <div className="absolute bottom-20 left-4 z-20">
           <ShareStoryDialog
             projectId={projectData.id}
             projectTitle={projectData.title || `Visual Novel Act ${actNumber}`}
@@ -185,7 +185,7 @@ export default function Player() {
               <Button
                 variant="secondary"
                 size="sm"
-                className="flex items-center bg-white/80 backdrop-blur-sm hover:bg-white/90"
+                className="flex items-center bg-black/50 text-white backdrop-blur-sm hover:bg-black/70 shadow-md"
               >
                 <Share className="mr-1 h-4 w-4" /> Share
               </Button>

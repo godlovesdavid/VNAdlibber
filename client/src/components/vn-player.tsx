@@ -147,7 +147,7 @@ function SceneBackground({
           "w-full h-full object-cover transition-opacity duration-500",
           isLoading ? "opacity-0" : "opacity-100",
         )}
-        style={{ position: "absolute", zIndex: 0 }}
+        style={{ position: "absolute", zIndex: 5 }}
         onLoad={handleImageLoad}
         onError={handleImageError}
       />
