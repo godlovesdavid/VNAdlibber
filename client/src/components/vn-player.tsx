@@ -202,8 +202,9 @@ export function VnPlayer({
   >([]);
   const [clickableContent, setClickableContent] = useState(true);
   
-  // Image generation toggle state
+  // Image generation toggle state with a reference to track previous state
   const [imageGenerationEnabled, setImageGenerationEnabled] = useState(true);
+  const prevImageGenerationState = useRef(true);
 
   // Text animation state
   const [textSpeed, setTextSpeed] = useState<"slow" | "medium" | "fast">(
@@ -604,7 +605,19 @@ export function VnPlayer({
     const handleImageGenerationToggle = (e: CustomEvent) => {
       const isEnabled = e.detail;
       console.log("Image generation toggled:", isEnabled);
+      
+      // Store previous state before updating
+      prevImageGenerationState.current = imageGenerationEnabled;
       setImageGenerationEnabled(isEnabled);
+      
+      // If toggling from off to on, we need to manually trigger image generation
+      if (isEnabled && !prevImageGenerationState.current && currentScene) {
+        console.log("Reloading image since generation was re-enabled");
+        // Use a small timeout to ensure state update completes
+        setTimeout(() => {
+          generateImage(true);
+        }, 50);
+      }
     };
     
     window.addEventListener("vnToggleImageGeneration", handleImageGenerationToggle as EventListener);
@@ -612,7 +625,7 @@ export function VnPlayer({
     return () => {
       window.removeEventListener("vnToggleImageGeneration", handleImageGenerationToggle as EventListener);
     };
-  }, []);
+  }, [currentScene, imageGenerationEnabled, generateImage]);
 
   // Log current scene and image state for debugging
   useEffect(() => {
