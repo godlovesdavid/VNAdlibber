@@ -23,6 +23,7 @@ export interface IStorage {
   // VN Story methods
   getStories(): Promise<VnStory[]>;
   getStory(id: number): Promise<VnStory | undefined>;
+  getStoryByShareId(shareId: string): Promise<VnStory | undefined>;
   createStory(story: InsertVnStory): Promise<VnStory>;
   deleteStory(id: number): Promise<void>;
 }
@@ -184,6 +185,12 @@ export class MemStorage implements IStorage {
     return this.stories.get(id);
   }
   
+  async getStoryByShareId(shareId: string): Promise<VnStory | undefined> {
+    return Array.from(this.stories.values()).find(
+      (story) => story.shareId === shareId
+    );
+  }
+  
   async createStory(insertStory: InsertVnStory): Promise<VnStory> {
     const id = this.storyId++;
     
@@ -192,7 +199,8 @@ export class MemStorage implements IStorage {
       ...insertStory, 
       id,
       userId: insertStory.userId || null,
-      projectId: insertStory.projectId || null
+      projectId: insertStory.projectId || null,
+      shareId: insertStory.shareId || null
     };
     
     this.stories.set(id, story);
@@ -313,6 +321,11 @@ export class DatabaseStorage implements IStorage {
 
   async getStory(id: number): Promise<VnStory | undefined> {
     const [story] = await db.select().from(vnStories).where(eq(vnStories.id, id));
+    return story || undefined;
+  }
+
+  async getStoryByShareId(shareId: string): Promise<VnStory | undefined> {
+    const [story] = await db.select().from(vnStories).where(eq(vnStories.shareId, shareId));
     return story || undefined;
   }
 
