@@ -14,6 +14,36 @@ import {
 } from "@/types/vn";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
+// Helper function to calculate the current step based on a project's data
+function calculateCurrentStep(project: Partial<VnProjectData>): number {
+  let step = 1; // Start with basic step
+  
+  // Check what data is present and calculate the appropriate step
+  if (project.basicData && Object.keys(project.basicData).length > 0 && 
+      project.basicData.theme && project.basicData.tone && project.basicData.genre) {
+    step = 2; // Concept step
+  }
+  
+  if (project.conceptData && Object.keys(project.conceptData).length > 0 && 
+      project.conceptData.title && project.conceptData.premise) {
+    step = 3; // Characters step
+  }
+  
+  if (project.charactersData && Object.keys(project.charactersData).length > 0) {
+    step = 4; // Paths step
+  }
+  
+  if (project.pathsData && Object.keys(project.pathsData).length > 0) {
+    step = 5; // Plot step
+  }
+  
+  if (project.plotData && project.plotData.plotOutline) {
+    step = 6; // Generate step
+  }
+  
+  return step;
+}
+
 interface VnContextType {
   // Project data
   projectData: VnProjectData | null;
@@ -408,6 +438,9 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       // This is more reliable than the dataToSave.id since createNewProject may have cleared the ID from projectData
       const storedProjectId = sessionStorage.getItem('current_project_id');
       
+      // Calculate the correct step based on available data
+      const calculatedStep = calculateCurrentStep(dataToSave);
+      
       // 2. Make sure we have all required fields with defaults
       const finalDataToSave = {
         ...dataToSave,
@@ -419,7 +452,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
         pathsData: dataToSave.pathsData || {},
         plotData: dataToSave.plotData || {},
         playerData: dataToSave.playerData || defaultPlayerData,
-        currentStep: dataToSave.currentStep || 1,
+        // Use our calculated step instead of relying on the stored value
+        currentStep: calculatedStep,
         updatedAt: new Date().toISOString()
       };
       
