@@ -77,6 +77,16 @@ export class MemStorage implements IStorage {
         tagline: "In a world where memories are currency, the truth comes at the highest price.",
         premise: "In Neo-Kyoto, a city where memories can be traded like currency, Aki Nakamura, a memory archivist, discovers a forbidden memory that reveals a conspiracy at the heart of society. As they navigate a web of deception involving the powerful Sato Corporation, they must choose between exposing the truth or protecting those they love."
       },
+      // Add empty objects for the required fields
+      charactersData: {},
+      pathsData: {},
+      plotData: {},
+      generatedActs: {},
+      playerData: {
+        relationships: {},
+        inventory: {},
+        skills: {}
+      },
       currentStep: 2
     };
     this.projects.set(sampleProject.id, sampleProject);
@@ -111,7 +121,26 @@ export class MemStorage implements IStorage {
   
   async createProject(insertProject: InsertVnProject): Promise<VnProject> {
     const id = this.projectId++;
-    const project: VnProject = { ...insertProject, id };
+    
+    // Ensure all required fields are present with proper defaults
+    const project: VnProject = { 
+      ...insertProject, 
+      id,
+      userId: insertProject.userId || null,
+      basicData: insertProject.basicData || {},
+      conceptData: insertProject.conceptData || {},
+      charactersData: insertProject.charactersData || {},
+      pathsData: insertProject.pathsData || {},
+      plotData: insertProject.plotData || {},
+      generatedActs: insertProject.generatedActs || {},
+      playerData: insertProject.playerData || {
+        relationships: {},
+        inventory: {},
+        skills: {}
+      },
+      currentStep: insertProject.currentStep || 1
+    };
+    
     this.projects.set(id, project);
     return project;
   }
@@ -156,7 +185,15 @@ export class MemStorage implements IStorage {
   
   async createStory(insertStory: InsertVnStory): Promise<VnStory> {
     const id = this.storyId++;
-    const story: VnStory = { ...insertStory, id };
+    
+    // Ensure nullable fields are handled properly
+    const story: VnStory = { 
+      ...insertStory, 
+      id,
+      userId: insertStory.userId || null,
+      projectId: insertStory.projectId || null
+    };
+    
     this.stories.set(id, story);
     return story;
   }
@@ -199,13 +236,20 @@ export class DatabaseStorage implements IStorage {
     // Ensure all required fields are present with proper defaults
     const projectToInsert = {
       ...insertProject,
+      // Use explicit type assertions to handle potential undefined values
       basicData: insertProject.basicData || {},
       conceptData: insertProject.conceptData || {},
       charactersData: insertProject.charactersData || {},
       pathsData: insertProject.pathsData || {},
       plotData: insertProject.plotData || {},
-      playerData: insertProject.playerData || {},
-      currentStep: insertProject.currentStep || 1
+      playerData: insertProject.playerData || {
+        relationships: {},
+        inventory: {},
+        skills: {}
+      },
+      currentStep: insertProject.currentStep || 1,
+      // Make sure userId is null if undefined
+      userId: insertProject.userId || null
     };
 
     // Insert the project
@@ -272,9 +316,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createStory(insertStory: InsertVnStory): Promise<VnStory> {
+    // Ensure all required fields have proper defaults and nullable fields are handled
+    const storyToInsert = {
+      ...insertStory,
+      // Make sure foreign keys are null if undefined
+      userId: insertStory.userId || null,
+      projectId: insertStory.projectId || null
+    };
+    
     const [story] = await db
       .insert(vnStories)
-      .values(insertStory)
+      .values(storyToInsert)
       .returning();
     return story;
   }
