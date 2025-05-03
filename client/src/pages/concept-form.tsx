@@ -16,7 +16,7 @@ export default function ConceptForm() {
   const { projectData, setConceptData, goToStep } = useVnContext();
   const { generateConceptData, isGenerating, cancelGeneration } = useVnData();
   const { toast } = useToast();
-  
+
   // Track validation state
   const [isValidating, setIsValidating] = useState(false);
 
@@ -24,24 +24,24 @@ export default function ConceptForm() {
   const [title, setTitle] = useState("");
   const [tagline, setTagline] = useState("");
   const [premise, setPremise] = useState("");
-  
+
   // Save form data to context when the event is triggered
   useEffect(() => {
     const saveFormHandler = () => {
-      console.log('Saving concept form data to context');
+      console.log("Saving concept form data to context");
       setConceptData({
         title,
         tagline,
         premise,
       });
     };
-    
+
     // Add event listener
-    document.addEventListener('save-form-to-context', saveFormHandler);
-    
+    document.addEventListener("save-form-to-context", saveFormHandler);
+
     // Cleanup
     return () => {
-      document.removeEventListener('save-form-to-context', saveFormHandler);
+      document.removeEventListener("save-form-to-context", saveFormHandler);
     };
   }, [title, tagline, premise, setConceptData]);
 
@@ -78,46 +78,44 @@ export default function ConceptForm() {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields before proceeding.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
-    
-    // Save data 
+
+    // Save data
     const conceptObj = {
       title,
       tagline,
       premise,
     };
-    
+
     setConceptData(conceptObj);
-    
+
     if (!projectData) {
       toast({
         title: "Error",
         description: "Project data is missing",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
-    
+
     // Additional server-side validation
     setIsValidating(true);
-    
+
     try {
       // Create validation context
-      const contextData = {
-        basicData: projectData.basicData,
-        conceptData: conceptObj
-      };
-      
+      // const contextData = {
+      //   basicData: projectData.basicData,
+      //   conceptData: conceptObj,
+      // };
+
       // Use our validation utility
-      const isValid = await validateFormContent(contextData, "concept");
-      
-      if (isValid) {
-        // Navigate to next step
-        setLocation("/create/characters");
-      }
+      // const isValid = await validateFormContent(contextData, "concept");
+
+      // if (isValid)
+      setLocation("/create/characters");
     } finally {
       setIsValidating(false);
     }

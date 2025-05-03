@@ -82,7 +82,7 @@ export default function BasicForm() {
   const [, setLocation] = useLocation();
   const { projectData, setBasicData } = useVnContext();
   const { toast } = useToast();
-  
+
   // Track validation state
   const [isValidating, setIsValidating] = useState(false);
 
@@ -94,14 +94,14 @@ export default function BasicForm() {
 
   // State to track if the form has been initialized with random values
   const [initialized, setInitialized] = useState(false);
-  
+
   // Save form data to context when the event is triggered
   useEffect(() => {
     const saveFormHandler = () => {
       // Skip if not all fields are filled
       if (!theme || !tone || !genre || !setting) return;
-      
-      console.log('Saving basic form data to context');
+
+      console.log("Saving basic form data to context");
       setBasicData({
         theme,
         tone,
@@ -109,13 +109,13 @@ export default function BasicForm() {
         setting,
       });
     };
-    
+
     // Add event listener
-    document.addEventListener('save-form-to-context', saveFormHandler);
-    
+    document.addEventListener("save-form-to-context", saveFormHandler);
+
     // Cleanup
     return () => {
-      document.removeEventListener('save-form-to-context', saveFormHandler);
+      document.removeEventListener("save-form-to-context", saveFormHandler);
     };
   }, [theme, tone, genre, setting, setBasicData]);
 
@@ -143,8 +143,7 @@ export default function BasicForm() {
     }
 
     // If we have project data, use it without randomizing
-    if (projectData?.basicData) 
-    {
+    if (projectData?.basicData) {
       console.log("Loading existing project data", projectData.basicData);
       setTheme(projectData.basicData.theme || "");
       setTone(projectData.basicData.tone || "");
@@ -185,37 +184,34 @@ export default function BasicForm() {
       toast({
         title: "Missing Information",
         description: "Please select options for all fields before proceeding.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
-    
-    // Save data 
+
+    // Save data
     const basicObj = {
       theme,
       tone,
       genre,
       setting,
     };
-    
+
     setBasicData(basicObj);
-    
+
     // Additional server-side validation
     setIsValidating(true);
-    
+
     try {
-      // Use our validation utility
-      const isValid = await validateFormContent({ basicData: basicObj }, "basic");
-      
-      if (isValid) {
-        // Navigate to next step
-        setLocation("/create/concept");
-      }
+      // const isValid = await validateFormContent({ basicData: basicObj }, "basic");
+      // if (isValid)
+      setLocation("/create/concept");
     } catch (error) {
       toast({
         title: "Validation Error",
-        description: error instanceof Error ? error.message : "An unknown error occurred.",
-        variant: "destructive"
+        description:
+          error instanceof Error ? error.message : "An unknown error occurred.",
+        variant: "destructive",
       });
     } finally {
       setIsValidating(false);
