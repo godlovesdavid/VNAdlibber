@@ -76,39 +76,41 @@ export function CreationProgress({ currentStep }: CreationProgressProps) {
   };
   
   return (
-    <div className="pt-16 px-4 pb-4 bg-white shadow-sm">
+    <div className="pt-12 sm:pt-14 md:pt-16 px-2 sm:px-4 pb-2 sm:pb-4 bg-white shadow-sm">
       <div className="max-w-3xl mx-auto">
         {/* Progress circles with connector lines */}
-        <div className="progress-bar flex items-center justify-between py-3 overflow-x-auto pb-4 md:overflow-visible">
+        <div className="progress-bar flex items-center justify-between py-2 sm:py-3 overflow-x-auto sm:overflow-x-auto md:overflow-visible pb-3 sm:pb-4">
           {[1, 2, 3, 4, 5, 6].map((step) => (
-            <div key={step} className="flex flex-col items-start min-w-[40px] md:min-w-0">
-              <div className="flex items-center self-center">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div 
-                      className={cn(
-                        "flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-full border-2 text-xs md:text-sm font-medium cursor-pointer",
-                        step < currentStep && "bg-primary text-white border-primary", // completed
-                        step === currentStep && "text-primary border-primary", // active
-                        step > currentStep && "border-neutral-300 text-neutral-500", // future
-                        step > maxStep && "cursor-not-allowed opacity-50" // disabled
-                      )}
-                      onClick={() => handleStepClick(step)}
-                    >
-                      {step}
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs whitespace-pre-line">
-                    {step <= maxStep 
-                      ? getTooltipContent(step) 
-                      : "This step is not yet available"}
-                  </TooltipContent>
-                </Tooltip>
+            <div key={step} className="flex flex-col items-center min-w-[38px] sm:min-w-[44px] md:min-w-0">
+              <div className="flex items-center">
+                <TooltipProvider delayDuration={300}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div 
+                        className={cn(
+                          "flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-full border-2 text-[10px] sm:text-xs md:text-sm font-medium cursor-pointer",
+                          step < currentStep && "bg-primary text-white border-primary", // completed
+                          step === currentStep && "text-primary border-primary", // active
+                          step > currentStep && "border-neutral-300 text-neutral-500", // future
+                          step > maxStep && "cursor-not-allowed opacity-50" // disabled
+                        )}
+                        onClick={() => handleStepClick(step)}
+                      >
+                        {step}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs whitespace-pre-line text-xs sm:text-sm">
+                      {step <= maxStep 
+                        ? getTooltipContent(step) 
+                        : "This step is not yet available"}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 
                 {step < 6 && (
                   <div 
                     className={cn(
-                      "connector h-[2px] w-6 sm:w-8 md:w-16 lg:w-20",
+                      "connector h-[2px] w-3 sm:w-6 md:w-12 lg:w-20",
                       step < currentStep ? "bg-primary" : "bg-neutral-200"
                     )}
                   />
@@ -116,7 +118,7 @@ export function CreationProgress({ currentStep }: CreationProgressProps) {
               </div>
               
               {/* Step label directly below each circle */}
-              <div className="text-[10px] md:text-xs text-neutral-500 mt-1 text-center md:text-left w-full" style={{ maxWidth: '50px', marginLeft: 0 }}>
+              <div className="text-[8px] sm:text-[10px] md:text-xs text-neutral-500 mt-1 text-center w-full max-w-[45px] sm:max-w-[55px] truncate">
                 {step === 1 && "Basic"}
                 {step === 2 && "Concept"}
                 {step === 3 && "Characters"}

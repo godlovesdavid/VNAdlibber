@@ -194,17 +194,23 @@ export function LoadProjectDialog({ open, onOpenChange }: LoadProjectDialogProps
             )}
           </div>
           
-          <DialogFooter className="flex justify-between sm:justify-between">
+          <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-0 justify-between sm:justify-between mt-2 sm:mt-4">
             <Button
               type="button"
               variant="outline"
               onClick={handleImportProject}
-              className="flex items-center"
+              className="flex items-center justify-center text-xs sm:text-sm w-full sm:w-auto"
+              size="sm"
             >
-              <Upload className="mr-2 h-4 w-4" /> 
+              <Upload className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> 
               Import Project
             </Button>
-            <Button type="button" onClick={() => onOpenChange(false)}>
+            <Button 
+              type="button" 
+              onClick={() => onOpenChange(false)}
+              className="text-xs sm:text-sm w-full sm:w-auto"
+              size="sm"
+            >
               Cancel
             </Button>
           </DialogFooter>

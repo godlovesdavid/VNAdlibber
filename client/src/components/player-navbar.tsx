@@ -85,17 +85,17 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog }: Pl
   }, []);
   
   return (
-    <div className="fixed top-0 left-0 w-full bg-neutral-800 text-white text-sm px-3 py-2 z-20">
+    <div className="fixed top-0 left-0 w-full bg-neutral-800 text-white text-[10px] sm:text-xs md:text-sm px-2 sm:px-3 py-1 sm:py-2 z-20">
       <div className="flex justify-between items-center">
-        <div className="flex space-x-4">
+        <div className="flex space-x-2 sm:space-x-4">
           <Button 
             variant="ghost" 
             size="icon" 
-            className="text-white hover:text-primary-300 h-8 w-8" 
+            className="text-white hover:text-primary-300 h-6 w-6 sm:h-8 sm:w-8" 
             title="Restart Act"
             onClick={onRestart}
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
           
           <Sheet open={showLog} onOpenChange={setShowLog}>
@@ -103,10 +103,10 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog }: Pl
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="text-white hover:text-primary-300 h-8 w-8" 
+                className="text-white hover:text-primary-300 h-6 w-6 sm:h-8 sm:w-8" 
                 title="Show Log"
               >
-                <FileText className="h-4 w-4" />
+                <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-[400px] sm:w-[540px]">
@@ -129,10 +129,10 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog }: Pl
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="text-white hover:text-primary-300 h-8 w-8" 
+                className="text-white hover:text-primary-300 h-6 w-6 sm:h-8 sm:w-8" 
                 title="Edit Data"
               >
-                <Database className="h-4 w-4" />
+                <Database className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-[400px] sm:w-[540px]">
@@ -212,7 +212,7 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog }: Pl
           </Sheet>
         </div>
         
-        <div className="text-neutral-300 text-xs">
+        <div className="text-neutral-300 text-[8px] sm:text-[10px] md:text-xs max-w-[150px] sm:max-w-none truncate sm:truncate-none overflow-hidden">
           {/* Display relationships, inventory, and skills */}
           {Object.entries(playerData.relationships).map(([key, value]) => (
             <span key={key} className="mx-1">{key}: {value}</span>
@@ -225,15 +225,15 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog }: Pl
           ))}
         </div>
         
-        <div className="flex space-x-4">
+        <div className="flex space-x-2 sm:space-x-4">
           <Button 
             variant="ghost" 
             size="icon" 
-            className="text-white hover:text-primary-300 h-8 w-8" 
+            className="text-white hover:text-primary-300 h-6 w-6 sm:h-8 sm:w-8" 
             title="Return to Generator"
             onClick={onReturn}
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
           
           <Sheet open={showOptions} onOpenChange={setShowOptions}>
@@ -241,10 +241,10 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog }: Pl
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="text-white hover:text-primary-300 h-8 w-8" 
+                className="text-white hover:text-primary-300 h-6 w-6 sm:h-8 sm:w-8" 
                 title="Options"
               >
-                <Settings className="h-4 w-4" />
+                <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">
