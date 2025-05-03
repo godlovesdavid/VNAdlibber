@@ -69,17 +69,18 @@ export function useImageGeneration(
 
   // Generate image function with safety checks
   const generateImage = useCallback(
-    async (forceGenerate = false, options?: {}) => {
+    async (forceGenerate = false, options?: { retryCount?: number; timeoutMs?: number }) => {
       // Don't generate if no scene is available
       if (!scene) {
         logDebug("Cannot generate - no scene provided");
         return;
       }
-       // Block any new scene transitions until generation completes
-        if (isGenerating) {
-          logDebug("Already generating an image, blocking new generation");
-          return;
-        }
+      
+      // Block any new scene transitions until generation completes
+      if (isGenerating && !forceGenerate) {
+        logDebug("Already generating an image, blocking new generation unless forced");
+        return;
+      }
 
       // Always update current scene ID reference
       currentSceneId.current = scene.name;
@@ -124,11 +125,14 @@ export function useImageGeneration(
 
           logDebug("Starting image generation for scene:", scene.name);
 
-          // Call API to generate image
+          // Call API to generate image with retry options
           const result: ImageGenerationResult = await generateSceneBackground(
             { name: scene.name, image_prompt: scene.image_prompt || "" },
             abortController.current.signal,
-            {}, // No options needed since we're using RunPod
+            { 
+              retryCount: 1, // Try twice total (initial + 1 retry)
+              timeoutMs: 30000 // 30 second timeout
+            },
           );
 
           // Only update state if this is still the current scene
