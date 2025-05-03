@@ -1,7 +1,8 @@
 import { useVnContext } from "@/context/vn-context";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { SaveProjectButton } from "@/components/save-project-button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Type } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function NavBar() {
   const [, setLocation] = useLocation();
@@ -27,7 +28,13 @@ export function NavBar() {
             {projectData?.title ? projectData.title : 'VN Adlibber'}
           </h1>
         </div>
-        <div>
+        <div className="flex items-center space-x-2">
+          <Link href="/font-demo">
+            <Button size="sm" variant="ghost" className="flex items-center gap-1">
+              <Type className="h-4 w-4" />
+              <span className="hidden sm:inline">Fonts</span>
+            </Button>
+          </Link>
           <SaveProjectButton />
         </div>
       </div>

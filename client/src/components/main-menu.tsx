@@ -44,7 +44,7 @@ export function MainMenu() {
         <div className="mb-1">
           <img src={logoImage} alt="Ai Ad-libber" className="h-20 sm:h-24 md:h-28 mx-auto" />
         </div>
-        <p className="text-muted-foreground">Dream up your own VN with AI!</p>
+        <p className="text-muted-foreground font-vn">Dream up your own VN with AI!</p>
       </div>
       
       <div className="w-full max-w-xs space-y-3">
