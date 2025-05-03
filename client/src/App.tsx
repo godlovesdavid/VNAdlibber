@@ -15,6 +15,7 @@ import GenerateVnForm from "@/pages/generate-vn-form";
 import PlaySelection from "@/pages/play-selection";
 import Player from "@/pages/player";
 import TestPlayer from "@/pages/test-player";
+import { FontDemoPage } from "@/pages/font-demo-page";
 
 function Router() {
   return (
@@ -29,6 +30,7 @@ function Router() {
       <Route path="/play" component={PlaySelection} />
       <Route path="/player/:actId" component={Player} />
       <Route path="/test-player" component={TestPlayer} />
+      <Route path="/font-demo" component={FontDemoPage} />
       <Route component={NotFound} />
     </Switch>
   );
