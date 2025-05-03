@@ -19,7 +19,7 @@ interface ShareDialogProps {
 
 export function ShareDialog({ open, onOpenChange }: ShareDialogProps) {
   const { toast } = useToast();
-  const [shareUrl, setShareUrl] = useState("https://vn-adlibber.com/s/echoes-of-tomorrow");
+  const [shareUrl, setShareUrl] = useState("https://vn-adlibber.replit.com/s/echoes-of-tomorrow");
   
   const handleCopy = () => {
     navigator.clipboard.writeText(shareUrl).then(() => {

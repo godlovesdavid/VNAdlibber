@@ -64,11 +64,11 @@ export async function generateSceneBackground(
     return { url: result.url };
   } catch (error) {
     if ((error as Error).name === "AbortError") {
-      console.log("Image generation was aborted");
-      return { error: "Image generation aborted" };
+      console.log("Image generation was cancelled");
+      return { error: "Image generation cancelled" };
     }
     console.error("Error generating scene background:", error);
-    return { error: "Failed to generate image. Please try again." };
+    return { error: "Failed to generate image.." };
   }
 }
 
