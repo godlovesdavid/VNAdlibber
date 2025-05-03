@@ -18,6 +18,26 @@ export default function ConceptForm() {
   const [title, setTitle] = useState("");
   const [tagline, setTagline] = useState("");
   const [premise, setPremise] = useState("");
+  
+  // Save form data to context when the event is triggered
+  useEffect(() => {
+    const saveFormHandler = () => {
+      console.log('Saving concept form data to context');
+      setConceptData({
+        title,
+        tagline,
+        premise,
+      });
+    };
+    
+    // Add event listener
+    document.addEventListener('save-form-to-context', saveFormHandler);
+    
+    // Cleanup
+    return () => {
+      document.removeEventListener('save-form-to-context', saveFormHandler);
+    };
+  }, [title, tagline, premise, setConceptData]);
 
   // Load existing data if available or clear form if starting a new project
   useEffect(() => {

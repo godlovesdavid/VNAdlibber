@@ -1,12 +1,33 @@
 import { useVnContext } from "@/context/vn-context";
 import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
+import { useLocation } from "wouter";
 
 export function SaveProjectButton() {
-  const { saveProject, saveLoading } = useVnContext();
+  const { saveProject, saveLoading, projectData } = useVnContext();
+  const [location] = useLocation();
   
   const handleSave = async () => {
+    // Before saving to database, make sure the current form's data is in the context
+    // Check what form we're on and call the appropriate helper function
+    await saveFormToContext(location);
+    
+    // Then save everything to the database
     await saveProject();
+  };
+  
+  // Helper function to save the current form's data to the context
+  const saveFormToContext = async (path: string) => {
+    // Get the form data based on the current route
+    if (!projectData) return;
+
+    // Each route path corresponds to a specific form
+    // We'll dispatch a custom event to trigger the form to save to context
+    const event = new CustomEvent('save-form-to-context');
+    document.dispatchEvent(event);
+    
+    // Small delay to ensure state updates have propagated
+    await new Promise(resolve => setTimeout(resolve, 50));
   };
   
   return (

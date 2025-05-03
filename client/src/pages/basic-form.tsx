@@ -88,6 +88,30 @@ export default function BasicForm() {
 
   // State to track if the form has been initialized with random values
   const [initialized, setInitialized] = useState(false);
+  
+  // Save form data to context when the event is triggered
+  useEffect(() => {
+    const saveFormHandler = () => {
+      // Skip if not all fields are filled
+      if (!theme || !tone || !genre || !setting) return;
+      
+      console.log('Saving basic form data to context');
+      setBasicData({
+        theme,
+        tone,
+        genre,
+        setting,
+      });
+    };
+    
+    // Add event listener
+    document.addEventListener('save-form-to-context', saveFormHandler);
+    
+    // Cleanup
+    return () => {
+      document.removeEventListener('save-form-to-context', saveFormHandler);
+    };
+  }, [theme, tone, genre, setting, setBasicData]);
 
   // Function to randomize all form values
   const randomizeForm = () => {
