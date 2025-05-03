@@ -35,18 +35,23 @@ function getActTitle(actNumber: number, projectData: VnProjectData | null): stri
   const actKey = `act${actNumber}`;
   
   // Try to get the act from plotData directly first
-  if (projectData.plotData[actKey] && typeof projectData.plotData[actKey] === 'object') {
-    const actData = projectData.plotData[actKey];
+  const plotData = projectData.plotData as Record<string, any>; // Temporary cast to avoid TypeScript errors
+  
+  if (plotData[actKey] && typeof plotData[actKey] === 'object') {
+    const actData = plotData[actKey];
     if (actData && 'title' in actData) {
       return String(actData.title);
     }
   }
   
   // Fallback to the plotOutline if it exists
-  if (projectData.plotData.plotOutline && projectData.plotData.plotOutline[actKey]) {
-    const outlineData = projectData.plotData.plotOutline[actKey];
-    if (outlineData && typeof outlineData === 'object' && 'title' in outlineData) {
-      return String(outlineData.title);
+  if (plotData.plotOutline && typeof plotData.plotOutline === 'object') {
+    const plotOutline = plotData.plotOutline as Record<string, any>;
+    if (plotOutline[actKey] && typeof plotOutline[actKey] === 'object') {
+      const outlineData = plotOutline[actKey];
+      if ('title' in outlineData) {
+        return String(outlineData.title);
+      }
     }
   }
   
@@ -61,18 +66,23 @@ function getActSummary(actNumber: number, projectData: VnProjectData | null): st
   const actKey = `act${actNumber}`;
   
   // Try to get the act from plotData directly first
-  if (projectData.plotData[actKey] && typeof projectData.plotData[actKey] === 'object') {
-    const actData = projectData.plotData[actKey];
+  const plotData = projectData.plotData as Record<string, any>; // Temporary cast to avoid TypeScript errors
+  
+  if (plotData[actKey] && typeof plotData[actKey] === 'object') {
+    const actData = plotData[actKey];
     if (actData && 'summary' in actData) {
       return String(actData.summary);
     }
   }
   
   // Fallback to the plotOutline if it exists
-  if (projectData.plotData.plotOutline && projectData.plotData.plotOutline[actKey]) {
-    const outlineData = projectData.plotData.plotOutline[actKey];
-    if (outlineData && typeof outlineData === 'object' && 'summary' in outlineData) {
-      return String(outlineData.summary);
+  if (plotData.plotOutline && typeof plotData.plotOutline === 'object') {
+    const plotOutline = plotData.plotOutline as Record<string, any>;
+    if (plotOutline[actKey] && typeof plotOutline[actKey] === 'object') {
+      const outlineData = plotOutline[actKey];
+      if ('summary' in outlineData) {
+        return String(outlineData.summary);
+      }
     }
   }
   
@@ -198,8 +208,11 @@ export default function GenerateVnForm() {
       const actData = result.data as unknown as GeneratedAct;
       setGeneratedAct(actNumber, actData);
 
-      // Log generation to console
+      // Log generation and project data to console
       console.log(`Generated Act ${actNumber}:`, result.data);
+      console.log(`Current project data:`, projectData);
+      console.log(`Act title:`, getActTitle(actNumber, projectData));
+      console.log(`Act summary:`, getActSummary(actNumber, projectData));
     }
 
     setCurrentGeneratingAct(null);
@@ -349,17 +362,16 @@ export default function GenerateVnForm() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {isActGenerated(actNumber) &&
-                  projectData?.plotData?.plotOutline && (
-                    <div className="border border-neutral-200 rounded-md p-4">
-                      <h4 className="text-md font-medium text-neutral-700 mb-2">
-                        {getActTitle(actNumber, projectData)}
-                      </h4>
-                      <p className="text-sm text-neutral-600 mb-4">
-                        {getActSummary(actNumber, projectData)}
-                      </p>
-                    </div>
-                  )}
+                {isActGenerated(actNumber) && (
+                  <div className="border border-neutral-200 rounded-md p-4">
+                    <h4 className="text-md font-medium text-neutral-700 mb-2">
+                      {getActTitle(actNumber, projectData)}
+                    </h4>
+                    <p className="text-sm text-neutral-600 mb-4">
+                      {getActSummary(actNumber, projectData)}
+                    </p>
+                  </div>
+                )}
               </CardContent>
               <CardFooter className="flex justify-between">
                 <div>{/* Empty div on the left for spacing */}</div>
