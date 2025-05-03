@@ -4,9 +4,6 @@ import { useVnContext } from "@/context/vn-context";
 import { useParams } from "wouter";
 import { VnPlayer } from "@/components/vn-player";
 import { GeneratedAct } from "@/types/vn";
-import { Button } from "@/components/ui/button";
-import { Share } from "lucide-react";
-import { ShareStoryDialog } from "@/components/modals/share-story-dialog";
 
 export default function Player() {
   const { actId } = useParams();
