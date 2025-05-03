@@ -153,10 +153,10 @@ function SceneBackground({
       />
 
       {/* Debug info overlay */}
-      <div className="absolute bottom-4 right-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded text-xs z-20">
+      {/* <div className="absolute bottom-4 right-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded text-xs z-20">
         {isGenerated ? "Generated" : "Original"} | Scene: {sceneId}
         {hasError && " | Using fallback"}
-      </div>
+      </div> */}
     </div>
   );
 }
@@ -704,7 +704,7 @@ export function VnPlayer({
                   {currentScene.dialogue[currentDialogueIndex][0]}
                 </p>
                 <p className="text-white text-lg whitespace-pre-line">
-                  {dialogueText}
+                  {typeof dialogueText === 'string' ? dialogueText : JSON.stringify(dialogueText)}
                 </p>
               </div>
             )}
