@@ -758,7 +758,11 @@ export function VnPlayer({
               <div
                 className={cn(
                   "vn-choices mt-4 sm:mt-6 md:mt-8 animate-fadeIn",
-                  "w-full max-w-3xl mx-auto px-2 sm:px-4", // Set maximum width and center the choices container
+                  "w-full mx-auto px-2 sm:px-4", // Set width and center the choices container
+                  // Apply different max widths based on number of choices
+                  currentScene.choices && currentScene.choices.length <= 2
+                    ? "max-w-3xl"
+                    : "max-w-4xl",
                   // Apply different layouts based on number of choices
                   currentScene.choices && currentScene.choices.length <= 2
                     ? "flex flex-col sm:grid sm:grid-cols-1 gap-3 sm:gap-4"

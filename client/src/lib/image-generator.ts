@@ -68,7 +68,7 @@ export async function generateSceneBackground(
       return { error: "Image generation cancelled" };
     }
     console.error("Error generating scene background:", error);
-    return { error: "Failed to generate image.." };
+    return { error: "Image generation failed. Too many image generations too quickly." };
   }
 }
 
