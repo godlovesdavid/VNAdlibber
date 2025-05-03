@@ -324,6 +324,10 @@ export function VnPlayer({
   const [isGenerating, setIsGenerating] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageError, setError] = useState<string | null>(null);
+  const [isRateLimited, setIsRateLimited] = useState(false);
+  
+  // Add a ref to track the last time we attempted generation
+  const lastGenerationAttempt = useRef<number>(0);
   
   // Still keep the hook for compatibility, but we won't rely on it for state
   const {
@@ -337,6 +341,24 @@ export function VnPlayer({
   // Simple direct fetch for image generation that doesn't use the complex hook
   const generateImageDirectly = useCallback(async () => {
     if (!currentScene) return;
+    
+    // Rate limit cooldown check (30 seconds)
+    const RATE_LIMIT_COOLDOWN = 30000; // 30 seconds in ms
+    
+    const now = Date.now();
+    if (isRateLimited && now - lastGenerationAttempt.current < RATE_LIMIT_COOLDOWN) {
+      const secondsLeft = Math.ceil((RATE_LIMIT_COOLDOWN - (now - lastGenerationAttempt.current)) / 1000);
+      console.log(`Rate limit cooldown active. Try again in ${secondsLeft} seconds`);
+      toast({
+        title: "Rate Limited",
+        description: `Rate limit cooldown active. Try again in ${secondsLeft} seconds.`,
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Update last generation attempt time
+    lastGenerationAttempt.current = now;
     
     try {
       // Mark as generating
@@ -362,14 +384,19 @@ export function VnPlayer({
       
       // Check for rate limit errors
       if (response.status === 429) {
+        console.log("Rate limit hit - activating cooldown");
         toast({
           title: "Rate Limited",
           description: "You've reached the maximum number of image generations allowed. Please try again later.",
           variant: "destructive"
         });
         setError("Rate limited. Please try again later.");
+        setIsRateLimited(true);
         return;
       }
+      
+      // Clear rate limited state if request succeeds
+      setIsRateLimited(false);
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -398,7 +425,7 @@ export function VnPlayer({
     } finally {
       setIsGenerating(false);
     }
-  }, [currentScene, toast, setImageGenerationEnabled]);
+  }, [currentScene, toast, setImageGenerationEnabled, isRateLimited]);
   
   // image generation - using direct fetch method which is more reliable than the hook
   useEffect(() => {
@@ -406,15 +433,20 @@ export function VnPlayer({
       shouldGenerate: shouldGenerateImage.current,
       hasScene: !!currentScene,
       imageGenerationEnabled,
-      imageUrl
+      imageUrl,
+      isRateLimited
     });
     
-    if (shouldGenerateImage.current && currentScene && imageGenerationEnabled) {
+    if (shouldGenerateImage.current && currentScene && imageGenerationEnabled && !isRateLimited) {
       console.log("Generating image automatically on scene change");
       shouldGenerateImage.current = false;
       generateImageDirectly();
+    } else if (shouldGenerateImage.current && isRateLimited) {
+      // If we're rate limited, don't generate and reset the flag
+      console.log("Skipping auto-generation due to rate limiting");
+      shouldGenerateImage.current = false;
     }
-  }, [currentScene, generateImageDirectly, imageGenerationEnabled, imageUrl]);
+  }, [currentScene, generateImageDirectly, imageGenerationEnabled, imageUrl, isRateLimited]);
 
   //initialize player with first scene
   useEffect(() => {
@@ -698,7 +730,8 @@ export function VnPlayer({
         previousState: imageGenerationEnabled,
         currentImageUrl: imageUrl,
         isGenerating,
-        currentScene: currentScene?.name
+        currentScene: currentScene?.name,
+        isRateLimited
       });
       
       // Store current state in the ref before updating
@@ -708,7 +741,8 @@ export function VnPlayer({
       setImageGenerationEnabled(isEnabled);
       
       // If toggling from off to on, manually trigger generation after a short delay
-      if (isEnabled && !imageGenerationEnabled && currentScene) {
+      if (isEnabled && !imageGenerationEnabled && currentScene && !isRateLimited) {
+        // Only attempt generation if we're not rate limited
         console.log("Will regenerate image since generation was re-enabled");
         // Use setTimeout to ensure the state update has completed first
         setTimeout(() => {
@@ -716,6 +750,14 @@ export function VnPlayer({
           // Use our direct method instead of the old hook-based one
           generateImageDirectly();
         }, 100);
+      } else if (isEnabled && isRateLimited) {
+        // If we're rate limited, inform the user
+        console.log("Cannot regenerate - rate limited");
+        toast({
+          title: "Rate Limited",
+          description: "Image generation is currently rate limited. Please try again later.",
+          variant: "destructive"
+        });
       }
     };
     
@@ -724,7 +766,7 @@ export function VnPlayer({
     return () => {
       window.removeEventListener("vnToggleImageGeneration", handleImageGenerationToggle as EventListener);
     };
-  }, [currentScene, generateImageDirectly]); // Use the direct generate function
+  }, [currentScene, generateImageDirectly, imageGenerationEnabled, isRateLimited, toast]); // Include all dependencies
 
   // Log current scene and image state for debugging
   useEffect(() => {
