@@ -4,6 +4,9 @@ import { useVnContext } from "@/context/vn-context";
 import { useParams } from "wouter";
 import { VnPlayer } from "@/components/vn-player";
 import { GeneratedAct } from "@/types/vn";
+import { Button } from "@/components/ui/button";
+import { Share } from "lucide-react";
+import { ShareStoryDialog } from "@/components/modals/share-story-dialog";
 
 export default function Player() {
   const { actId } = useParams();
@@ -170,12 +173,33 @@ export default function Player() {
   
   // Use the unified player with mode parameter based on source
   return (
-    <VnPlayer
-      actData={actData}
-      actNumber={actNumber}
-      onReturn={handleReturn}
-      onRestart={handleRestart}
-      mode={actId === "imported" ? "imported" : "generated"}
-    />
+    <div className="relative">
+      {/* Share button floating at top right */}
+      {projectData?.id && actId !== "imported" && (
+        <div className="absolute top-4 right-4 z-10">
+          <ShareStoryDialog
+            projectId={projectData.id}
+            projectTitle={projectData.title || `Visual Novel Act ${actNumber}`}
+            actNumber={actNumber}
+            trigger={
+              <Button
+                variant="secondary"
+                size="sm"
+                className="flex items-center bg-white/80 backdrop-blur-sm hover:bg-white/90"
+              >
+                <Share className="mr-1 h-4 w-4" /> Share
+              </Button>
+            }
+          />
+        </div>
+      )}
+      <VnPlayer
+        actData={actData}
+        actNumber={actNumber}
+        onReturn={handleReturn}
+        onRestart={handleRestart}
+        mode={actId === "imported" ? "imported" : "generated"}
+      />
+    </div>
   );
 }
