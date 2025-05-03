@@ -17,17 +17,18 @@ export const insertUserSchema = createInsertSchema(users).pick({
 // VN Project schema - stores the complete visual novel project data
 export const vnProjects = pgTable("vn_projects", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
+  // Make userId nullable without using default(null)
+  userId: integer("user_id"),
   title: text("title").notNull(),
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
-  basicData: jsonb("basic_data").notNull(),
-  conceptData: jsonb("concept_data"),
-  charactersData: jsonb("characters_data"),
-  pathsData: jsonb("paths_data"),
-  plotData: jsonb("plot_data"),
-  generatedActs: jsonb("generated_acts"),
-  playerData: jsonb("player_data"),
+  basicData: jsonb("basic_data").notNull().default({}),
+  conceptData: jsonb("concept_data").default({}),
+  charactersData: jsonb("characters_data").default({}),
+  pathsData: jsonb("paths_data").default({}),
+  plotData: jsonb("plot_data").default({}),
+  generatedActs: jsonb("generated_acts").default({}),
+  playerData: jsonb("player_data").default({}),
   currentStep: integer("current_step").notNull().default(1),
 });
 
@@ -38,8 +39,9 @@ export const insertVnProjectSchema = createInsertSchema(vnProjects).omit({
 // VN Story schema - stores exported acts for play
 export const vnStories = pgTable("vn_stories", {
   id: serial("id").primaryKey(),
-  projectId: integer("project_id").references(() => vnProjects.id),
-  userId: integer("user_id").references(() => users.id),
+  // Make foreign keys nullable
+  projectId: integer("project_id"),
+  userId: integer("user_id"),
   title: text("title").notNull(),
   createdAt: text("created_at").notNull(),
   actData: jsonb("act_data").notNull(),
