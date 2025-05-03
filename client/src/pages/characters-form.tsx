@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/card";
 import { Wand2, Trash, Plus } from "lucide-react";
 import { Character } from "@/types/vn";
+import { useToast } from "@/hooks/use-toast";
+import { validateFormContent } from "@/lib/validation";
 
 export default function CharactersForm() {
   const [, setLocation] = useLocation();
@@ -26,6 +28,10 @@ export default function CharactersForm() {
     isGenerating,
     cancelGeneration,
   } = useVnData();
+  const { toast } = useToast();
+  
+  // Track validation state
+  const [isValidating, setIsValidating] = useState(false);
 
   // Extended Character interface for form usage (includes name separately)
   interface CharacterForm extends Character {
@@ -465,12 +471,52 @@ export default function CharactersForm() {
   };
 
   // Proceed to next step
-  const handleNext = () => {
-    // Save data
-    saveCharacterData();
-
-    // Navigate to next step
-    setLocation("/create/paths");
+  const handleNext = async () => {
+    // Local validation for at least one character with a name
+    const incompleteCharacters = characters.filter(char => !char.name || !char.name.trim());
+    
+    if (incompleteCharacters.length > 0) {
+      toast({
+        title: "Missing Character Names",
+        description: "Please provide a name for each character before proceeding.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Save data using our helper function
+    const charactersObj = saveCharacterData();
+    
+    if (!projectData) {
+      toast({
+        title: "Error",
+        description: "Project data is missing",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Additional server-side validation
+    setIsValidating(true);
+    
+    try {
+      // Create validation context
+      const contextData = {
+        basicData: projectData.basicData,
+        conceptData: projectData.conceptData,
+        charactersData: charactersObj,
+      };
+      
+      // Use our validation utility
+      const isValid = await validateFormContent(contextData, "characters");
+      
+      if (isValid) {
+        // Navigate to next step
+        setLocation("/create/paths");
+      }
+    } finally {
+      setIsValidating(false);
+    }
   };
 
   return (

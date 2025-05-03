@@ -263,7 +263,7 @@ export default function PathsForm() {
   // Proceed to next step
   const handleNext = async () => {
     // Local validation to ensure each path has at least a title
-    const incompleteRoutes = routes.filter(route => !route.title.trim());
+    const incompleteRoutes = routes.filter(route => !route.title || !route.title.trim());
     
     if (incompleteRoutes.length > 0) {
       toast({
