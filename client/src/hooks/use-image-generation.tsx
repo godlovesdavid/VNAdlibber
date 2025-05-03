@@ -201,11 +201,14 @@ export function useImageGeneration(
     // Always update current scene ID reference even if we don't generate
     currentSceneId.current = scene.name;
 
-    // Check if scene already has a background URL or cached URL
-    if (scene.image_prompt) {
-      console.log("Scene already has image_prompt, using it:", scene.image_prompt.slice(0, 30) + "...");
+    // Check if scene already has a background URL (not just a text description)
+    if (scene.image_prompt && (scene.image_prompt.startsWith('data:') || scene.image_prompt.startsWith('http'))) {
+      console.log("Scene already has valid image URL in image_prompt, using it:", scene.image_prompt.slice(0, 30) + "...");
       setImageUrl(scene.image_prompt);
       return;
+    } else if (scene.image_prompt) {
+      console.log("Scene has image_prompt but it's not a valid URL (will generate image):", scene.image_prompt.slice(0, 30) + "...");
+      // Continue to generate a new image
     }
 
     const setting = scene.setting || '';

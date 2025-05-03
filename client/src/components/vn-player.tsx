@@ -95,17 +95,29 @@ function SceneBackground({
 }: SceneBackgroundProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const [actualUrl, setActualUrl] = useState(imageUrl);
+  const [actualUrl, setActualUrl] = useState('');
 
   // Fallback URL in case of loading failures - using data URI for guaranteed compatibility
   const fallbackUrl = `data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221024%22%20height%3D%22768%22%20viewBox%3D%220%200%201024%20768%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E`;
 
+  // Determine if the image source is an actual URL (data:, http:, etc.) vs just a text description
   useEffect(() => {
     // Reset states when URL changes
     setIsLoading(true);
     setHasError(false);
-    setActualUrl(imageUrl);
-  }, [imageUrl]);
+    
+    // Check if the imageUrl is actually a URL vs a text description
+    if (imageUrl && (imageUrl.startsWith('data:') || imageUrl.startsWith('http'))) {
+      console.log(`Setting actual URL for scene ${sceneId}, source appears to be a valid URL`);
+      setActualUrl(imageUrl);
+    } else {
+      console.log(`Using fallback for scene ${sceneId}, source is not a valid URL: ${imageUrl?.slice(0, 30)}...`);
+      setActualUrl(fallbackUrl);
+      // Mark as loaded but with error
+      setIsLoading(false);
+      setHasError(true);
+    }
+  }, [imageUrl, sceneId, fallbackUrl]);
 
   const handleImageError = () => {
     console.error(`Image failed to load: ${imageUrl}`);
@@ -116,7 +128,7 @@ function SceneBackground({
   };
 
   const handleImageLoad = () => {
-    console.log(`Image loaded successfully: ${imageUrl}`);
+    console.log(`Image loaded successfully: ${actualUrl !== fallbackUrl ? 'actual image' : 'fallback'}`);
     setIsLoading(false);
     setHasError(false);
   };
