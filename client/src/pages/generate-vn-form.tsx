@@ -22,9 +22,36 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Download, Wand2, Play } from "lucide-react";
-import { PlayerData, GeneratedAct } from "@/types/vn";
+import { PlayerData, GeneratedAct, VnProjectData } from "@/types/vn";
 import { ConfirmationModal } from "@/components/modals/confirmation-modal";
 import { GenerationResult } from "@/lib/openai";
+
+// Helper functions for accessing act data safely
+function getActTitle(actNumber: number, projectData: VnProjectData | null): string {
+  if (!projectData?.plotData?.plotOutline) return `Act ${actNumber}`;
+  
+  const actKey = `act${actNumber}` as keyof typeof projectData.plotData.plotOutline;
+  const actData = projectData.plotData.plotOutline[actKey];
+  
+  if (typeof actData === 'object' && actData !== null && 'title' in actData) {
+    return String(actData.title);
+  }
+  
+  return `Act ${actNumber}`;
+}
+
+function getActSummary(actNumber: number, projectData: VnProjectData | null): string {
+  if (!projectData?.plotData?.plotOutline) return "No summary available";
+  
+  const actKey = `act${actNumber}` as keyof typeof projectData.plotData.plotOutline;
+  const actData = projectData.plotData.plotOutline[actKey];
+  
+  if (typeof actData === 'object' && actData !== null && 'summary' in actData) {
+    return String(actData.summary);
+  }
+  
+  return "No summary available";
+}
 
 export default function GenerateVnForm() {
   const [, setLocation] = useLocation();
