@@ -77,50 +77,56 @@ export function CreationProgress({ currentStep }: CreationProgressProps) {
   
   return (
     <div className="pt-16 px-4 pb-4 bg-white shadow-sm">
-      <div className="progress-bar flex items-center justify-between max-w-3xl mx-auto py-3">
-        {[1, 2, 3, 4, 5, 6].map((step) => (
-          <div key={step} className="flex items-center">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div 
-                  className={cn(
-                    "flex items-center justify-center w-8 h-8 rounded-full border-2 text-sm font-medium cursor-pointer",
-                    step < currentStep && "bg-primary text-white border-primary", // completed
-                    step === currentStep && "text-primary border-primary", // active
-                    step > currentStep && "border-neutral-300 text-neutral-500", // future
-                    step > maxStep && "cursor-not-allowed opacity-50" // disabled
-                  )}
-                  onClick={() => handleStepClick(step)}
-                >
-                  {step}
-                </div>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs whitespace-pre-line">
-                {step <= maxStep 
-                  ? getTooltipContent(step) 
-                  : "This step is not yet available"}
-              </TooltipContent>
-            </Tooltip>
-            
-            {step < 6 && (
-              <div 
-                className={cn(
-                  "connector h-[2px] flex-grow",
-                  step < currentStep ? "bg-primary" : "bg-neutral-200"
+      <div className="max-w-3xl mx-auto">
+        {/* Progress circles with connector lines */}
+        <div className="progress-bar flex items-center justify-between py-3">
+          {[1, 2, 3, 4, 5, 6].map((step) => (
+            <div key={step} className="flex flex-col items-center">
+              <div className="flex items-center">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div 
+                      className={cn(
+                        "flex items-center justify-center w-8 h-8 rounded-full border-2 text-sm font-medium cursor-pointer",
+                        step < currentStep && "bg-primary text-white border-primary", // completed
+                        step === currentStep && "text-primary border-primary", // active
+                        step > currentStep && "border-neutral-300 text-neutral-500", // future
+                        step > maxStep && "cursor-not-allowed opacity-50" // disabled
+                      )}
+                      onClick={() => handleStepClick(step)}
+                    >
+                      {step}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs whitespace-pre-line">
+                    {step <= maxStep 
+                      ? getTooltipContent(step) 
+                      : "This step is not yet available"}
+                  </TooltipContent>
+                </Tooltip>
+                
+                {step < 6 && (
+                  <div 
+                    className={cn(
+                      "connector h-[2px] w-12 md:w-20 lg:w-24",
+                      step < currentStep ? "bg-primary" : "bg-neutral-200"
+                    )}
+                  />
                 )}
-              />
-            )}
-          </div>
-        ))}
-      </div>
-      
-      <div className="flex justify-between text-xs text-neutral-500 max-w-3xl mx-auto px-1">
-        <span>Basic</span>
-        <span>Concept</span>
-        <span>Characters</span>
-        <span>Paths</span>
-        <span>Plot</span>
-        <span>Generate</span>
+              </div>
+              
+              {/* Step label directly below each circle */}
+              <span className="text-xs text-neutral-500 mt-1">
+                {step === 1 && "Basic"}
+                {step === 2 && "Concept"}
+                {step === 3 && "Characters"}
+                {step === 4 && "Paths"}
+                {step === 5 && "Plot"}
+                {step === 6 && "Generate"}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
