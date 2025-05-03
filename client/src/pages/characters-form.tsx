@@ -770,7 +770,7 @@ export default function CharactersForm() {
                       </>
                     ) : (
                       <>
-                        <Wand2 className="mr-1 h-4 w-4" /> Generate Details
+                        <Wand2 className="mr-1 h-4 w-4" /> Generate Character
                       </>
                     )}
                   </Button>

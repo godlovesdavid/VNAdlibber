@@ -8,6 +8,7 @@ import {
   GenerationResult,
 } from "@/lib/openai";
 import { apiRequest } from "@/lib/queryClient";
+import { getUserFriendlyErrorMessage } from "@/lib/error-messages";
 
 // To make this hook compatible with Fast Refresh, we use a named function
 // expression instead of a function declaration
