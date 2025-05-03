@@ -22,7 +22,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Download, Wand2, Play } from "lucide-react";
+import { Download, Wand2, Play, Share } from "lucide-react";
+import { ShareStoryDialog } from "@/components/modals/share-story-dialog";
 import { PlayerData, GeneratedAct, VnProjectData } from "@/types/vn";
 import { ConfirmationModal } from "@/components/modals/confirmation-modal";
 import { GenerationResult } from "@/lib/openai";
@@ -375,7 +376,24 @@ export default function GenerateVnForm() {
                 )}
               </CardContent>
               <CardFooter className="flex justify-between">
-                <div>{/* Empty div on the left for spacing */}</div>
+                <div>
+                  {/* Share button on the left if act is generated */}
+                  {isActGenerated(actNumber) && projectData?.id && (
+                    <ShareStoryDialog
+                      projectId={projectData.id}
+                      projectTitle={projectData.title || `Visual Novel Act ${actNumber}`}
+                      trigger={
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex items-center"
+                        >
+                          <Share className="mr-1 h-4 w-4" /> Share
+                        </Button>
+                      }
+                    />
+                  )}
+                </div>
 
                 <div className="flex space-x-2">
                   {/* Play button first, then Regenerate */}
