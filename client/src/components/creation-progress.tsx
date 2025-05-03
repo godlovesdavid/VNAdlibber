@@ -42,9 +42,9 @@ export function CreationProgress({ currentStep }: CreationProgressProps) {
                 Premise: ${projectData.conceptData.premise?.substring(0, 100)}${projectData.conceptData.premise?.length > 100 ? '...' : ''}`;
       
       case 3: // Characters
-        if (!projectData.charactersData?.characters || projectData.charactersData.characters.length === 0) 
+        if (!projectData.charactersData || Object.keys(projectData.charactersData).length === 0) 
           return "Characters not set";
-        return `Characters: ${projectData.charactersData.characters.map(c => c.name).join(", ")}`;
+        return `Characters: ${Object.keys(projectData.charactersData).join(", ")}${projectData?.protagonist ? `\nProtagonist: ${projectData.protagonist}` : ''}`; 
       
       case 4: // Paths
         if (!projectData.pathsData?.routes || projectData.pathsData.routes.length === 0) 

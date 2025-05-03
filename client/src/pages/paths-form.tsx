@@ -601,10 +601,14 @@ export default function PathsForm() {
                 </Button>
               </div>
               <div className="flex justify-between">
-                <Button variant="outline" onClick={handleBack}>
+                <Button variant="outline" onClick={handleBack}
+                  title={projectData?.charactersData ? `Back to: ${Object.keys(projectData.charactersData).length} characters` : 'Back'}
+                >
                   Back
                 </Button>
-                <Button onClick={handleNext} disabled={isValidating || isGenerating}>
+                <Button onClick={handleNext} disabled={isValidating || isGenerating}
+                  title={projectData?.plotData ? `Next to: ${projectData.plotData.plotOutline ? 'Complete plot': 'Plot outline'}` : 'Next: Plot'}
+                >
                   {isValidating ? (
                     <>
                       <svg
