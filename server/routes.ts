@@ -365,6 +365,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
               console.log("Preserving existing paths data from database");
               projectData.pathsData = existingProject.pathsData;
             }
+            
+            // Handle concept data carefully
+            if (existingProject.conceptData && 
+                existingProject.conceptData.title && 
+                existingProject.conceptData.tagline && 
+                existingProject.conceptData.premise) {
+              
+              // If incoming project has no concept data or empty concept data
+              if (!projectData.conceptData || 
+                  !projectData.conceptData.title || 
+                  !projectData.conceptData.tagline || 
+                  !projectData.conceptData.premise) {
+                console.warn("WARNING: Incoming project data is missing concept data that exists in the database");
+                console.log("Preserving existing concept data from database");
+                projectData.conceptData = existingProject.conceptData;
+                
+                // Update title to match concept title if needed
+                if (projectData.title !== existingProject.conceptData.title) {
+                  console.log("Updating title to match concept title");
+                  projectData.title = existingProject.conceptData.title;
+                }
+              } else {
+                // Both have concept data - check if we're about to save empty data
+                console.log("Concept data in incoming request:", {
+                  title: projectData.conceptData.title.slice(0, 20) + "...",
+                  tagline: projectData.conceptData.tagline?.slice(0, 20) + "...",
+                  premise: projectData.conceptData.premise?.slice(0, 20) + "..."
+                });
+              }
+            } else if (projectData.conceptData && 
+                     projectData.conceptData.title && 
+                     projectData.conceptData.tagline && 
+                     projectData.conceptData.premise) {
+              // Database has no concept but incoming does - ensure title matches
+              console.log("New concept data detected in incoming project");
+              if (projectData.title !== projectData.conceptData.title) {
+                console.log("Updating title to match concept title");
+                projectData.title = projectData.conceptData.title;
+              }
+            }
           } else {
             console.log(`No existing project found with ID: ${projectData.id}`);
           }
