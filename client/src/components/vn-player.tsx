@@ -704,44 +704,43 @@ export function VnPlayer({
             </Button>
           </div>
 
-          {/* Background image display with SceneBackground component */}
-          {imageUrl ? (
-            // Display generated image with reliable placeholder fallback
-            <SceneBackground
-              imageUrl={imageUrl}
-              sceneId={currentScene.name}
-              isGenerated={true}
-            />
-          ) : currentScene.image_prompt ? (
-            // Display scene's existing background image
-            <SceneBackground
-              imageUrl={currentScene.image_prompt}
-              sceneId={currentScene.name}
-              isGenerated={false}
-            />
-          ) : (
-            // Display placeholder when no image is available
-            <div className="text-white text-center z-0">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="mx-auto h-16 w-16 mb-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-              <p></p>
-              <p className="text-sm text-neutral-400 mt-1">
-                {imageError ? `Error: ${imageError}` : ""}
-              </p>
-            </div>
-          )}
+          {/* Direct Background Image Display - no component */}
+          <div className="absolute inset-0 bg-black overflow-hidden">
+            {/* Background image */}
+            {imageUrl && (
+              <img
+                src={imageUrl}
+                alt={`Scene background for ${currentScene.name}`}
+                className="w-full h-full object-cover"
+                style={{ position: 'absolute', top: 0, left: 0, zIndex: 1 }}
+              />
+            )}
+
+            {/* Fallback when no image is available */}
+            {!imageUrl && !currentScene.image_prompt && (
+              <div className="absolute inset-0 flex items-center justify-center text-white z-1">
+                <div className="text-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="mx-auto h-16 w-16 mb-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <p className="text-sm text-neutral-400 mt-1">
+                    {imageError ? `Error: ${imageError}` : "No image available"}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Loading overlay */}
           {isGenerating && (
