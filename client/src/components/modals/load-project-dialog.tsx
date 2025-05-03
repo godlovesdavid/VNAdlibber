@@ -50,7 +50,17 @@ export function LoadProjectDialog({ open, onOpenChange }: LoadProjectDialogProps
   const { data: projects = [], isLoading, error, refetch } = useQuery<any[]>({
     queryKey: ['/api/projects'],
     enabled: open, // Only fetch when dialog is open
+    refetchOnWindowFocus: true,
+    staleTime: 0 // Consider data stale immediately
   });
+  
+  // Force refresh the project list when the dialog opens
+  useEffect(() => {
+    if (open) {
+      console.log('Dialog opened, refreshing project list');
+      refetch();
+    }
+  }, [open, refetch]);
   
   // Handle project selection
   const handleSelectProject = async (projectId: number) => {

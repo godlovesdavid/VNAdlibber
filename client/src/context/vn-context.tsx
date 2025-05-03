@@ -12,7 +12,7 @@ import {
   PlayerData,
   VnProjectData,
 } from "@/types/vn";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 interface VnContextType {
   // Project data
@@ -450,6 +450,9 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       
       // 5. Also update localStorage for consistency
       localStorage.setItem("current_vn_project", JSON.stringify(savedProject));
+      
+      // 6. Invalidate the projects query to refresh the project list
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
 
       toast({
         title: "Success",
