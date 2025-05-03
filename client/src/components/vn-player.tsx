@@ -486,21 +486,25 @@ export function VnPlayer({
       setCurrentScene(scene);
       setCurrentDialogueIndex(0);
       setShowChoices(false);
+      setImageUrl(null); // Clear image URL when changing scenes
 
       if (scene.dialogue && scene.dialogue.length > 0) {
         setDisplayedText("");
         animateText(scene.dialogue[0][1]);
       }
       
-      // Automatic scene change image generation with direct approach
-      if (imageGenerationEnabled && !isRateLimited && !isGenerating) {
-        console.log(`Auto-generating image for new scene ${scene.name}`);
+      // Automatic scene change image generation with direct approach - only if we don't have an image
+      if (imageGenerationEnabled && !isRateLimited && !isGenerating && !imageUrl) {
+        console.log(`Auto-generating image for new scene ${scene.name} - no existing image`);
         // Use setTimeout to ensure this happens after state updates complete
         setTimeout(() => {
           generateImageDirectly();
         }, 100);
       } else {
-        console.log(`Not auto-generating - ${!imageGenerationEnabled ? 'disabled' : isRateLimited ? 'rate limited' : 'already generating'}`);
+        console.log(`Not auto-generating - ${!imageGenerationEnabled ? 'disabled' : 
+          isRateLimited ? 'rate limited' : 
+          imageUrl ? 'already have image' : 
+          'already generating'}`);
       }
     }
   }, [
@@ -514,7 +518,8 @@ export function VnPlayer({
     setDisplayedText,
     isRateLimited,
     isGenerating,
-    imageGenerationEnabled, 
+    imageGenerationEnabled,
+    imageUrl,
     generateImageDirectly
   ]);
 
@@ -755,15 +760,17 @@ export function VnPlayer({
       setImageGenerationEnabled(isEnabled);
       
       // If toggling from off to on, manually trigger generation after a short delay
-      if (isEnabled && !imageGenerationEnabled && currentScene && !isRateLimited) {
-        // Only attempt generation if we're not rate limited
-        console.log("Will regenerate image since generation was re-enabled");
+      if (isEnabled && !imageGenerationEnabled && currentScene && !isRateLimited && !imageUrl) {
+        // Only attempt generation if we're not rate limited and don't already have an image
+        console.log("Will regenerate image since generation was re-enabled and we don't have an image");
         // Use setTimeout to ensure the state update has completed first
         setTimeout(() => {
           console.log("Now regenerating the image after toggle using direct method");
           // Use our direct method instead of the old hook-based one
           generateImageDirectly();
         }, 100);
+      } else if (isEnabled && imageUrl) {
+        console.log("Not regenerating after toggle - we already have an image");
       } else if (isEnabled && isRateLimited) {
         // If we're rate limited, inform the user
         console.log("Cannot regenerate - rate limited");
@@ -780,7 +787,7 @@ export function VnPlayer({
     return () => {
       window.removeEventListener("vnToggleImageGeneration", handleImageGenerationToggle as EventListener);
     };
-  }, [currentScene, generateImageDirectly, imageGenerationEnabled, isRateLimited, toast]); // Include all dependencies
+  }, [currentScene, generateImageDirectly, imageGenerationEnabled, isRateLimited, imageUrl, toast]); // Include all dependencies
 
   // Log current scene and image state for debugging
   useEffect(() => {
