@@ -831,9 +831,7 @@ export default function CharactersForm() {
                 >
                   Back
                 </Button>
-                <Button onClick={handleNext} disabled={isValidating || isGenerating}
-                  title={projectData?.pathsData ? `Next to: ${Object.keys(projectData.pathsData).length} story paths` : 'Next: Paths'}
-                >
+                <Button onClick={handleNext} disabled={isValidating || isGenerating}>
                   {isValidating ? (
                     <>
                       <svg

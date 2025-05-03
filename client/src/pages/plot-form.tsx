@@ -820,9 +820,7 @@ export default function PlotForm() {
                 )}
               </Button> */}
 
-              <Button onClick={handleNext} disabled={isValidating || isGenerating}
-                title={projectData?.generatedActs ? `Next to: ${Object.keys(projectData.generatedActs).length} generated acts` : 'Next: Generate VN'}
-              >
+              <Button onClick={handleNext} disabled={isValidating || isGenerating}>
                 {isValidating ? (
                   <>
                     <svg

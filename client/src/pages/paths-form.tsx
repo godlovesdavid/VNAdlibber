@@ -606,9 +606,7 @@ export default function PathsForm() {
                 >
                   Back
                 </Button>
-                <Button onClick={handleNext} disabled={isValidating || isGenerating}
-                  title={projectData?.plotData ? `Next to: ${projectData.plotData.plotOutline ? 'Complete plot': 'Plot outline'}` : 'Next: Plot'}
-                >
+                <Button onClick={handleNext} disabled={isValidating || isGenerating}>
                   {isValidating ? (
                     <>
                       <svg
