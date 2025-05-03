@@ -8,11 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Wand2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { validateFormContent } from "@/lib/validation";
 
 export default function ConceptForm() {
   const [, setLocation] = useLocation();
   const { projectData, setConceptData, goToStep } = useVnContext();
   const { generateConceptData, isGenerating, cancelGeneration } = useVnData();
+  const { toast } = useToast();
+  
+  // Track validation state
+  const [isValidating, setIsValidating] = useState(false);
 
   // Form state
   const [title, setTitle] = useState("");
@@ -66,22 +72,55 @@ export default function ConceptForm() {
   };
 
   // Proceed to next step
-  const handleNext = () => {
-    // Validate form
-    if (!title || !tagline || !premise) {
-      alert("Please fill in all required fields");
+  const handleNext = async () => {
+    // Local validation
+    if (!title.trim() || !tagline.trim() || !premise.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields before proceeding.",
+        variant: "destructive"
+      });
       return;
     }
-
-    // Save data
-    setConceptData({
+    
+    // Save data 
+    const conceptObj = {
       title,
       tagline,
       premise,
-    });
-
-    // Navigate to next step
-    setLocation("/create/characters");
+    };
+    
+    setConceptData(conceptObj);
+    
+    if (!projectData) {
+      toast({
+        title: "Error",
+        description: "Project data is missing",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Additional server-side validation
+    setIsValidating(true);
+    
+    try {
+      // Create validation context
+      const contextData = {
+        basicData: projectData.basicData,
+        conceptData: conceptObj
+      };
+      
+      // Use our validation utility
+      const isValid = await validateFormContent(contextData, "concept");
+      
+      if (isValid) {
+        // Navigate to next step
+        setLocation("/create/characters");
+      }
+    } finally {
+      setIsValidating(false);
+    }
   };
 
   // Generate concept using AI
