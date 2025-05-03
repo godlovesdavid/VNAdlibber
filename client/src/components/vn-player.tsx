@@ -438,13 +438,21 @@ export function VnPlayer({
       isRateLimited
     });
     
-    if (shouldGenerateImage.current && currentScene && imageGenerationEnabled && !isRateLimited) {
+    // Only generate if we have the generation flag set AND we don't already have an image URL
+    // This prevents duplicate generation requests when an image URL is already loaded
+    if (shouldGenerateImage.current && currentScene && imageGenerationEnabled && !isRateLimited && !imageUrl) {
       console.log("Generating image automatically on scene change");
-      shouldGenerateImage.current = false;
+      shouldGenerateImage.current = false; // Reset flag to prevent duplicate requests
       generateImageDirectly();
-    } else if (shouldGenerateImage.current && isRateLimited) {
-      // If we're rate limited, don't generate and reset the flag
-      console.log("Skipping auto-generation due to rate limiting");
+    } else if (shouldGenerateImage.current) {
+      // Reset the flag - we won't be generating in these cases:
+      // 1. We're rate limited
+      // 2. Image generation is disabled
+      // 3. We already have an image URL
+      console.log("Skipping auto-generation - ", 
+        isRateLimited ? "rate limited" : 
+        !imageGenerationEnabled ? "generation disabled" : 
+        imageUrl ? "image already exists" : "unknown reason");
       shouldGenerateImage.current = false;
     }
   }, [currentScene, generateImageDirectly, imageGenerationEnabled, imageUrl, isRateLimited]);
@@ -456,7 +464,9 @@ export function VnPlayer({
     // Mark as initialized to prevent re-initialization
     initialized.current = true;
 
-    shouldGenerateImage.current = true;
+    // We'll set this flag in setCurrentScene instead to avoid double generation
+    // shouldGenerateImage.current = true;
+    
     // Set initial scene
     const firstScene = actData.scenes[0];
     console.log(
@@ -491,7 +501,14 @@ export function VnPlayer({
         setDisplayedText("");
         animateText(scene.dialogue[0][1]);
       }
-      shouldGenerateImage.current = true;
+      
+      // This is the one place we'll set the flag to trigger image generation
+      if (!isRateLimited) {
+        console.log(`Setting shouldGenerateImage flag for scene ${scene.name}`);
+        shouldGenerateImage.current = true;
+      } else {
+        console.log(`Not setting generation flag - rate limited for scene ${scene.name}`);
+      }
     }
   }, [
     actData,
@@ -503,6 +520,7 @@ export function VnPlayer({
     setShowChoices,
     setDisplayedText,
     shouldGenerateImage,
+    isRateLimited,
   ]);
 
   // Handle restart
