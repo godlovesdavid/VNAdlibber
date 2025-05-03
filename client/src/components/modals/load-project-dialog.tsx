@@ -14,27 +14,10 @@ import { ConfirmationModal } from "@/components/modals/confirmation-modal";
 import { Trash2, Upload } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
-// Helper function to calculate actual progress based on data presence
-const calculateProgress = (project: any): number => {
-  let progress = 1; // Basic data is always present (step 1)
-  
-  // Check for concept data (step 2)
-  if (project.conceptData && project.conceptData.title && project.conceptData.premise) progress++;
-  
-  // Check for characters data (step 3)
-  if (project.charactersData && Object.keys(project.charactersData).length > 0) progress++;
-  
-  // Check for paths data (step 4)
-  if (project.pathsData && Object.keys(project.pathsData).length > 0) progress++;
-  
-  // Check for plot data (step 5)
-  if (project.plotData && project.plotData.plotOutline) progress++;
-  
-  // Check for generated acts (step 6)
-  if (project.generatedActs && Object.keys(project.generatedActs).length > 0) progress++;
-  
-  return progress;
-};
+// Import the function from vn-context
+import { calculateCurrentStep } from "@/context/vn-context";
+
+// Use the imported helper function
 
 interface LoadProjectDialogProps {
   open: boolean;
@@ -178,7 +161,7 @@ export function LoadProjectDialog({ open, onOpenChange }: LoadProjectDialogProps
                       <h4 className="font-medium">{project.title}</h4>
                       <p className="text-sm text-muted-foreground">
                         Last edited: {formatDistanceToNow(new Date(project.updatedAt), { addSuffix: true })} 
-                        | Progress: {calculateProgress(project)}/6 steps
+                        | Progress: {calculateCurrentStep(project)}/6 steps
                       </p>
                     </div>
                     <div className="flex space-x-2">

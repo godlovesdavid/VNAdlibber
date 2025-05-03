@@ -15,7 +15,7 @@ import {
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
 // Helper function to calculate the current step based on a project's data
-function calculateCurrentStep(project: Partial<VnProjectData>): number {
+export function calculateCurrentStep(project: Partial<VnProjectData>): number {
   let step = 1; // Start with basic step
   
   // Check what data is present and calculate the appropriate step
@@ -522,30 +522,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       }
       
       // Recalculate current step based on available data
-      let calculatedStep = 1; // Start with basic step
-      
-      // Check what data is present and calculate the appropriate step
-      if (loadedProject.basicData && Object.keys(loadedProject.basicData).length > 0 && 
-          loadedProject.basicData.theme && loadedProject.basicData.tone && loadedProject.basicData.genre) {
-        calculatedStep = 2; // Concept step
-      }
-      
-      if (loadedProject.conceptData && Object.keys(loadedProject.conceptData).length > 0 && 
-          loadedProject.conceptData.title && loadedProject.conceptData.premise) {
-        calculatedStep = 3; // Characters step
-      }
-      
-      if (loadedProject.charactersData && Object.keys(loadedProject.charactersData).length > 0) {
-        calculatedStep = 4; // Paths step
-      }
-      
-      if (loadedProject.pathsData && Object.keys(loadedProject.pathsData).length > 0) {
-        calculatedStep = 5; // Plot step
-      }
-      
-      if (loadedProject.plotData && loadedProject.plotData.plotOutline) {
-        calculatedStep = 6; // Generate step
-      }
+      const calculatedStep = calculateCurrentStep(loadedProject);
       
       // Update the currentStep value based on our calculation
       loadedProject.currentStep = calculatedStep;
