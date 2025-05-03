@@ -647,16 +647,16 @@ export function VnPlayer({
       <div className="vn-reader h-[calc(100vh-34px)] flex flex-col pt-[34px] relative">
         <div className="vn-image-area absolute inset-0 bg-neutral-800 flex items-center justify-center">
           {/* Setting name overlay */}
-          <div className="absolute top-14 left-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded text-sm z-30">
+          <div className="absolute top-10 md:top-14 left-2 md:left-4 bg-black bg-opacity-70 text-white px-2 md:px-3 py-1 rounded text-xs md:text-sm z-30">
             {currentScene.setting}
           </div>
 
           {/* Image generation controls - Increased z-index to ensure it's clickable */}
-          <div className="absolute top-24 right-4 flex space-x-2 z-20 gap-2">
+          <div className="absolute top-10 md:top-24 right-2 md:right-4 flex space-x-2 z-20 gap-2">
             {/* Button: Use the hook's generateImage function */}
             <Button
               variant="default"
-              className="bg-blue-500 hover:bg-blue-700 active:bg-blue-800 cursor-pointer"
+              className="bg-blue-500 hover:bg-blue-700 active:bg-blue-800 cursor-pointer text-xs md:text-sm py-1 md:py-2 px-2 md:px-4"
               onClick={(e) => {
                 // Stop propagation to prevent parent elements from capturing the click
                 e.stopPropagation();
@@ -669,13 +669,15 @@ export function VnPlayer({
             >
               {isGenerating ? (
                 <>
-                  <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                  <span>Generating...</span>
+                  <RefreshCw className="h-3 w-3 md:h-4 md:w-4 animate-spin mr-1 md:mr-2" />
+                  <span className="hidden sm:inline">Generating...</span>
+                  <span className="sm:hidden">Gen...</span>
                 </>
               ) : (
                 <>
-                  <ImageIcon className="h-4 w-4 mr-2" />
-                  <span>Generate Image</span>
+                  <ImageIcon className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+                  <span className="hidden sm:inline">Generate Image</span>
+                  <span className="sm:hidden">Image</span>
                 </>
               )}
             </Button>

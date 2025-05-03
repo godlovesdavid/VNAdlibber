@@ -79,15 +79,15 @@ export function CreationProgress({ currentStep }: CreationProgressProps) {
     <div className="pt-16 px-4 pb-4 bg-white shadow-sm">
       <div className="max-w-3xl mx-auto">
         {/* Progress circles with connector lines */}
-        <div className="progress-bar flex items-center justify-between py-3">
+        <div className="progress-bar flex items-center justify-between py-3 overflow-x-auto pb-4 md:overflow-visible">
           {[1, 2, 3, 4, 5, 6].map((step) => (
-            <div key={step} className="flex flex-col items-start">
+            <div key={step} className="flex flex-col items-start min-w-[40px] md:min-w-0">
               <div className="flex items-center self-center">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div 
                       className={cn(
-                        "flex items-center justify-center w-8 h-8 rounded-full border-2 text-sm font-medium cursor-pointer",
+                        "flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-full border-2 text-xs md:text-sm font-medium cursor-pointer",
                         step < currentStep && "bg-primary text-white border-primary", // completed
                         step === currentStep && "text-primary border-primary", // active
                         step > currentStep && "border-neutral-300 text-neutral-500", // future
@@ -108,7 +108,7 @@ export function CreationProgress({ currentStep }: CreationProgressProps) {
                 {step < 6 && (
                   <div 
                     className={cn(
-                      "connector h-[2px] w-12 md:w-20 lg:w-24",
+                      "connector h-[2px] w-6 sm:w-8 md:w-16 lg:w-20",
                       step < currentStep ? "bg-primary" : "bg-neutral-200"
                     )}
                   />
@@ -116,7 +116,7 @@ export function CreationProgress({ currentStep }: CreationProgressProps) {
               </div>
               
               {/* Step label directly below each circle */}
-              <div className="text-xs text-neutral-500 mt-1 text-left" style={{ width: '60px', marginLeft: 0 }}>
+              <div className="text-[10px] md:text-xs text-neutral-500 mt-1 text-center md:text-left w-full" style={{ maxWidth: '50px', marginLeft: 0 }}>
                 {step === 1 && "Basic"}
                 {step === 2 && "Concept"}
                 {step === 3 && "Characters"}

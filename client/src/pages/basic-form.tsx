@@ -224,7 +224,7 @@ export default function BasicForm() {
       <CreationProgress currentStep={1} />
 
       <div className="pt-16">
-        <div className="creation-container max-w-4xl mx-auto p-6">
+        <div className="creation-container max-w-4xl mx-auto p-3 sm:p-4 md:p-6">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">
             Step 1: Basic Elements
           </h2>
@@ -265,14 +265,14 @@ export default function BasicForm() {
                 </Button>
               </div>
 
-              <div className="text-lg leading-relaxed space-y-6">
-                <div className="flex flex-wrap items-center gap-2">
+              <div className="text-base md:text-lg leading-relaxed space-y-6">
+                <div className="flex flex-wrap items-center gap-2 md:gap-3">
                   <span className="text-gray-700">Compose me a</span>
 
                   {/* Tone Dropdown */}
                   <div className="inline-block">
                     <Select value={tone} onValueChange={setTone}>
-                      <SelectTrigger className="w-44 h-8 text-base border-b-2 border-blue-500 rounded-none bg-transparent focus:ring-0">
+                      <SelectTrigger className="w-36 sm:w-40 md:w-44 h-8 text-sm md:text-base border-b-2 border-blue-500 rounded-none bg-transparent focus:ring-0">
                         <SelectValue placeholder="tone" />
                       </SelectTrigger>
                       <SelectContent className="min-w-[180px]">
@@ -296,7 +296,7 @@ export default function BasicForm() {
                   {/* Genre Dropdown */}
                   <div className="inline-block">
                     <Select value={genre} onValueChange={setGenre}>
-                      <SelectTrigger className="w-44 h-8 text-base border-b-2 border-green-500 rounded-none bg-transparent focus:ring-0">
+                      <SelectTrigger className="w-36 sm:w-40 md:w-44 h-8 text-sm md:text-base border-b-2 border-green-500 rounded-none bg-transparent focus:ring-0">
                         <SelectValue placeholder="genre" />
                       </SelectTrigger>
                       <SelectContent className="min-w-[180px]">
@@ -320,7 +320,7 @@ export default function BasicForm() {
                   {/* Theme Dropdown */}
                   <div className="inline-block">
                     <Select value={theme} onValueChange={setTheme}>
-                      <SelectTrigger className="w-52 h-8 text-base border-b-2 border-purple-500 rounded-none bg-transparent focus:ring-0">
+                      <SelectTrigger className="w-40 sm:w-48 md:w-52 h-8 text-sm md:text-base border-b-2 border-purple-500 rounded-none bg-transparent focus:ring-0">
                         <SelectValue placeholder="theme" />
                       </SelectTrigger>
                       <SelectContent className="min-w-[200px]">
@@ -352,7 +352,7 @@ export default function BasicForm() {
                   {/* Setting Dropdown */}
                   <div className="inline-block">
                     <Select value={setting} onValueChange={setSetting}>
-                      <SelectTrigger className="w-52 h-8 text-base border-b-2 border-amber-500 rounded-none bg-transparent focus:ring-0">
+                      <SelectTrigger className="w-40 sm:w-48 md:w-52 h-8 text-sm md:text-base border-b-2 border-amber-500 rounded-none bg-transparent focus:ring-0">
                         <SelectValue placeholder="setting" />
                       </SelectTrigger>
                       <SelectContent className="min-w-[200px]">
