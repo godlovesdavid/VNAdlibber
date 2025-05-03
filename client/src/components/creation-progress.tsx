@@ -81,8 +81,8 @@ export function CreationProgress({ currentStep }: CreationProgressProps) {
         {/* Progress circles with connector lines */}
         <div className="progress-bar flex items-center justify-between py-3">
           {[1, 2, 3, 4, 5, 6].map((step) => (
-            <div key={step} className="flex flex-col items-center">
-              <div className="flex items-center">
+            <div key={step} className="flex flex-col items-start">
+              <div className="flex items-center self-center">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div 
@@ -116,14 +116,14 @@ export function CreationProgress({ currentStep }: CreationProgressProps) {
               </div>
               
               {/* Step label directly below each circle */}
-              <span className="text-xs text-neutral-500 mt-1">
+              <div className="text-xs text-neutral-500 mt-1 text-left" style={{ width: '60px', marginLeft: 0 }}>
                 {step === 1 && "Basic"}
                 {step === 2 && "Concept"}
                 {step === 3 && "Characters"}
                 {step === 4 && "Paths"}
                 {step === 5 && "Plot"}
                 {step === 6 && "Generate"}
-              </span>
+              </div>
             </div>
           ))}
         </div>
