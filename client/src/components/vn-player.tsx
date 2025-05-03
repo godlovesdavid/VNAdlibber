@@ -203,8 +203,9 @@ export function VnPlayer({
   >([]);
   const [clickableContent, setClickableContent] = useState(true);
   
-  // Image generation toggle state
+  // Image generation toggle state with a reference to track changes
   const [imageGenerationEnabled, setImageGenerationEnabled] = useState(true);
+  const prevImageGenerationState = useRef(true);
 
   // Text animation state
   const [textSpeed, setTextSpeed] = useState<"slow" | "medium" | "fast">(
@@ -320,11 +321,19 @@ export function VnPlayer({
 
   // image generation
   useEffect(() => {
+    console.log("Image generation effect triggered: ", {
+      shouldGenerate: shouldGenerateImage.current,
+      hasScene: !!currentScene,
+      imageGenerationEnabled,
+      imageUrl
+    });
+    
     if (shouldGenerateImage.current && currentScene && imageGenerationEnabled) {
+      console.log("Generating image automatically on scene change");
       shouldGenerateImage.current = false;
       generateImage(true);
     }
-  }, [currentScene, generateImage, imageGenerationEnabled]);
+  }, [currentScene, generateImage, imageGenerationEnabled, imageUrl]);
 
   //initialize player with first scene
   useEffect(() => {
@@ -604,8 +613,28 @@ export function VnPlayer({
   useEffect(() => {
     const handleImageGenerationToggle = (e: CustomEvent) => {
       const isEnabled = e.detail;
-      console.log("Image generation toggled:", isEnabled);
+      console.log("Image generation toggled:", isEnabled, {
+        previousState: imageGenerationEnabled,
+        currentImageUrl: imageUrl,
+        isGenerating,
+        currentScene: currentScene?.name
+      });
+      
+      // Store current state in the ref before updating
+      prevImageGenerationState.current = imageGenerationEnabled;
+      
+      // Set the new state
       setImageGenerationEnabled(isEnabled);
+      
+      // If toggling from off to on, manually trigger generation after a short delay
+      if (isEnabled && !imageGenerationEnabled && currentScene) {
+        console.log("Will regenerate image since generation was re-enabled");
+        // Use setTimeout to ensure the state update has completed first
+        setTimeout(() => {
+          console.log("Now regenerating the image after toggle");
+          generateImage(true);
+        }, 100);
+      }
     };
     
     window.addEventListener("vnToggleImageGeneration", handleImageGenerationToggle as EventListener);
@@ -613,7 +642,7 @@ export function VnPlayer({
     return () => {
       window.removeEventListener("vnToggleImageGeneration", handleImageGenerationToggle as EventListener);
     };
-  }, []);
+  }, [currentScene, generateImage]); // Removed state from dependencies to prevent recreation
 
   // Log current scene and image state for debugging
   useEffect(() => {
@@ -706,22 +735,46 @@ export function VnPlayer({
           </div>
 
           {/* Background image display with SceneBackground component */}
-          {imageUrl && imageGenerationEnabled ? (
-            // Display generated image with reliable placeholder fallback
-            <SceneBackground
-              imageUrl={imageUrl}
-              sceneId={currentScene.name}
-              isGenerated={true}
-            />
-          ) : (imageGenerationEnabled && currentScene.image_prompt) ? (
-            // Display scene's existing background image
-            <SceneBackground
-              imageUrl={currentScene.image_prompt}
-              sceneId={currentScene.name}
-              isGenerated={false}
-            />
+          {imageGenerationEnabled ? (
+            imageUrl ? (
+              // Display generated image when we have a URL
+              <SceneBackground
+                imageUrl={imageUrl}
+                sceneId={currentScene.name}
+                isGenerated={true}
+              />
+            ) : currentScene.image_prompt ? (
+              // Display scene's existing background image
+              <SceneBackground
+                imageUrl={currentScene.image_prompt}
+                sceneId={currentScene.name}
+                isGenerated={false}
+              />
+            ) : (
+              // Display placeholder when no image is available
+              <div className="text-white text-center z-0">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="mx-auto h-16 w-16 mb-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                <p>No image available</p>
+                <p className="text-sm text-neutral-400 mt-1">
+                  {imageError ? `Error: ${imageError}` : isGenerating ? "Generating image..." : "Click 'Regenerate' to create an image"}
+                </p>
+              </div>
+            )
           ) : (
-            // Display placeholder when no image is available
+            // When image generation is disabled, show disabled message
             <div className="text-white text-center z-0">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -737,9 +790,9 @@ export function VnPlayer({
                   d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
               </svg>
-              <p>{!imageGenerationEnabled ? "Images are disabled" : "No image available"}</p>
+              <p>Images are disabled</p>
               <p className="text-sm text-neutral-400 mt-1">
-                {imageError ? `Error: ${imageError}` : !imageGenerationEnabled ? "Toggle images on in the navbar" : ""}
+                Toggle images on in the navbar settings
               </p>
             </div>
           )}

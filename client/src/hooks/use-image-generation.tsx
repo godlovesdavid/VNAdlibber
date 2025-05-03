@@ -179,14 +179,31 @@ export function useImageGeneration(
 
   // Auto-generate when scene changes if autoGenerate is true
   useEffect(() => {
-    if (!scene || !autoGenerate) return;
+    if (!scene) {
+      console.log("No scene provided to image generation hook");
+      return;
+    }
+    
+    if (!autoGenerate) {
+      console.log("Image auto-generation is disabled, skipping generation");
+      return;
+    }
+
+    console.log("Image generation hook scene changed:", {
+      sceneName: scene.name,
+      autoGenerateEnabled: autoGenerate,
+      isGenerating,
+      isQueued: isGenerationQueued.current,
+      hasImagePrompt: !!scene.image_prompt,
+      sceneSetting: scene.setting || 'none'
+    });
 
     // Always update current scene ID reference even if we don't generate
     currentSceneId.current = scene.name;
 
     // Check if scene already has a background URL or cached URL
     if (scene.image_prompt) {
-      logDebug("Scene has bg URL, using it:", scene.image_prompt);
+      console.log("Scene already has image_prompt, using it:", scene.image_prompt.slice(0, 30) + "...");
       setImageUrl(scene.image_prompt);
       return;
     }
@@ -194,14 +211,17 @@ export function useImageGeneration(
     const setting = scene.setting || '';
     const cachedUrl = getCachedImageUrl(setting);
     if (cachedUrl) {
-      logDebug("Using cached image for scene setting:", setting);
+      console.log("Using cached image for scene setting:", setting);
       setImageUrl(cachedUrl);
       return;
     }
 
     // Only generate if not already generating or queued
     if (!isGenerating && !isGenerationQueued.current) {
+      console.log("Auto-generating image for scene:", scene.name);
       generateImage();
+    } else {
+      console.log("Skipping auto-generation - already in progress or queued");
     }
 
     // Cleanup function for when scene changes or component unmounts
