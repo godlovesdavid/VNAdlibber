@@ -21,7 +21,7 @@ async function generateWithGemini(
   prompt: string,
   systemPrompt: string | null = null,
   responseFormat = "JSON",
-  maxOutputTokens = 8192,
+  maxOutputTokens = 4096, // Reduced from 8192 to optimize throughput and capacity
   isPro = false,
 ) {
   try {
@@ -183,6 +183,33 @@ const generateImageSchema = z.object({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Configure rate limiters
+  const aiGenerationLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute window
+    max: 10, // 10 requests per minute per IP
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+      message: "Too many AI generation requests, please try again later.",
+      errorType: "rate_limit_exceeded"
+    }
+  });
+  
+  const imageLimiter = rateLimit({
+    windowMs: 2 * 60 * 1000, // 2 minute window
+    max: 5, // 5 requests per 2 minutes per IP
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+      message: "Too many image generation requests, please try again later.",
+      errorType: "rate_limit_exceeded"
+    }
+  });
+  
+  // Apply rate limiters to AI generation endpoints
+  app.use(["/api/generate/concept", "/api/generate/plot", "/api/generate/path", "/api/generate/character", "/api/generate/act"], aiGenerationLimiter);
+  app.use("/api/generate/image", imageLimiter);
+
   // Project CRUD operations
   // OpenAI endpoint has been removed in favor of RunPod
 
