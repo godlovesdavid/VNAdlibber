@@ -122,14 +122,27 @@ function SceneBackground({
   };
 
   return (
-    <div
-      className="w-full h-full absolute inset-0"
-      style={{
-        transition: "background-color 0.5s ease",
-      }}
-    >
-      {/* Show placeholder immediately while image loads */}
-      {/* <div className="absolute inset-0 flex items-center justify-center text-white">
+    <div className="w-full h-full absolute inset-0 overflow-hidden">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 w-full h-full"
+        style={{ zIndex: 1 }}
+      >
+        <img
+          key={`img-${actualUrl}`}
+          src={actualUrl}
+          alt={`Scene ${sceneId} Background`}
+          className={cn(
+            "w-full h-full object-cover transition-opacity duration-500",
+            isLoading ? "opacity-0" : "opacity-100",
+          )}
+          onLoad={handleImageLoad}
+          onError={handleImageError}
+        />
+      </div>
+
+      {/* Loading indicator (commented out) */}
+      {/* <div className="absolute inset-0 flex items-center justify-center z-10">
         {isLoading && (
           <div className="text-center">
             <RefreshCw className="h-10 w-10 animate-spin mx-auto mb-2" />
@@ -138,21 +151,7 @@ function SceneBackground({
         )}
       </div> */}
 
-      {/* Actual image with appropriate handling */}
-      <img
-        key={`img-${actualUrl}`}
-        src={actualUrl}
-        alt={`Scene ${sceneId} Background`}
-        className={cn(
-          "w-full h-full object-cover transition-opacity duration-500",
-          isLoading ? "opacity-0" : "opacity-100",
-        )}
-        style={{ position: "absolute", zIndex: 5, pointerEvents: "none" }}
-        onLoad={handleImageLoad}
-        onError={handleImageError}
-      />
-
-      {/* Debug info overlay */}
+      {/* Debug info overlay (commented out) */}
       {/* <div className="absolute bottom-4 right-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded text-xs z-20">
         {isGenerated ? "Generated" : "Original"} | Scene: {sceneId}
         {hasError && " | Using fallback"}
