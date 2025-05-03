@@ -9,6 +9,7 @@ import { Wand2, ChevronDown, ChevronUp, CheckCircle } from "lucide-react";
 import { PlotAct } from "@/types/vn";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { validateFormContent } from "@/lib/validation";
 
 export default function PlotForm() {
   const [, setLocation] = useLocation();
@@ -114,18 +115,51 @@ export default function PlotForm() {
   };
 
   // Proceed to next step
-  const handleNext = () => {
+  const handleNext = async () => {
     // Validate that we have plot outline
     if (!plotActs) {
-      alert("Please generate a plot outline before proceeding");
+      toast({
+        title: "Missing Plot",
+        description: "Please generate a plot outline before proceeding",
+        variant: "destructive"
+      });
       return;
     }
 
     // Save data using the new direct object pattern
     setPlotData(plotActs);
-
-    // Navigate to next step
-    setLocation("/create/generate-vn");
+    
+    // Validate content before proceeding
+    setIsValidating(true);
+    if (!projectData) {
+      toast({
+        title: "Error",
+        description: "Project data is missing",
+        variant: "destructive"
+      });
+      setIsValidating(false);
+      return;
+    }
+    
+    // Prepare the project context data for validation
+    const contextData = {
+      basicData: projectData.basicData,
+      conceptData: projectData.conceptData,
+      charactersData: projectData.charactersData,
+      pathsData: projectData.pathsData,
+      plotData: plotActs, // Use the current plot data
+    };
+    
+    // Use our validation utility
+    try {
+      const isValid = await validateFormContent(contextData, "plot");
+      if (isValid) {
+        // Navigate to next step if validation passed
+        setLocation("/create/generate-vn");
+      }
+    } finally {
+      setIsValidating(false);
+    }
   };
 
   // Validate plot using AI

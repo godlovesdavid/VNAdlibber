@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 
 // Arrays for each dropdown type
 const tones = [
-  "adventurous",
+  "humorous",
   "dark",
   "gritty",
   "lighthearted",
@@ -250,7 +250,7 @@ export default function BasicForm() {
                         <SelectValue placeholder="tone" />
                       </SelectTrigger>
                       <SelectContent className="min-w-[180px]">
-                        <SelectItem value="adventurous">adventurous</SelectItem>
+                        <SelectItem value="humorous">humorous</SelectItem>
                         <SelectItem value="dark">dark</SelectItem>
                         <SelectItem value="gritty">gritty</SelectItem>
                         <SelectItem value="lighthearted">
