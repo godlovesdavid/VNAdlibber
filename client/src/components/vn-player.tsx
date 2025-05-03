@@ -122,27 +122,14 @@ function SceneBackground({
   };
 
   return (
-    <div className="w-full h-full absolute inset-0 overflow-hidden">
-      {/* Background Image */}
-      <div 
-        className="absolute inset-0 w-full h-full"
-        style={{ zIndex: 1 }}
-      >
-        <img
-          key={`img-${actualUrl}`}
-          src={actualUrl}
-          alt={`Scene ${sceneId} Background`}
-          className={cn(
-            "w-full h-full object-cover transition-opacity duration-500",
-            isLoading ? "opacity-0" : "opacity-100",
-          )}
-          onLoad={handleImageLoad}
-          onError={handleImageError}
-        />
-      </div>
-
-      {/* Loading indicator (commented out) */}
-      {/* <div className="absolute inset-0 flex items-center justify-center z-10">
+    <div
+      className="w-full h-full absolute inset-0"
+      style={{
+        transition: "background-color 0.5s ease",
+      }}
+    >
+      {/* Show placeholder immediately while image loads */}
+      {/* <div className="absolute inset-0 flex items-center justify-center text-white">
         {isLoading && (
           <div className="text-center">
             <RefreshCw className="h-10 w-10 animate-spin mx-auto mb-2" />
@@ -151,7 +138,21 @@ function SceneBackground({
         )}
       </div> */}
 
-      {/* Debug info overlay (commented out) */}
+      {/* Actual image with appropriate handling */}
+      <img
+        key={`img-${actualUrl}`}
+        src={actualUrl}
+        alt={`Scene ${sceneId} Background`}
+        className={cn(
+          "w-full h-full object-cover transition-opacity duration-500",
+          isLoading ? "opacity-0" : "opacity-100",
+        )}
+        style={{ position: "absolute", zIndex: 0 }}
+        onLoad={handleImageLoad}
+        onError={handleImageError}
+      />
+
+      {/* Debug info overlay */}
       {/* <div className="absolute bottom-4 right-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded text-xs z-20">
         {isGenerated ? "Generated" : "Original"} | Scene: {sceneId}
         {hasError && " | Using fallback"}
@@ -202,9 +203,8 @@ export function VnPlayer({
   >([]);
   const [clickableContent, setClickableContent] = useState(true);
   
-  // Image generation toggle state with a reference to track previous state
+  // Image generation toggle state
   const [imageGenerationEnabled, setImageGenerationEnabled] = useState(true);
-  const prevImageGenerationState = useRef(true);
 
   // Text animation state
   const [textSpeed, setTextSpeed] = useState<"slow" | "medium" | "fast">(
@@ -605,19 +605,7 @@ export function VnPlayer({
     const handleImageGenerationToggle = (e: CustomEvent) => {
       const isEnabled = e.detail;
       console.log("Image generation toggled:", isEnabled);
-      
-      // Store previous state before updating
-      prevImageGenerationState.current = imageGenerationEnabled;
       setImageGenerationEnabled(isEnabled);
-      
-      // If toggling from off to on, we need to manually trigger image generation
-      if (isEnabled && !prevImageGenerationState.current && currentScene) {
-        console.log("Reloading image since generation was re-enabled");
-        // Use a small timeout to ensure state update completes
-        setTimeout(() => {
-          generateImage(true);
-        }, 50);
-      }
     };
     
     window.addEventListener("vnToggleImageGeneration", handleImageGenerationToggle as EventListener);
@@ -625,7 +613,7 @@ export function VnPlayer({
     return () => {
       window.removeEventListener("vnToggleImageGeneration", handleImageGenerationToggle as EventListener);
     };
-  }, [currentScene, imageGenerationEnabled, generateImage]);
+  }, []);
 
   // Log current scene and image state for debugging
   useEffect(() => {
@@ -717,16 +705,42 @@ export function VnPlayer({
             </Button>
           </div>
 
-          {/* Scene background image */}
+          {/* Background image display with SceneBackground component */}
           {imageUrl && imageGenerationEnabled ? (
-            <SceneBackground 
-              imageUrl={imageUrl} 
-              sceneId={currentScene.name} 
+            // Display generated image with reliable placeholder fallback
+            <SceneBackground
+              imageUrl={imageUrl}
+              sceneId={currentScene.name}
               isGenerated={true}
             />
+          ) : (imageGenerationEnabled && currentScene.image_prompt) ? (
+            // Display scene's existing background image
+            <SceneBackground
+              imageUrl={currentScene.image_prompt}
+              sceneId={currentScene.name}
+              isGenerated={false}
+            />
           ) : (
-            <div className="absolute inset-0 bg-black overflow-hidden">
-              {/* When image generation is disabled, show pure black background */}
+            // Display placeholder when no image is available
+            <div className="text-white text-center z-0">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="mx-auto h-16 w-16 mb-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              <p>{!imageGenerationEnabled ? "Images are disabled" : "No image available"}</p>
+              <p className="text-sm text-neutral-400 mt-1">
+                {imageError ? `Error: ${imageError}` : !imageGenerationEnabled ? "Toggle images on in the navbar" : ""}
+              </p>
             </div>
           )}
 
