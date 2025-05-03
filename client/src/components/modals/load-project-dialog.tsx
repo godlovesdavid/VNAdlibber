@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useVnContext } from "@/context/vn-context";
+import { useVnContext, calculateCurrentStep } from "@/context/vn-context";
 import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
@@ -13,9 +13,6 @@ import { Button } from "@/components/ui/button";
 import { ConfirmationModal } from "@/components/modals/confirmation-modal";
 import { Trash2, Upload } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-
-// Import the function from vn-context
-import { calculateCurrentStep } from "@/context/vn-context";
 
 interface LoadProjectDialogProps {
   open: boolean;
