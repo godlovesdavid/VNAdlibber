@@ -3,6 +3,8 @@ import {
   vnStories, VnStory, InsertVnStory,
   users, User, InsertUser
 } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 // Storage interface for the application
 export interface IStorage {
@@ -164,5 +166,98 @@ export class MemStorage implements IStorage {
   }
 }
 
+// Database Storage implementation using PostgreSQL
+export class DatabaseStorage implements IStorage {
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async getProjects(): Promise<VnProject[]> {
+    return await db.select().from(vnProjects);
+  }
+
+  async getProject(id: number): Promise<VnProject | undefined> {
+    const [project] = await db.select().from(vnProjects).where(eq(vnProjects.id, id));
+    return project || undefined;
+  }
+
+  async createProject(insertProject: InsertVnProject): Promise<VnProject> {
+    const [project] = await db
+      .insert(vnProjects)
+      .values(insertProject)
+      .returning();
+    return project;
+  }
+
+  async updateProject(id: number, projectData: Partial<VnProject>): Promise<VnProject> {
+    // Make sure to update the updatedAt timestamp
+    const dataToUpdate = {
+      ...projectData,
+      updatedAt: new Date().toISOString()
+    };
+
+    const [updatedProject] = await db
+      .update(vnProjects)
+      .set(dataToUpdate)
+      .where(eq(vnProjects.id, id))
+      .returning();
+
+    if (!updatedProject) {
+      throw new Error(`Project with id ${id} not found`);
+    }
+
+    return updatedProject;
+  }
+
+  async deleteProject(id: number): Promise<void> {
+    // First delete any associated stories
+    await db
+      .delete(vnStories)
+      .where(eq(vnStories.projectId, id));
+
+    // Then delete the project
+    await db
+      .delete(vnProjects)
+      .where(eq(vnProjects.id, id));
+  }
+
+  async getStories(): Promise<VnStory[]> {
+    return await db.select().from(vnStories);
+  }
+
+  async getStory(id: number): Promise<VnStory | undefined> {
+    const [story] = await db.select().from(vnStories).where(eq(vnStories.id, id));
+    return story || undefined;
+  }
+
+  async createStory(insertStory: InsertVnStory): Promise<VnStory> {
+    const [story] = await db
+      .insert(vnStories)
+      .values(insertStory)
+      .returning();
+    return story;
+  }
+
+  async deleteStory(id: number): Promise<void> {
+    await db
+      .delete(vnStories)
+      .where(eq(vnStories.id, id));
+  }
+}
+
 // Export a singleton instance of the storage
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
