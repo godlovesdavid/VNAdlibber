@@ -757,7 +757,7 @@ export function VnPlayer({
             currentScene.choices.length > 0 && (
               <div
                 className={cn(
-                  "vn-choices mt-4 sm:mt-6 md:mt-8 grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3",
+                  "vn-choices mt-4 sm:mt-6 md:mt-8 grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 animate-fadeIn",
                   !clickableContent && "opacity-50 pointer-events-none",
                 )}
               >
@@ -772,6 +772,13 @@ export function VnPlayer({
                       variant="outline"
                       className={cn(
                         "px-3 py-2 md:px-4 md:py-3 rounded-md text-center transition-colors h-auto relative w-full text-sm md:text-base",
+                        // Animation with staggered delay based on index
+                        "animate-fadeInUp",
+                        // Apply staggered animation delay based on index
+                        index === 0 ? "animation-delay-0" :
+                        index === 1 ? "animation-delay-100" :
+                        index === 2 ? "animation-delay-200" :
+                        "animation-delay-300",
                         // Base style for all buttons
                         "bg-neutral-800 text-white border-neutral-600",
                         // Add hover effect only when not showing condition colors
@@ -806,13 +813,13 @@ export function VnPlayer({
                       )}
                       <div className="flex flex-col items-center">
                         {/* Main choice text */}
-                        <div className="text-center break-words text-xs sm:text-sm md:text-base">
+                        <div className="text-center break-words text-xs sm:text-sm md:text-base w-full">
                           {choice.text || `Option ${index + 1}`}
                         </div>
 
                         {/* Description text (if present) */}
                         {choice.description && (
-                          <div className="text-xs md:text-sm text-neutral-400 mt-1 italic text-center break-words max-w-full font-dialogue">
+                          <div className="text-xs md:text-sm text-neutral-400 mt-1 italic text-center break-words w-full font-dialogue">
                             {choice.description}
                           </div>
                         )}
