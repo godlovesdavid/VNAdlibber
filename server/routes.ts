@@ -278,178 +278,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/projects", async (req, res) => {
     try {
       const projectData = req.body;
-      
-      // Filter out the large data objects for console logging
-      const logData = {
-        id: projectData.id,
-        title: projectData.title,
-        currentStep: projectData.currentStep,
-        hasCharacters: projectData.charactersData && Object.keys(projectData.charactersData || {}).length > 0,
-        characterCount: Object.keys(projectData.charactersData || {}).length,
-        pathCount: Object.keys(projectData.pathsData || {}).length,
-        updatedAt: projectData.updatedAt
-      };
-      
-      console.log("Received project data:", logData);
 
       // If project has an ID, update it
       if (projectData.id) {
-        console.log(`Updating existing project with ID: ${projectData.id}`);
-        
-        try {
-          // Run debug check on project data BEFORE update
-          const existingProject = await storage.getProject(projectData.id);
-          if (existingProject) {
-            console.log(`Existing project before update:`, {
-              id: existingProject.id,
-              title: existingProject.title,
-              characterCount: Object.keys(existingProject.charactersData || {}).length,
-              pathCount: Object.keys(existingProject.pathsData || {}).length
-            });
-            
-            // Handle character data carefully
-            if (existingProject.charactersData && Object.keys(existingProject.charactersData).length > 0) {
-              // If incoming has character data, check if it's valid
-              if (projectData.charactersData && Object.keys(projectData.charactersData).length > 0) {
-                // Both have character data - log what we're doing
-                console.log("Incoming project has character data with keys:", Object.keys(projectData.charactersData));
-                
-                // Check for suspicious empty objects that might be causing issues
-                const allEmpty = Object.values(projectData.charactersData || {}).every((char: any) => 
-                  !char || Object.keys(char).length === 0 || 
-                  (Object.keys(char).length === 1 && Object.keys(char)[0] === "name")
-                );
-                
-                if (allEmpty) {
-                  console.warn("WARNING: Incoming project data has empty character objects");
-                  console.log("Preserving existing characters data from database");
-                  projectData.charactersData = existingProject.charactersData;
-                }
-              } else {
-                // Incoming is missing characters that exist in the database
-                console.warn("WARNING: Incoming project data is missing characters that exist in the database");
-                console.log("Preserving existing characters data from database");
-                projectData.charactersData = existingProject.charactersData;
-              }
-            } else if (projectData.charactersData && Object.keys(projectData.charactersData).length > 0) {
-              // Database has no characters but incoming does
-              console.log("New character data detected in incoming project");
-              console.log("Character names:", Object.keys(projectData.charactersData));
-              
-              // Extra validation to prevent saving empty character objects
-              const validCharacters: Record<string, any> = {};
-              let hasValidCharacters = false;
-              
-              Object.entries(projectData.charactersData || {}).forEach(([name, character]: [string, any]) => {
-                if (character && Object.keys(character).length > 0) {
-                  validCharacters[name] = character;
-                  hasValidCharacters = true;
-                  console.log(`Valid character detected: ${name} with fields: ${Object.keys(character).join(', ')}`);
-                }
-              });
-              
-              if (hasValidCharacters) {
-                projectData.charactersData = validCharacters;
-                console.log("Setting valid character data in project");
-              } else {
-                console.warn("WARNING: All character objects were empty, setting empty character data");
-                projectData.charactersData = {};
-              }
-            }
-            
-            // If the incoming project is missing paths that the existing one has
-            if (existingProject.pathsData && 
-                Object.keys(existingProject.pathsData).length > 0 && 
-                (!projectData.pathsData || Object.keys(projectData.pathsData).length === 0)) {
-              console.warn("WARNING: Incoming project data is missing paths that exist in the database");
-              console.log("Preserving existing paths data from database");
-              projectData.pathsData = existingProject.pathsData;
-            }
-            
-            // Handle concept data carefully
-            if (existingProject.conceptData && 
-                existingProject.conceptData.title && 
-                existingProject.conceptData.tagline && 
-                existingProject.conceptData.premise) {
-              
-              // If incoming project has no concept data or empty concept data
-              if (!projectData.conceptData || 
-                  !projectData.conceptData.title || 
-                  !projectData.conceptData.tagline || 
-                  !projectData.conceptData.premise) {
-                console.warn("WARNING: Incoming project data is missing concept data that exists in the database");
-                console.log("Preserving existing concept data from database");
-                projectData.conceptData = existingProject.conceptData;
-                
-                // Update title to match concept title if needed
-                if (projectData.title !== existingProject.conceptData.title) {
-                  console.log("Updating title to match concept title");
-                  projectData.title = existingProject.conceptData.title;
-                }
-              } else {
-                // Both have concept data - check if we're about to save empty data
-                console.log("Concept data in incoming request:", {
-                  title: projectData.conceptData.title.slice(0, 20) + "...",
-                  tagline: projectData.conceptData.tagline?.slice(0, 20) + "...",
-                  premise: projectData.conceptData.premise?.slice(0, 20) + "..."
-                });
-              }
-            } else if (projectData.conceptData && 
-                     projectData.conceptData.title && 
-                     projectData.conceptData.tagline && 
-                     projectData.conceptData.premise) {
-              // Database has no concept but incoming does - ensure title matches
-              console.log("New concept data detected in incoming project");
-              if (projectData.title !== projectData.conceptData.title) {
-                console.log("Updating title to match concept title");
-                projectData.title = projectData.conceptData.title;
-              }
-            }
-          } else {
-            console.log(`No existing project found with ID: ${projectData.id}`);
-          }
-          
-          const updatedProject = await storage.updateProject(
-            projectData.id,
-            projectData,
-          );
-          
-          console.log("Project updated successfully:", {
-            id: updatedProject.id,
-            title: updatedProject.title,
-            characterCount: Object.keys(updatedProject.charactersData || {}).length,
-            pathCount: Object.keys(updatedProject.pathsData || {}).length
-          });
-          
-          return res.json(updatedProject);
-        } catch (updateError) {
-          console.error("Error updating project:", updateError);
-          return res.status(500).json({ 
-            message: "Failed to update project", 
-            error: updateError instanceof Error ? updateError.message : String(updateError) 
-          });
-        }
+        const updatedProject = await storage.updateProject(
+          projectData.id,
+          projectData,
+        );
+        return res.json(updatedProject);
       }
 
       // Otherwise create a new project
-      console.log("Creating new project");
-      try {
-        const newProject = await storage.createProject(projectData);
-        console.log("Project created successfully with ID:", newProject.id);
-        res.status(201).json(newProject);
-      } catch (createError) {
-        console.error("Error creating project:", createError);
-        res.status(500).json({ 
-          message: "Failed to create project", 
-          error: createError instanceof Error ? createError.message : String(createError) 
-        });
-      }
+      const newProject = await storage.createProject(projectData);
+      res.status(201).json(newProject);
     } catch (error) {
-      console.error("Error processing project request:", error);
-      res.status(500).json({ 
-        message: "Failed to save project", 
-        error: error instanceof Error ? error.message : String(error) 
-      });
+      console.error("Error saving project:", error);
+      res.status(500).json({ message: "Failed to save project" });
     }
   });
 
@@ -590,18 +434,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`Generating ${indices.length} characters`);
 
-      // Check if names are provided in character templates
-      const characterNames = characterTemplates.map((char: any) => char.name || null)
-        .filter((name: string | null) => name !== null && name !== "");
-        
-      console.log("Provided character names:", characterNames);
-      
       // Create prompt for the character generation - {name: {...}} format
       const prompt = `Given this story context:
         ${JSON.stringify(projectContext, null, 2)}
         Generate ${indices.length} detailed character${indices.length > 1 ? "s" : ""} for a visual novel in JSON format.
-
-        ${characterNames.length > 0 ? `Use these provided character names: ${characterNames.join(", ")}` : "Create appropriate character names based on the story context."}
 
         Return in this exact format where the character's name is the key:
         {

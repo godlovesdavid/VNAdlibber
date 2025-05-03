@@ -7,7 +7,6 @@ import {
   generateAct,
   GenerationResult,
 } from "@/lib/openai";
-import type { ConceptData, Character } from "../types";
 import { apiRequest } from "@/lib/queryClient";
 
 // To make this hook compatible with Fast Refresh, we use a named function
@@ -715,66 +714,41 @@ export const useVnData = () => {
           return null;
         }
 
-        // The result can be in one of two formats:
-        // 1. An object where keys are character names: { "Character Name": { props... } }
-        // 2. An array of character objects (not typically returned by our API but handling for safety)
-        
-        console.log("Character result type:", Array.isArray(result) ? "Array" : typeof result);
-        
-        if (result) {
-          // Case 1: If the result is already an array, use it directly with cleaning
-          if (Array.isArray(result)) {
-            console.log("Result is already an array, using directly:", result);
-            return result.map(char => {
-              // If the character has numeric keys, clean them up
-              if (Object.keys(char).some(key => !isNaN(Number(key)))) {
-                return Object.entries(char)
-                  .filter(([key]) => isNaN(Number(key)))
-                  .reduce((obj, [key, value]) => {
-                    obj[key] = value;
-                    return obj;
-                  }, {} as Record<string, any>);
-              }
-              return char;
-            });
-          }
+        // The result is an object where keys are character names
+        if (result && typeof result === 'object') {
+          const characterNames = Object.keys(result);
           
-          // Case 2: If the result is an object (most common from our API), convert to array
-          if (typeof result === 'object') {
-            const characterNames = Object.keys(result);
+          if (characterNames.length > 0) {
+            console.log(`Processing ${characterNames.length} characters:`, characterNames);
             
-            if (characterNames.length > 0) {
-              console.log(`Processing ${characterNames.length} characters:`, characterNames);
+            // Convert object of characters to array of characters with name
+            const charactersArray = characterNames.map(name => {
+              const character = result[name];
+              console.log(`Processing batch character ${name}:`, character);
               
-              // Convert object of characters to array of characters with name
-              const charactersArray = characterNames.map(name => {
-                const character = result[name];
-                console.log(`Processing batch character ${name}:`, character);
+              // Clean character data to ensure no nested objects
+              const cleanCharacter = Object.entries(character)
+                .filter(([key]) => isNaN(Number(key))) // Remove any numeric keys
+                .reduce((obj, [key, value]) => {
+                  // For non-null objects, convert to string unless it's relationshipPotential
+                  if (typeof value === 'object' && value !== null && key !== 'relationshipPotential') {
+                    console.warn(`Converting nested object in ${key} to string:`, value);
+                    obj[key] = JSON.stringify(value);
+                  } else {
+                    obj[key] = value;
+                  }
+                  return obj;
+                }, {} as Record<string, any>);
                 
-                // Clean character data to ensure no nested objects
-                const cleanCharacter = Object.entries(character)
-                  .filter(([key]) => isNaN(Number(key))) // Remove any numeric keys
-                  .reduce((obj, [key, value]) => {
-                    // For non-null objects, convert to string unless it's relationshipPotential
-                    if (typeof value === 'object' && value !== null && key !== 'relationshipPotential') {
-                      console.warn(`Converting nested object in ${key} to string:`, value);
-                      obj[key] = JSON.stringify(value);
-                    } else {
-                      obj[key] = value;
-                    }
-                    return obj;
-                  }, {} as Record<string, any>);
-                  
-                // Include the name as a property
-                return {
-                  name,
-                  ...cleanCharacter
-                };
-              });
-              
-              console.log("Converted characters array:", charactersArray);
-              return charactersArray;
-            }
+              // Include the name as a property
+              return {
+                name,
+                ...cleanCharacter
+              };
+            });
+            
+            console.log("Converted characters array:", charactersArray);
+            return charactersArray;
           }
         }
         

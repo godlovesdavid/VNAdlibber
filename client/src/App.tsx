@@ -4,7 +4,6 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { VnProvider } from "@/context/vn-context";
-import { FormSaveProvider } from "@/hooks/use-form-save";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import BasicForm from "@/pages/basic-form";
@@ -39,12 +38,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <VnProvider>
-        <FormSaveProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-          </TooltipProvider>
-        </FormSaveProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
       </VnProvider>
     </QueryClientProvider>
   );

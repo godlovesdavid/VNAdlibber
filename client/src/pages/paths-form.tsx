@@ -1,10 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useVnData } from "@/hooks/use-vn-data";
-import { useFormSave, useRegisterFormSave } from "@/hooks/use-form-save";
-import { useAutosave } from "@/hooks/use-simple-autosave";
-import { useToast } from "@/hooks/use-toast";
 import { CreationProgress } from "@/components/creation-progress";
 import { NavBar } from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
@@ -27,26 +24,25 @@ import {
 import { Wand2, Trash, Plus } from "lucide-react";
 import { Route } from "@/types/vn";
 
-// Define a form-specific interface similar to the characters form
+// Extended interface for form use that includes a title property
 interface RouteForm extends Route {
-  title: string; // Only used in the form, not stored in the context
+  title: string; // Title is used as the key in the PathsData object
 }
 
 export default function PathsForm() {
   const [, setLocation] = useLocation();
-  const { projectData, setPathsData, goToStep, saveProject } = useVnContext();
-  const { toast } = useToast();
+  const { projectData, setPathsData, goToStep } = useVnContext();
   const {
     generatePathData,
     generateMultiplePathsData,
     isGenerating,
     cancelGeneration,
   } = useVnData();
-  
-  // Form state for routes using our form-specific interface
-  const [routes, setRoutes] = useState<RouteForm[]>([
+
+  // Form state
+  const [routes, setRoutes] = useState<Route[]>([
     {
-      title: "Main Path", // Give a default title so it always saves
+      title: "",
       loveInterest: null,
       keyChoices: "",
       beginning: "",
@@ -61,203 +57,20 @@ export default function PathsForm() {
     null,
   );
 
-  // Use localStorage to remember the loading state across navigation
-  const projectId = projectData?.id;
-  const localStorageKey = `path-form-loaded-${projectId}`;
-  
-  // Check local storage on component mount to see if we've already loaded this project's paths
+  // Load existing data if available
   useEffect(() => {
-    if (projectId) {
-      try {
-        const loaded = localStorage.getItem(localStorageKey) === 'true';
-        if (loaded) {
-          console.log(`Found previous load flag for project ${projectId} paths`);
-        }
-      } catch (err) {
-        console.error("Error accessing localStorage:", err);
-      }
-    }
-  }, []);
-  
-  // Load existing data if available, but only if not previously loaded for this project
-  useEffect(() => {
-    // Check if we've already loaded this project's paths
-    if (projectId) {
-      try {
-        const loaded = localStorage.getItem(localStorageKey) === 'true';
-        if (loaded) {
-          console.log(`Paths for project ${projectId} already loaded, skipping reload`);
-          return;
-        }
-      } catch (err) {
-        console.error("Error accessing localStorage:", err);
-      }
-    }
     if (projectData?.pathsData && Object.keys(projectData.pathsData).length > 0) {
-      console.log("Loading paths data from context:", projectData.pathsData);
-      
-      try {
-        // Convert from object to array format for the form
-        // Since we removed the title property from stored routes, we need to add it back for UI display
-        const routesArray = Object.entries(projectData.pathsData).map(
-          ([title, route]) => {
-            console.log(`Processing path with title: '${title}':`, route);
-            
-            // Check if the route data has numeric indices (which could happen from API)
-            const hasNumericKeys = Object.keys(route).some(key => !isNaN(Number(key)));
-            if (hasNumericKeys) {
-              console.log("Found numeric keys in route data:", 
-                Object.keys(route).filter(key => !isNaN(Number(key))));
-              
-              // Clean up the route data before using it
-              const cleanRoute = Object.entries(route)
-                .filter(([key]) => isNaN(Number(key)))
-                .reduce((obj, [key, value]) => {
-                  obj[key] = value;
-                  return obj;
-                }, {} as Record<string, any>) as Route;
-                
-              return {
-                ...cleanRoute,
-                title // Add the title from the key for the form
-              };
-            }
-            
-            return {
-              ...route,
-              title // Add the title from the key for the form
-            };
-          }
-        );
-        
-        console.log("Converted routes array:", routesArray);
-        
-        if (routesArray.length > 0) {
-          setRoutes(routesArray);
-          console.log("Successfully set routes from project data");
-        } else {
-          console.log("No valid routes found in project data");
-        }
-
-        // Mark that we've loaded data in localStorage so it persists across navigation
-        if (projectId) {
-          try {
-            localStorage.setItem(localStorageKey, 'true');
-            console.log(`Saved load state to localStorage for project ${projectId} paths`);
-          } catch (err) {
-            console.error("Error setting localStorage:", err);
-          }
-        }
-      } catch (error) {
-        console.error("Error processing paths data:", error);
-        // Set a default empty path if we can't load the saved ones
-        setRoutes([{
-          title: "Main Path", // Give a default title so it always saves
-          loveInterest: null,
-          keyChoices: "",
-          beginning: "",
-          middle: "",
-          climax: "",
-          goodEnding: "",
-          badEnding: "",
-        }]);
-        
-        // Even with an error, we've attempted to load, so mark as loaded in localStorage
-        if (projectId) {
-          try {
-            localStorage.setItem(localStorageKey, 'true');
-            console.log(`Saved load state to localStorage for project ${projectId} paths (with default values)`);
-          } catch (err) {
-            console.error("Error setting localStorage:", err);
-          }
-        }
-      }
-    } else {
-      console.log("No paths data found in project data");
+      // Convert from object to array format for the form
+      // Since we removed the title property from stored routes, we need to add it back for UI display
+      const routesArray = Object.entries(projectData.pathsData).map(
+        ([title, route]) => ({
+          ...route,
+          title // Add the title from the key for the form
+        })
+      );
+      setRoutes(routesArray);
     }
   }, [projectData]);
-  
-  // Helper function to save path data - matching the structure of saveCharacterData
-  function savePathData() {
-    console.log("Saving path data...");
-    
-    // Convert array to object format for storage
-    const pathsObj: Record<string, Route> = {};
-    
-    // Check if there's any data to save
-    if (routes.length === 0) {
-      console.log("No paths to save");
-      return pathsObj;
-    }
-    
-    // Log the routes array before processing
-    console.log("Paths to save:", routes);
-    
-    routes.forEach(route => {
-      // Only process routes that have a title
-      if (route.title) {
-        console.log(`Processing path with title: ${route.title}`);
-        
-        // Extract title but don't store it in the object
-        const { title, ...routeWithoutTitle } = route;
-        
-        // Remove any numeric keys that might be causing unintended nesting
-        const cleanRoute = Object.entries(routeWithoutTitle)
-          .filter(([key]) => isNaN(Number(key)))
-          .reduce((obj, [key, value]) => {
-            obj[key] = value;
-            return obj;
-          }, {} as Record<string, any>) as Route;
-        
-        // Store with title as key and the rest of the properties as value
-        pathsObj[title] = cleanRoute;
-      } else {
-        console.log("Skipping path with no title");
-      }
-    });
-    
-    console.log("Final paths object to save:", pathsObj);
-    
-    // Set the paths data in the context
-    setPathsData(pathsObj);
-    
-    return pathsObj;
-  }
-  
-  // Register with form save system
-  useRegisterFormSave('paths', savePathData);
-  
-  // Path form autosave component
-  const PathFormAutosave = () => {
-    const handleAutosave = (data: Record<string, any>) => {
-      console.log("Path autosave triggered with routes:", routes);
-      
-      // Save path data to context
-      const result = savePathData();
-      
-      // Save to server if we have a project ID
-      if (projectData?.id) {
-        console.log("Saving paths to server...");
-        saveProject().then(() => {
-          console.log("Saved paths to server successfully");
-          toast({
-            title: "Saved",
-            description: `Saved ${Object.keys(result).length} paths automatically`,
-            duration: 2000,
-          });
-        }).catch(err => {
-          console.error("Error saving paths to server:", err);
-        });
-      }
-    };
-    
-    // Set up autosave to run every 10 seconds
-    useAutosave('paths', handleAutosave, 10000);
-    
-    return null; // This component doesn't render anything
-  };
-  
-  // No longer need initialDataLoadedRef since we use localStorage
 
   // Add a new path card
   const addPath = () => {
@@ -265,15 +78,11 @@ export default function PathsForm() {
       alert("You can only create up to 3 paths.");
       return;
     }
-    
-    // Create a default path title based on path number
-    const pathNumber = routes.length + 1;
-    const defaultTitle = `Path ${pathNumber}`;
 
     setRoutes([
       ...routes,
       {
-        title: defaultTitle,
+        title: "",
         loveInterest: null,
         keyChoices: "",
         beginning: "",
@@ -292,49 +101,13 @@ export default function PathsForm() {
       return;
     }
 
-    console.log(`Removing path at index ${index}`);
-    const pathToRemove = routes[index];
-    console.log("Path being removed:", pathToRemove);
-    
     const updatedRoutes = [...routes];
     updatedRoutes.splice(index, 1);
     setRoutes(updatedRoutes);
-    
-    // Immediately save after removing a path to ensure it's removed from storage
-    console.log("Immediately saving after path removal");
-    const savedPaths = savePathData();
-    console.log("Updated paths after removal:", savedPaths);
-    
-    // Also save to server if we have a project ID to ensure the removal is persisted
-    if (projectData?.id) {
-      console.log("Saving to server after path removal");
-      saveProject().then(() => {
-        console.log("Saved to server after path removal");
-        toast({
-          title: "Path Removed",
-          description: `${pathToRemove.title || 'Path'} has been removed`,
-          duration: 2000,
-        });
-        
-        // Update localStorage to mark that we've made changes
-        try {
-          // If this was the last path, we should reset the load flag
-          // so that if a new path is added, we'll reload the data
-          if (updatedRoutes.length === 0) {
-            localStorage.removeItem(localStorageKey);
-            console.log(`Removed load flag from localStorage for project ${projectId} - all paths deleted`);
-          }
-        } catch (err) {
-          console.error("Error updating localStorage:", err);
-        }
-      }).catch(err => {
-        console.error("Error saving after path removal:", err);
-      });
-    }
   };
 
   // Update path field
-  const updatePath = (index: number, field: keyof RouteForm, value: any) => {
+  const updatePath = (index: number, field: keyof Route, value: any) => {
     const updatedRoutes = [...routes];
     updatedRoutes[index] = {
       ...updatedRoutes[index],
@@ -353,64 +126,48 @@ export default function PathsForm() {
     setRoutes(updatedRoutes);
   };
 
+  // Helper function to save path data
+  const savePathData = (routesToSave: Route[] = routes) => {
+    // Convert array to object format for storage
+    const pathsObj: Record<string, Route> = {};
+    routesToSave.forEach(route => {
+      if (route.title) {
+        // Create a copy of the route without the redundant title property
+        const { title, ...routeWithoutTitle } = route;
+        // Store with title as key but don't include title in the value
+        pathsObj[title] = routeWithoutTitle;
+      }
+    });
+    
+    // Set the paths data in the context
+    setPathsData(pathsObj);
+    
+    return pathsObj;
+  };
+
   // Generate path details using AI
   const handleGeneratePath = async (index: number) => {
-    console.log(`Generating path details for index ${index}...`);
     setGeneratingPathIndex(index);
 
-    try {
-      console.log("Calling generatePathData for single path...");
-      console.log("Current path before generation:", routes[index]);
-      
-      const generatedPath = await generatePathData(index, routes[index]);
-      console.log("generatePathData returned:", generatedPath);
+    const generatedPath = await generatePathData(index, routes[index]);
 
-      if (generatedPath) {
-        console.log("Checking generated path structure for numeric keys...");
-        const hasNumericKeysInGenerated = Object.keys(generatedPath).some(key => !isNaN(Number(key)));
-        console.log(`Generated path has numeric keys: ${hasNumericKeysInGenerated}`);
-        
-        if (hasNumericKeysInGenerated) {
-          console.log("Numeric keys found in generated path:", 
-            Object.keys(generatedPath).filter(key => !isNaN(Number(key))));
-        }
-        
-        const updatedRoutes = [...routes];
-        console.log("Before merge:", updatedRoutes[index]);
-        
-        updatedRoutes[index] = {
-          ...updatedRoutes[index],
-          ...generatedPath,
-        };
-        
-        console.log("After merge:", updatedRoutes[index]);
-        setRoutes(updatedRoutes);
+    if (generatedPath) {
+      const updatedRoutes = [...routes];
+      updatedRoutes[index] = {
+        ...updatedRoutes[index],
+        ...generatedPath,
+      };
+      setRoutes(updatedRoutes);
 
-        // Update the project context after generation
-        const savedData = savePathData();
-        console.log(`Saved paths data after generation:`, savedData);
-        
-        // Save to server if we have a project ID
-        if (projectData?.id) {
-          try {
-            await saveProject();
-            console.log(`Saved path ${index + 1} data to server`);
-          } catch (error) {
-            console.error("Error saving project after path generation:", error);
-          }
-        }
+      // Update the project context after path generation
+      savePathData(updatedRoutes);
 
-        // Log generation to console
-        console.log(`🔥 Generated path ${index + 1}:`, generatedPath);
-        console.log(`🔥 Updated project context with path ${index + 1} data`);
-      } else {
-        console.log(`Failed to generate path ${index + 1}`);
-      }
-    } catch (error) {
-      console.error("Error in handleGeneratePath:", error);
-    } finally {
-      setGeneratingPathIndex(null);
+      // Log generation to console
+      console.log(`🔥 Generated path ${index + 1}:`, generatedPath);
+      console.log(`🔥 Updated project context with path ${index + 1} data`);
     }
+
+    setGeneratingPathIndex(null);
   };
 
   // Generate all paths
@@ -437,54 +194,23 @@ export default function PathsForm() {
         loveInterest: route.loveInterest,
       }));
 
-      console.log(`Generating ${pathTemplates.length} paths at once with templates:`, pathTemplates);
+      console.log(`Generating ${pathTemplates.length} paths at once...`);
 
       // Generate all paths in one API call
       const generatedPaths = await generateMultiplePathsData(pathTemplates);
-      console.log("Received generated paths:", generatedPaths);
-      
+
       if (generatedPaths && Array.isArray(generatedPaths)) {
-        // Check for numeric keys in generated paths
-        generatedPaths.forEach((path, idx) => {
-          const hasNumericKeys = Object.keys(path).some(key => !isNaN(Number(key)));
-          if (hasNumericKeys) {
-            console.log(`Generated path ${idx} has numeric keys:`, 
-              Object.keys(path).filter(key => !isNaN(Number(key))));
-          }
-        });
-        
         // Merge the generated paths with existing path data
-        const updatedRoutes = allRoutes.map((route, idx) => {
-          console.log(`Merging path ${idx}:`);
-          console.log("Original:", route);
-          console.log("Generated:", generatedPaths[idx]);
-          
-          // Merge the data
-          const merged = {
-            ...route,
-            ...generatedPaths[idx],
-          };
-          
-          console.log("Result:", merged);
-          return merged;
-        });
+        const updatedRoutes = allRoutes.map((route, idx) => ({
+          ...route,
+          ...generatedPaths[idx],
+        }));
 
         // Update state and project context
         setRoutes(updatedRoutes);
         
-        // Save the path data to the context with our enhanced clean-up function
-        const savedData = savePathData();
-        console.log("Paths saved after batch generation:", savedData);
-        
-        // Save to server if we have a project ID
-        if (projectData?.id) {
-          try {
-            await saveProject();
-            console.log("Saved all paths data to server");
-          } catch (error) {
-            console.error("Error saving project after batch path generation:", error);
-          }
-        }
+        // Save the path data using our helper function
+        savePathData(updatedRoutes);
 
         console.log("Successfully generated all paths at once");
         console.log("Updated project context with all path data");
@@ -510,18 +236,25 @@ export default function PathsForm() {
 
   // Proceed to next step
   const handleNext = () => {
-    console.log("Next button clicked");
-    
+    // // Validate paths
+    // const isValid = routes.every(
+    //   (route) =>
+    //     route.title &&
+    //     route.keyChoices.trim() &&
+    //     route.beginning &&
+    //     route.middle &&
+    //     route.climax &&
+    //     route.goodEnding &&
+    //     route.badEnding,
+    // );
+
+    // if (!isValid) {
+    //   alert("Please fill in all required fields for each path");
+    //   return;
+    // }
+
     // Save data using our helper function
-    const savedData = savePathData();
-    console.log("Paths saved on next:", savedData);
-    
-    // Also explicitly save the project
-    if (projectData?.id) {
-      saveProject()
-        .then(() => console.log("Project saved to server"))
-        .catch(err => console.error("Error saving project:", err));
-    }
+    savePathData();
 
     // Navigate to next step
     setLocation("/create/plot");
@@ -544,7 +277,6 @@ export default function PathsForm() {
     <>
       <NavBar />
       <CreationProgress currentStep={4} />
-      <PathFormAutosave />
 
       <div className="pt-16">
         <div className="creation-container max-w-4xl mx-auto p-6">
@@ -704,7 +436,7 @@ export default function PathsForm() {
                         </label>
                         <Textarea
                           rows={3}
-                          placeholder="Description of the positive resolution"
+                          placeholder="Description of positive resolution"
                           value={route.goodEnding}
                           onChange={(e) =>
                             updatePath(index, "goodEnding", e.target.value)
@@ -718,7 +450,7 @@ export default function PathsForm() {
                         </label>
                         <Textarea
                           rows={3}
-                          placeholder="Description of the negative resolution"
+                          placeholder="Description of negative outcome"
                           value={route.badEnding}
                           onChange={(e) =>
                             updatePath(index, "badEnding", e.target.value)
@@ -731,19 +463,38 @@ export default function PathsForm() {
 
                 <CardFooter className="flex justify-end">
                   <Button
+                    variant="ghost"
+                    className="text-primary hover:text-primary/80 text-sm"
                     onClick={() => handleGeneratePath(index)}
-                    variant="outline"
-                    className="text-primary border-primary hover:bg-primary/10 flex items-center gap-2"
-                    disabled={generatingPathIndex !== null}
+                    disabled={isGenerating}
                   >
-                    {generatingPathIndex === index ? (
+                    {generatingPathIndex === index && isGenerating ? (
                       <>
-                        <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
+                        <svg
+                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
                         Generating...
                       </>
                     ) : (
                       <>
-                        <Wand2 className="h-4 w-4" /> Auto-Complete
+                        <Wand2 className="mr-1 h-4 w-4" /> Generate Path
                       </>
                     )}
                   </Button>
@@ -751,49 +502,73 @@ export default function PathsForm() {
               </Card>
             ))}
 
-            {routes.length < 3 && (
-              <Button
-                onClick={addPath}
-                variant="outline"
-                className="w-full py-8 border-dashed border-gray-300 hover:border-primary hover:bg-gray-50 flex items-center justify-center gap-2"
-              >
-                <Plus className="h-4 w-4" /> Add New Path
-              </Button>
-            )}
-          </div>
+            <div className="pt-6 flex flex-col space-y-4">
+              <div className="flex justify-center gap-4">
+                <Button
+                  onClick={addPath}
+                  variant="secondary"
+                  className="flex items-center"
+                  disabled={routes.length >= 3}
+                >
+                  <Plus className="mr-1 h-4 w-4" /> Add Path
+                </Button>
 
-          <div className="mt-8 flex justify-between">
-            <Button
-              onClick={handleBack}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              Back
-            </Button>
-
-            <div className="flex gap-3">
-              <Button
-                onClick={handleGenerateAllPaths}
-                variant="outline"
-                className="flex items-center gap-2"
-                disabled={generatingPathIndex !== null || routes.length === 0}
-              >
-                {generatingPathIndex === -1 ? (
-                  <>
-                    <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
-                    Generating All...
-                  </>
-                ) : (
-                  <>
-                    <Wand2 className="h-4 w-4" /> Generate All Paths
-                  </>
-                )}
-              </Button>
-
-              <Button onClick={handleNext} className="flex items-center gap-2">
-                Next
-              </Button>
+                <Button
+                  onClick={handleGenerateAllPaths}
+                  variant="secondary"
+                  className="flex items-center text-primary border-primary hover:bg-primary/10"
+                  disabled={isGenerating || routes.length === 0}
+                >
+                  <Wand2 className="mr-1 h-4 w-4" />
+                  {generatingPathIndex === -1 && isGenerating ? (
+                    <>
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Generating All...
+                    </>
+                  ) : (
+                    <>Generate All Paths</>
+                  )}
+                </Button>
+              </div>
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={handleBack}>
+                  Back
+                </Button>
+                <Button onClick={handleNext}>Next: Plot</Button>
+              </div>
             </div>
+
+            {isGenerating && generatingPathIndex !== null && (
+              <div className="pt-3 flex justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-red-600 border-red-300 hover:bg-red-50"
+                  onClick={cancelGeneration}
+                >
+                  Cancel Generation
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>

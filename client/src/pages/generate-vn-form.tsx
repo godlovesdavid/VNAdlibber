@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useVnData } from "@/hooks/use-vn-data";
-import { useRegisterFormSave } from "@/hooks/use-form-save";
 import { CreationProgress } from "@/components/creation-progress";
 import { NavBar } from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
@@ -65,17 +64,6 @@ export default function GenerateVnForm() {
       skills: { ...playerData.skills },
     });
   }, [playerData]);
-  
-  // Helper function to save generated VN data
-  function saveGeneratedVnData() {
-    // No specific form data to save - this form uses direct setGeneratedAct calls
-    // during generation, so we just need to ensure player data is saved
-    updatePlayerData(editablePlayerData);
-    return { scenesPerAct, playerData: editablePlayerData };
-  }
-  
-  // Register with form save system
-  useRegisterFormSave('generate-vn', saveGeneratedVnData);
 
   // Handle reset player data
   const handleResetPlayerData = () => {
@@ -290,10 +278,9 @@ export default function GenerateVnForm() {
                   projectData?.plotData?.plotOutline && (
                     <div className="border border-neutral-200 rounded-md p-4">
                       <h4 className="text-md font-medium text-neutral-700 mb-2">
-                        {typeof projectData.plotData.plotOutline[`act${actNumber}`] === 'object' && 
-                         'title' in (projectData.plotData.plotOutline[`act${actNumber}`] as any) ? 
-                         (projectData.plotData.plotOutline[`act${actNumber}`] as any).title : 
-                         `Act ${actNumber}`}
+                        {projectData.plotData.plotOutline[
+                          `act${actNumber}` as keyof typeof projectData.plotData.plotOutline
+                        ]?.title || `Act ${actNumber}`}
                       </h4>
                       <p className="text-sm text-neutral-600 mb-4">
                         {projectData.plotData.plotOutline[

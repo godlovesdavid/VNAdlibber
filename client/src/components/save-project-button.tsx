@@ -1,31 +1,12 @@
 import { useVnContext } from "@/context/vn-context";
 import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
-import { useLocation } from "wouter";
-import { useFormSave } from "@/hooks/use-form-save";
 
 export function SaveProjectButton() {
   const { saveProject, saveLoading } = useVnContext();
-  const { saveCurrentForm } = useFormSave();
-  const [location] = useLocation();
   
   const handleSave = async () => {
-    // Get the current page path
-    let path = location.split('/').pop() || '';
-    
-    // Map characters-form to characters for form saving
-    if (path === 'characters') {
-      path = 'characters';
-      console.log('Saving character form data');
-    }
-    
-    // Try to save the current form data
-    saveCurrentForm(path);
-    
-    // Then save the whole project
     await saveProject();
-    
-    console.log(`Project saved with current form data from ${path}`);
   };
   
   return (

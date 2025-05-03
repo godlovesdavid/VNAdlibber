@@ -19,24 +19,19 @@ const calculateProgress = (project: any): number => {
   let progress = 1; // Basic data is always present (step 1)
   
   // Check for concept data (step 2)
-  if (project.conceptData && Object.keys(project.conceptData).length > 0) progress++;
+  if (project.conceptData) progress++;
   
   // Check for characters data (step 3)
-  if (project.charactersData && Object.keys(project.charactersData).length > 0) progress++;
+  if (project.charactersData?.characters?.length > 0) progress++;
   
   // Check for paths data (step 4)
-  if (project.pathsData && Object.keys(project.pathsData).length > 0) progress++;
+  if (project.pathsData?.routes?.length > 0) progress++;
   
   // Check for plot data (step 5)
-  if (project.plotData && Object.keys(project.plotData).length > 0) progress++;
+  if (project.plotData?.plotOutline) progress++;
   
   // Check for generated acts (step 6)
   if (project.generatedActs && Object.keys(project.generatedActs).length > 0) progress++;
-  
-  // If project has a currentStep property, use that as it's more reliable
-  if (project.currentStep && typeof project.currentStep === 'number') {
-    return Math.max(1, Math.min(6, project.currentStep));
-  }
   
   return progress;
 };
@@ -51,28 +46,11 @@ export function LoadProjectDialog({ open, onOpenChange }: LoadProjectDialogProps
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<number | null>(null);
   
-  // Force refetch when dialog opens
-  useEffect(() => {
-    if (open) {
-      console.log('LoadProjectDialog opened - forcing refetch');
-      setTimeout(() => refetch(), 500); // Slight delay to ensure dialog is rendered
-    }
-  }, [open]);
-
   // Fetch projects
   const { data: projects = [], isLoading, error, refetch } = useQuery<any[]>({
     queryKey: ['/api/projects'],
-    enabled: true, // Always fetch when component mounts
+    enabled: open, // Only fetch when dialog is open
   });
-  
-  // Log project data when it changes
-  useEffect(() => {
-    if (projects && projects.length > 0) {
-      console.log('Projects loaded successfully:', projects);
-    } else if (projects && projects.length === 0) {
-      console.log('No projects found in the database');
-    }
-  }, [projects]);
   
   // Handle project selection
   const handleSelectProject = async (projectId: number) => {

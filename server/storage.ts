@@ -25,224 +25,144 @@ export interface IStorage {
   deleteStory(id: number): Promise<void>;
 }
 
-import { db } from "./db";
-import { eq } from "drizzle-orm";
-
-// Database storage implementation
-export class DatabaseStorage implements IStorage {
+// In-memory storage implementation
+export class MemStorage implements IStorage {
+  private users: Map<number, User>;
+  private projects: Map<number, VnProject>;
+  private stories: Map<number, VnStory>;
+  
+  private userId: number;
+  private projectId: number;
+  private storyId: number;
+  
+  constructor() {
+    this.users = new Map();
+    this.projects = new Map();
+    this.stories = new Map();
+    
+    this.userId = 1;
+    this.projectId = 1;
+    this.storyId = 1;
+    
+    // Initialize with sample data
+    this.initializeSampleData();
+  }
+  
+  private initializeSampleData() {
+    // Create a sample user
+    const user: User = {
+      id: this.userId++,
+      username: "demo",
+      password: "password"
+    };
+    this.users.set(user.id, user);
+    
+    // Create a sample project
+    const now = new Date().toISOString();
+    const sampleProject: VnProject = {
+      id: this.projectId++,
+      userId: user.id,
+      title: "Echoes of Tomorrow",
+      createdAt: now,
+      updatedAt: now,
+      basicData: {
+        theme: "identity",
+        tone: "melancholic",
+        genre: "cyberpunk"
+      },
+      conceptData: {
+        title: "Echoes of Tomorrow",
+        tagline: "In a world where memories are currency, the truth comes at the highest price.",
+        premise: "In Neo-Kyoto, a city where memories can be traded like currency, Aki Nakamura, a memory archivist, discovers a forbidden memory that reveals a conspiracy at the heart of society. As they navigate a web of deception involving the powerful Sato Corporation, they must choose between exposing the truth or protecting those they love."
+      },
+      currentStep: 2
+    };
+    this.projects.set(sampleProject.id, sampleProject);
+  }
+  
   // User methods
   async getUser(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
+    return this.users.get(id);
   }
   
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user;
+    return Array.from(this.users.values()).find(
+      (user) => user.username === username
+    );
   }
   
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(insertUser).returning();
+    const id = this.userId++;
+    const user: User = { ...insertUser, id };
+    this.users.set(id, user);
     return user;
   }
   
   // VN Project methods
   async getProjects(): Promise<VnProject[]> {
-    const projects = await db.select().from(vnProjects);
-    return projects;
+    return Array.from(this.projects.values());
   }
   
   async getProject(id: number): Promise<VnProject | undefined> {
-    const [project] = await db.select().from(vnProjects).where(eq(vnProjects.id, id));
-    return project;
+    return this.projects.get(id);
   }
   
   async createProject(insertProject: InsertVnProject): Promise<VnProject> {
-    try {
-      // Ensure we have required fields
-      if (!insertProject.title) {
-        console.log("Adding default title for project");
-        let defaultTitle = "Untitled Project";
-        
-        // Try to get title from concept data if it exists
-        if (insertProject.conceptData && typeof insertProject.conceptData === 'object') {
-          const conceptData = insertProject.conceptData as Record<string, any>;
-          if (conceptData.title && typeof conceptData.title === 'string') {
-            defaultTitle = conceptData.title;
-          }
-        }
-        
-        insertProject.title = defaultTitle;
-      }
-      
-      if (!insertProject.createdAt) {
-        insertProject.createdAt = new Date().toISOString();
-      }
-      
-      if (!insertProject.updatedAt) {
-        insertProject.updatedAt = new Date().toISOString();
-      }
-      
-      // Ensure all required fields for VnProject are present
-      const projectToInsert = {
-        ...insertProject,
-        basicData: insertProject.basicData || {},
-        conceptData: insertProject.conceptData || {},
-        charactersData: insertProject.charactersData || {},
-        pathsData: insertProject.pathsData || {},
-        plotData: insertProject.plotData || {},
-        generatedActs: insertProject.generatedActs || {},
-        playerData: insertProject.playerData || {},
-        currentStep: insertProject.currentStep || 1
-      };
-      
-      console.log(`Creating new project with title: ${projectToInsert.title}`);
-      const [project] = await db.insert(vnProjects).values(projectToInsert).returning();
-      console.log(`Project created successfully with ID: ${project.id}`);
-      
-      return project;
-    } catch (error) {
-      console.error("Error in createProject:", error);
-      throw error;
-    }
+    const id = this.projectId++;
+    const project: VnProject = { ...insertProject, id };
+    this.projects.set(id, project);
+    return project;
   }
   
   async updateProject(id: number, projectData: Partial<VnProject>): Promise<VnProject> {
-    try {
-      console.log(`Updating project with ID: ${id}`);
-      
-      // Get existing project
-      const [existingProject] = await db.select().from(vnProjects).where(eq(vnProjects.id, id));
-      
-      if (!existingProject) {
-        console.error(`Project with id ${id} not found`);
-        throw new Error(`Project with id ${id} not found`);
-      }
-      
-      // Enhanced character data validation
-      if (projectData.charactersData) {
-        // Check if we're about to overwrite existing characters with empty data
-        if (existingProject.charactersData && 
-            Object.keys(existingProject.charactersData).length > 0 && 
-            Object.keys(projectData.charactersData).length === 0) {
-          console.warn("CRITICAL WARNING: Attempted to overwrite characters with empty data in storage");
-          console.log("Preserving existing character data in storage layer");
-          projectData.charactersData = existingProject.charactersData;
-        } else if (Object.keys(projectData.charactersData).length > 0) {
-          // We have new character data - validate it has actual content
-          let hasValidCharacters = false;
-          for (const character of Object.values(projectData.charactersData)) {
-            if (character && typeof character === 'object' && Object.keys(character).length > 0) {
-              hasValidCharacters = true;
-              break;
-            }
-          }
-          if (!hasValidCharacters) {
-            console.warn("WARNING: All incoming characters are empty objects in storage");
-            if (existingProject.charactersData && Object.keys(existingProject.charactersData).length > 0) {
-              console.log("Using existing character data instead");
-              projectData.charactersData = existingProject.charactersData;
-            }
-          }
-        }
-      }
-      
-      // Enhanced concept data validation
-      if (projectData.conceptData) {
-        const conceptData = projectData.conceptData as { title?: string; tagline?: string; premise?: string };
-        // Check if we're about to overwrite existing concept with empty data
-        if (existingProject.conceptData && 
-            typeof existingProject.conceptData === 'object' &&
-            'title' in existingProject.conceptData && existingProject.conceptData.title && 
-            'tagline' in existingProject.conceptData && existingProject.conceptData.tagline && 
-            'premise' in existingProject.conceptData && existingProject.conceptData.premise && 
-            (!conceptData.title || !conceptData.tagline || !conceptData.premise)) {
-          console.warn("CRITICAL WARNING: Attempted to overwrite concept with incomplete data in storage");
-          console.log("Preserving existing concept data in storage layer");
-          projectData.conceptData = existingProject.conceptData;
-          // Make sure top-level title matches concept title
-          const existingTitle = (existingProject.conceptData as any).title;
-          if (existingTitle && projectData.title !== existingTitle) {
-            console.log("Updating top-level title to match concept title");
-            projectData.title = existingTitle;
-          }
-        } else if (!conceptData.title && !conceptData.tagline && !conceptData.premise) {
-          // The new concept data is completely empty but we have existing data
-          if (existingProject.conceptData && typeof existingProject.conceptData === 'object' &&
-             (('title' in existingProject.conceptData && existingProject.conceptData.title) || 
-              ('tagline' in existingProject.conceptData && existingProject.conceptData.tagline) || 
-              ('premise' in existingProject.conceptData && existingProject.conceptData.premise))) {
-            console.warn("WARNING: New concept data is empty, preserving existing data");
-            projectData.conceptData = existingProject.conceptData;
-          }
-        }
-      }
-      
-      // Make sure we don't lose required fields
-      const updatedProject = {
-        ...existingProject,
-        ...projectData,
-        updatedAt: new Date().toISOString()
-      };
-      
-      // Title is required
-      if (!updatedProject.title) {
-        updatedProject.title = existingProject.title;
-      }
-      
-      console.log(`Updating project with title: ${updatedProject.title}`);
-      
-      // Log character counts for debugging
-      console.log(`Character count before update: ${Object.keys(existingProject.charactersData || {}).length}`);
-      console.log(`Character count after update: ${Object.keys(updatedProject.charactersData || {}).length}`);
-      
-      const [result] = await db
-        .update(vnProjects)
-        .set(updatedProject)
-        .where(eq(vnProjects.id, id))
-        .returning();
-      
-      console.log('Project updated successfully');
-      return result;
-    } catch (error) {
-      console.error("Error in updateProject:", error);
-      throw error;
+    const existingProject = this.projects.get(id);
+    
+    if (!existingProject) {
+      throw new Error(`Project with id ${id} not found`);
     }
+    
+    const updatedProject: VnProject = {
+      ...existingProject,
+      ...projectData,
+      id,
+      updatedAt: new Date().toISOString()
+    };
+    
+    this.projects.set(id, updatedProject);
+    return updatedProject;
   }
   
   async deleteProject(id: number): Promise<void> {
-    // First delete any stories associated with this project
-    await db.delete(vnStories).where(eq(vnStories.projectId, id));
+    this.projects.delete(id);
     
-    // Then delete the project
-    await db.delete(vnProjects).where(eq(vnProjects.id, id));
+    // Also delete any associated stories
+    for (const [storyId, story] of this.stories.entries()) {
+      if (story.projectId === id) {
+        this.stories.delete(storyId);
+      }
+    }
   }
   
   // VN Story methods
   async getStories(): Promise<VnStory[]> {
-    return await db.select().from(vnStories);
+    return Array.from(this.stories.values());
   }
   
   async getStory(id: number): Promise<VnStory | undefined> {
-    const [story] = await db.select().from(vnStories).where(eq(vnStories.id, id));
-    return story;
+    return this.stories.get(id);
   }
   
   async createStory(insertStory: InsertVnStory): Promise<VnStory> {
-    try {
-      const [story] = await db.insert(vnStories).values(insertStory).returning();
-      console.log(`Story created successfully with ID: ${story.id}`);
-      return story;
-    } catch (error) {
-      console.error("Error in createStory:", error);
-      throw error;
-    }
+    const id = this.storyId++;
+    const story: VnStory = { ...insertStory, id };
+    this.stories.set(id, story);
+    return story;
   }
   
   async deleteStory(id: number): Promise<void> {
-    await db.delete(vnStories).where(eq(vnStories.id, id));
+    this.stories.delete(id);
   }
 }
 
 // Export a singleton instance of the storage
-export const storage = new DatabaseStorage();
+export const storage = new MemStorage();

@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useVnData } from "@/hooks/use-vn-data";
-import { useRegisterFormSave } from "@/hooks/use-form-save";
 import { CreationProgress } from "@/components/creation-progress";
 import { NavBar } from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
@@ -44,18 +43,6 @@ export default function PlotForm() {
       });
     }
   }, [projectData]);
-
-  // Helper function to save plot data
-  function savePlotData() {
-    if (plotActs) {
-      setPlotData(plotActs);
-      return plotActs;
-    }
-    return null;
-  }
-  
-  // Register with form save system
-  useRegisterFormSave('plot', savePlotData);
 
   // Toggle act expansion
   const toggleAct = (act: string) => {

@@ -1,28 +1,10 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
-/**
- * Helper for determining API URL prefix based on current environment
- */
-function getApiBaseUrl(): string {
-  // Use the base URL from where the app is running
-  const isLocalDevServer = window.location.port === '3000' || window.location.port === '5173';
-  
-  if (isLocalDevServer) {
-    return 'http://localhost:5000';
-  }
-  
-  // When deployed, the frontend and backend are on the same origin
-  return '';
-}
-
-/**
- * Helper to throw meaningful errors from API responses
- */
-async function throwIfResNotOk(res: Response): Promise<void> {
+async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     // Try to parse as JSON first
-    let errorResponse: any;
-    let errorMessage: string;
+    let errorResponse;
+    let errorMessage;
     
     try {
       // Clone the response before trying to read it
@@ -61,9 +43,6 @@ async function throwIfResNotOk(res: Response): Promise<void> {
   }
 }
 
-/**
- * Generic API request function
- */
 export async function apiRequest(
   method: string,
   url: string,
@@ -71,13 +50,9 @@ export async function apiRequest(
   signal?: AbortSignal | undefined,
 ): Promise<Response> {
   try {
-    // Ensure we use the correct API base URL
-    const baseUrl = getApiBaseUrl();
-    const fullUrl = url.startsWith('/api/') ? `${baseUrl}${url}` : url;
+    console.log(`API Request: ${method} ${url}`, data);
     
-    console.log(`API Request: ${method} ${fullUrl}`, data);
-    
-    const res = await fetch(fullUrl, {
+    const res = await fetch(url, {
       method,
       headers: data ? { "Content-Type": "application/json" } : {},
       body: data ? JSON.stringify(data) : undefined,
@@ -95,54 +70,24 @@ export async function apiRequest(
   }
 }
 
-/**
- * Types for query handling
- */
 type UnauthorizedBehavior = "returnNull" | "throw";
-
-/**
- * Query function to use with TanStack Query
- */
 export const getQueryFn: <T>(options: {
   on401: UnauthorizedBehavior;
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    try {
-      // Ensure we use the correct API base URL
-      const baseUrl = getApiBaseUrl();
-      let url = queryKey[0] as string;
-      
-      // Add API base URL if this is an API request
-      if (url.startsWith('/api/')) {
-        url = `${baseUrl}${url}`;
-      }
-      
-      console.log('Fetching from URL:', url);
-      
-      const res = await fetch(url, {
-        credentials: "include",
-      });
-      
-      console.log('Query response status:', res.status);
+    const res = await fetch(queryKey[0] as string, {
+      credentials: "include",
+    });
 
-      if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-        return null;
-      }
-
-      await throwIfResNotOk(res);
-      const data = await res.json();
-      console.log('Query data:', data);
-      return data;
-    } catch (error) {
-      console.error('Query error:', error);
-      throw error;
+    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+      return null;
     }
+
+    await throwIfResNotOk(res);
+    return await res.json();
   };
 
-/**
- * Create the query client for the application
- */
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

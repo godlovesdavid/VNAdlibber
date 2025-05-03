@@ -1,10 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useVnData } from "@/hooks/use-vn-data";
-import { useRegisterFormSave } from "@/hooks/use-form-save";
-import { useToast } from "@/hooks/use-toast";
-import { useAutosave } from "@/hooks/use-simple-autosave";
 import { CreationProgress } from "@/components/creation-progress";
 import { NavBar } from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
@@ -22,8 +19,7 @@ import { Character } from "@/types/vn";
 
 export default function CharactersForm() {
   const [, setLocation] = useLocation();
-  const { projectData, setCharactersData, goToStep, saveProject } = useVnContext();
-  const { toast } = useToast();
+  const { projectData, setCharactersData, goToStep } = useVnContext();
   const {
     generateCharacterData,
     generateMultipleCharactersData,
@@ -56,39 +52,8 @@ export default function CharactersForm() {
     number | null
   >(null);
 
-  // Use localStorage to remember the loading state across navigation
-  const projectId = projectData?.id;
-  const localStorageKey = `character-form-loaded-${projectId}`;
-  
-  // Check local storage on component mount to see if we've already loaded this project's characters
+  // Load existing data if available
   useEffect(() => {
-    if (projectId) {
-      try {
-        const loaded = localStorage.getItem(localStorageKey) === 'true';
-        if (loaded) {
-          console.log(`Found previous load flag for project ${projectId} characters`);
-        }
-      } catch (err) {
-        console.error("Error accessing localStorage:", err);
-      }
-    }
-  }, []);
-  
-  // Load existing data if available, but only if not previously loaded for this project
-  useEffect(() => {
-    // Check if we've already loaded this project's characters
-    if (projectId) {
-      try {
-        const loaded = localStorage.getItem(localStorageKey) === 'true';
-        if (loaded) {
-          console.log(`Characters for project ${projectId} already loaded, skipping reload`);
-          return;
-        }
-      } catch (err) {
-        console.error("Error accessing localStorage:", err);
-      }
-    }
-
     if (projectData?.charactersData && Object.keys(projectData.charactersData).length > 0) {
       console.log("Loading characters data from context:", projectData.charactersData);
       
@@ -121,158 +86,8 @@ export default function CharactersForm() {
       
       console.log("Final characters array to set in form:", charactersArray);
       setCharacters(charactersArray);
-      
-      // Mark that we've loaded data in localStorage so it persists across navigation
-      if (projectId) {
-        try {
-          localStorage.setItem(localStorageKey, 'true');
-          console.log(`Saved load state to localStorage for project ${projectId} characters`);
-        } catch (err) {
-          console.error("Error setting localStorage:", err);
-        }
-      }
     }
   }, [projectData]);
-  
-  // Helper function to save character data (defined with function declaration for hoisting)
-  function saveCharacterData() {
-    console.log("Save character data called");
-    
-    // Transform array to object format
-    const charactersObj: Record<string, Character> = {};
-    let protagonist = "";
-    
-    // Check if there's any data to save
-    if (characters.length === 0) {
-      console.log("No characters to save");
-      return { charactersObj, protagonist };
-    }
-    
-    // Log the characters array before processing
-    console.log("Characters to save:", characters);
-    
-    characters.forEach((char, index) => {
-      if (char.name) {
-        // Extract name but don't store it in the object
-        const { name, ...characterWithoutName } = char;
-        
-        // Remove any numeric keys that might be causing unintended nesting
-        const cleanCharacter = Object.entries(characterWithoutName)
-          .filter(([key]) => isNaN(Number(key)))
-          .reduce((obj, [key, value]) => {
-            obj[key] = value;
-            return obj;
-          }, {} as Record<string, any>) as Character;
-          
-        charactersObj[name] = cleanCharacter;
-        
-        // Store the protagonist name (first character is always protagonist)
-        if (index === 0) {
-          protagonist = name;
-        }
-      }
-    });
-    
-    console.log("Final character data to save:", charactersObj);
-    console.log("Setting protagonist to:", protagonist);
-    
-    // CRITICAL FIX: Always check if character data has actual content
-    if (Object.keys(charactersObj).length === 0) {
-      console.error("CRITICAL: No character data to save after processing");
-      toast({
-        title: "Warning",
-        description: "No character data to save. Please add at least one character with a name.",
-        variant: "default",
-      });
-      return { charactersObj: {}, protagonist: "" };
-    }
-    
-    // Save directly to localStorage first as backup
-    try {
-      const currentProject = localStorage.getItem("current_vn_project");
-      if (currentProject) {
-        const parsed = JSON.parse(currentProject);
-        parsed.charactersData = charactersObj;
-        parsed.protagonist = protagonist;
-        localStorage.setItem("current_vn_project", JSON.stringify(parsed));
-        console.log("Saved characters to localStorage as backup");
-      }
-    } catch (err) {
-      console.error("Error saving to localStorage:", err);
-    }
-    
-    // Set the characters data with protagonist field
-    setCharactersData(charactersObj, protagonist);
-    
-    // Double check with manual saving if needed
-    setTimeout(async () => {
-      if (projectData?.id) {
-        // Verify characters were saved in context
-        if (!projectData.charactersData || Object.keys(projectData.charactersData).length === 0) {
-          console.warn("Characters not detected in project data after setting - performing manual direct save");
-          try {
-            // Create a manual save payload
-            const manualSavePayload = {
-              ...projectData,
-              charactersData: charactersObj,
-              protagonist: protagonist,
-              updatedAt: new Date().toISOString()
-            };
-            
-            // Make direct API call
-            const response = await fetch("/api/projects", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(manualSavePayload)
-            });
-            
-            if (response.ok) {
-              console.log("Manual character save successful");
-            }
-          } catch (err) {
-            console.error("Manual character save failed:", err);
-          }
-        }
-      }
-    }, 500);
-    
-    return { charactersObj, protagonist };
-  }
-  
-  // No longer need initialDataLoadedRef since we use localStorage
-  
-  // Register with form save system
-  useRegisterFormSave('characters', saveCharacterData);
-  
-  // Character form autosave component
-  const CharacterFormAutosave = () => {
-    const handleAutosave = (data: Record<string, any>) => {
-      console.log("Character autosave triggered with characters:", characters);
-      
-      // Save character data to context
-      const result = saveCharacterData();
-      
-      // Save to server if we have a project ID
-      if (projectData?.id) {
-        console.log("Saving characters to server...");
-        saveProject().then(() => {
-          console.log("Saved characters to server successfully");
-          toast({
-            title: "Saved",
-            description: `Saved ${Object.keys(result.charactersObj).length} characters automatically`,
-            duration: 2000,
-          });
-        }).catch(err => {
-          console.error("Error saving characters to server:", err);
-        });
-      }
-    };
-    
-    // Set up autosave to run every 10 seconds
-    useAutosave('characters', handleAutosave, 10000);
-    
-    return null; // This component doesn't render anything
-  };
 
   // Add a new character card
   const addCharacter = () => {
@@ -296,9 +111,6 @@ export default function CharactersForm() {
         conflict: "",
       },
     ]);
-    
-    // We don't need to call saveCharacterData here
-    // The useAutosave hook will handle saving at the specified interval
   };
 
   // Remove a character
@@ -308,45 +120,9 @@ export default function CharactersForm() {
       return;
     }
 
-    console.log(`Removing character at index ${index}`);
-    const characterToRemove = characters[index];
-    console.log("Character being removed:", characterToRemove);
-    
     const updatedCharacters = [...characters];
     updatedCharacters.splice(index, 1);
     setCharacters(updatedCharacters);
-    
-    // Immediately save after removing a character to ensure it's removed from storage
-    console.log("Immediately saving after character removal");
-    const { charactersObj, protagonist } = saveCharacterData();
-    console.log("Updated characters after removal:", charactersObj);
-    
-    // Also save to server if we have a project ID to ensure the removal is persisted
-    if (projectData?.id) {
-      console.log("Saving to server after character removal");
-      saveProject().then(() => {
-        console.log("Saved to server after character removal");
-        toast({
-          title: "Character Removed",
-          description: `${characterToRemove.name || 'Character'} has been removed`,
-          duration: 2000,
-        });
-        
-        // Update localStorage to mark that we've made changes
-        try {
-          // If this was the last character, we should reset the load flag
-          // so that if a new character is added, we'll reload the data
-          if (updatedCharacters.length === 0) {
-            localStorage.removeItem(localStorageKey);
-            console.log(`Removed load flag from localStorage for project ${projectId} - all characters deleted`);
-          }
-        } catch (err) {
-          console.error("Error updating localStorage:", err);
-        }
-      }).catch(err => {
-        console.error("Error saving after character removal:", err);
-      });
-    }
   };
 
   // Update character field
@@ -361,9 +137,6 @@ export default function CharactersForm() {
       [field]: value,
     };
     setCharacters(updatedCharacters);
-    
-    // We don't need to call saveCharacterData or saveProject here
-    // The useAutosave hook will handle saving at the specified interval
   };
 
   // Generate character details using AI
@@ -443,16 +216,6 @@ export default function CharactersForm() {
         console.log("Setting protagonist to:", protagonist);
         
         setCharactersData(charactersObj, protagonist);
-        
-        // Save to server if we have a project ID
-        if (projectData?.id) {
-          try {
-            await saveProject();
-            console.log(`Saved character ${index + 1} data to server`);
-          } catch (error) {
-            console.error("Error saving project after character generation:", error);
-          }
-        }
 
         // Log generation to console
         console.log(`Generated character ${index + 1}:`, generatedCharacter);
@@ -547,7 +310,7 @@ export default function CharactersForm() {
           return merged;
         });
 
-        // Update state
+        // Update state and project context
         setCharacters(updatedCharacters);
         
         // Convert to object format for storage
@@ -591,89 +354,7 @@ export default function CharactersForm() {
         console.log("Final characters object to save:", charactersObj);
         console.log("Setting protagonist to:", protagonist);
         
-        // CRITICAL FIX: Always check if character data has actual content
-        if (Object.keys(charactersObj).length === 0) {
-          console.error("CRITICAL: No character data to save after processing");
-          toast({
-            title: "Error",
-            description: "Failed to process character data properly. Please try again.",
-            variant: "destructive",
-          });
-          return;
-        }
-        
-        // Save directly to localStorage first as backup
-        try {
-          const currentProject = localStorage.getItem("current_vn_project");
-          if (currentProject) {
-            const parsed = JSON.parse(currentProject);
-            parsed.charactersData = charactersObj;
-            parsed.protagonist = protagonist;
-            localStorage.setItem("current_vn_project", JSON.stringify(parsed));
-            console.log("Saved characters to localStorage as backup");
-          }
-        } catch (err) {
-          console.error("Error saving to localStorage:", err);
-        }
-        
-        // Set in context
         setCharactersData(charactersObj, protagonist);
-        
-        // Double check state update
-        setTimeout(async () => {
-          // Save to server if we have a project ID
-          if (projectData?.id) {
-            try {
-              // Do a final check before saving to server
-              if (!projectData.charactersData || Object.keys(projectData.charactersData).length === 0) {
-                console.warn("Character data not in projectData yet, saving directly");
-                
-                // Create a manual save payload
-                const manualSavePayload = {
-                  ...projectData,
-                  charactersData: charactersObj,
-                  protagonist: protagonist,
-                  updatedAt: new Date().toISOString()
-                };
-                
-                // Make direct API call
-                const response = await fetch("/api/projects", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(manualSavePayload)
-                });
-                
-                if (response.ok) {
-                  const result = await response.json();
-                  console.log("Manual save successful:", result);
-                  toast({
-                    title: "Saved",
-                    description: `Saved ${Object.keys(charactersObj).length} characters to server`,
-                    duration: 2000,
-                  });
-                } else {
-                  throw new Error("Server returned error on manual save");
-                }
-              } else {
-                // Use normal save method
-                await saveProject();
-                console.log("Saved all character data to server using normal method");
-                toast({
-                  title: "Saved",
-                  description: `Saved ${Object.keys(charactersObj).length} characters to server`,
-                  duration: 2000,
-                });
-              }
-            } catch (error) {
-              console.error("Error saving project after batch character generation:", error);
-              toast({
-                title: "Error",
-                description: "Failed to save character data to server. Please try again.",
-                variant: "destructive",
-              });
-            }
-          }
-        }, 500); // Give React state time to update
 
         console.log("Successfully generated all characters at once");
         console.log("Updated project context with all character data");
@@ -688,37 +369,53 @@ export default function CharactersForm() {
     }
   };
 
+  // Helper function to save character data
+  const saveCharacterData = () => {
+    // Transform array to object format
+    const charactersObj: Record<string, Character> = {};
+    let protagonist = "";
+    
+    characters.forEach((char, index) => {
+      if (char.name) {
+        // Extract name but don't store it in the object
+        const { name, ...characterWithoutName } = char;
+        
+        // Remove any numeric keys that might be causing unintended nesting
+        const cleanCharacter = Object.entries(characterWithoutName)
+          .filter(([key]) => isNaN(Number(key)))
+          .reduce((obj, [key, value]) => {
+            obj[key] = value;
+            return obj;
+          }, {} as Record<string, any>) as Character;
+          
+        charactersObj[name] = cleanCharacter;
+        
+        // Store the protagonist name (first character is always protagonist)
+        if (index === 0) {
+          protagonist = name;
+        }
+      }
+    });
+    
+    // Set the characters data with protagonist field
+    setCharactersData(charactersObj, protagonist);
+    
+    return { charactersObj, protagonist };
+  };
+
   // Go back to previous step
-  const handleBack = async () => {
+  const handleBack = () => {
     // Save data
     saveCharacterData();
-    
-    // Save project to server if it has an ID
-    if (projectData?.id) {
-      try {
-        await saveProject();
-      } catch (error) {
-        console.error("Error saving project:", error);
-      }
-    }
     
     // Navigate to previous step
     goToStep(2);
   };
 
   // Proceed to next step
-  const handleNext = async () => {
+  const handleNext = () => {
     // Save data
     saveCharacterData();
-    
-    // Save project to server if it has an ID
-    if (projectData?.id) {
-      try {
-        await saveProject();
-      } catch (error) {
-        console.error("Error saving project:", error);
-      }
-    }
 
     // Navigate to next step
     setLocation("/create/paths");
@@ -728,7 +425,6 @@ export default function CharactersForm() {
     <>
       <NavBar />
       <CreationProgress currentStep={3} />
-      <CharacterFormAutosave />
 
       <div className="pt-16">
         <div className="creation-container max-w-4xl mx-auto p-6">
@@ -1035,9 +731,7 @@ export default function CharactersForm() {
                 <Button variant="outline" onClick={handleBack}>
                   Back
                 </Button>
-                <div className="flex justify-end">
-                  <Button onClick={handleNext}>Next: Paths</Button>
-                </div>
+                <Button onClick={handleNext}>Next: Paths</Button>
               </div>
             </div>
 
