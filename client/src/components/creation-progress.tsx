@@ -47,18 +47,23 @@ export function CreationProgress({ currentStep }: CreationProgressProps) {
         return `Characters: ${Object.keys(projectData.charactersData).join(", ")}${projectData?.protagonist ? `\nProtagonist: ${projectData.protagonist}` : ''}`; 
       
       case 4: // Paths
-        if (!projectData.pathsData?.routes || projectData.pathsData.routes.length === 0) 
+        if (!projectData.pathsData || Object.keys(projectData.pathsData).length === 0) 
           return "Paths not set";
-        return `Paths: ${projectData.pathsData.routes.map(r => r.title).join(", ")}`;
+        return `Paths: ${Object.keys(projectData.pathsData).join(", ")}`; 
       
       case 5: // Plot
         if (!projectData.plotData?.plotOutline) return "Plot not set";
-        return `Plot structure: 
-                Act 1: ${projectData.plotData.plotOutline.act1?.title || 'Not set'}
-                Act 2: ${projectData.plotData.plotOutline.act2?.title || 'Not set'}
-                Act 3: ${projectData.plotData.plotOutline.act3?.title || 'Not set'}
-                Act 4: ${projectData.plotData.plotOutline.act4?.title || 'Not set'}
-                Act 5: ${projectData.plotData.plotOutline.act5?.title || 'Not set'}`;
+        const acts = [];
+        for (let i = 1; i <= 5; i++) {
+          const actKey = `act${i}`;
+          const act = projectData.plotData.plotOutline[actKey as keyof typeof projectData.plotData.plotOutline];
+          if (act && typeof act === 'object' && 'title' in act) {
+            acts.push(`Act ${i}: ${act.title || 'Not set'}`);
+          } else {
+            acts.push(`Act ${i}: Not set`);
+          }
+        }
+        return `Plot structure: \n${acts.join('\n')}`;
       
       case 6: // Generate
         if (!projectData.generatedActs || Object.keys(projectData.generatedActs).length === 0) 

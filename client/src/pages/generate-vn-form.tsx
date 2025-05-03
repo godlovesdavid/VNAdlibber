@@ -29,26 +29,51 @@ import { GenerationResult } from "@/lib/openai";
 
 // Helper functions for accessing act data safely
 function getActTitle(actNumber: number, projectData: VnProjectData | null): string {
-  if (!projectData?.plotData?.plotOutline) return `Act ${actNumber}`;
+  // Check if plotData exists
+  if (!projectData?.plotData) return `Act ${actNumber}`;
   
-  const actKey = `act${actNumber}` as keyof typeof projectData.plotData.plotOutline;
-  const actData = projectData.plotData.plotOutline[actKey];
+  const actKey = `act${actNumber}`;
   
-  if (typeof actData === 'object' && actData !== null && 'title' in actData) {
-    return String(actData.title);
+  // Try to get the act from plotData directly first
+  if (projectData.plotData[actKey] && typeof projectData.plotData[actKey] === 'object') {
+    const actData = projectData.plotData[actKey];
+    if (actData && 'title' in actData) {
+      return String(actData.title);
+    }
+  }
+  
+  // Fallback to the plotOutline if it exists
+  if (projectData.plotData.plotOutline && projectData.plotData.plotOutline[actKey]) {
+    const outlineData = projectData.plotData.plotOutline[actKey];
+    if (outlineData && typeof outlineData === 'object' && 'title' in outlineData) {
+      return String(outlineData.title);
+    }
   }
   
   return `Act ${actNumber}`;
 }
 
 function getActSummary(actNumber: number, projectData: VnProjectData | null): string {
-  if (!projectData?.plotData?.plotOutline) return "No summary available";
+  // Check if plotData exists and contains plot information
+  if (!projectData?.plotData) return "No summary available";
   
-  const actKey = `act${actNumber}` as keyof typeof projectData.plotData.plotOutline;
-  const actData = projectData.plotData.plotOutline[actKey];
+  // Renamed from plotOutline to just the actN key directly in the plotData object
+  const actKey = `act${actNumber}`;
   
-  if (typeof actData === 'object' && actData !== null && 'summary' in actData) {
-    return String(actData.summary);
+  // Try to get the act from plotData directly first
+  if (projectData.plotData[actKey] && typeof projectData.plotData[actKey] === 'object') {
+    const actData = projectData.plotData[actKey];
+    if (actData && 'summary' in actData) {
+      return String(actData.summary);
+    }
+  }
+  
+  // Fallback to the plotOutline if it exists
+  if (projectData.plotData.plotOutline && projectData.plotData.plotOutline[actKey]) {
+    const outlineData = projectData.plotData.plotOutline[actKey];
+    if (outlineData && typeof outlineData === 'object' && 'summary' in outlineData) {
+      return String(outlineData.summary);
+    }
   }
   
   return "No summary available";

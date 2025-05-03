@@ -776,7 +776,9 @@ export default function PlotForm() {
           </div>
 
           <div className="pt-6 flex justify-between items-center">
-            <Button variant="outline" onClick={handleBack}>
+            <Button variant="outline" onClick={handleBack}
+              title={projectData?.pathsData ? `Back to: ${Object.keys(projectData.pathsData).length} story paths` : 'Back'}
+            >
               Back
             </Button>
 
@@ -818,7 +820,9 @@ export default function PlotForm() {
                 )}
               </Button> */}
 
-              <Button onClick={handleNext} disabled={isValidating || isGenerating}>
+              <Button onClick={handleNext} disabled={isValidating || isGenerating}
+                title={projectData?.generatedActs ? `Next to: ${Object.keys(projectData.generatedActs).length} generated acts` : 'Next: Generate VN'}
+              >
                 {isValidating ? (
                   <>
                     <svg
