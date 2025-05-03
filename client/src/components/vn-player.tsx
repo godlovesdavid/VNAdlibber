@@ -320,10 +320,13 @@ export function VnPlayer({
   }, [currentScene, currentDialogueIndex]);
 
   // Use image generation hook - make sure to update when scene changes
+  // State for image handling
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageError, setError] = useState<string | null>(null);
+  
+  // Still keep the hook for compatibility, but we won't rely on it for state
   const {
-    imageUrl,
-    isGenerating,
-    error: imageError,
     generateImage,
   } = useImageGeneration(currentScene, {
     autoGenerate: imageGenerationEnabled, // Use the state to control auto-generation
@@ -331,7 +334,73 @@ export function VnPlayer({
     generationDelay: 100, // Added slight delay to prevent rapid generation during transitions
   });
 
-  // image generation
+  // Simple direct fetch for image generation that doesn't use the complex hook
+  const generateImageDirectly = useCallback(async () => {
+    if (!currentScene) return;
+    
+    try {
+      // Mark as generating
+      setIsGenerating(true);
+      setImageGenerationEnabled(true);
+      
+      // Make direct API request
+      console.log("Directly generating image...");
+      const response = await fetch('/api/generate/image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          scene: {
+            name: currentScene.name,
+            image_prompt: currentScene.image_prompt || ""
+          },
+          imageType: "background",
+          optimizeForMobile: false
+        })
+      });
+      
+      // Check for rate limit errors
+      if (response.status === 429) {
+        toast({
+          title: "Rate Limited",
+          description: "You've reached the maximum number of image generations allowed. Please try again later.",
+          variant: "destructive"
+        });
+        setError("Rate limited. Please try again later.");
+        return;
+      }
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Image generation failed: ${response.status} ${errorText}`);
+      }
+      
+      const data = await response.json();
+      if (data.url) {
+        // Set the image URL state directly
+        const urlToSet = data.url;
+        
+        // First, update any state tracked by the hook
+        setImageUrl(urlToSet);
+        
+        // Then clear errors
+        setError(null);
+      }
+    } catch (error) {
+      console.error("Image generation error:", error);
+      setError("Failed to generate image");
+      toast({
+        title: "Image Generation Failed",
+        description: "Sorry, we couldn't generate the image. Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [currentScene, toast, setImageGenerationEnabled]);
+  
+  // image generation - using direct fetch method which is more reliable than the hook
   useEffect(() => {
     console.log("Image generation effect triggered: ", {
       shouldGenerate: shouldGenerateImage.current,
@@ -343,9 +412,9 @@ export function VnPlayer({
     if (shouldGenerateImage.current && currentScene && imageGenerationEnabled) {
       console.log("Generating image automatically on scene change");
       shouldGenerateImage.current = false;
-      generateImage(true);
+      generateImageDirectly();
     }
-  }, [currentScene, generateImage, imageGenerationEnabled, imageUrl]);
+  }, [currentScene, generateImageDirectly, imageGenerationEnabled, imageUrl]);
 
   //initialize player with first scene
   useEffect(() => {
@@ -717,9 +786,9 @@ export function VnPlayer({
               onClick={(e) => {
                 // Stop propagation to prevent parent elements from capturing the click
                 e.stopPropagation();
-                console.log("Generate image button clicked - using hook");
-                // Force true to regenerate even if cached
-                generateImage(true);
+                console.log("Generate image button clicked - using direct method");
+                // Use our more reliable direct method
+                generateImageDirectly();
               }}
               disabled={isGenerating || !imageGenerationEnabled}
               style={{ pointerEvents: "auto" }} // Ensure pointer events are enabled
