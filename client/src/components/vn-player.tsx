@@ -95,40 +95,40 @@ function SceneBackground({
 }: SceneBackgroundProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const [actualUrl, setActualUrl] = useState('');
-
+  // Store whether we're using the fallback to avoid unnecessary additional renders
+  const [isFallback, setIsFallback] = useState(false);
+  
+  // Simplified - we'll use imageUrl directly or the fallback when needed
+  // This avoids the state change loop that was causing re-renders
+  
   // Fallback URL in case of loading failures - using data URI for guaranteed compatibility
   const fallbackUrl = `data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221024%22%20height%3D%22768%22%20viewBox%3D%220%200%201024%20768%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E`;
 
   // Determine if the image source is an actual URL (data:, http:, etc.) vs just a text description
   useEffect(() => {
-    // Reset states when URL changes
-    setIsLoading(true);
-    setHasError(false);
-    
+    // Only log once when props change rather than on each render
     // Check if the imageUrl is actually a URL vs a text description
     if (imageUrl && (imageUrl.startsWith('data:') || imageUrl.startsWith('http'))) {
-      console.log(`Setting actual URL for scene ${sceneId}, source appears to be a valid URL`);
-      setActualUrl(imageUrl);
+      console.log(`Using URL directly for scene ${sceneId}`);
+      setIsFallback(false);
+      setIsLoading(true); // Will be set to false on load
     } else {
       console.log(`Using fallback for scene ${sceneId}, source is not a valid URL: ${imageUrl?.slice(0, 30)}...`);
-      setActualUrl(fallbackUrl);
-      // Mark as loaded but with error
+      setIsFallback(true);
       setIsLoading(false);
       setHasError(true);
     }
-  }, [imageUrl, sceneId, fallbackUrl]);
+  }, [imageUrl, sceneId]); // Removed fallbackUrl dependency as it doesn't change
 
   const handleImageError = () => {
     console.error(`Image failed to load: ${imageUrl}`);
     setHasError(true);
     setIsLoading(false);
-    // Use fallback URL
-    setActualUrl(fallbackUrl);
+    setIsFallback(true);
   };
 
   const handleImageLoad = () => {
-    console.log(`Image loaded successfully: ${actualUrl !== fallbackUrl ? 'actual image' : 'fallback'}`);
+    console.log(`Image loaded successfully: ${!isFallback ? 'actual image' : 'fallback'}`);
     setIsLoading(false);
     setHasError(false);
   };
@@ -152,8 +152,8 @@ function SceneBackground({
 
       {/* Actual image with appropriate handling */}
       <img
-        key={`img-${actualUrl}`}
-        src={actualUrl}
+        key={`img-${sceneId}`}
+        src={isFallback ? fallbackUrl : imageUrl}
         alt={`Scene ${sceneId} Background`}
         className={cn(
           "w-full h-full object-cover transition-opacity duration-500",
@@ -494,8 +494,8 @@ export function VnPlayer({
       }
       
       // Automatic scene change image generation with direct approach - only if we don't have an image
-      if (imageGenerationEnabled && !isRateLimited && !isGenerating && !imageUrl) {
-        console.log(`Auto-generating image for new scene ${scene.name} - no existing image`);
+      if (imageGenerationEnabled && !isRateLimited && !isGenerating) {
+        console.log(`Auto-generating image for new scene ${scene.name}`);
         // Use setTimeout to ensure this happens after state updates complete
         setTimeout(() => {
           generateImageDirectly();
@@ -503,7 +503,6 @@ export function VnPlayer({
       } else {
         console.log(`Not auto-generating - ${!imageGenerationEnabled ? 'disabled' : 
           isRateLimited ? 'rate limited' : 
-          imageUrl ? 'already have image' : 
           'already generating'}`);
       }
     }
