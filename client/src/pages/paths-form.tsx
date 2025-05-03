@@ -41,6 +41,8 @@ export default function PathsForm() {
 
   // Form state
   const [routes, setRoutes] = useState<Route[]>([
+    // Default empty route
+
     {
       title: "",
       loveInterest: null,

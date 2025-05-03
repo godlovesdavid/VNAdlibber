@@ -52,6 +52,58 @@ export default function CharactersForm() {
     number | null
   >(null);
 
+  // Save form data to context when the event is triggered
+  useEffect(() => {
+    const saveFormHandler = () => {
+      console.log('Saving characters form data to context');
+      
+      // Skip if no characters
+      if (characters.length === 0) return;
+      
+      const charactersObj: Record<string, Character> = {};
+      let protagonist = '';
+      
+      // Convert from array to object format for storage
+      characters.forEach((char, idx) => {
+        if (char.name) {
+          // Extract name but don't store it in the object
+          const { name, ...characterWithoutName } = char;
+          
+          // Check for numeric keys
+          const numericKeys = Object.keys(characterWithoutName).filter(key => !isNaN(Number(key)));
+          if (numericKeys.length > 0) {
+            console.log(`Found numeric keys for ${name}:`, numericKeys);
+          }
+          
+          // Remove any numeric keys that might be causing unintended nesting
+          const cleanCharacter = Object.entries(characterWithoutName)
+            .filter(([key]) => isNaN(Number(key)))
+            .reduce((obj, [key, value]) => {
+              obj[key] = value;
+              return obj;
+            }, {} as Record<string, any>) as Character;
+            
+          charactersObj[name] = cleanCharacter;
+          
+          // Store the protagonist name (first character is always protagonist)
+          if (idx === 0) {
+            protagonist = name;
+          }
+        }
+      });
+      
+      setCharactersData(charactersObj, protagonist);
+    };
+    
+    // Add event listener
+    document.addEventListener('save-form-to-context', saveFormHandler);
+    
+    // Cleanup
+    return () => {
+      document.removeEventListener('save-form-to-context', saveFormHandler);
+    };
+  }, [characters, setCharactersData]);
+  
   // Load existing data if available
   useEffect(() => {
     if (projectData?.charactersData && Object.keys(projectData.charactersData).length > 0) {
