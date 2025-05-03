@@ -41,8 +41,8 @@ export function MainMenu() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-neutral-50 px-4 py-8">
       <div className="w-full max-w-md mx-auto text-center mb-12">
-        <h1 className="text-4xl font-bold text-primary mb-2 font-title">Visual Novel Ad-libber</h1>
-        <p className="text-muted-foreground font-vn">Dream up your own VN with AI!</p>
+        <h1 className="text-4xl font-bold text-primary mb-2">Visual Novel Ad-libber</h1>
+        <p className="text-muted-foreground">Dream up your own VN with AI!</p>
       </div>
       
       <div className="w-full max-w-xs space-y-3">

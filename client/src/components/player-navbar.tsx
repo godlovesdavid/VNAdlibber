@@ -111,12 +111,12 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog }: Pl
             </SheetTrigger>
             <SheetContent side="left" className="w-[400px] sm:w-[540px]">
               <SheetHeader>
-                <SheetTitle className="font-vn">Dialogue Log</SheetTitle>
+                <SheetTitle>Dialogue Log</SheetTitle>
               </SheetHeader>
               <div className="mt-4 space-y-4 max-h-[calc(100vh-120px)] overflow-y-auto">
                 {dialogueLog.map((entry, index) => (
                   <div key={index} className="space-y-1">
-                    <p className="font-medium text-primary font-vn">{entry.speaker}</p>
+                    <p className="font-medium text-primary">{entry.speaker}</p>
                     <p className="text-sm text-gray-700 font-dialogue">{entry.text}</p>
                   </div>
                 ))}

@@ -741,7 +741,7 @@ export function VnPlayer({
           {currentScene.dialogue.length > 0 &&
             currentDialogueIndex < currentScene.dialogue.length && (
               <div className="vn-dialogue">
-                <p className="character-name text-primary-300 font-semibold mb-1 sm:mb-2 text-sm sm:text-base md:text-lg font-vn">
+                <p className="character-name text-primary-300 font-semibold mb-1 sm:mb-2 text-sm sm:text-base md:text-lg">
                   {currentScene.dialogue[currentDialogueIndex][0]}
                 </p>
                 <p className="text-white text-sm sm:text-base md:text-lg whitespace-pre-line font-dialogue">
@@ -806,7 +806,7 @@ export function VnPlayer({
                       )}
                       <div className="flex flex-col items-center">
                         {/* Main choice text */}
-                        <div className="text-center break-words text-xs sm:text-sm md:text-base font-vn">
+                        <div className="text-center break-words text-xs sm:text-sm md:text-base">
                           {choice.text || `Option ${index + 1}`}
                         </div>
 

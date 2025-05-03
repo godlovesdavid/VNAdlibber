@@ -24,7 +24,7 @@ export function NavBar() {
           >
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <h1 className="text-lg font-semibold text-primary font-title">
+          <h1 className="text-lg font-semibold text-primary">
             {projectData?.title ? projectData.title : 'VN Adlibber'}
           </h1>
         </div>

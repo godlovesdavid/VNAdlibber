@@ -6,10 +6,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        title: ['Playfair Display', 'serif'],
-        vn: ['Quicksand', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        sans: ['Quicksand', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         dialogue: ['Lora', 'serif'],
       },
       borderRadius: {
