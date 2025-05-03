@@ -147,6 +147,37 @@ export class DatabaseStorage implements IStorage {
         }
       }
       
+      // Enhanced concept data validation
+      if (projectData.conceptData) {
+        const conceptData = projectData.conceptData as { title?: string; tagline?: string; premise?: string };
+        // Check if we're about to overwrite existing concept with empty data
+        if (existingProject.conceptData && 
+            typeof existingProject.conceptData === 'object' &&
+            'title' in existingProject.conceptData && existingProject.conceptData.title && 
+            'tagline' in existingProject.conceptData && existingProject.conceptData.tagline && 
+            'premise' in existingProject.conceptData && existingProject.conceptData.premise && 
+            (!conceptData.title || !conceptData.tagline || !conceptData.premise)) {
+          console.warn("CRITICAL WARNING: Attempted to overwrite concept with incomplete data in storage");
+          console.log("Preserving existing concept data in storage layer");
+          projectData.conceptData = existingProject.conceptData;
+          // Make sure top-level title matches concept title
+          const existingTitle = (existingProject.conceptData as any).title;
+          if (existingTitle && projectData.title !== existingTitle) {
+            console.log("Updating top-level title to match concept title");
+            projectData.title = existingTitle;
+          }
+        } else if (!conceptData.title && !conceptData.tagline && !conceptData.premise) {
+          // The new concept data is completely empty but we have existing data
+          if (existingProject.conceptData && typeof existingProject.conceptData === 'object' &&
+             (('title' in existingProject.conceptData && existingProject.conceptData.title) || 
+              ('tagline' in existingProject.conceptData && existingProject.conceptData.tagline) || 
+              ('premise' in existingProject.conceptData && existingProject.conceptData.premise))) {
+            console.warn("WARNING: New concept data is empty, preserving existing data");
+            projectData.conceptData = existingProject.conceptData;
+          }
+        }
+      }
+      
       // Make sure we don't lose required fields
       const updatedProject = {
         ...existingProject,

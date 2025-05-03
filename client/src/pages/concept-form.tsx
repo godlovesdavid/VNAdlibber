@@ -72,7 +72,64 @@ export default function ConceptForm() {
   function saveConceptData() {
     const values = form.getValues();
     console.log("Saving concept data", values);
+    
+    // Validation check
+    if (!values.title || !values.tagline || !values.premise) {
+      console.warn("Concept form missing required fields");
+      return values;
+    }
+    
+    // Save to context
     setConceptData(values);
+    
+    // Also backup to localStorage
+    try {
+      const currentProject = localStorage.getItem("current_vn_project");
+      if (currentProject) {
+        const parsed = JSON.parse(currentProject);
+        parsed.conceptData = values;
+        parsed.title = values.title; // Important: This needs to be at the top level too
+        localStorage.setItem("current_vn_project", JSON.stringify(parsed));
+        console.log("Concept data backed up to localStorage");
+      }
+    } catch (err) {
+      console.error("Error backing up concept data to localStorage:", err);
+    }
+    
+    // If we have a project ID, verify the save was successful in 500ms
+    if (projectData?.id) {
+      setTimeout(() => {
+        // Check if the data is in context
+        if (!projectData.conceptData || projectData.conceptData.title !== values.title) {
+          console.warn("Concept data not saved in context - doing direct save");
+          
+          // Create a save payload directly
+          const savePayload = {
+            ...projectData,
+            conceptData: values,
+            title: values.title,
+            updatedAt: new Date().toISOString()
+          };
+          
+          fetch("/api/projects", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(savePayload)
+          })
+          .then(res => {
+            if (res.ok) return res.json();
+            throw new Error("Failed to save concept data");
+          })
+          .then(result => {
+            console.log("Manual concept save successful");
+          })
+          .catch(err => {
+            console.error("Manual concept save failed:", err);
+          });
+        }
+      }, 500);
+    }
+    
     return values;
   }
   
@@ -109,9 +166,31 @@ export default function ConceptForm() {
       // Type checking to ensure data matches ConceptData
       const typedData = handleTypedData(data);
       if (typedData) {
+        // Make sure we're not saving empty data
+        if (!typedData.title && !typedData.tagline && !typedData.premise) {
+          console.warn("Skipping autosave - all fields empty");
+          return;
+        }
+        
+        // Save to context
         setConceptData(typedData);
+        
+        // Also backup to localStorage
+        try {
+          const currentProject = localStorage.getItem("current_vn_project");
+          if (currentProject) {
+            const parsed = JSON.parse(currentProject);
+            parsed.conceptData = typedData;
+            parsed.title = typedData.title; // Important: This needs to be at the top level too
+            localStorage.setItem("current_vn_project", JSON.stringify(parsed));
+            console.log("Concept data backed up to localStorage during autosave");
+          }
+        } catch (err) {
+          console.error("Error backing up concept data to localStorage during autosave:", err);
+        }
       } else {
         console.warn("Autosave data doesn't match ConceptData format:", data);
+        return; // Don't continue with server save if data is invalid
       }
       
       // Save to server if we have a project ID
@@ -174,17 +253,65 @@ export default function ConceptForm() {
       form.setValue('tagline', generatedConcept.tagline);
       form.setValue('premise', generatedConcept.premise);
       
-      // Save the generated concept data
-      setConceptData({
+      // Create concept data object
+      const newConceptData = {
         title: generatedConcept.title,
         tagline: generatedConcept.tagline,
         premise: generatedConcept.premise,
-      });
+      };
+      
+      // Save to context
+      setConceptData(newConceptData);
+      
+      // Also backup to localStorage
+      try {
+        const currentProject = localStorage.getItem("current_vn_project");
+        if (currentProject) {
+          const parsed = JSON.parse(currentProject);
+          parsed.conceptData = newConceptData;
+          parsed.title = newConceptData.title; // Make sure title is updated at top level too
+          localStorage.setItem("current_vn_project", JSON.stringify(parsed));
+          console.log("Generated concept backed up to localStorage");
+        }
+      } catch (err) {
+        console.error("Error backing up generated concept to localStorage:", err);
+      }
       
       // Save to server if we have a project ID
       if (projectData?.id) {
         try {
           await saveProject();
+          
+          // Verify the save happened correctly
+          setTimeout(() => {
+            if (!projectData.conceptData || projectData.conceptData.title !== newConceptData.title) {
+              console.warn("Generated concept not saved in context - doing direct save");
+              
+              // Create a save payload directly
+              const savePayload = {
+                ...projectData,
+                conceptData: newConceptData,
+                title: newConceptData.title,
+                updatedAt: new Date().toISOString()
+              };
+              
+              fetch("/api/projects", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(savePayload)
+              })
+              .then(res => {
+                if (res.ok) return res.json();
+                throw new Error("Failed to save generated concept data");
+              })
+              .then(result => {
+                console.log("Manual generated concept save successful");
+              })
+              .catch(err => {
+                console.error("Manual generated concept save failed:", err);
+              });
+            }
+          }, 500);
         } catch (error) {
           console.error("Error saving project after generation:", error);
         }
