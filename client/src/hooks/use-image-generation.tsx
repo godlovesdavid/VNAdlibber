@@ -15,6 +15,8 @@ interface UseImageGenerationOptions {
   autoGenerate?: boolean;
   // Log generation events to console
   debug?: boolean;
+  // Set to false to completely disable the hook's functionality
+  enabled?: boolean;
 }
 
 export function useImageGeneration(
@@ -25,6 +27,7 @@ export function useImageGeneration(
     generationDelay = 1000,
     autoGenerate = false,
     debug = false,
+    enabled = true,
   } = options;
 
   const { toast } = useToast();
@@ -70,7 +73,12 @@ export function useImageGeneration(
   // Generate image function with safety checks
   const generateImage = useCallback(
     async (forceGenerate = false, options?: { retryCount?: number; timeoutMs?: number }) => {
-      // Don't generate if no scene is available
+      // Don't generate if hook is disabled or no scene is available
+      if (!enabled) {
+        logDebug("Hook is disabled, not generating image");
+        return;
+      }
+
       if (!scene) {
         logDebug("Cannot generate - no scene provided");
         return;
@@ -178,18 +186,24 @@ export function useImageGeneration(
         }
       }, generationDelay);
     },
-    [scene, cancelGeneration, generationDelay, toast, logDebug],
+    [scene, cancelGeneration, generationDelay, toast, logDebug, enabled],
   );
 
-  // Auto-generate when scene changes if autoGenerate is true
+  // Auto-generate when scene changes if autoGenerate is true and hook is enabled
   useEffect(() => {
+    // Skip completely if hook is disabled
+    if (!enabled) {
+      logDebug("Hook is disabled, not monitoring scene changes");
+      return;
+    }
+    
     if (!scene) {
-      console.log("No scene provided to image generation hook");
+      logDebug("No scene provided to image generation hook");
       return;
     }
     
     if (!autoGenerate) {
-      console.log("Image auto-generation is disabled, skipping generation");
+      logDebug("Image auto-generation is disabled, skipping generation");
       return;
     }
 
@@ -242,6 +256,7 @@ export function useImageGeneration(
     generateImage,
     cancelGeneration,
     logDebug,
+    enabled,
   ]);
 
   // Cleanup when component unmounts

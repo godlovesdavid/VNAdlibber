@@ -329,13 +329,14 @@ export function VnPlayer({
   // Add a ref to track the last time we attempted generation
   const lastGenerationAttempt = useRef<number>(0);
   
-  // Still keep the hook for compatibility, but we won't rely on it for state
+  // Completely disable the hook-based generation
   const {
     generateImage,
   } = useImageGeneration(currentScene, {
-    autoGenerate: imageGenerationEnabled, // Use the state to control auto-generation
+    autoGenerate: false, // Always disable auto-generation from the hook
     debug: false,
-    generationDelay: 100, // Added slight delay to prevent rapid generation during transitions
+    generationDelay: 0, // Set to 0 since we won't be using it
+    enabled: false // Completely disable the hook's functionality
   });
 
   // Simple direct fetch for image generation that doesn't use the complex hook
