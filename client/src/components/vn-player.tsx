@@ -220,7 +220,12 @@ export function VnPlayer({
 
   // Text animation function
   const animateText = useCallback(
-    (text: string) => {
+    (textContent: any) => {
+      // Convert object to string if needed
+      const text = typeof textContent === 'string'
+        ? textContent
+        : (textContent?.text || JSON.stringify(textContent));
+        
       // Skip animation if text speed is set to fast
       if (textSpeed === "fast") {
         setDisplayedText(text);
@@ -281,7 +286,18 @@ export function VnPlayer({
     }
 
     if (currentScene && currentDialogueIndex < currentScene.dialogue.length) {
-      setDisplayedText(currentScene.dialogue[currentDialogueIndex][1]);
+      const dialogueContent = currentScene.dialogue[currentDialogueIndex][1];
+      
+      // Handle case where dialogue content is an object instead of a string
+      if (typeof dialogueContent === 'string') {
+        setDisplayedText(dialogueContent);
+      } else if (dialogueContent && typeof dialogueContent === 'object') {
+        // Use the text property if it exists, otherwise stringify the object
+        setDisplayedText(dialogueContent.text || JSON.stringify(dialogueContent));
+      } else {
+        // Fallback for any other case
+        setDisplayedText(String(dialogueContent || ''));
+      }
     }
 
     setIsTextAnimating(false);
@@ -397,8 +413,19 @@ export function VnPlayer({
 
     if (currentDialogueIndex < currentScene.dialogue.length - 1) {
       // Add current dialogue to log
-      const [speaker, text] = currentScene.dialogue[currentDialogueIndex];
-      setDialogueLog((prev) => [...prev, { speaker, text }]);
+      const [speaker, dialogueContent] = currentScene.dialogue[currentDialogueIndex];
+      
+      // Handle both string and object dialogue content
+      let textToLog = '';
+      if (typeof dialogueContent === 'string') {
+        textToLog = dialogueContent;
+      } else if (dialogueContent && typeof dialogueContent === 'object') {
+        textToLog = dialogueContent.text || JSON.stringify(dialogueContent);
+      } else {
+        textToLog = String(dialogueContent || '');
+      }
+      
+      setDialogueLog((prev) => [...prev, { speaker, text: textToLog }]);
 
       // Advance to next dialogue line
       setCurrentDialogueIndex((prev) => prev + 1);
@@ -411,8 +438,19 @@ export function VnPlayer({
     } else {
       // Add final dialogue to log
       if (currentScene.dialogue.length > 0) {
-        const [speaker, text] = currentScene.dialogue[currentDialogueIndex];
-        setDialogueLog((prev) => [...prev, { speaker, text }]);
+        const [speaker, dialogueContent] = currentScene.dialogue[currentDialogueIndex];
+        
+        // Handle both string and object dialogue content
+        let textToLog = '';
+        if (typeof dialogueContent === 'string') {
+          textToLog = dialogueContent;
+        } else if (dialogueContent && typeof dialogueContent === 'object') {
+          textToLog = dialogueContent.text || JSON.stringify(dialogueContent);
+        } else {
+          textToLog = String(dialogueContent || '');
+        }
+        
+        setDialogueLog((prev) => [...prev, { speaker, text: textToLog }]);
       }
 
       // Show choices if there are any, otherwise this is the end
@@ -585,8 +623,11 @@ export function VnPlayer({
   }
 
   // Get current dialogue text (using either the animated display text or the full original text)
-  const originalDialogueText =
-    currentScene?.dialogue[currentDialogueIndex]?.[1] || "";
+  const rawDialogueContent = currentScene?.dialogue[currentDialogueIndex]?.[1] || "";
+  // Handle case where dialogue content is an object instead of a string
+  const originalDialogueText = typeof rawDialogueContent === 'string' 
+    ? rawDialogueContent 
+    : (rawDialogueContent?.text || JSON.stringify(rawDialogueContent));
   const dialogueText = isTextAnimating ? displayedText : originalDialogueText;
 
   return (
