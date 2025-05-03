@@ -826,10 +826,14 @@ export default function CharactersForm() {
                 </Button>
               </div>
               <div className="flex justify-between">
-                <Button variant="outline" onClick={handleBack}>
+                <Button variant="outline" onClick={handleBack}
+                  title={projectData?.conceptData ? `Back to: ${projectData.conceptData.title || 'Concept'}` : 'Back'}
+                >
                   Back
                 </Button>
-                <Button onClick={handleNext} disabled={isValidating || isGenerating}>
+                <Button onClick={handleNext} disabled={isValidating || isGenerating}
+                  title={projectData?.pathsData ? `Next to: ${Object.keys(projectData.pathsData).length} story paths` : 'Next: Paths'}
+                >
                   {isValidating ? (
                     <>
                       <svg
