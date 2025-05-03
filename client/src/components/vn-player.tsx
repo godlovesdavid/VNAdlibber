@@ -712,8 +712,9 @@ export function VnPlayer({
         console.log("Will regenerate image since generation was re-enabled");
         // Use setTimeout to ensure the state update has completed first
         setTimeout(() => {
-          console.log("Now regenerating the image after toggle");
-          generateImage(true);
+          console.log("Now regenerating the image after toggle using direct method");
+          // Use our direct method instead of the old hook-based one
+          generateImageDirectly();
         }, 100);
       }
     };
@@ -723,7 +724,7 @@ export function VnPlayer({
     return () => {
       window.removeEventListener("vnToggleImageGeneration", handleImageGenerationToggle as EventListener);
     };
-  }, [currentScene, generateImage]); // Removed state from dependencies to prevent recreation
+  }, [currentScene, generateImageDirectly]); // Use the direct generate function
 
   // Log current scene and image state for debugging
   useEffect(() => {
