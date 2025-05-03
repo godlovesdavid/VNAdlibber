@@ -758,6 +758,7 @@ export function VnPlayer({
               <div
                 className={cn(
                   "vn-choices mt-4 sm:mt-6 md:mt-8 grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 animate-fadeIn",
+                  "max-w-4xl mx-auto", // Set maximum width and center the choices container
                   !clickableContent && "opacity-50 pointer-events-none",
                 )}
               >
@@ -771,7 +772,7 @@ export function VnPlayer({
                       key={index}
                       variant="outline"
                       className={cn(
-                        "px-3 py-2 md:px-4 md:py-3 rounded-md text-center transition-colors h-auto relative w-full text-sm md:text-base",
+                        "px-3 py-3 md:px-5 md:py-4 rounded-md text-center transition-colors h-auto relative w-full text-sm md:text-base",
                         // Animation with staggered delay based on index
                         "animate-fadeInUp",
                         // Apply staggered animation delay based on index
@@ -811,15 +812,15 @@ export function VnPlayer({
                           )}
                         />
                       )}
-                      <div className="flex flex-col items-center">
+                      <div className="flex flex-col items-center w-full overflow-hidden">
                         {/* Main choice text */}
-                        <div className="text-center break-words text-xs sm:text-sm md:text-base w-full">
+                        <div className="text-center break-words hyphens-auto text-xs sm:text-sm md:text-base w-full max-w-full">
                           {choice.text || `Option ${index + 1}`}
                         </div>
 
                         {/* Description text (if present) */}
                         {choice.description && (
-                          <div className="text-xs md:text-sm text-neutral-400 mt-1 italic text-center break-words w-full font-dialogue">
+                          <div className="text-xs md:text-sm text-neutral-400 mt-1 italic text-center break-words hyphens-auto w-full font-dialogue overflow-hidden text-ellipsis">
                             {choice.description}
                           </div>
                         )}
