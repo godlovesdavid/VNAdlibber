@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/card";
 import { Wand2, Trash, Plus } from "lucide-react";
 import { Route } from "@/types/vn";
+import { useToast } from "@/hooks/use-toast";
+import { validateFormContent } from "@/lib/validation";
 
 // Extended interface for form use that includes a title property
 interface RouteForm extends Route {
@@ -55,9 +57,9 @@ export default function PathsForm() {
     },
   ]);
 
-  const [generatingPathIndex, setGeneratingPathIndex] = useState<number | null>(
-    null,
-  );
+  const [generatingPathIndex, setGeneratingPathIndex] = useState<number | null>(null);
+  const [isValidating, setIsValidating] = useState(false);
+  const { toast } = useToast();
   
   // Save form data to context when the event is triggered
   useEffect(() => {
@@ -259,30 +261,55 @@ export default function PathsForm() {
   };
 
   // Proceed to next step
-  const handleNext = () => {
-    // // Validate paths
-    // const isValid = routes.every(
-    //   (route) =>
-    //     route.title &&
-    //     route.keyChoices.trim() &&
-    //     route.beginning &&
-    //     route.middle &&
-    //     route.climax &&
-    //     route.goodEnding &&
-    //     route.badEnding,
-    // );
-
-    // if (!isValid) {
-    //   alert("Please fill in all required fields for each path");
-    //   return;
-    // }
-
+  const handleNext = async () => {
+    // Local validation to ensure each path has at least a title
+    const incompleteRoutes = routes.filter(route => !route.title.trim());
+    
+    if (incompleteRoutes.length > 0) {
+      toast({
+        title: "Missing Path Names",
+        description: "Please provide a title for each path before proceeding.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     // Save data using our helper function
-    savePathData();
-
-    // Navigate to next step
-    setLocation("/create/plot");
+    const pathsObj = savePathData();
+    
+    if (!projectData) {
+      toast({
+        title: "Error", 
+        description: "Project data is missing",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Additional server-side validation
+    setIsValidating(true);
+    
+    try {
+      // Create validation context
+      const contextData = {
+        basicData: projectData.basicData,
+        conceptData: projectData.conceptData,
+        charactersData: projectData.charactersData,
+        pathsData: pathsObj,
+      };
+      
+      // Use our validation utility
+      const isValid = await validateFormContent(contextData, "paths");
+      
+      if (isValid) {
+        // Navigate to next step
+        setLocation("/create/plot");
+      }
+    } finally {
+      setIsValidating(false);
+    }
   };
+
 
   // Get character options for love interest dropdown
   const getCharacterOptions = () => {
