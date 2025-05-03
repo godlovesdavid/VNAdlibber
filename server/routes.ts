@@ -5,13 +5,16 @@ import { z } from "zod";
 import { insertVnStorySchema } from "@shared/schema";
 import { generateSceneBackgroundImage } from "./image-generator";
 import { jsonrepair } from "jsonrepair";
+import rateLimit from "express-rate-limit";
 
 // Use Google's Gemini API instead of OpenAI for text generation
 const GEMINI_API_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent";
 const GEMINI_API_URL_PRO =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent";
-const GEMINI_API_KEY = "AIzaSyDE-O9FT4wsie2Cb5SWNUhNVszlQg3dHnU";
+
+// Get API key from environment variable or use fallback for development
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyDE-O9FT4wsie2Cb5SWNUhNVszlQg3dHnU";
 
 // Helper function for Gemini API calls
 async function generateWithGemini(
