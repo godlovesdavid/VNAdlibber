@@ -736,17 +736,17 @@ export function VnPlayer({
 
         <div
           ref={containerRef}
-          className="vn-text-area h-[35%] bg-black/60 text-white p-5 absolute bottom-0 left-0 right-0 overflow-y-auto z-10"
+          className="vn-text-area h-[40%] sm:h-[35%] bg-black/75 sm:bg-black/60 text-white p-3 sm:p-4 md:p-5 absolute bottom-0 left-0 right-0 overflow-y-auto z-10"
           onClick={handleContentClick}
         >
           {/* Dialogue text */}
           {currentScene.dialogue.length > 0 &&
             currentDialogueIndex < currentScene.dialogue.length && (
               <div className="vn-dialogue">
-                <p className="character-name text-primary-300 font-semibold mb-2">
+                <p className="character-name text-primary-300 font-semibold mb-1 sm:mb-2 text-sm sm:text-base md:text-lg">
                   {currentScene.dialogue[currentDialogueIndex][0]}
                 </p>
-                <p className="text-white text-lg whitespace-pre-line">
+                <p className="text-white text-sm sm:text-base md:text-lg whitespace-pre-line">
                   {typeof dialogueText === 'string' ? dialogueText : JSON.stringify(dialogueText)}
                 </p>
               </div>
@@ -759,7 +759,7 @@ export function VnPlayer({
             currentScene.choices.length > 0 && (
               <div
                 className={cn(
-                  "vn-choices mt-8 grid grid-cols-1 md:grid-cols-2 gap-3",
+                  "vn-choices mt-4 sm:mt-6 md:mt-8 grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3",
                   !clickableContent && "opacity-50 pointer-events-none",
                 )}
               >
@@ -773,7 +773,7 @@ export function VnPlayer({
                       key={index}
                       variant="outline"
                       className={cn(
-                        "px-4 py-3 rounded-md text-center transition-colors h-auto relative w-full",
+                        "px-3 py-2 md:px-4 md:py-3 rounded-md text-center transition-colors h-auto relative w-full text-sm md:text-base",
                         // Base style for all buttons
                         "bg-neutral-800 text-white border-neutral-600",
                         // Add hover effect only when not showing condition colors
@@ -798,8 +798,8 @@ export function VnPlayer({
                       {hasCondition && (
                         <span
                           className={cn(
-                            "absolute top-2 right-2 flex items-center justify-center",
-                            "w-4 h-4 rounded-full border",
+                            "absolute top-1 right-1 md:top-2 md:right-2 flex items-center justify-center",
+                            "w-3 h-3 md:w-4 md:h-4 rounded-full border",
                             conditionMet
                               ? "bg-green-600 border-green-400"
                               : "bg-red-600 border-red-400",
@@ -808,13 +808,13 @@ export function VnPlayer({
                       )}
                       <div className="flex flex-col items-center">
                         {/* Main choice text */}
-                        <div className="text-center break-words">
+                        <div className="text-center break-words text-xs sm:text-sm md:text-base">
                           {choice.text || `Option ${index + 1}`}
                         </div>
 
                         {/* Description text (if present) */}
                         {choice.description && (
-                          <div className="text-sm text-neutral-400 mt-1 italic text-center break-words max-w-full">
+                          <div className="text-xs md:text-sm text-neutral-400 mt-1 italic text-center break-words max-w-full">
                             {choice.description}
                           </div>
                         )}

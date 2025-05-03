@@ -116,3 +116,33 @@ export function DeviceTypeRenderer({
   
   return null;
 }
+
+/**
+ * Hook to get responsive CSS classes based on the current device type
+ * Use this to apply different styles for mobile, tablet, and desktop
+ * 
+ * @example
+ * const responsiveClasses = useResponsiveClasses({
+ *   base: "text-sm p-2",
+ *   mobile: "bg-red-100",
+ *   tablet: "bg-blue-100",
+ *   desktop: "bg-green-100"
+ * });
+ * return <div className={responsiveClasses}>Content</div>
+ */
+export function useResponsiveClasses(options: {
+  base?: string;
+  mobile?: string;
+  tablet?: string;
+  desktop?: string;
+}) {
+  const deviceType = useDeviceType();
+  const { base = "", mobile = "", tablet = "", desktop = "" } = options;
+  
+  let deviceClasses = "";
+  if (deviceType === "mobile") deviceClasses = mobile;
+  else if (deviceType === "tablet") deviceClasses = tablet;
+  else deviceClasses = desktop;
+  
+  return `${base} ${deviceClasses}`.trim();
+}
