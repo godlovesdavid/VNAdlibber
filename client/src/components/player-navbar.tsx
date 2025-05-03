@@ -23,7 +23,7 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog }: Pl
   const [showLog, setShowLog] = useState(false);
   const [showDataEditor, setShowDataEditor] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
-  const [activeTextSpeed, setActiveTextSpeed] = useState<'slow' | 'normal' | 'fast'>('fast'); // Track active text speed button
+  const [activeTextSpeed, setActiveTextSpeed] = useState<'slow' | 'normal' | 'fast'>('normal'); // Track active text speed button
   
   // Create a copy of the player data for editing
   const [editableData, setEditableData] = useState({

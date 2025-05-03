@@ -288,9 +288,10 @@ export default function GenerateVnForm() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="10">10 Scenes</SelectItem>
+                  <SelectItem value="15">15 Scenes</SelectItem>
                   <SelectItem value="20">20 Scenes</SelectItem>
+                  <SelectItem value="25">25 Scenes</SelectItem>
                   <SelectItem value="30">30 Scenes</SelectItem>
-                  <SelectItem value="40">40 Scenes</SelectItem>
                 </SelectContent>
               </Select>
             </div>

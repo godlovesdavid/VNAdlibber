@@ -118,13 +118,13 @@ export function CreationProgress({ currentStep }: CreationProgressProps) {
               </div>
               
               {/* Step label directly below each circle */}
-              <div className="text-[8px] sm:text-[10px] md:text-xs text-neutral-500 mt-1 text-center w-full max-w-[45px] sm:max-w-[55px] truncate">
-                {step === 1 && "Basic"}
+              <div className="text-[8px] sm:text-[8px] md:text-xs text-neutral-500 mt-1 text-center w-full max-w-[45px] sm:max-w-[70px] truncate">
+                {step === 1 && "Basics"}
                 {step === 2 && "Concept"}
                 {step === 3 && "Characters"}
                 {step === 4 && "Paths"}
                 {step === 5 && "Plot"}
-                {step === 6 && "Generate"}
+                {step === 6 && "Generate!"}
               </div>
             </div>
           ))}

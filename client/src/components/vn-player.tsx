@@ -129,14 +129,14 @@ function SceneBackground({
       }}
     >
       {/* Show placeholder immediately while image loads */}
-      <div className="absolute inset-0 flex items-center justify-center text-white">
+      {/* <div className="absolute inset-0 flex items-center justify-center text-white">
         {isLoading && (
           <div className="text-center">
             <RefreshCw className="h-10 w-10 animate-spin mx-auto mb-2" />
             <p>Loading scene background...</p>
           </div>
         )}
-      </div>
+      </div> */}
 
       {/* Actual image with appropriate handling */}
       <img
@@ -205,7 +205,7 @@ export function VnPlayer({
 
   // Text animation state
   const [textSpeed, setTextSpeed] = useState<"slow" | "medium" | "fast">(
-    "fast",
+    "medium",
   );
   const [isTextAnimating, setIsTextAnimating] = useState(false);
   const [displayedText, setDisplayedText] = useState("");
@@ -611,8 +611,6 @@ export function VnPlayer({
     }
   }, [currentScene, imageUrl, isGenerating, imageError]);
 
-  // Text speed controls removed - now only using the ones in the options menu
-
   // Show loading while no scene is available
   if (!currentScene) {
     return (
@@ -676,7 +674,7 @@ export function VnPlayer({
               ) : (
                 <>
                   <ImageIcon className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
-                  <span className="hidden sm:inline">Generate Image</span>
+                  <span className="hidden sm:inline">Regenerate</span>
                   <span className="sm:hidden">Image</span>
                 </>
               )}

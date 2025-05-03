@@ -195,7 +195,7 @@ export function LoadProjectDialog({ open, onOpenChange }: LoadProjectDialogProps
           </div>
           
           <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-0 justify-between sm:justify-between mt-2 sm:mt-4">
-            <Button
+            {/* <Button
               type="button"
               variant="outline"
               onClick={handleImportProject}
@@ -204,7 +204,7 @@ export function LoadProjectDialog({ open, onOpenChange }: LoadProjectDialogProps
             >
               <Upload className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> 
               Import Project
-            </Button>
+            </Button> */}
             <Button 
               type="button" 
               onClick={() => onOpenChange(false)}
