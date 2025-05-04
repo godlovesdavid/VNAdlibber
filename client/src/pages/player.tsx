@@ -200,7 +200,8 @@ export default function Player() {
   useEffect(() => {
     const title = getStoryTitle();
     updatePlayerData({ storyTitle: title });
-  }, [actId, actNumber, projectData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [actId, actNumber, projectData?.conceptData?.title]);
 
   // Function to extract a description from the story data
   const getStoryDescription = () => {
