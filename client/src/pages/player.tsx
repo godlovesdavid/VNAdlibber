@@ -3,6 +3,10 @@ import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useParams } from "wouter";
 import { VnPlayer } from "@/components/vn-player";
+import { NavBar } from "@/components/nav-bar";
+import { Loader2 } from "lucide-react";
+import { ShareButton } from "@/components/share-button";
+import { Helmet } from "react-helmet";
 import { GeneratedAct } from "@/types/vn";
 
 export default function Player() {

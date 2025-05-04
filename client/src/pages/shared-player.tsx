@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'wouter';
-import { Loader2, Share2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { VnPlayer } from '@/components/vn-player';
 import { NavBar } from '@/components/nav-bar';
 import { useToast } from '@/hooks/use-toast';
+import { ShareButton } from '@/components/share-button';
 import { Button } from '@/components/ui/button';
 import { Helmet } from 'react-helmet';
 
@@ -103,14 +104,101 @@ export default function SharedPlayer() {
     );
   }
 
+  // Function to extract a description from the story data
+  const getStoryDescription = () => {
+    if (!story?.actData) return "An interactive visual novel adventure";
+    
+    // Try to extract a description from the first scene dialogue or summary
+    try {
+      // For nested format with scenes
+      if (story.actData.scene1 && story.actData.scene1.dialogue && story.actData.scene1.dialogue.length > 0) {
+        return story.actData.scene1.dialogue[0][1] || "An interactive visual novel adventure";
+      }
+      // For array format
+      else if (story.actData.scenes && story.actData.scenes.length > 0) {
+        const firstScene = story.actData.scenes[0];
+        if (firstScene.dialogue && firstScene.dialogue.length > 0) {
+          return firstScene.dialogue[0][1] || "An interactive visual novel adventure";
+        }
+      }
+      return "An interactive visual novel adventure";
+    } catch (err) {
+      return "An interactive visual novel adventure";
+    }
+  };
+
+  // Function to handle sharing the current story
+  const handleShare = (platform: 'twitter' | 'facebook' | 'email' | 'copy') => {
+    const url = window.location.href;
+    const text = `Check out this visual novel: ${story.title}`;
+    
+    switch (platform) {
+      case 'twitter':
+        window.open(
+          `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
+          '_blank'
+        );
+        break;
+      case 'facebook':
+        window.open(
+          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+          '_blank'
+        );
+        break;
+      case 'email':
+        window.open(
+          `mailto:?subject=${encodeURIComponent(text)}&body=${encodeURIComponent(`${text}\n\n${url}`)}`,
+          '_blank'
+        );
+        break;
+      case 'copy':
+        navigator.clipboard.writeText(url)
+          .then(() => {
+            toast({
+              title: "Link Copied",
+              description: "Share link copied to clipboard"
+            });
+          })
+          .catch(() => {
+            toast({
+              title: "Copy Failed",
+              description: "Could not copy the link to clipboard"
+            });
+          });
+        break;
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
+      <Helmet>
+        <title>{story.title} | VN Adlibber</title>
+        <meta name="description" content={getStoryDescription()} />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={window.location.href} />
+        <meta property="og:title" content={`${story.title} | VN Adlibber`} />
+        <meta property="og:description" content={getStoryDescription()} />
+        
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content={window.location.href} />
+        <meta name="twitter:title" content={`${story.title} | VN Adlibber`} />
+        <meta name="twitter:description" content={getStoryDescription()} />
+      </Helmet>
+      
       <NavBar />
       <main className="flex flex-col flex-grow">
         <div className="container px-2 py-4 mx-auto sm:px-4">
-          <div className="mb-4">
-            <h1 className="text-2xl font-semibold">{story.title}</h1>
-            <p className="text-sm text-muted-foreground">Shared Visual Novel</p>
+          <div className="mb-4 flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-semibold">{story.title}</h1>
+              <p className="text-sm text-muted-foreground">Shared Visual Novel</p>
+            </div>
+            <div className="flex gap-2">
+              <ShareButton title={story.title} variant="outline" size="sm" />
+            </div>
           </div>
           
           <div className="flex-grow">
