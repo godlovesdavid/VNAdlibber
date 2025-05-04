@@ -277,9 +277,12 @@ export function VnPlayer({
 
   // Simple direct fetch for image generation
   const generateImageDirectly = useCallback(async () => {
+    // Capture current scene at the time of function call to avoid any state update interference
+    const scene = currentScene;
+    
     // Don't generate if:  
-    // 1. There's no current scene
-    if (!currentScene) {
+    // 1. There's no scene
+    if (!scene) {
       console.log("Not generating - no current scene");
       return;
     }
@@ -310,13 +313,13 @@ export function VnPlayer({
     }
     
     // 5. Make sure we haven't already generated for this scene
-    if (lastGeneratedScene.current === currentScene.name && imageUrl) {
-      console.log(`Already generated for scene ${currentScene.name} - skipping generation`);
+    if (lastGeneratedScene.current === scene.name && imageUrl) {
+      console.log(`Already generated for scene ${scene.name} - skipping generation`);
       return;
     }
     
     // Otherwise, proceed with generation
-    console.log(`Generating image for scene ${currentScene.name}...`);
+    console.log(`Generating image for scene ${scene.name}...`);
     
     try {
       // Start generating
@@ -324,7 +327,7 @@ export function VnPlayer({
       setImageError(null);
       
       // Keep track of scene name so we don't regenerate
-      lastGeneratedScene.current = currentScene.name;
+      lastGeneratedScene.current = scene.name;
       
       const response = await fetch('/api/generate/image', {
         method: 'POST',
@@ -333,8 +336,8 @@ export function VnPlayer({
         },
         body: JSON.stringify({
           scene: {
-            name: currentScene.name,
-            image_prompt: currentScene.image_prompt || ""
+            name: scene.name,
+            image_prompt: scene.image_prompt || ""
           },
           imageType: "background",
           optimizeForMobile: false
@@ -403,9 +406,6 @@ export function VnPlayer({
 
     // Mark as initialized to prevent re-initialization
     initialized.current = true;
-
-    // We'll set this flag in setCurrentScene instead to avoid double generation
-    // shouldGenerateImage.current = true;
     
     // Set initial scene
     const firstScene = actData.scenes[0];
@@ -425,7 +425,17 @@ export function VnPlayer({
       setDisplayedText(""); // Clear any previous text
       animateText(firstScene.dialogue[0][1]);
     }
-  }, [actData, mode, animateText]);
+    
+    // Generate the first image after a short delay to ensure all states are properly set
+    setTimeout(() => {
+      if (imageGenerationEnabled) {
+        console.log(`Initial image generation for scene ${firstScene.name}`); 
+        // Mark as generated to prevent duplicate generation
+        lastGeneratedScene.current = firstScene.name;
+        generateImageDirectly();
+      }
+    }, 500); // Slightly longer delay to ensure component is fully initialized
+  }, [actData, mode, animateText, imageGenerationEnabled, generateImageDirectly]);
 
   // Track the scene we've already generated an image for
   const lastGeneratedScene = useRef<string | null>(null);
@@ -500,11 +510,25 @@ export function VnPlayer({
     setCurrentDialogueIndex(0);
     setShowChoices(false);
     setDialogueLog([]);
+    
+    // Clear image url state to ensure a fresh start
+    setImageUrl(null);
+    
+    // Reset generation tracking when restarting
+    lastGeneratedScene.current = null;
 
     // Use animation for both modes now
     if (actData.scenes[0].dialogue && actData.scenes[0].dialogue.length > 0) {
       setDisplayedText(""); // Clear any previous text
       animateText(actData.scenes[0].dialogue[0][1]);
+    }
+    
+    // If image generation is enabled, generate a fresh image for the first scene
+    if (imageGenerationEnabled) {
+      setTimeout(() => {
+        console.log("Generating image for restarted scene");
+        generateImageDirectly();
+      }, 500);
     }
   }, [
     actData,
@@ -516,6 +540,8 @@ export function VnPlayer({
     setShowChoices,
     setDialogueLog,
     setDisplayedText,
+    imageGenerationEnabled,
+    generateImageDirectly
   ]);
 
   // Handle advancing to next dialogue or showing choices
@@ -815,11 +841,18 @@ export function VnPlayer({
               variant="default"
               className="bg-blue-500 hover:bg-blue-700 active:bg-blue-800 cursor-pointer text-xs md:text-sm py-1 md:py-2 px-2 md:px-4"
               onClick={(e) => {
+                // Prevent any default behavior
+                e.preventDefault();
                 // Stop propagation to prevent parent elements from capturing the click
                 e.stopPropagation();
+                // Add some visual feedback that we're handling the click
                 console.log("Generate image button clicked - using direct method");
-                // Use our more reliable direct method
-                generateImageDirectly();
+                // Use our more reliable direct method with a slight delay to ensure click doesn't propagate
+                setTimeout(() => {
+                  generateImageDirectly();
+                }, 10);
+                // Return false to ensure no unexpected behaviors
+                return false;
               }}
               disabled={isGenerating || !imageGenerationEnabled}
               style={{ pointerEvents: "auto" }} // Ensure pointer events are enabled
