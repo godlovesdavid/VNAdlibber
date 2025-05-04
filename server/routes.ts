@@ -382,19 +382,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Initialize actData variable
       let actData; 
       
-      // Make sure the requested act exists
-      if (!generatedActs[actKey]) {
-        // Check if act exists in memory but isn't saved to the database yet
-        // This happens right after generating a new act
-        if (req.body.actData) {
-          // User provided the act data directly - use it instead of looking it up
-          actData = req.body.actData;
-        } else {
-          return res.status(400).json({ error: `Act ${actNum} not found in this project` });
-        }
-      } else {
-        // Get the act data from the project
+      // If actData was provided directly in the request body, use that
+      // This handles the case for newly generated acts that haven't been saved to the database yet
+      if (req.body.actData) {
+        actData = req.body.actData;
+      }
+      // Otherwise check if the act exists in the project's generatedActs
+      else if (generatedActs[actKey]) {
         actData = generatedActs[actKey];
+      } 
+      // If we can't find the act data anywhere, return an error
+      else {
+        return res.status(400).json({ error: `Act ${actNum} not found in this project` });
       }
       const storyTitle = title || project.title || `Visual Novel Act ${actNum}`;
       

@@ -98,6 +98,9 @@ export function ProjectSharingDialog({ open, onOpenChange }: ProjectSharingDialo
           if (isNaN(actNumber)) continue;
           
           try {
+            // Get the act data - this is needed for newly generated acts
+            const actData = generatedActs[actKey];
+            
             // Generate share link for this act
             const shareResponse = await fetch('/api/share', {
               method: 'POST',
