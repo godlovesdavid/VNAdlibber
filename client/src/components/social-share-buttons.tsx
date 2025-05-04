@@ -53,11 +53,11 @@ export function SocialShareButtons({ title, url }: SocialShareButtonsProps) {
   };
   
   return (
-    <div className="fixed right-0 top-[30%] -translate-y-1/2 z-30 flex flex-col gap-2 p-1.5 bg-transparent rounded-l-md">
+    <div className="fixed right-0 top-[45px] z-30 flex flex-col gap-2 p-1.5 bg-transparent rounded-l-md">
       {/* Twitter Button */}
       <button
         onClick={() => handleShare('twitter')}
-        className="w-7 h-7 flex items-center justify-center rounded-full bg-white/30 text-[#1DA1F2] hover:bg-white/40 hover:text-[#1DA1F2]/80 transition-colors"
+        className="w-7 h-7 flex items-center justify-center rounded-full bg-white text-[#1DA1F2] hover:bg-gray-100 hover:text-[#1DA1F2]/80 transition-colors"
         aria-label="Share on Twitter"
         title="Share on Twitter"
       >
@@ -69,7 +69,7 @@ export function SocialShareButtons({ title, url }: SocialShareButtonsProps) {
       {/* Facebook Button */}
       <button
         onClick={() => handleShare('facebook')}
-        className="w-7 h-7 flex items-center justify-center rounded-full bg-white/30 text-[#4267B2] hover:bg-white/40 hover:text-[#4267B2]/80 transition-colors"
+        className="w-7 h-7 flex items-center justify-center rounded-full bg-white text-[#4267B2] hover:bg-gray-100 hover:text-[#4267B2]/80 transition-colors"
         aria-label="Share on Facebook"
         title="Share on Facebook"
       >
@@ -81,7 +81,7 @@ export function SocialShareButtons({ title, url }: SocialShareButtonsProps) {
       {/* Email Button */}
       <button
         onClick={() => handleShare('email')}
-        className="w-7 h-7 flex items-center justify-center rounded-full bg-white/30 text-gray-200 hover:bg-white/40 hover:text-white transition-colors"
+        className="w-7 h-7 flex items-center justify-center rounded-full bg-white text-gray-600 hover:bg-gray-100 hover:text-gray-800 transition-colors"
         aria-label="Share via Email"
         title="Share via Email"
       >

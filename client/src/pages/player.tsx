@@ -180,29 +180,27 @@ export default function Player() {
   
   // Get the story title from the project data or imported data
   const getStoryTitle = () => {
-    let title = "";
     if (actId === "imported") {
       try {
         const importedStory = localStorage.getItem("imported_story");
         if (importedStory) {
           const parsedStory = JSON.parse(importedStory);
-          title = parsedStory.title || "Imported Story";
-        } else {
-          title = "Imported Story";
+          return parsedStory.title || "Imported Story";
         }
       } catch (err) {
         console.error("Error parsing imported story title:", err);
-        title = "Imported Story";
       }
+      return "Imported Story";
     } else {
-      title = projectData?.conceptData?.title || `Act ${actNumber}`;
+      return projectData?.conceptData?.title || `Act ${actNumber}`;
     }
-    
-    // Update player data with the story title for the navbar
-    updatePlayerData({ storyTitle: title });
-    
-    return title;
   };
+  
+  // Set the story title in player data (only once when component mounts)
+  useEffect(() => {
+    const title = getStoryTitle();
+    updatePlayerData({ storyTitle: title });
+  }, [actId, actNumber, projectData]);
 
   // Function to extract a description from the story data
   const getStoryDescription = () => {
