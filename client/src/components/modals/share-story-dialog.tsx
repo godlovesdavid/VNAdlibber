@@ -80,11 +80,14 @@ export function ShareStoryDialog({
   const saveAndShare = async () => {
     try {
       setIsLoading(true);
-      // Save the project first
-      await saveProject();
+      // Save the project first - await to make sure it completes
+      const savedProject = await saveProject();
+      console.log('Project saved with hash:', savedProject.lastSavedHash);
+
       // Then generate the share link
       await generateShareLink();
       setIsAlertOpen(false);
+      setIsOpen(true); // Make sure dialog opens
     } catch (error) {
       console.error('Error saving project before sharing:', error);
       toast({

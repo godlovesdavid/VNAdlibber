@@ -18,7 +18,7 @@ import { useState } from "react";
 
 export function NavBar() {
   const [location, setLocation] = useLocation();
-  const { projectData } = useVnContext();
+  const { projectData, hasUnsavedChanges } = useVnContext();
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [sharingDialogOpen, setSharingDialogOpen] = useState(false);
   
@@ -30,7 +30,13 @@ export function NavBar() {
   // Go back to main menu with confirmation for form pages
   const handleBackClick = () => {
     if (isFormPage()) {
-      setConfirmDialogOpen(true);
+      // Only show the confirmation dialog if there are unsaved changes
+      if (hasUnsavedChanges()) {
+        setConfirmDialogOpen(true);
+      } else {
+        // No unsaved changes, just go back to main menu
+        setLocation("/");
+      }
     } else {
       setLocation("/");
     }
