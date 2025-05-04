@@ -922,7 +922,7 @@ export function VnPlayer({
                       <div className="flex flex-col items-center w-full overflow-hidden">
                         {/* Main choice text */}
                         <div className="text-center whitespace-normal break-words text-xs sm:text-sm md:text-base w-full max-w-full">
-                          {choice.text || `Option ${index + 1}`}
+                          {typeof choice.text === 'string' ? choice.text : `Option ${index + 1}`}
                         </div>
 
                         {/* Description text (if present) */}
@@ -935,7 +935,7 @@ export function VnPlayer({
                               ? "text-xs md:text-sm" 
                               : "text-[0.65rem] sm:text-xs"
                           )}>
-                            {choice.description}
+                            {typeof choice.description === 'string' ? choice.description : ''}
                           </div>
                         )}
                       </div>
