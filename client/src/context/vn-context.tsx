@@ -164,49 +164,71 @@ const defaultPlayerData: PlayerData = {
   storyTitle: "", // Empty story title by default
 };
 
-// Function to check if there are unsaved changes using a simple time-based approach
+// Function to check if there are unsaved changes using a hybrid approach
 export function hasUnsavedChanges(projectData: VnProjectData | null): boolean {
   if (!projectData) {
-    console.log('[Change Check] No project data, returning false');
+    console.log('[Hash Check] No project data, returning false');
     return false;
   }
   
-  // Check for a recently saved timestamp in session storage
-  // This is a simple time-based approach that avoids all the complexity of content comparison
+  // PRIMARY CHECK: Check for a recently saved timestamp in session storage
+  // This is a simple time-based approach that prevents false positives immediately after saving
   const recentlySavedTimestamp = sessionStorage.getItem('last_project_save_time');
   const currentTime = Date.now();
   
   if (recentlySavedTimestamp) {
     const timeSinceSave = currentTime - parseInt(recentlySavedTimestamp);
     // If project was saved less than 10 seconds ago, consider it saved
-    // Increased to 10 seconds to be more generous with the timing
+    // 10 seconds provides a good buffer for any state updates to complete
     if (timeSinceSave < 10000) {
-      console.log(`[Change Check] Project was saved ${timeSinceSave}ms ago, considering it saved`);
+      console.log(`[Hash Check] Project was saved ${timeSinceSave}ms ago, considering it saved`);
       return false;
     }
   }
   
-  // For a new project, if we have no projectData.id and no lastSavedHash, we consider it unsaved
-  // This helps ensure new projects prompt for save when leaving
+  // For a new project, check if we've just created it
   if (!projectData.id && !projectData.lastSavedHash) {
-    // But don't count it as unsaved if we've just created a new project in the last 10 seconds
+    // Don't count it as unsaved if we've just created a new project in the last 10 seconds
     const freshProjectTime = sessionStorage.getItem('vn_new_project_time');
     if (freshProjectTime) {
       const timeSinceCreation = currentTime - parseInt(freshProjectTime);
       if (timeSinceCreation < 10000) {
-        console.log(`[Change Check] New project created ${timeSinceCreation}ms ago, considering it saved`);
+        console.log(`[Hash Check] New project created ${timeSinceCreation}ms ago, considering it saved`);
         return false;
       }
     }
-    
-    console.log('[Change Check] New unsaved project, returning true');
+  }
+  
+  // SECONDARY CHECK: Use hash comparison for older changes
+  // Always check localStorage data as the latest source of truth
+  let latestData = projectData;
+  // Check localStorage for most recent data
+  const localStorageData = localStorage.getItem("current_vn_project");
+  if (localStorageData) {
+    try {
+      const parsedData = JSON.parse(localStorageData);
+      // Only use localStorage data if it has an ID and that ID matches the current project
+      if (parsedData.id && projectData.id && parsedData.id === projectData.id) {
+        latestData = parsedData;
+      }
+    } catch (e) {
+      console.error('[Hash Check] Failed to parse localStorage data:', e);
+    }
+  }
+  
+  // If no hash exists, we assume changes are unsaved
+  if (!latestData.lastSavedHash) {
+    console.log('[Hash Check] No saved hash found, returning true (unsaved)');
     return true;
   }
   
-  // For existing projects, default to true (changes exist) if they don't have a recent save timestamp
-  // This encourages saving before navigating away
-  console.log('[Change Check] No recent save timestamp for existing project, prompting for save');
-  return true;
+  // Generate a current hash and compare
+  const currentHash = generateProjectHash(latestData);
+  const match = currentHash === latestData.lastSavedHash;
+  console.log('[Hash Check] Current hash:', currentHash);
+  console.log('[Hash Check] Saved hash:', latestData.lastSavedHash);
+  console.log('[Hash Check] Hashes match?', match, 'returning', !match);
+  return !match;
 }
 
 const VnContext = createContext<VnContextType | undefined>(undefined);
