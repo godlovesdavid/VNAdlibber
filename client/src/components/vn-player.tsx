@@ -81,94 +81,35 @@ function convertActFormat(actData: any): {
   };
 }
 
-// Dedicated component for handling scene backgrounds with fallbacks
+// Simplified background component with no state to prevent rerender loops
 interface SceneBackgroundProps {
   imageUrl: string;
   sceneId: string;
   isGenerated?: boolean;
 }
 
+// Completely stateless component to avoid re-render problems
 function SceneBackground({
   imageUrl,
   sceneId,
   isGenerated = false,
 }: SceneBackgroundProps) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
-  // Store whether we're using the fallback to avoid unnecessary additional renders
-  const [isFallback, setIsFallback] = useState(false);
-  
-  // Simplified - we'll use imageUrl directly or the fallback when needed
-  // This avoids the state change loop that was causing re-renders
-  
-  // Fallback URL in case of loading failures - using data URI for guaranteed compatibility
+  // Fallback URL for guaranteed compatibility
   const fallbackUrl = `data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221024%22%20height%3D%22768%22%20viewBox%3D%220%200%201024%20768%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E`;
-
-  // Determine if the image source is an actual URL (data:, http:, etc.) vs just a text description
-  useEffect(() => {
-    // Only log once when props change rather than on each render
-    // Check if the imageUrl is actually a URL vs a text description
-    if (imageUrl && (imageUrl.startsWith('data:') || imageUrl.startsWith('http'))) {
-      console.log(`Using URL directly for scene ${sceneId}`);
-      setIsFallback(false);
-      setIsLoading(true); // Will be set to false on load
-    } else {
-      console.log(`Using fallback for scene ${sceneId}, source is not a valid URL: ${imageUrl?.slice(0, 30)}...`);
-      setIsFallback(true);
-      setIsLoading(false);
-      setHasError(true);
-    }
-  }, [imageUrl, sceneId]); // Removed fallbackUrl dependency as it doesn't change
-
-  const handleImageError = () => {
-    console.error(`Image failed to load: ${imageUrl}`);
-    setHasError(true);
-    setIsLoading(false);
-    setIsFallback(true);
-  };
-
-  const handleImageLoad = () => {
-    console.log(`Image loaded successfully: ${!isFallback ? 'actual image' : 'fallback'}`);
-    setIsLoading(false);
-    setHasError(false);
-  };
+  
+  // Simple check if this is a valid image URL
+  const isValidImageUrl = imageUrl && (imageUrl.startsWith('data:') || imageUrl.startsWith('http'));
+  const displayUrl = isValidImageUrl ? imageUrl : fallbackUrl;
 
   return (
-    <div
-      className="w-full h-full absolute inset-0"
-      style={{
-        transition: "background-color 0.5s ease",
-      }}
-    >
-      {/* Show placeholder immediately while image loads */}
-      {/* <div className="absolute inset-0 flex items-center justify-center text-white">
-        {isLoading && (
-          <div className="text-center">
-            <RefreshCw className="h-10 w-10 animate-spin mx-auto mb-2" />
-            <p>Loading scene background...</p>
-          </div>
-        )}
-      </div> */}
-
-      {/* Actual image with appropriate handling */}
+    <div className="w-full h-full absolute inset-0">
       <img
-        key={`img-${sceneId}`}
-        src={isFallback ? fallbackUrl : imageUrl}
+        key={`img-${sceneId}-${isGenerated ? 'gen' : 'orig'}`}
+        src={displayUrl}
         alt={`Scene ${sceneId} Background`}
-        className={cn(
-          "w-full h-full object-cover transition-opacity duration-500",
-          isLoading ? "opacity-0" : "opacity-100",
-        )}
+        className="w-full h-full object-cover transition-opacity duration-500"
         style={{ position: "absolute", zIndex: 0 }}
-        onLoad={handleImageLoad}
-        onError={handleImageError}
       />
-
-      {/* Debug info overlay */}
-      {/* <div className="absolute bottom-4 right-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded text-xs z-20">
-        {isGenerated ? "Generated" : "Original"} | Scene: {sceneId}
-        {hasError && " | Using fallback"}
-      </div> */}
     </div>
   );
 }
@@ -368,6 +309,12 @@ export function VnPlayer({
       return;
     }
     
+    // 5. Make sure we haven't already generated for this scene
+    if (lastGeneratedScene.current === currentScene.name && imageUrl) {
+      console.log(`Already generated for scene ${currentScene.name} - skipping generation`);
+      return;
+    }
+    
     // Otherwise, proceed with generation
     console.log(`Generating image for scene ${currentScene.name}...`);
     
@@ -375,6 +322,9 @@ export function VnPlayer({
       // Start generating
       setIsGenerating(true);
       setImageError(null);
+      
+      // Keep track of scene name so we don't regenerate
+      lastGeneratedScene.current = currentScene.name;
       
       const response = await fetch('/api/generate/image', {
         method: 'POST',
@@ -442,7 +392,7 @@ export function VnPlayer({
     } finally {
       setIsGenerating(false);
     }
-  }, [currentScene, imageGenerationEnabled, isGenerating, isRateLimited, toast]);
+  }, [currentScene, imageGenerationEnabled, isGenerating, isRateLimited, imageUrl, toast]);
   
   // Don't auto-generate on scene change anymore - we'll rely on user manually clicking the icon
   // or explicit calls to generateImageDirectly from toggle handlers
@@ -477,6 +427,9 @@ export function VnPlayer({
     }
   }, [actData, mode, animateText]);
 
+  // Track the scene we've already generated an image for
+  const lastGeneratedScene = useRef<string | null>(null);
+  
   // Update current scene when scene ID changes
   useEffect(() => {
     if (!actData?.scenes || !currentSceneId) return;
@@ -486,24 +439,39 @@ export function VnPlayer({
       setCurrentScene(scene);
       setCurrentDialogueIndex(0);
       setShowChoices(false);
-      setImageUrl(null); // Clear image URL when changing scenes
+      // We only want to clear the imageUrl if this is a different scene
+      if (currentScene?.name !== scene.name) {
+        console.log(`Changing from ${currentScene?.name} to ${scene.name} - clearing image`);
+        setImageUrl(null); // Clear image URL when changing to a new scene
+        
+        // Generate a new image only if:
+        // 1. This is a different scene than before
+        // 2. We haven't already generated for this scene in this session
+        if (imageGenerationEnabled && 
+            !isRateLimited && 
+            !isGenerating && 
+            lastGeneratedScene.current !== scene.name) {
+            
+          console.log(`Auto-generating image for new scene ${scene.name}`);
+          // Track that we've generated for this scene
+          lastGeneratedScene.current = scene.name;
+          
+          // Use setTimeout to ensure this happens after state updates complete
+          setTimeout(() => {
+            generateImageDirectly();
+          }, 100);
+        } else {
+          console.log(`Not auto-generating - ${!imageGenerationEnabled ? 'disabled' : 
+            isRateLimited ? 'rate limited' : 
+            isGenerating ? 'already generating' :
+            lastGeneratedScene.current === scene.name ? 'already generated for this scene' :
+            'unknown reason'}`);
+        }
+      }
 
       if (scene.dialogue && scene.dialogue.length > 0) {
         setDisplayedText("");
         animateText(scene.dialogue[0][1]);
-      }
-      
-      // Automatic scene change image generation with direct approach - only if we don't have an image
-      if (imageGenerationEnabled && !isRateLimited && !isGenerating) {
-        console.log(`Auto-generating image for new scene ${scene.name}`);
-        // Use setTimeout to ensure this happens after state updates complete
-        setTimeout(() => {
-          generateImageDirectly();
-        }, 100);
-      } else {
-        console.log(`Not auto-generating - ${!imageGenerationEnabled ? 'disabled' : 
-          isRateLimited ? 'rate limited' : 
-          'already generating'}`);
       }
     }
   }, [
