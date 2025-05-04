@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useVnContext } from "@/context/vn-context";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, Twitter, Facebook, Mail } from "lucide-react";
+import { Copy, Twitter, Facebook, Mail, Share, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ShareDialogProps {
