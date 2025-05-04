@@ -25,7 +25,9 @@ export interface IStorage {
   getStory(id: number): Promise<VnStory | undefined>;
   getStoryByShareId(shareId: string): Promise<VnStory | undefined>;
   createStory(story: InsertVnStory): Promise<VnStory>;
+  updateStoryLastAccessed(id: number): Promise<void>;
   deleteStory(id: number): Promise<void>;
+  deleteExpiredStories(days: number): Promise<number>; // Returns number of deleted stories
 }
 
 // In-memory storage implementation
@@ -210,6 +212,39 @@ export class MemStorage implements IStorage {
   async deleteStory(id: number): Promise<void> {
     this.stories.delete(id);
   }
+  
+  async updateStoryLastAccessed(id: number): Promise<void> {
+    // Update the lastAccessed timestamp for the story
+    const story = this.stories.get(id);
+    if (story) {
+      story.lastAccessed = new Date().toISOString();
+      this.stories.set(id, story);
+    }
+  }
+  
+  async deleteExpiredStories(days: number): Promise<number> {
+    // Calculate the cutoff date
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+    
+    // Find and delete expired stories
+    let deletedCount = 0;
+    
+    // Convert to array to avoid modifying during iteration
+    const storiesToCheck = Array.from(this.stories.entries());
+    
+    for (const [id, story] of storiesToCheck) {
+      if (story.lastAccessed) {
+        const lastAccessedDate = new Date(story.lastAccessed);
+        if (lastAccessedDate < cutoffDate) {
+          this.stories.delete(id);
+          deletedCount++;
+        }
+      }
+    }
+    
+    return deletedCount;
+  }
 }
 
 // Database Storage implementation using PostgreSQL
@@ -350,6 +385,36 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(vnStories)
       .where(eq(vnStories.id, id));
+  }
+  
+  async updateStoryLastAccessed(id: number): Promise<void> {
+    // Update the lastAccessed timestamp to the current time
+    await db
+      .update(vnStories)
+      .set({ lastAccessed: new Date().toISOString() })
+      .where(eq(vnStories.id, id));
+  }
+  
+  async deleteExpiredStories(days: number): Promise<number> {
+    // Calculate the cutoff date
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+    const cutoffDateString = cutoffDate.toISOString();
+    
+    // Get expired stories for count
+    const expiredStories = await db
+      .select()
+      .from(vnStories)
+      .where(sql`${vnStories.lastAccessed} < ${cutoffDateString}`);
+    
+    // Delete stories older than the cutoff date
+    if (expiredStories.length > 0) {
+      await db
+        .delete(vnStories)
+        .where(sql`${vnStories.lastAccessed} < ${cutoffDateString}`);
+    }
+    
+    return expiredStories.length;
   }
 }
 

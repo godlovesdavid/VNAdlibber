@@ -44,6 +44,8 @@ export const vnStories = pgTable("vn_stories", {
   userId: integer("user_id"),
   title: text("title").notNull(),
   createdAt: text("created_at").notNull(),
+  // Track when the story was last accessed (for expiration)
+  lastAccessed: text("last_accessed").notNull().default(new Date().toISOString()),
   actData: jsonb("act_data").notNull(),
   actNumber: integer("act_number").notNull(),
   // Field for sharing stories

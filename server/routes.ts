@@ -437,6 +437,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'Shared story not found' });
       }
       
+      // Update the lastAccessed timestamp
+      await storage.updateStoryLastAccessed(story.id);
+      
       // Return the story data
       res.json({ story });
     } catch (error) {
