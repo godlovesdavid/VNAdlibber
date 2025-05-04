@@ -164,56 +164,49 @@ const defaultPlayerData: PlayerData = {
   storyTitle: "", // Empty story title by default
 };
 
-// Function to check if there are unsaved changes by comparing hashes
+// Function to check if there are unsaved changes using a simple time-based approach
 export function hasUnsavedChanges(projectData: VnProjectData | null): boolean {
   if (!projectData) {
-    console.log('[Hash Check] No project data, returning false');
+    console.log('[Change Check] No project data, returning false');
     return false;
   }
   
   // Check for a recently saved timestamp in session storage
-  // This is a simple time-based approach that avoids hash mismatches
+  // This is a simple time-based approach that avoids all the complexity of content comparison
   const recentlySavedTimestamp = sessionStorage.getItem('last_project_save_time');
   const currentTime = Date.now();
   
   if (recentlySavedTimestamp) {
     const timeSinceSave = currentTime - parseInt(recentlySavedTimestamp);
-    // If project was saved less than 5 seconds ago, consider it saved
-    if (timeSinceSave < 5000) {
-      console.log(`[Hash Check] Project was saved ${timeSinceSave}ms ago, considering it saved`);
+    // If project was saved less than 10 seconds ago, consider it saved
+    // Increased to 10 seconds to be more generous with the timing
+    if (timeSinceSave < 10000) {
+      console.log(`[Change Check] Project was saved ${timeSinceSave}ms ago, considering it saved`);
       return false;
     }
   }
   
-  // Always check localStorage data as the latest source of truth
-  let latestData = projectData;
-  // Check localStorage for most recent data
-  const localStorageData = localStorage.getItem("current_vn_project");
-  if (localStorageData) {
-    try {
-      const parsedData = JSON.parse(localStorageData);
-      // Only use localStorage data if it has an ID and that ID matches the current project
-      if (parsedData.id && projectData.id && parsedData.id === projectData.id) {
-        latestData = parsedData;
+  // For a new project, if we have no projectData.id and no lastSavedHash, we consider it unsaved
+  // This helps ensure new projects prompt for save when leaving
+  if (!projectData.id && !projectData.lastSavedHash) {
+    // But don't count it as unsaved if we've just created a new project in the last 10 seconds
+    const freshProjectTime = sessionStorage.getItem('vn_new_project_time');
+    if (freshProjectTime) {
+      const timeSinceCreation = currentTime - parseInt(freshProjectTime);
+      if (timeSinceCreation < 10000) {
+        console.log(`[Change Check] New project created ${timeSinceCreation}ms ago, considering it saved`);
+        return false;
       }
-    } catch (e) {
-      console.error('[Hash Check] Failed to parse localStorage data:', e);
     }
-  }
-  
-  // If no hash exists, we assume changes are unsaved
-  if (!latestData.lastSavedHash) {
-    console.log('[Hash Check] No saved hash found, returning true (unsaved)');
+    
+    console.log('[Change Check] New unsaved project, returning true');
     return true;
   }
   
-  // Generate a current hash and compare
-  const currentHash = generateProjectHash(latestData);
-  const match = currentHash === latestData.lastSavedHash;
-  console.log('[Hash Check] Current hash:', currentHash);
-  console.log('[Hash Check] Saved hash:', latestData.lastSavedHash);
-  console.log('[Hash Check] Hashes match?', match, 'returning', !match);
-  return !match;
+  // For existing projects, default to true (changes exist) if they don't have a recent save timestamp
+  // This encourages saving before navigating away
+  console.log('[Change Check] No recent save timestamp for existing project, prompting for save');
+  return true;
 }
 
 const VnContext = createContext<VnContextType | undefined>(undefined);
@@ -301,6 +294,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     // Set a timestamp for a fresh project to avoid "unsaved changes" prompt
     const newTimestamp = Date.now();
     sessionStorage.setItem('last_project_save_time', newTimestamp.toString());
+    sessionStorage.setItem('vn_new_project_time', newTimestamp.toString());
     console.log(`[createNewProject] Recording timestamp: ${newTimestamp} for new project`);
     
     // Navigate to the first step
@@ -691,6 +685,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       // 6. Record save timestamp to help with change detection
       const saveTimestamp = Date.now();
       sessionStorage.setItem('last_project_save_time', saveTimestamp.toString());
+      // Also clear the new project time - this is now a saved project
+      sessionStorage.removeItem('vn_new_project_time');
       console.log(`[saveProject] Recording save timestamp: ${saveTimestamp}`);
       
       // 7. Invalidate the projects query to refresh the project list
