@@ -54,10 +54,11 @@ export async function generateSceneBackground(
       );
 
       const requestData = {
-        scene,
-        imageType: "background",
+        prompt: scene.image_prompt
+        // scene,
+        // imageType: "background",
         // Include flag to indicate if optimize mode should be used
-        optimizeForMobile: isMobileDevice(),
+        // optimizeForMobile: isMobileDevice(),
       };
       console.log("Sending request to generate image API:", requestData);
 

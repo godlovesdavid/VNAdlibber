@@ -10,7 +10,7 @@ export async function generateSceneBackgroundImage(
 ): Promise<{ url: string }> {
   try {
     console.log("🎨 START: Generating image background for scene:", sceneId);
-    console.log("- image_prompt:", { image_prompt });
+    // console.log("- image_prompt:", { image_prompt });
 
     if (!process.env.RUNPOD_API_KEY) {
       throw new Error("RUNPOD_API_KEY is required for image generation");

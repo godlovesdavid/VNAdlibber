@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, ImageIcon, RefreshCw } from "lucide-react";
 import { Scene, SceneChoice, GeneratedAct } from "@/types/vn";
 import { useImageGeneration } from "@/hooks/use-image-generation";
-import { setCachedImageUrl } from "@/lib/image-generator";
+import * as ImageGenerator from "@/lib/image-generator";
 import { useToast } from "@/hooks/use-toast";
 
 // Helper function to convert various act formats to array format for VN player
@@ -98,7 +98,7 @@ function SceneBackground({
   const [actualUrl, setActualUrl] = useState('');
 
   // Fallback URL in case of loading failures - using data URI for guaranteed compatibility
-  const fallbackUrl = `data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221024%22%20height%3D%22768%22%20viewBox%3D%220%200%201024%20768%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E`;
+  // const fallbackUrl = `data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221024%22%20height%3D%22768%22%20viewBox%3D%220%200%201024%20768%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E`;
 
   // Determine if the image source is an actual URL (data:, http:, etc.) vs just a text description
   useEffect(() => {
@@ -111,24 +111,24 @@ function SceneBackground({
       console.log(`Setting actual URL for scene ${sceneId}, source appears to be a valid URL`);
       setActualUrl(imageUrl);
     } else {
-      console.log(`Using fallback for scene ${sceneId}, source is not a valid URL: ${imageUrl?.slice(0, 30)}...`);
-      setActualUrl(fallbackUrl);
+      // console.log(`Using fallback for scene ${sceneId}, source is not a valid URL: ${imageUrl?.slice(0, 30)}...`);
+      // setActualUrl(fallbackUrl);
       // Mark as loaded but with error
       setIsLoading(false);
       setHasError(true);
     }
-  }, [imageUrl, sceneId, fallbackUrl]);
+  }, [imageUrl, sceneId]);
 
   const handleImageError = () => {
     console.error(`Image failed to load: ${imageUrl}`);
     setHasError(true);
     setIsLoading(false);
     // Use fallback URL
-    setActualUrl(fallbackUrl);
+    // setActualUrl(fallbackUrl);
   };
 
   const handleImageLoad = () => {
-    console.log(`Image loaded successfully: ${actualUrl !== fallbackUrl ? 'actual image' : 'fallback'}`);
+    console.log(`Image loaded successfully`);
     setIsLoading(false);
     setHasError(false);
   };
@@ -217,7 +217,6 @@ export function VnPlayer({
   
   // Image generation toggle state with a reference to track changes
   const [imageGenerationEnabled, setImageGenerationEnabled] = useState(true);
-  const prevImageGenerationState = useRef(true);
 
   // Text animation state
   const [textSpeed, setTextSpeed] = useState<"slow" | "medium" | "fast">(
@@ -231,10 +230,7 @@ export function VnPlayer({
   const containerRef = useRef<HTMLDivElement>(null);
   const initialized = useRef(false);
 
-  // Track if we need to generate an image
-  const shouldGenerateImage = useRef(false);
-
-  // Text animation function
+  // TEXT ANIM
   const animateText = useCallback(
     (textContent: any) => {
       // Convert object to string if needed
@@ -294,7 +290,7 @@ export function VnPlayer({
     [textSpeed, mode],
   );
 
-  // Skip text animation
+  // SKIP TEXT ANIM
   const skipTextAnimation = useCallback(() => {
     if (textAnimationRef.current) {
       window.cancelAnimationFrame(textAnimationRef.current);
@@ -321,72 +317,64 @@ export function VnPlayer({
 
   // Use image generation hook - make sure to update when scene changes
   // State for image handling
+  // const isGenerating = useRef(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageError, setError] = useState<string | null>(null);
   
-  // Still keep the hook for compatibility, but we won't rely on it for state
-  const {
-    generateImage,
-  } = useImageGeneration(currentScene, {
-    autoGenerate: imageGenerationEnabled, // Use the state to control auto-generation
-    debug: false,
-    generationDelay: 100, // Added slight delay to prevent rapid generation during transitions
-  });
-
-  // Simple direct fetch for image generation that doesn't use the complex hook
+  // MANUAL IMAGE GEN
   const generateImageDirectly = useCallback(async () => {
-    if (!currentScene) return;
-    
+    if (!currentScene || isGenerating) return;
     try {
       // Mark as generating
       setIsGenerating(true);
-      setImageGenerationEnabled(true);
       
-      // Make direct API request
-      console.log("Directly generating image...");
-      const response = await fetch('/api/generate/image', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          scene: {
-            name: currentScene.name,
-            image_prompt: currentScene.image_prompt || ""
-          },
-          imageType: "background",
-          optimizeForMobile: false
-        })
-      });
+      // // Make direct API request
+      // console.log("Directly generating image...");
+      // const response = await fetch('/api/generate/image', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json'
+      //   },
+      //   body: JSON.stringify({
+      //     scene: {
+      //       name: currentScene.name,
+      //       image_prompt: currentScene.image_prompt || ""
+      //     },
+      //     imageType: "background",
+      //     optimizeForMobile: false
+      //   })
+      // });
       
-      // Check for rate limit errors
-      if (response.status === 429) {
-        toast({
-          title: "Rate Limited",
-          description: "You've reached the maximum number of image generations allowed. Please try again later.",
-          variant: "destructive"
-        });
-        setError("Rate limited. Please try again later.");
-        return;
-      }
+      // // Check for rate limit errors
+      // if (response.status === 429) {
+      //   toast({
+      //     title: "Rate Limited",
+      //     description: "You've reached the maximum number of image generations allowed. Please try again later.",
+      //     variant: "destructive"
+      //   });
+      //   setError("Rate limited. Please try again later.");
+      //   return;
+      // }
       
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Image generation failed: ${response.status} ${errorText}`);
-      }
+      // if (!response.ok) {
+      //   const errorText = await response.text();
+      //   throw new Error(`Image generation failed: ${response.status} ${errorText}`);
+      // }
       
-      const data = await response.json();
-      if (data.url) {
-        // Set the image URL state directly
-        const urlToSet = data.url;
+      // const data = await response.json();
+      // if (data.url) {
+      //   // Set the image URL state directly
+      //   const urlToSet = data.url;
         
-        // First, update any state tracked by the hook
-        setImageUrl(urlToSet);
+      //   // First, update any state tracked by the hook
+      //   setImageUrl(urlToSet);
         
-        // Then clear errors
-        setError(null);
-      }
+      //   // Then clear errors
+      //   setError(null);
+      // }
+
+      // ImageGenerator.generateSceneBackground(currentScene)
     } catch (error) {
       console.error("Image generation error:", error);
       setError("Failed to generate image");
@@ -398,32 +386,57 @@ export function VnPlayer({
     } finally {
       setIsGenerating(false);
     }
-  }, [currentScene, toast, setImageGenerationEnabled]);
-  
-  // image generation - using direct fetch method which is more reliable than the hook
-  useEffect(() => {
-    console.log("Image generation effect triggered: ", {
-      shouldGenerate: shouldGenerateImage.current,
-      hasScene: !!currentScene,
-      imageGenerationEnabled,
-      imageUrl
-    });
-    
-    if (shouldGenerateImage.current && currentScene && imageGenerationEnabled) {
-      console.log("Generating image automatically on scene change");
-      shouldGenerateImage.current = false;
-      generateImageDirectly();
-    }
-  }, [currentScene, generateImageDirectly, imageGenerationEnabled, imageUrl]);
+  }, [currentScene, toast]);
 
-  //initialize player with first scene
+  //IMAGE GEN
+  useEffect(() => {
+    console.log("Image generation effect triggered", {
+      currentSceneId,
+      imageGenerationEnabled,
+      isGenerating: isGenerating,
+    });
+    if (currentSceneId && imageGenerationEnabled && !isGenerating) {
+      console.log("Starting image generation for the current scene");
+      setIsGenerating(true); // Set to true to indicate generation is in progress
+      generateImageDirectly().finally(() => {
+        setIsGenerating(false); // Reset the flag after generation is completed
+      });
+    }
+  }, [currentSceneId, imageGenerationEnabled]);
+
+  // Listen for image generation toggle events from the player navbar
+  useEffect(() => {
+    const handleImageGenerationToggle = (e: CustomEvent) => {
+      const isEnabled = e.detail;
+      // Check if the state is changing to the same value to prevent generating an image
+      if (imageGenerationEnabled !== isEnabled) {
+        console.log("Image generation toggled:", isEnabled);
+        // Update the state now that we validate the toggle
+        setImageGenerationEnabled(isEnabled);
+
+        // If we're turning on image generation (isEnabled becomes true), you might want to check current scene
+        // if (isEnabled && currentScene) {
+        //   console.log("Auto-generating image for the current scene as image generation was enabled");
+        //   generateImageDirectly();
+        // }
+      }
+    };
+
+    window.addEventListener("vnToggleImageGeneration", handleImageGenerationToggle as EventListener);
+
+    return () => {
+      window.removeEventListener("vnToggleImageGeneration", handleImageGenerationToggle as EventListener);
+    };
+  }, [currentScene, imageGenerationEnabled]);
+
+  
+  //FIRST SCENE INIT
   useEffect(() => {
     if (!actData?.scenes?.length || initialized.current) return;
 
     // Mark as initialized to prevent re-initialization
     initialized.current = true;
 
-    shouldGenerateImage.current = true;
     // Set initial scene
     const firstScene = actData.scenes[0];
     console.log(
@@ -458,7 +471,6 @@ export function VnPlayer({
         setDisplayedText("");
         animateText(scene.dialogue[0][1]);
       }
-      shouldGenerateImage.current = true;
     }
   }, [
     actData,
@@ -469,7 +481,6 @@ export function VnPlayer({
     setCurrentDialogueIndex,
     setShowChoices,
     setDisplayedText,
-    shouldGenerateImage,
   ]);
 
   // Handle restart
@@ -690,41 +701,6 @@ export function VnPlayer({
     };
   }, [mode, isTextAnimating]);
   
-  // Listen for image generation toggle events from the player navbar
-  useEffect(() => {
-    const handleImageGenerationToggle = (e: CustomEvent) => {
-      const isEnabled = e.detail;
-      console.log("Image generation toggled:", isEnabled, {
-        previousState: imageGenerationEnabled,
-        currentImageUrl: imageUrl,
-        isGenerating,
-        currentScene: currentScene?.name
-      });
-      
-      // Store current state in the ref before updating
-      prevImageGenerationState.current = imageGenerationEnabled;
-      
-      // Set the new state
-      setImageGenerationEnabled(isEnabled);
-      
-      // If toggling from off to on, manually trigger generation after a short delay
-      if (isEnabled && !imageGenerationEnabled && currentScene) {
-        console.log("Will regenerate image since generation was re-enabled");
-        // Use setTimeout to ensure the state update has completed first
-        setTimeout(() => {
-          console.log("Now regenerating the image after toggle");
-          generateImage(true);
-        }, 100);
-      }
-    };
-    
-    window.addEventListener("vnToggleImageGeneration", handleImageGenerationToggle as EventListener);
-    
-    return () => {
-      window.removeEventListener("vnToggleImageGeneration", handleImageGenerationToggle as EventListener);
-    };
-  }, [currentScene, generateImage]); // Removed state from dependencies to prevent recreation
-
   // Log current scene and image state for debugging
   useEffect(() => {
     if (currentScene) {
@@ -787,8 +763,7 @@ export function VnPlayer({
                 // Stop propagation to prevent parent elements from capturing the click
                 e.stopPropagation();
                 console.log("Generate image button clicked - using direct method");
-                // Use our more reliable direct method
-                generateImageDirectly();
+                generateImageDirectly()
               }}
               disabled={isGenerating || !imageGenerationEnabled}
               style={{ pointerEvents: "auto" }} // Ensure pointer events are enabled
