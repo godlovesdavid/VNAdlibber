@@ -107,7 +107,28 @@ export default function SharedPlayer() {
   if (error || !story) {
     return (
       <div className="flex flex-col items-center min-h-screen p-4">
-        <NavBar />
+        <div className="sticky top-0 z-50 w-full bg-background shadow-sm">
+          <nav className="bg-white shadow-sm px-4 py-3 w-full z-10">
+            <div className="flex items-center justify-between">
+              <div className="w-1/3 flex items-center">
+                <button 
+                  className="text-neutral-500 hover:text-primary transition-colors"
+                  onClick={() => window.location.href = '/'}
+                  aria-label="Back to main menu"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="w-1/3 flex justify-center">
+                <h1 className="text-lg font-semibold text-primary text-center">
+                  VN Adlibber
+                </h1>
+              </div>
+              <div className="w-1/3 flex items-center justify-end space-x-2">
+              </div>
+            </div>
+          </nav>
+        </div>
         <div className="flex flex-col items-center justify-center flex-grow w-full max-w-4xl mx-auto mt-16">
           <div className="p-6 border rounded-lg shadow-md bg-card">
             <h2 className="mb-4 text-2xl font-bold text-center">Error</h2>
