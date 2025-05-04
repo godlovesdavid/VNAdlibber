@@ -19,14 +19,31 @@ function generateProjectHash(projectData: any): string {
   // Create a normalized version of the data without irrelevant fields
   const normalizedData = { ...projectData };
   
-  // Remove fields that don't affect content
+  // Remove fields that don't affect content or vary between client/server
   delete normalizedData.id;
   delete normalizedData.createdAt;
   delete normalizedData.updatedAt;
   delete normalizedData.lastSavedHash;
   
-  // Simple string hash function
-  const str = JSON.stringify(normalizedData);
+  // Create a simplified version with only essential data for stable hashing
+  // This solves issues with React/JSON stringification differences
+  const essentialData = {
+    title: normalizedData.title || '',
+    basicData: normalizedData.basicData || {},
+    conceptData: normalizedData.conceptData || {},
+    // Extract character names which is most critical for change detection
+    characterNames: normalizedData.charactersData ? Object.keys(normalizedData.charactersData).sort() : [],
+    // Extract path names which is most critical for change detection
+    pathNames: normalizedData.pathsData ? Object.keys(normalizedData.pathsData).sort() : [],
+    // Check if plotData exists and has plotOutline 
+    hasPlot: !!(normalizedData.plotData && normalizedData.plotData.plotOutline),
+    // Extract act numbers which is most critical for change detection
+    actNumbers: normalizedData.generatedActs ? Object.keys(normalizedData.generatedActs).sort() : [],
+  };
+  
+  // Simple string hash function - using a shorter, more reliable dataset
+  const str = JSON.stringify(essentialData);
+  console.log('[Hash Generation] Using essential data:', str);
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
@@ -509,9 +526,22 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       // Calculate the correct step based on available data
       const calculatedStep = calculateCurrentStep(dataToSave);
       
-      // Generate a hash of the current data
-      const currentDataHash = generateProjectHash(dataToSave);
-      console.log('[saveProject] Generated hash for current project state:', currentDataHash);
+      // First create a clean version of the data we're about to save
+      // This includes only essential fields and is used for a more reliable hash
+      const essentialData = {
+        title: dataToSave.title || '',
+        basicData: dataToSave.basicData || {},
+        conceptData: dataToSave.conceptData || {},
+        charactersData: dataToSave.charactersData || {},
+        pathsData: dataToSave.pathsData || {},
+        plotData: dataToSave.plotData || {},
+        // Only track presence of acts, not their full content (causes hash mismatches)
+        generatedActsExist: Object.keys(dataToSave.generatedActs || {}).length > 0
+      };
+      
+      // Generate a hash of the essential data only
+      const currentDataHash = generateProjectHash(essentialData);
+      console.log('[saveProject] Generated hash for essential project data:', currentDataHash);
       console.log('[saveProject] Data to save has lastSavedHash:', dataToSave.lastSavedHash);
       
       // 2. Make sure we have all required fields with defaults
@@ -630,6 +660,13 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       sessionStorage.setItem('current_project_id', projectId.toString());
       console.log(`Loaded project ID ${projectId} and stored in sessionStorage`);
 
+      // Generate a hash for loaded project for proper change tracking
+      const loadedHash = generateProjectHash(loadedProject);
+      console.log(`[loadProject] Generated hash for loaded project: ${loadedHash}`);
+      
+      // Ensure the loaded project has the hash for change detection
+      loadedProject.lastSavedHash = loadedHash;
+      
       // IMPORTANT: Force localStorage update with the loaded project FIRST
       localStorage.setItem("current_vn_project", JSON.stringify(loadedProject));
 
