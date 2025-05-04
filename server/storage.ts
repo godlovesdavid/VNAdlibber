@@ -4,7 +4,7 @@ import {
   users, User, InsertUser
 } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 // Storage interface for the application
 export interface IStorage {
@@ -197,12 +197,14 @@ export class MemStorage implements IStorage {
     const id = this.storyId++;
     
     // Ensure nullable fields are handled properly
+    // And make sure lastAccessed is always set
     const story: VnStory = { 
       ...insertStory, 
       id,
       userId: insertStory.userId || null,
       projectId: insertStory.projectId || null,
-      shareId: insertStory.shareId || null
+      shareId: insertStory.shareId || null,
+      lastAccessed: insertStory.lastAccessed || new Date().toISOString()
     };
     
     this.stories.set(id, story);
@@ -371,7 +373,9 @@ export class DatabaseStorage implements IStorage {
       // Make sure foreign keys are null if undefined
       userId: insertStory.userId || null,
       projectId: insertStory.projectId || null,
-      shareId: insertStory.shareId || null
+      shareId: insertStory.shareId || null,
+      // Make sure lastAccessed is set (for link expiration tracking)
+      lastAccessed: insertStory.lastAccessed || new Date().toISOString()
     };
     
     const [story] = await db

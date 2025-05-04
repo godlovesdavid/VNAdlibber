@@ -447,6 +447,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to retrieve shared story' });
     }
   });
+  
+  // Admin endpoint to check expired links
+  app.get("/api/admin/expired-links", async (req, res) => {
+    try {
+      const { days = "30" } = req.query;
+      const daysNumber = parseInt(days as string, 10) || 30;
+      
+      // Get all stories
+      const stories = await storage.getStories();
+      
+      // Calculate expiration date
+      const expirationDate = new Date();
+      expirationDate.setDate(expirationDate.getDate() - daysNumber);
+      
+      // Filter expired stories
+      const expiredStories = stories.filter(story => {
+        if (!story.lastAccessed) return false;
+        const lastAccessedDate = new Date(story.lastAccessed);
+        return lastAccessedDate < expirationDate;
+      });
+      
+      // Return information about expired stories
+      res.json({ 
+        totalStories: stories.length,
+        expiredStories: expiredStories.length,
+        expirationDays: daysNumber,
+        expirationDate: expirationDate.toISOString(),
+        expiredList: expiredStories.map(story => ({
+          id: story.id,
+          title: story.title,
+          shareId: story.shareId,
+          lastAccessed: story.lastAccessed,
+          createdAt: story.createdAt
+        }))
+      });
+    } catch (error) {
+      console.error('Error checking expired links:', error);
+      res.status(500).json({ error: 'Failed to check expired links' });
+    }
+  });
 
   // Unified validation endpoint for all content types
   app.post("/api/validate", async (req, res) => {

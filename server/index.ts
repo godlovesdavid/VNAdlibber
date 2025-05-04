@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { storage } from "./storage";
 
 const app = express();
 app.use(express.json());
@@ -76,5 +77,27 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
+    
+    // Schedule a job to clean up expired shared stories
+    // Default expiration is 30 days of inactivity
+    const EXPIRATION_DAYS = 30;
+    const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000; // Run once daily
+    
+    // Initial cleanup on server start
+    runExpiredLinkCleanup();
+    
+    // Schedule regular cleanups
+    setInterval(runExpiredLinkCleanup, CLEANUP_INTERVAL_MS);
+    
+    async function runExpiredLinkCleanup() {
+      try {
+        const deletedCount = await storage.deleteExpiredStories(EXPIRATION_DAYS);
+        if (deletedCount > 0) {
+          log(`Cleaned up ${deletedCount} expired shared ${deletedCount === 1 ? 'story' : 'stories'} (inactive for over ${EXPIRATION_DAYS} days)`);
+        }
+      } catch (error) {
+        console.error('Error during expired link cleanup:', error);
+      }
+    }
   });
 })();
