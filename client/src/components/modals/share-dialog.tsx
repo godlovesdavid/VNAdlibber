@@ -138,56 +138,86 @@ export function ShareDialog({ open, onOpenChange }: ShareDialogProps) {
           </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-3 sm:space-y-4 py-2 sm:py-4">
-          <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Share Link</label>
-            <div className="flex">
-              <Input
-                value={shareUrl}
-                readOnly
-                className="flex-grow rounded-r-none bg-muted text-xs sm:text-sm h-8 sm:h-10"
-              />
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-8">
+            <Loader2 className="w-8 h-8 mr-2 animate-spin text-primary" />
+            <p className="mt-4 text-sm text-gray-600">Creating share link...</p>
+          </div>
+        ) : error ? (
+          <div className="py-4 text-center">
+            <p className="text-red-500 text-sm">{error}</p>
+            <Button 
+              onClick={loadSharedStories} 
+              variant="outline" 
+              className="mt-2"
+              size="sm"
+            >
+              Try Again
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-3 sm:space-y-4 py-2 sm:py-4">
+            <div>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Share Link</label>
+              <div className="flex">
+                <Input
+                  value={shareUrl}
+                  readOnly
+                  className="flex-grow rounded-r-none bg-muted text-xs sm:text-sm h-8 sm:h-10"
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="rounded-l-none h-8 sm:h-10 px-2 sm:px-3"
+                  onClick={handleCopy}
+                >
+                  <Copy className="h-3 w-3 sm:h-4 sm:w-4" />
+                </Button>
+              </div>
+            </div>
+            
+            <div>
               <Button
                 type="button"
-                variant="secondary"
-                className="rounded-l-none h-8 sm:h-10 px-2 sm:px-3"
-                onClick={handleCopy}
+                variant="default"
+                className="w-full mb-4 py-2"
+                onClick={handleTestPlay}
               >
-                <Copy className="h-3 w-3 sm:h-4 sm:w-4" />
+                <Share className="mr-2 h-4 w-4" /> Test Link
               </Button>
             </div>
-          </div>
-          
-          <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Share To</label>
-            <div className="flex flex-col sm:flex-row gap-2 sm:space-x-3">
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1 py-1 sm:py-2 text-xs sm:text-sm h-8 sm:h-auto"
-                onClick={() => handleShare("twitter")}
-              >
-                <Twitter className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> X
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1 py-1 sm:py-2 text-xs sm:text-sm h-8 sm:h-auto"
-                onClick={() => handleShare("facebook")}
-              >
-                <Facebook className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> Facebook
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1 py-1 sm:py-2 text-xs sm:text-sm h-8 sm:h-auto"
-                onClick={() => handleShare("email")}
-              >
-                <Mail className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> Email
-              </Button>
+            
+            <div>
+              <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Share To</label>
+              <div className="flex flex-col sm:flex-row gap-2 sm:space-x-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 py-1 sm:py-2 text-xs sm:text-sm h-8 sm:h-auto"
+                  onClick={() => handleShare("twitter")}
+                >
+                  <Twitter className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> X
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 py-1 sm:py-2 text-xs sm:text-sm h-8 sm:h-auto"
+                  onClick={() => handleShare("facebook")}
+                >
+                  <Facebook className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> Facebook
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 py-1 sm:py-2 text-xs sm:text-sm h-8 sm:h-auto"
+                  onClick={() => handleShare("email")}
+                >
+                  <Mail className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> Email
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
+        )}
         
         <DialogFooter className="mt-2 sm:mt-4">
           <Button 
