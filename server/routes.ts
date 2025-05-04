@@ -398,11 +398,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         actNumber: actNum
       });
       
-      // Return the share ID and related information
+      // Return the share ID and related information with URL-safe title
+      const urlSafeTitle = storyTitle.toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric chars with hyphens
+        .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+      
       res.json({ 
         shareId, 
         storyId: story.id,
-        url: `/play/${shareId}`
+        title: storyTitle,
+        url: `/play/${shareId}/${urlSafeTitle}`
       });
     } catch (error) {
       console.error('Error sharing story:', error);
