@@ -694,7 +694,7 @@ export function VnPlayer({
   const dialogueText = isTextAnimating ? displayedText : originalDialogueText;
 
   return (
-    <div className="relative h-[calc(100vh-68px)]">
+    <div className="relative h-[calc(100vh-120px)]">
       <PlayerNavbar
         actNumber={actNumber}
         onRestart={() => {

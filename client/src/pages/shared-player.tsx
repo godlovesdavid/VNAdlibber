@@ -188,8 +188,10 @@ export default function SharedPlayer() {
         <meta name="twitter:description" content={getStoryDescription()} />
       </Helmet>
       
-      <NavBar />
-      <main className="flex flex-col flex-grow relative overflow-hidden">
+      <div className="sticky top-0 z-50 w-full bg-background shadow-sm">
+        <NavBar />
+      </div>
+      <main className="flex flex-col flex-grow relative overflow-hidden mt-2">
         <div className="absolute top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-sm shadow-md border-b border-border/30">
           <div className="container px-2 py-2 mx-auto sm:px-4">
             <div className="flex justify-between items-center py-1">
