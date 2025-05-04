@@ -134,6 +134,20 @@ export function hasUnsavedChanges(projectData: VnProjectData | null): boolean {
     return false;
   }
   
+  // Check for a recently saved timestamp in session storage
+  // This is a simple time-based approach that avoids hash mismatches
+  const recentlySavedTimestamp = sessionStorage.getItem('last_project_save_time');
+  const currentTime = Date.now();
+  
+  if (recentlySavedTimestamp) {
+    const timeSinceSave = currentTime - parseInt(recentlySavedTimestamp);
+    // If project was saved less than 5 seconds ago, consider it saved
+    if (timeSinceSave < 5000) {
+      console.log(`[Hash Check] Project was saved ${timeSinceSave}ms ago, considering it saved`);
+      return false;
+    }
+  }
+  
   // Always check localStorage data as the latest source of truth
   let latestData = projectData;
   // Check localStorage for most recent data
@@ -246,6 +260,11 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     
     // Set a flag to indicate this is a fresh project that needs randomization
     sessionStorage.setItem('vn_fresh_project', 'true');
+    
+    // Set a timestamp for a fresh project to avoid "unsaved changes" prompt
+    const newTimestamp = Date.now();
+    sessionStorage.setItem('last_project_save_time', newTimestamp.toString());
+    console.log(`[createNewProject] Recording timestamp: ${newTimestamp} for new project`);
     
     // Navigate to the first step
     setLocation("/create/basic");
@@ -611,7 +630,12 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       // 5. Also update localStorage for consistency
       localStorage.setItem("current_vn_project", JSON.stringify(savedProject));
       
-      // 6. Invalidate the projects query to refresh the project list
+      // 6. Record save timestamp to help with change detection
+      const saveTimestamp = Date.now();
+      sessionStorage.setItem('last_project_save_time', saveTimestamp.toString());
+      console.log(`[saveProject] Recording save timestamp: ${saveTimestamp}`);
+      
+      // 7. Invalidate the projects query to refresh the project list
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
 
       toast({
@@ -669,6 +693,11 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       
       // IMPORTANT: Force localStorage update with the loaded project FIRST
       localStorage.setItem("current_vn_project", JSON.stringify(loadedProject));
+      
+      // Record a save timestamp to mark this as a "fresh save"
+      const loadTimestamp = Date.now();
+      sessionStorage.setItem('last_project_save_time', loadTimestamp.toString());
+      console.log(`[loadProject] Recording load timestamp: ${loadTimestamp} for clean state`);
 
       // Clear any "fresh project" flags
       sessionStorage.removeItem("vn_fresh_project");
