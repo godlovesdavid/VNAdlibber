@@ -85,12 +85,15 @@ interface VnContextType {
 
   // Project management
   createNewProject: () => void;
-  saveProject: () => Promise<void>;
+  saveProject: () => Promise<any>; // Return type changed to allow returning the saved project
   loadProject: (projectId: number) => Promise<void>;
   deleteProject: (projectId: number) => Promise<void>;
 
   // Export functionality
   exportActs: () => Promise<void>;
+  
+  // Change detection
+  hasUnsavedChanges: () => boolean;
 
   // Navigation
   goToStep: (stepNumber: number) => void;
@@ -106,6 +109,18 @@ const defaultPlayerData: PlayerData = {
   skills: {},
   storyTitle: "", // Empty story title by default
 };
+
+// Function to check if there are unsaved changes by comparing hashes
+export function hasUnsavedChanges(projectData: VnProjectData | null): boolean {
+  if (!projectData) return false;
+  
+  // If no hash exists, we assume changes are unsaved
+  if (!projectData.lastSavedHash) return true;
+  
+  // Generate a current hash and compare
+  const currentHash = generateProjectHash(projectData);
+  return currentHash !== projectData.lastSavedHash;
+}
 
 const VnContext = createContext<VnContextType | undefined>(undefined);
 
@@ -468,6 +483,10 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       // Calculate the correct step based on available data
       const calculatedStep = calculateCurrentStep(dataToSave);
       
+      // Generate a hash of the current data
+      const currentDataHash = generateProjectHash(dataToSave);
+      console.log('Generated hash for current project state:', currentDataHash);
+      
       // 2. Make sure we have all required fields with defaults
       const finalDataToSave = {
         ...dataToSave,
@@ -481,7 +500,9 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
         playerData: dataToSave.playerData || defaultPlayerData,
         // Use our calculated step instead of relying on the stored value
         currentStep: calculatedStep,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        // Add the hash of the current state to track changes
+        lastSavedHash: currentDataHash
       };
       
       console.log('Saving data to server:', finalDataToSave.basicData);
@@ -500,11 +521,16 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       
       const savedProject = await response.json();
       
-      // 4. Update state with saved data, ensuring we preserve the ID
+      // 4. Update state with saved data, ensuring we preserve the ID and hash
       console.log('Received saved project from server with ID:', savedProject.id); 
       
       // Store the ID in session storage for future saves
       sessionStorage.setItem('current_project_id', savedProject.id.toString());
+      
+      // Make sure the saved project has the hash
+      if (!savedProject.lastSavedHash) {
+        savedProject.lastSavedHash = currentDataHash;
+      }
       
       // Update React state
       setProjectData(savedProject);
@@ -519,6 +545,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
         title: "Success",
         description: "Project saved successfully",
       });
+      
+      return savedProject;
     } catch (error) {
       console.error("Error saving project:", error);
       toast({
@@ -526,6 +554,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
         description: "Failed to save project",
         variant: "destructive",
       });
+      throw error; // Re-throw to allow callers to handle the error
     } finally {
       setSaveLoading(false);
     }
@@ -744,6 +773,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     loadProject,
     deleteProject,
     exportActs,
+    hasUnsavedChanges: () => hasUnsavedChanges(projectData),
     goToStep,
     isLoading,
     saveLoading,

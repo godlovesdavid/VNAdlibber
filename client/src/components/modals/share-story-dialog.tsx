@@ -11,8 +11,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Copy, Facebook, Twitter, Mail, Check, Share as ShareIcon } from 'lucide-react';
+import { Loader2, Copy, Facebook, Twitter, Mail, Check, Share as ShareIcon, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useVnContext } from '@/context/vn-context';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 interface ShareStoryDialogProps {
   projectId: number;
@@ -29,10 +31,12 @@ export function ShareStoryDialog({
   trigger,
 }: ShareStoryDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [shareLink, setShareLink] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
+  const { hasUnsavedChanges, saveProject } = useVnContext();
 
   // Function to generate a share link
   const generateShareLink = async () => {
@@ -72,16 +76,46 @@ export function ShareStoryDialog({
     }
   };
 
+  // Function to save project then generate share link
+  const saveAndShare = async () => {
+    try {
+      setIsLoading(true);
+      // Save the project first
+      await saveProject();
+      // Then generate the share link
+      await generateShareLink();
+      setIsAlertOpen(false);
+    } catch (error) {
+      console.error('Error saving project before sharing:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save project before sharing',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   // Function to handle dialog open/close
   const handleOpenChange = (open: boolean) => {
-    setIsOpen(open);
-    if (open) {
-      // Generate share link when dialog opens
-      generateShareLink();
-    } else {
+    // If closing, simply close
+    if (!open) {
+      setIsOpen(open);
       // Reset state when dialog closes
       setShareLink('');
       setCopied(false);
+      return;
+    }
+    
+    // If opening and there are unsaved changes, show warning
+    if (hasUnsavedChanges()) {
+      // Show warning alert instead of opening share dialog directly
+      setIsAlertOpen(true);
+    } else {
+      // No unsaved changes, proceed to open dialog and generate link
+      setIsOpen(open);
+      generateShareLink();
     }
   };
 
@@ -119,91 +153,118 @@ export function ShareStoryDialog({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        {trigger}
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Share This Story</DialogTitle>
-          <DialogDescription>
-            Share your visual novel with friends and on social media.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="flex items-center space-x-2 mt-4">
-          <div className="grid flex-1 gap-2">
-            <Label htmlFor="share-link" className="sr-only">
-              Share Link
-            </Label>
-            {isLoading ? (
-              <div className="h-10 rounded-md border border-input bg-background flex items-center justify-center">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span className="ml-2 text-sm">Generating link...</span>
-              </div>
-            ) : (
-              <Input
-                id="share-link"
-                value={shareLink}
-                readOnly
-                className="h-10"
-              />
-            )}
-          </div>
-          <Button 
-            type="button" 
-            size="sm" 
-            className="px-3" 
-            onClick={copyToClipboard}
-            disabled={isLoading || !shareLink}
-          >
-            {copied ? (
-              <Check className="h-4 w-4" />
-            ) : (
-              <Copy className="h-4 w-4" />
-            )}
-            <span className="sr-only">Copy</span>
-          </Button>
-        </div>
-        
-        <div className="flex justify-center space-x-4 mt-4">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => shareToSocial('twitter')}
-            disabled={isLoading || !shareLink}
-            className="h-10 w-10 rounded-full"
-          >
-            <Twitter className="h-4 w-4" />
-            <span className="sr-only">Share on Twitter</span>
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => shareToSocial('facebook')}
-            disabled={isLoading || !shareLink}
-            className="h-10 w-10 rounded-full"
-          >
-            <Facebook className="h-4 w-4" />
-            <span className="sr-only">Share on Facebook</span>
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => shareToSocial('email')}
-            disabled={isLoading || !shareLink}
-            className="h-10 w-10 rounded-full"
-          >
-            <Mail className="h-4 w-4" />
-            <span className="sr-only">Share via Email</span>
-          </Button>
-        </div>
+    <>
+      {/* Unsaved changes warning dialog */}
+      <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unsaved Changes Detected</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your project has unsaved changes. If you share it now, these changes won't be included in the shared version. Would you like to save your project first?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              // Continue without saving
+              setIsAlertOpen(false);
+              setIsOpen(true);
+              generateShareLink();
+            }}>Continue Without Saving</AlertDialogCancel>
+            <AlertDialogAction onClick={saveAndShare} disabled={isLoading}>
+              {isLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+              Save and Share
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-        <DialogFooter className="sm:justify-start">
-          <DialogDescription className="text-xs text-muted-foreground">
-            Anyone with this link will be able to view this story.
-          </DialogDescription>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      {/* Main share dialog */}
+      <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+        <DialogTrigger asChild>
+          {trigger}
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Share This Story</DialogTitle>
+            <DialogDescription>
+              Share your visual novel with friends and on social media.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center space-x-2 mt-4">
+            <div className="grid flex-1 gap-2">
+              <Label htmlFor="share-link" className="sr-only">
+                Share Link
+              </Label>
+              {isLoading ? (
+                <div className="h-10 rounded-md border border-input bg-background flex items-center justify-center">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="ml-2 text-sm">Generating link...</span>
+                </div>
+              ) : (
+                <Input
+                  id="share-link"
+                  value={shareLink}
+                  readOnly
+                  className="h-10"
+                />
+              )}
+            </div>
+            <Button 
+              type="button" 
+              size="sm" 
+              className="px-3" 
+              onClick={copyToClipboard}
+              disabled={isLoading || !shareLink}
+            >
+              {copied ? (
+                <Check className="h-4 w-4" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+              <span className="sr-only">Copy</span>
+            </Button>
+          </div>
+          
+          <div className="flex justify-center space-x-4 mt-4">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => shareToSocial('twitter')}
+              disabled={isLoading || !shareLink}
+              className="h-10 w-10 rounded-full"
+            >
+              <Twitter className="h-4 w-4" />
+              <span className="sr-only">Share on Twitter</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => shareToSocial('facebook')}
+              disabled={isLoading || !shareLink}
+              className="h-10 w-10 rounded-full"
+            >
+              <Facebook className="h-4 w-4" />
+              <span className="sr-only">Share on Facebook</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => shareToSocial('email')}
+              disabled={isLoading || !shareLink}
+              className="h-10 w-10 rounded-full"
+            >
+              <Mail className="h-4 w-4" />
+              <span className="sr-only">Share via Email</span>
+            </Button>
+          </div>
+
+          <DialogFooter className="sm:justify-start">
+            <DialogDescription className="text-xs text-muted-foreground">
+              Anyone with this link will be able to view this story.
+            </DialogDescription>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
