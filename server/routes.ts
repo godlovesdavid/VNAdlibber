@@ -440,7 +440,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Explicit validation system prompt that prevents "looks good" errors
       //If story context is plot-conflicting, incoherent, sexually explicit, or offensive, then instead return a JSON with an error key explaining the issue like this: { "error": "Brief description of why the content is invalid." }
-      const validationSystemPrompt = `You are a strict validation assistant for an author of an incomplete Visual Novel (VN) project data.
+      const validationSystemPrompt = `You are a validation assistant for an author of an incomplete Visual Novel (VN) project data.
       Your job is to validate the following:
       1. Every major character must appear meaningfully in the plot.
       2. Each character's "role" and "goals" must logically align with the plot's story.
@@ -514,7 +514,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         "You're a visual novel brainstormer with wildly creative ideas";
       const responseContent = await generateWithGemini(prompt, systemPrompt);
       const generatedConcept = JSON.parse(responseContent || "{}");
-      generatedConcept.title.replace("Echo Bloom: ", '') //ai likes to put this weird thing as the title
+      generatedConcept.title = generatedConcept.title.replace("Echo Bloom: ", '') //ai likes to put this weird thing as the title
       res.json(generatedConcept);
     } catch (error) {
       console.error("Error generating concept:", error);
@@ -543,7 +543,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         Return in this exact format where the character's name is the key:
         {
           "Character Name": {
-            "role": "${indices.length == 1 && indices[0] == 0 ? "Main Protagonist" : "Role in story (antagonist, mentor, etc.)"}",
+            "role": "${indices.length > 1 && indices[0] == 0 ? "Main Protagonist" : "Role in story (antagonist, mentor, etc.)"}",
             "occupation": "Job or daily activity",
             "gender": "Gender identity",
             "age": "Age as a string",
@@ -577,10 +577,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let fixedContent = responseContent;
         try {
           if (responseContent.includes("(Leave blank)")) {
-            // Replace (Leave blank) with null value
+            // Replace (Leave blank) with N/A value
             fixedContent = responseContent.replace(
               /"\(Leave blank\)"/g,
-              "null",
+              "N/A",
             );
           }
         } catch (repairError) {

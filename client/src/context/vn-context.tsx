@@ -289,7 +289,9 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       // Add the cleaned character to the sanitized data with proper typing
       // Create a properly typed Character object from the cleaned data
       const typedCharacter: Character = {
-        role: cleanCharacter.role || "To be defined",
+        role: name === protagonist
+        ? "Protagonist"
+        : cleanCharacter.role || "",
         occupation: cleanCharacter.occupation || "To be defined",
         gender: cleanCharacter.gender || "To be defined",
         age: cleanCharacter.age || "To be defined",
@@ -298,7 +300,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
         goals: cleanCharacter.goals || "To be defined",
         relationshipPotential:
           name === protagonist
-            ? "N/A - Protagonist"
+            ? "N/A"
             : cleanCharacter.relationshipPotential || "",
         conflict: cleanCharacter.conflict || "To be defined",
       };

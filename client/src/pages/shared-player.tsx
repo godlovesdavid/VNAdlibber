@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'wouter';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Share2 } from 'lucide-react';
 import { VnPlayer } from '@/components/vn-player';
 import { NavBar } from '@/components/nav-bar';
 import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Helmet } from 'react-helmet';
 
 interface SharedPlayerParams {
   shareId: string;
