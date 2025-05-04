@@ -3,6 +3,7 @@ import { Link } from 'wouter';
 import { VnPlayer } from '@/components/vn-player';
 import { Button } from '@/components/ui/button';
 import { testSceneData } from '@/test-scene-data';
+import { PlayerLayout } from '@/components/player-layout';
 
 export default function TestPlayer() {
   const [showPlayer, setShowPlayer] = React.useState(false);
@@ -19,12 +20,18 @@ export default function TestPlayer() {
       </div>
       
       {showPlayer ? (
-        <VnPlayer 
-          actData={testSceneData} 
-          actNumber={1} 
-          onReturn={handleReturn}
-          mode="generated"
-        />
+        <PlayerLayout
+          title="Test VN Player"
+          description="Test the visual novel player with sample scene data"
+          showShareButtons={false}
+        >
+          <VnPlayer 
+            actData={testSceneData} 
+            actNumber={1} 
+            onReturn={handleReturn}
+            mode="generated"
+          />
+        </PlayerLayout>
       ) : (
         <div className="flex flex-col items-center gap-4">
           <Button onClick={() => setShowPlayer(true)} className="bg-green-600 hover:bg-green-700">

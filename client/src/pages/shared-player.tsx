@@ -71,35 +71,45 @@ export default function SharedPlayer() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <NavBar />
-        <div className="flex flex-col items-center justify-center flex-grow w-full max-w-4xl mx-auto mt-16">
-          <Loader2 className="w-8 h-8 mr-2 animate-spin" />
-          <p className="mt-4 text-lg">Loading shared story...</p>
+      <PlayerLayout
+        title="Loading Story"
+        description="Loading a shared visual novel adventure"
+        showShareButtons={false}
+      >
+        <div className="flex flex-col items-center justify-center min-h-screen p-4">
+          <div className="flex flex-col items-center justify-center mt-16">
+            <Loader2 className="w-8 h-8 mr-2 animate-spin text-white" />
+            <p className="mt-4 text-lg text-white">Loading shared story...</p>
+          </div>
         </div>
-      </div>
+      </PlayerLayout>
     );
   }
 
   if (error || !story) {
     return (
-      <div className="flex flex-col items-center min-h-screen p-4">
-        <NavBar />
-        <div className="flex flex-col items-center justify-center flex-grow w-full max-w-4xl mx-auto mt-16">
-          <div className="p-6 border rounded-lg shadow-md bg-card">
-            <h2 className="mb-4 text-2xl font-bold text-center">Error</h2>
-            <p className="text-center">{error || 'Story not found'}</p>
-            <div className="flex justify-center mt-6">
-              <button
-                onClick={() => window.location.href = '/'}
-                className="px-4 py-2 text-white rounded-md bg-primary hover:bg-primary/90"
-              >
-                Return to Home
-              </button>
+      <PlayerLayout
+        title="Error"
+        description="There was a problem loading the shared story"
+        showShareButtons={false}
+      >
+        <div className="flex flex-col items-center justify-center min-h-screen p-4">
+          <div className="flex flex-col items-center justify-center mt-16 max-w-md mx-auto">
+            <div className="p-6 border border-gray-700 rounded-lg bg-black/80 text-white">
+              <h2 className="mb-4 text-2xl font-bold text-center text-white">Error</h2>
+              <p className="text-center text-gray-300">{error || 'Story not found'}</p>
+              <div className="flex justify-center mt-6">
+                <button
+                  onClick={() => window.location.href = '/'}
+                  className="px-4 py-2 text-white rounded-md bg-primary hover:bg-primary/90"
+                >
+                  Return to Home
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </PlayerLayout>
     );
   }
 

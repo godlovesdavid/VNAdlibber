@@ -112,8 +112,8 @@ export default function Player() {
       return (
         <div className="flex items-center justify-center py-16 flex-grow">
           <div className="text-center">
-            <Loader2 className="animate-spin h-10 w-10 mx-auto text-primary mb-4" />
-            <p className="text-lg">Loading Act {actNumber}...</p>
+            <Loader2 className="animate-spin h-10 w-10 mx-auto text-white mb-4" />
+            <p className="text-lg text-white">Loading Act {actNumber}...</p>
           </div>
         </div>
       );
@@ -125,7 +125,7 @@ export default function Player() {
           <div className="text-center max-w-md">
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
-              className="mx-auto h-16 w-16 text-red-500 mb-4" 
+              className="mx-auto h-16 w-16 text-red-400 mb-4" 
               fill="none" 
               viewBox="0 0 24 24" 
               stroke="currentColor"
@@ -137,8 +137,8 @@ export default function Player() {
                 d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" 
               />
             </svg>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Error Loading Act</h2>
-            <p className="text-gray-600 mb-6">{error}</p>
+            <h2 className="text-2xl font-bold text-white mb-2">Error Loading Act</h2>
+            <p className="text-gray-300 mb-6">{error}</p>
             <button 
               className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
               onClick={handleReturn}
@@ -154,7 +154,7 @@ export default function Player() {
       return (
         <div className="flex items-center justify-center py-16 flex-grow">
           <div className="text-center">
-            <p className="text-lg text-gray-800">No act data found</p>
+            <p className="text-lg text-white">No act data found</p>
             <button 
               className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
               onClick={handleReturn}
