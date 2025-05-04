@@ -122,38 +122,6 @@ Example of CORRECT JSON format:
   }
 }
 
-// Standard system prompt for content validation
-const standardValidationInstructions =
-  "Return a JSON based on the given story context. ";
-
-// Explicit validation system prompt that prevents "looks good" errors
-//If story context is plot-conflicting, incoherent, sexually explicit, or offensive, then instead return a JSON with an error key explaining the issue like this: { "error": "Brief description of why the content is invalid." }
-const validationSystemPrompt = `You are a strict validation assistant for Visual Novel (VN) project data.
-You will receive JSON input containing:
-- "basicData": an object containing story theme, tone, and genre
-- "conceptData": an object describing the central concept
-- "characterData": an object describing characters
-- "pathsData": an object describing plot arcs
-
-Your job is to validate the following:
-1. Every major character must appear meaningfully in the plot.
-2. Each character's "role" and "goals" must logically align with the plot's story.
-3. The plot's beginning, middle, climax, and endings must make sense based on the provided characters.
-
-Validation Rules:
-- If the data is fully consistent and complete, reply exactly with:
-  { "valid": true }
-- If there are problems, reply with:
-  {
-    "valid": false,
-    "issues": "list issues here"
-  }
-  IMPORTANT:
-  Do NOT invent missing information.
-  Do NOT suggest fixes.
-  ONLY report validation status.
-`;
-
 // Schema for generation requests
 const generateConceptSchema = z.object({
   basicData: z.object({
@@ -467,26 +435,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { projectContext, contentType } = req.body;
 
-      // Create prompt for validation based on content type
-      const validationPrompt = `Please validate this story context for a visual novel ${contentType}:
-        ${JSON.stringify(projectContext, null, 2)}
-        
-        If the data is valid, respond with:
-        { "valid": true }
-        
-        If there are problems, respond with:
-        {
-          "valid": false,
-          "issues": "list issues here"
-        }
-        
-        If story context is plot-conflicting, incoherent, sexually explicit, or offensive, then respond with a JSON with an error key explaining the issue like this: 
-        { "error": "Brief description of why the content is invalid." }
-      `;
-
       // Log validation request details
       console.log(`${contentType.toUpperCase()} validation request received`);
 
+      // Explicit validation system prompt that prevents "looks good" errors
+      //If story context is plot-conflicting, incoherent, sexually explicit, or offensive, then instead return a JSON with an error key explaining the issue like this: { "error": "Brief description of why the content is invalid." }
+      const validationSystemPrompt = `You are a strict validation assistant for an author of an incomplete Visual Novel (VN) project data.
+      Your job is to validate the following:
+      1. Every major character must appear meaningfully in the plot.
+      2. Each character's "role" and "goals" must logically align with the plot's story.
+      ${projectContext.pathsData? `3. There should be no confusing routes, unrealistic conflicts, or disjointed plot progressions.` : ``}
+
+      Validation Rules:
+      - If the data is fully consistent, reply exactly with:
+        { "valid": true }
+      - If there are problems, reply with:
+        {
+          "valid": false,
+          "issues": "list issues to the author here"
+        }
+        IMPORTANT:
+        Do NOT invent missing information.
+        Do NOT suggest fixes.
+        ONLY report validation status.
+      `;
+      console.log(validationSystemPrompt)
+
+      // Create prompt for validation based on content type
+      const validationPrompt = JSON.stringify(projectContext, null, 2)
+      
       // Validate using Gemini
       const responseContent = await generateWithGemini(
         validationPrompt,
@@ -523,22 +500,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { basicData } = generateConceptSchema.parse(req.body);
       // Create prompt for the concept generation - directly matching our expected format
-      const prompt = `Given this visual novel story context:
-        Theme: ${basicData.theme}
-        Tone: ${basicData.tone}
-        Genre: ${basicData.genre}
-        Setting: ${basicData.setting}
-        
-        Create a compelling visual novel concept based on these elements.
-        Return in this exact JSON format:
+      const prompt = `Write a visual novel concept of a ${basicData.tone.replace(/_/g, ' ')} ${basicData.genre.replace(/_/g, ' ')} about ${basicData.theme.replace(/_/g, ' ')} set in ${basicData.setting.replace(/_/g, ' ')}.
+        Return in this JSON format:
         {
           "title": "Captivating and unique title",
           "tagline": "Brief, memorable catchphrase",
           "premise": "Detailed premise describing the world, main conflict, and core story without specific character names"
         }
-        
-        Make the concept original, emotionally resonant, and aligned with the specified theme, tone and genre.
-        Avoid clichés and create something players haven't experienced before.
       `;
 
       // Use Gemini to generate the concept
@@ -546,6 +514,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         "You're a visual novel brainstormer with wildly creative ideas";
       const responseContent = await generateWithGemini(prompt, systemPrompt);
       const generatedConcept = JSON.parse(responseContent || "{}");
+      generatedConcept.title.replace("Echo Bloom: ", '') //ai likes to put this weird thing as the title
       res.json(generatedConcept);
     } catch (error) {
       console.error("Error generating concept:", error);
@@ -581,7 +550,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             "appearance": "Detailed physical description",
             "personality": "Key traits, behaviors, and quirks",
             "goals": "Primary motivations and objectives",
-            "relationshipPotential": ${indices.length == 1 && indices[0] == 0 ? "null" : '"Potential relationship dynamic with protagonist"'}, 
+            "relationshipPotential": ${indices.length == 1 && indices[0] == 0 ? "N/A" : '"Potential relationship dynamic with protagonist"'}, 
             "conflict": "Main personal struggle or challenge"
           }${indices.length > 1 ? "," : ""}
           ${indices.length > 1 ? '\n  "Another Character Name": { ... },' : ""}
@@ -622,7 +591,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Parse the response
         const parsed = JSON.parse(fixedContent);
         console.log("Parsed character data:", parsed);
-
+        parsed[Object.keys(parsed)[0]].role = 'Protagonist'
+        parsed[Object.keys(parsed)[0]].relationshipPotential = 'N/A'
+        
         // Now we're expecting an object with character names as keys
         // No format conversion needed - returning the object directly
         res.json(parsed);
@@ -709,8 +680,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             "title": "Act 1 Title",
             "summary": "Brief overview of Act 1",
             "events": ["Event 1", "Event 2", "Event 3", "Event 4", "Event 5"],
-            "arcsActivated": ["Include route titles from pathsData"],
-            "arcIntersections": ["Intersection 1", "Intersection 2"],
+            ${Object.keys(projectContext.pathsData).length ==1? '' : `"arcsActivated": ["Include route titles from pathsData"],
+            "arcIntersections": ["Intersection 1", "Intersection 2"],`}
             "playerChoices": ["Choice 1 - Consequences", "Choice 2 - Consequences"]
           },
           "act2": {/* same structure as act1 */},

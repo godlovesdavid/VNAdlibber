@@ -63,11 +63,10 @@ export default function ConceptForm() {
   // Go back to previous step
   const handleBack = () => {
     // Save data
-    setConceptData({
-      title,
-      tagline,
-      premise,
-    });
+
+    setConceptData({title,
+                    tagline,
+                    premise,});
     goToStep(1);
   };
 
@@ -84,13 +83,9 @@ export default function ConceptForm() {
     }
 
     // Save data
-    const conceptObj = {
-      title,
-      tagline,
-      premise,
-    };
-
-    setConceptData(conceptObj);
+    setConceptData({title,
+                    tagline,
+                    premise,});
 
     if (!projectData) {
       toast({

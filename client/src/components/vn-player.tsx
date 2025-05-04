@@ -3,7 +3,7 @@ import { useVnContext } from "@/context/vn-context";
 import { cn } from "@/lib/utils";
 import { PlayerNavbar } from "@/components/player-navbar";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ImageIcon, RefreshCw } from "lucide-react";
+import { ChevronDown, RefreshCw } from "lucide-react";
 import { Scene, SceneChoice, GeneratedAct } from "@/types/vn";
 import * as ImageGenerator from "@/lib/image-generator";
 import { useToast } from "@/hooks/use-toast";
@@ -94,33 +94,33 @@ function SceneBackground({
 }: SceneBackgroundProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const [actualUrl, setActualUrl] = useState('');
+  // const [actualUrl, setActualUrl] = useState('');
 
   // Fallback URL in case of loading failures - using data URI for guaranteed compatibility
   // const fallbackUrl = `data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221024%22%20height%3D%22768%22%20viewBox%3D%220%200%201024%20768%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E`;
 
   // Determine if the image source is an actual URL (data:, http:, etc.) vs just a text description
-  useEffect(() => {
+  // useEffect(() => {
     // Reset states when URL changes
-    setIsLoading(true);
-    setHasError(false);
+    // setIsLoading(true);
+    // setHasError(false);
     
     // Check if the imageUrl is actually a URL vs a text description
-    if (imageUrl && (imageUrl.startsWith('data:') || imageUrl.startsWith('http'))) {
-      console.log(`Setting actual URL for scene ${sceneId}, source appears to be a valid URL`);
-      setActualUrl(imageUrl);
-    } else {
-      // console.log(`Using fallback for scene ${sceneId}, source is not a valid URL: ${imageUrl?.slice(0, 30)}...`);
-      // setActualUrl(fallbackUrl);
-      // Mark as loaded but with error
-      setIsLoading(false);
-      setHasError(true);
-    }
-  }, [imageUrl, sceneId]);
+    // if (imageUrl && (imageUrl.startsWith('data:') || imageUrl.startsWith('http'))) {
+    //   console.log(`Setting actual URL for scene ${sceneId}, source appears to be a valid URL`);
+      // setActualUrl(imageUrl);
+    // } else {
+    //   // console.log(`Using fallback for scene ${sceneId}, source is not a valid URL: ${imageUrl?.slice(0, 30)}...`);
+    //   // setActualUrl(fallbackUrl);
+    //   // Mark as loaded but with error
+    //   setIsLoading(false);
+    //   setHasError(true);
+    // }
+  // }, [imageUrl]);
 
   const handleImageError = () => {
     console.error(`Image failed to load: ${imageUrl}`);
-    setHasError(true);
+    // setHasError(true);
     setIsLoading(false);
     // Use fallback URL
     // setActualUrl(fallbackUrl);
@@ -151,8 +151,8 @@ function SceneBackground({
 
       {/* Actual image with appropriate handling */}
       <img
-        key={`img-${actualUrl}`}
-        src={actualUrl}
+        key={`img-${imageUrl}`}
+        src={imageUrl}
         alt={`Scene ${sceneId} Background`}
         className={cn(
           "w-full h-full object-cover transition-opacity duration-500",
@@ -332,35 +332,23 @@ export function VnPlayer({
       setIsGenerating(true);
 
       // Check cache first
-      const cachedUrl = ImageGenerator.getCachedImageUrl(currentScene.name);
+      const cachedUrl = ImageGenerator.getCachedImageUrl(currentScene.setting);
 
       if (cachedUrl) {
-        console.log("Using cached image for scene:", currentScene.name);
+        console.log("Using cached image for scene:", currentScene.setting);
         setImageUrl(cachedUrl);
         setError(null);
         return;
       }
 
       // Generate new image if not cached
-      console.log("Generating new image for scene:", currentScene.name);
+      console.log("Generating new image for scene:", currentScene.setting);
       // alert(JSON.stringify({name: currentScene.name, image_prompt: currentScene?.image_prompt || ''}))
       const result = await ImageGenerator.generateSceneBackground({name: currentScene.name, image_prompt: currentScene?.image_prompt || ''});
 
-      if (result.error) {
-        // Handle rate limit specifically
-        if (result.error.includes("rate limit")) {
-          toast({
-            title: "Rate Limited",
-            description: "You've reached the maximum number of image generations allowed. Please try again later.",
-            variant: "destructive"
-          });
-        }
-        throw new Error(result.error);
-      }
-
       if (result.url) {
         // Cache the new image
-        ImageGenerator.setCachedImageUrl(currentScene.name, result.url);
+        ImageGenerator.setCachedImageUrl(currentScene.setting, result.url);
         // Update UI state
         setImageUrl(result.url);
         setError(null);
@@ -370,7 +358,7 @@ export function VnPlayer({
       setError("Failed to generate image");
       toast({
         title: "Image Generation Failed",
-        description: "Sorry, we couldn't generate the image. Please try again later.",
+        description: error as String,
         variant: "destructive"
       });
     } finally {

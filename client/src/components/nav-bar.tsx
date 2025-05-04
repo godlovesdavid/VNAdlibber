@@ -29,12 +29,12 @@ export function NavBar() {
           </h1>
         </div>
         <div className="flex items-center space-x-2">
-          <Link href="/font-demo">
+          {/* <Link href="/font-demo">
             <Button size="sm" variant="ghost" className="flex items-center gap-1">
               <Type className="h-4 w-4" />
               <span className="hidden sm:inline">Fonts</span>
             </Button>
-          </Link>
+          </Link> */}
           <SaveProjectButton />
         </div>
       </div>

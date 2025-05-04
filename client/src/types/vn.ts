@@ -53,8 +53,8 @@ export interface PlotAct {
   title?: string; // Optional title property for backward compatibility
   summary: string;
   events: string[];
-  arcsActivated: string[];
-  arcIntersections: string[];
+  arcsActivated?: string[];
+  arcIntersections?: string[];
   playerChoices: string[];
 }
 

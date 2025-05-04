@@ -130,36 +130,36 @@ export default function PlotForm() {
     setPlotData(plotActs);
     
     // Validate content before proceeding
-    setIsValidating(true);
+    // setIsValidating(true);
     if (!projectData) {
       toast({
         title: "Error",
         description: "Project data is missing",
         variant: "destructive"
       });
-      setIsValidating(false);
+      // setIsValidating(false);
       return;
     }
     
     // Prepare the project context data for validation
-    const contextData = {
-      basicData: projectData.basicData,
-      conceptData: projectData.conceptData,
-      charactersData: projectData.charactersData,
-      pathsData: projectData.pathsData,
-      plotData: plotActs, // Use the current plot data
-    };
+    // const contextData = {
+    //   basicData: projectData.basicData,
+    //   conceptData: projectData.conceptData,
+    //   charactersData: projectData.charactersData,
+    //   pathsData: projectData.pathsData,
+    //   plotData: plotActs, // Use the current plot data
+    // };
     
     // Use our validation utility
-    try {
-      const isValid = await validateFormContent(contextData, "plot");
-      if (isValid) {
-        // Navigate to next step if validation passed
+    // try {
+    //   const isValid = await validateFormContent(contextData, "plot");
+    //   if (isValid) {
+    //     // Navigate to next step if validation passed
         setLocation("/create/generate-vn");
-      }
-    } finally {
-      setIsValidating(false);
-    }
+    //   }
+    // } finally {
+    //   setIsValidating(false);
+    // }
   };
 
   // Validate plot using AI
@@ -377,7 +377,7 @@ export default function PlotForm() {
                             Arcs Activated
                           </h5>
                           <p className="text-neutral-600">
-                            {plotActs.act1.arcsActivated.join(", ")}
+                            {plotActs.act1.arcsActivated?.join(", ") }
                           </p>
                         </div>
                         <div>
@@ -385,7 +385,7 @@ export default function PlotForm() {
                             Arc Intersections
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotActs.act1.arcIntersections.map(
+                            {plotActs.act1.arcIntersections?.map(
                               (intersection: string, index: number) => (
                                 <li key={index}>{intersection}</li>
                               ),
@@ -460,7 +460,7 @@ export default function PlotForm() {
                             Arcs Activated
                           </h5>
                           <p className="text-neutral-600">
-                            {plotActs.act2.arcsActivated.join(", ")}
+                            {plotActs.act2.arcsActivated?.join(", ")}
                           </p>
                         </div>
                         <div>
@@ -468,7 +468,7 @@ export default function PlotForm() {
                             Arc Intersections
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotActs.act2.arcIntersections.map(
+                            {plotActs.act2.arcIntersections?.map(
                               (intersection: string, index: number) => (
                                 <li key={index}>{intersection}</li>
                               ),
@@ -543,7 +543,7 @@ export default function PlotForm() {
                             Arcs Activated
                           </h5>
                           <p className="text-neutral-600">
-                            {plotActs.act3.arcsActivated.join(", ")}
+                            {plotActs.act3.arcsActivated?.join(", ")}
                           </p>
                         </div>
                         <div>
@@ -551,7 +551,7 @@ export default function PlotForm() {
                             Arc Intersections
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotActs.act3.arcIntersections.map(
+                            {plotActs.act3.arcIntersections?.map(
                               (intersection: string, index: number) => (
                                 <li key={index}>{intersection}</li>
                               ),
@@ -626,7 +626,7 @@ export default function PlotForm() {
                             Arcs Activated
                           </h5>
                           <p className="text-neutral-600">
-                            {plotActs.act4.arcsActivated.join(", ")}
+                            {plotActs.act4.arcsActivated?.join(", ")}
                           </p>
                         </div>
                         <div>
@@ -634,7 +634,7 @@ export default function PlotForm() {
                             Arc Intersections
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotActs.act4.arcIntersections.map(
+                            {plotActs.act4.arcIntersections?.map(
                               (intersection: string, index: number) => (
                                 <li key={index}>{intersection}</li>
                               ),
@@ -709,7 +709,7 @@ export default function PlotForm() {
                             Arcs Activated
                           </h5>
                           <p className="text-neutral-600">
-                            {plotActs.act5.arcsActivated.join(", ")}
+                            {plotActs.act5.arcsActivated?.join(", ")}
                           </p>
                         </div>
                         <div>
@@ -717,7 +717,7 @@ export default function PlotForm() {
                             Arc Intersections
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
-                            {plotActs.act5.arcIntersections.map(
+                            {plotActs.act5.arcIntersections?.map(
                               (intersection: string, index: number) => (
                                 <li key={index}>{intersection}</li>
                               ),
