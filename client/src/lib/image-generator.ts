@@ -54,11 +54,9 @@ export async function generateSceneBackground(
       );
 
       const requestData = {
-        prompt: scene.image_prompt
-        // scene,
-        // imageType: "background",
-        // Include flag to indicate if optimize mode should be used
-        // optimizeForMobile: isMobileDevice(),
+        scene,
+        imageType: "background",
+        optimizeForMobile: isMobileDevice(),
       };
       console.log("Sending request to generate image API:", requestData);
 
@@ -93,6 +91,7 @@ export async function generateSceneBackground(
       if (!result.url) {
         throw new Error("API response missing URL");
       }
+      
 
       console.log("Successfully generated image, returning URL");
       return { url: result.url };

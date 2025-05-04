@@ -174,13 +174,6 @@ const generateActSchema = z.object({
   projectContext: z.any(),
 });
 
-const generateImageSchema = z.object({
-  scene: z.object({
-    name: z.string(),
-    image_prompt: z.string(),
-  }),
-  imageType: z.enum(["background", "character"]).default("background"),
-});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Configure rate limiters
@@ -843,9 +836,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { scene, imageType, optimizeForMobile } = req.body;
-
-      // Parse with the schema, but allow forceReal and optimizeForMobile to pass through
-      generateImageSchema.parse({ scene, imageType });
 
       // Check if we should use optimized image settings (smaller/cheaper)
       const useOptimizedSettings = optimizeForMobile === true;
