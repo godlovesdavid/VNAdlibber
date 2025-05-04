@@ -5,12 +5,17 @@ import { ArrowLeft, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function NavBar() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { projectData } = useVnContext();
   
   // Go back to main menu
   const goToMainMenu = () => {
     setLocation("/");
+  };
+  
+  // Check if we're on a player page to hide the SaveProjectButton
+  const isPlayerPage = () => {
+    return location.includes('/play/') || location.includes('/shared/');
   };
   
   return (
@@ -35,7 +40,8 @@ export function NavBar() {
               <span className="hidden sm:inline">Fonts</span>
             </Button>
           </Link> */}
-          <SaveProjectButton />
+          {/* Only show the save button when not on player pages */}
+          {!isPlayerPage() && <SaveProjectButton />}
         </div>
       </div>
     </nav>
