@@ -174,6 +174,7 @@ export default function Player() {
         onReturn={handleReturn}
         onRestart={handleRestart}
         mode={actId === "imported" ? "imported" : "generated"}
+        title={getStoryTitle()}
       />
     );
   };

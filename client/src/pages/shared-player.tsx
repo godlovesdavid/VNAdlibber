@@ -157,6 +157,7 @@ export default function SharedPlayer() {
         actNumber={story.actNumber}
         onReturn={handleReturn}
         mode="imported"
+        title={story.title}
       />
     </PlayerLayout>
   );

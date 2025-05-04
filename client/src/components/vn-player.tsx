@@ -178,6 +178,7 @@ interface VnPlayerProps {
   onReturn: () => void;
   onRestart?: () => void; // Optional external restart handler
   mode: "generated" | "imported"; // Mode to determine initialization behavior
+  title?: string; // Optional story title
 }
 
 export function VnPlayer({
@@ -186,6 +187,7 @@ export function VnPlayer({
   onReturn,
   onRestart: externalRestart,
   mode = "generated",
+  title,
 }: VnPlayerProps) {
   // Convert the actData to the format expected by the player using useMemo to prevent re-calculation on every render
   const actData = useMemo(() => convertActFormat(rawActData), [rawActData]);
@@ -707,6 +709,7 @@ export function VnPlayer({
         }}
         onReturn={onReturn}
         dialogueLog={dialogueLog}
+        title={title}
       />
 
       <div className="vn-reader h-[calc(100vh-34px)] flex flex-col pt-[34px] relative">
