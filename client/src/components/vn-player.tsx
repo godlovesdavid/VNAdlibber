@@ -696,6 +696,7 @@ export function VnPlayer({
   return (
     <div className="relative h-[calc(100vh-120px)]">
       <PlayerNavbar
+        title={actData?.title || `Act ${actNumber}`}
         actNumber={actNumber}
         onRestart={() => {
           // Call local restart to reset scene state
