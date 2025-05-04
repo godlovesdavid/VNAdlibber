@@ -280,28 +280,7 @@ export default function Player() {
         <NavBar />
       </div>
       <main className="flex flex-col flex-grow relative overflow-hidden mt-2">
-        {shouldShowShareUI() && (
-          <div className="absolute top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-sm shadow-md border-b border-border/30">
-            <div className="container px-2 py-2 mx-auto sm:px-4">
-              <div className="flex justify-between items-center py-1">
-                <div>
-                  <h1 className="text-lg sm:text-xl font-semibold text-foreground/90">{getStoryTitle()}</h1>
-                  <p className="text-xs text-muted-foreground">
-                    Act {actNumber} of {Object.keys(projectData?.generatedActs || {}).length || 1}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <ShareButton 
-                    title={getStoryTitle()} 
-                    variant="outline" 
-                    size="sm" 
-                    className="bg-primary/10 hover:bg-primary/20 border-primary/30"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+
         
         <div className="flex-grow h-full">
           {renderContent()}
