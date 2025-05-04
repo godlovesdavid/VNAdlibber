@@ -16,9 +16,10 @@ interface PlayerNavbarProps {
   onRestart: () => void;
   onReturn: () => void;
   dialogueLog: Array<{speaker: string, text: string}>;
+  title?: string; // Optional story title
 }
 
-export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog }: PlayerNavbarProps) {
+export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog, title }: PlayerNavbarProps) {
   const { playerData, updatePlayerData, resetPlayerData } = useVnContext();
   const [showLog, setShowLog] = useState(false);
   const [showDataEditor, setShowDataEditor] = useState(false);
@@ -232,7 +233,7 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog }: Pl
         
         <div className="text-white font-medium text-[9px] sm:text-xs md:text-sm max-w-[200px] sm:max-w-none truncate text-center">
           {/* Display story title and act number */}
-          <span>Act {actNumber} - {playerData.storyTitle || "Visual Novel"}</span>
+          <span>Act {actNumber} - {title || playerData.storyTitle || "Visual Novel"}</span>
         </div>
         
         <div className="flex space-x-2 sm:space-x-4">

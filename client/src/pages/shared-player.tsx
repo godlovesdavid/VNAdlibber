@@ -9,6 +9,7 @@ import { NavBar } from '@/components/nav-bar';
 
 interface SharedPlayerParams {
   shareId: string;
+  storyTitle?: string;
 }
 
 interface SharedStory {
@@ -21,11 +22,18 @@ interface SharedStory {
 }
 
 export default function SharedPlayer() {
-  const { shareId } = useParams<SharedPlayerParams>();
+  const { shareId, storyTitle } = useParams<SharedPlayerParams>();
   const [loading, setLoading] = useState(true);
   const [story, setStory] = useState<SharedStory | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // Set document title when story loads
+  useEffect(() => {
+    if (story?.title) {
+      document.title = `${story.title} - Visual Novel Adventure`;
+    }
+  }, [story]);
 
   useEffect(() => {
     async function fetchSharedStory() {
