@@ -5,7 +5,7 @@ import { useParams } from "wouter";
 import { VnPlayer } from "@/components/vn-player";
 import { NavBar } from "@/components/nav-bar";
 import { Loader2 } from "lucide-react";
-import { ShareButton } from "@/components/share-button";
+import { SocialShareButtons } from "@/components/social-share-buttons";
 import { Helmet } from "react-helmet";
 import { GeneratedAct } from "@/types/vn";
 
@@ -277,25 +277,9 @@ export default function Player() {
       </Helmet>
       
       <NavBar />
-      <main className="flex flex-col flex-grow">
+      <main className="flex flex-col flex-grow relative">
         {shouldShowShareUI() && (
-          <div className="container px-2 py-4 mx-auto sm:px-4">
-            <div className="mb-4 flex justify-between items-center">
-              <div>
-                <h1 className="text-2xl font-semibold">{getStoryTitle()}</h1>
-                <p className="text-sm text-muted-foreground">
-                  Act {actNumber} of {Object.keys(projectData?.generatedActs || {}).length || 1}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <ShareButton 
-                  title={getStoryTitle()} 
-                  variant="outline" 
-                  size="sm" 
-                />
-              </div>
-            </div>
-          </div>
+          <SocialShareButtons title={getStoryTitle()} />
         )}
         
         <div className="flex-grow">

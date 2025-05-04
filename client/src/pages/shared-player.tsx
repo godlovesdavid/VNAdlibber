@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react';
 import { VnPlayer } from '@/components/vn-player';
 import { NavBar } from '@/components/nav-bar';
 import { useToast } from '@/hooks/use-toast';
-import { ShareButton } from '@/components/share-button';
+import { SocialShareButtons } from '@/components/social-share-buttons';
 import { Button } from '@/components/ui/button';
 import { Helmet } from 'react-helmet';
 
@@ -127,47 +127,7 @@ export default function SharedPlayer() {
     }
   };
 
-  // Function to handle sharing the current story
-  const handleShare = (platform: 'twitter' | 'facebook' | 'email' | 'copy') => {
-    const url = window.location.href;
-    const text = `Check out this visual novel: ${story.title}`;
-    
-    switch (platform) {
-      case 'twitter':
-        window.open(
-          `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
-          '_blank'
-        );
-        break;
-      case 'facebook':
-        window.open(
-          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-          '_blank'
-        );
-        break;
-      case 'email':
-        window.open(
-          `mailto:?subject=${encodeURIComponent(text)}&body=${encodeURIComponent(`${text}\n\n${url}`)}`,
-          '_blank'
-        );
-        break;
-      case 'copy':
-        navigator.clipboard.writeText(url)
-          .then(() => {
-            toast({
-              title: "Link Copied",
-              description: "Share link copied to clipboard"
-            });
-          })
-          .catch(() => {
-            toast({
-              title: "Copy Failed",
-              description: "Could not copy the link to clipboard"
-            });
-          });
-        break;
-    }
-  };
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -189,26 +149,16 @@ export default function SharedPlayer() {
       </Helmet>
       
       <NavBar />
-      <main className="flex flex-col flex-grow">
-        <div className="container px-2 py-4 mx-auto sm:px-4">
-          <div className="mb-4 flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-semibold">{story.title}</h1>
-              <p className="text-sm text-muted-foreground">Shared Visual Novel</p>
-            </div>
-            <div className="flex gap-2">
-              <ShareButton title={story.title} variant="outline" size="sm" />
-            </div>
-          </div>
-          
-          <div className="flex-grow">
-            <VnPlayer
-              actData={story.actData}
-              actNumber={story.actNumber}
-              onReturn={handleReturn}
-              mode="imported"
-            />
-          </div>
+      <main className="flex flex-col flex-grow relative">
+        <SocialShareButtons title={story.title} />
+        
+        <div className="flex-grow">
+          <VnPlayer
+            actData={story.actData}
+            actNumber={story.actNumber}
+            onReturn={handleReturn}
+            mode="imported"
+          />
         </div>
       </main>
     </div>
