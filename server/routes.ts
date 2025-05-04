@@ -269,21 +269,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/projects", async (req, res) => {
     try {
       const projectData = req.body;
+      console.log('[SERVER] Project save request received with hash:', projectData.lastSavedHash);
 
       // If project has an ID, update it
       if (projectData.id) {
+        console.log(`[SERVER] Updating project ${projectData.id} with hash: ${projectData.lastSavedHash}`);
         const updatedProject = await storage.updateProject(
           projectData.id,
           projectData,
         );
+        console.log(`[SERVER] Project updated, returning with hash: ${updatedProject.lastSavedHash}`);
         return res.json(updatedProject);
       }
 
       // Otherwise create a new project
+      console.log('[SERVER] Creating new project');
       const newProject = await storage.createProject(projectData);
+      console.log(`[SERVER] New project created with ID ${newProject.id} and hash: ${newProject.lastSavedHash}`);
       res.status(201).json(newProject);
     } catch (error) {
-      console.error("Error saving project:", error);
+      console.error("[SERVER] Error saving project:", error);
       res.status(500).json({ message: "Failed to save project" });
     }
   });

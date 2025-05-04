@@ -318,17 +318,23 @@ export class DatabaseStorage implements IStorage {
       updatedAt: new Date().toISOString()
     };
 
+    console.log(`[STORAGE] Updating project ${id} with hash:`, projectData.lastSavedHash);
+
     // Get the existing project first to ensure we properly handle null fields
     const existingProject = await this.getProject(id);
     if (!existingProject) {
       throw new Error(`Project with id ${id} not found`);
     }
 
+    console.log(`[STORAGE] Existing project hash:`, existingProject.lastSavedHash);
+
     // Merge with existing data to ensure all required fields are present
     const mergedData = {
       ...existingProject,
       ...dataToUpdate
     };
+
+    console.log(`[STORAGE] Merged data has hash:`, mergedData.lastSavedHash);
 
     // Perform the update
     const [updatedProject] = await db
@@ -341,6 +347,7 @@ export class DatabaseStorage implements IStorage {
       throw new Error(`Update failed for project with id ${id}`);
     }
 
+    console.log(`[STORAGE] Updated project hash:`, updatedProject.lastSavedHash);
     return updatedProject;
   }
 
