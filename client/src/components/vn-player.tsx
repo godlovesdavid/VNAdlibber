@@ -694,7 +694,7 @@ export function VnPlayer({
   const dialogueText = isTextAnimating ? displayedText : originalDialogueText;
 
   return (
-    <div className="relative h-full min-h-[calc(100vh-68px)]">
+    <div className="relative h-[calc(100vh-68px)]">
       <PlayerNavbar
         actNumber={actNumber}
         onRestart={() => {
@@ -707,7 +707,7 @@ export function VnPlayer({
         dialogueLog={dialogueLog}
       />
 
-      <div className="vn-reader h-[calc(100%-34px)] flex flex-col pt-[34px] relative">
+      <div className="vn-reader h-full flex flex-col pt-[34px] relative">
         <div className="vn-image-area absolute inset-0 bg-neutral-800 flex items-center justify-center">
           {/* Setting name overlay */}
           <div className="absolute top-10 md:top-14 left-2 md:left-4 bg-black bg-opacity-70 text-white px-2 md:px-3 py-1 rounded text-xs md:text-sm z-30">

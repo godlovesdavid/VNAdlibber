@@ -209,7 +209,7 @@ export default function SharedPlayer() {
           </div>
         </div>
         
-        <div className="flex-grow h-full">
+        <div className="flex-grow h-full pt-10">
           <VnPlayer
             actData={story.actData}
             actNumber={story.actNumber}

@@ -301,7 +301,7 @@ export default function Player() {
           </div>
         )}
         
-        <div className="flex-grow h-full">
+        <div className="flex-grow h-full pt-10">
           {renderContent()}
         </div>
       </main>
