@@ -7,7 +7,6 @@ import { useToast } from '@/hooks/use-toast';
 import { ShareButton } from '@/components/share-button';
 import { Button } from '@/components/ui/button';
 import { Helmet } from 'react-helmet';
-import { ArrowLeft } from 'lucide-react';
 
 interface SharedPlayerParams {
   shareId: string;
@@ -74,28 +73,7 @@ export default function SharedPlayer() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <div className="sticky top-0 z-50 w-full bg-background shadow-sm">
-          <nav className="bg-white shadow-sm px-4 py-3 w-full z-10">
-            <div className="flex items-center justify-between">
-              <div className="w-1/3 flex items-center">
-                <button 
-                  className="text-neutral-500 hover:text-primary transition-colors"
-                  onClick={() => window.location.href = '/'}
-                  aria-label="Back to main menu"
-                >
-                  <ArrowLeft className="h-5 w-5" />
-                </button>
-              </div>
-              <div className="w-1/3 flex justify-center">
-                <h1 className="text-lg font-semibold text-primary text-center">
-                  VN Adlibber
-                </h1>
-              </div>
-              <div className="w-1/3 flex items-center justify-end space-x-2">
-              </div>
-            </div>
-          </nav>
-        </div>
+        <NavBar />
         <div className="flex flex-col items-center justify-center flex-grow w-full max-w-4xl mx-auto mt-16">
           <Loader2 className="w-8 h-8 mr-2 animate-spin" />
           <p className="mt-4 text-lg">Loading shared story...</p>
@@ -107,28 +85,7 @@ export default function SharedPlayer() {
   if (error || !story) {
     return (
       <div className="flex flex-col items-center min-h-screen p-4">
-        <div className="sticky top-0 z-50 w-full bg-background shadow-sm">
-          <nav className="bg-white shadow-sm px-4 py-3 w-full z-10">
-            <div className="flex items-center justify-between">
-              <div className="w-1/3 flex items-center">
-                <button 
-                  className="text-neutral-500 hover:text-primary transition-colors"
-                  onClick={() => window.location.href = '/'}
-                  aria-label="Back to main menu"
-                >
-                  <ArrowLeft className="h-5 w-5" />
-                </button>
-              </div>
-              <div className="w-1/3 flex justify-center">
-                <h1 className="text-lg font-semibold text-primary text-center">
-                  VN Adlibber
-                </h1>
-              </div>
-              <div className="w-1/3 flex items-center justify-end space-x-2">
-              </div>
-            </div>
-          </nav>
-        </div>
+        <NavBar />
         <div className="flex flex-col items-center justify-center flex-grow w-full max-w-4xl mx-auto mt-16">
           <div className="p-6 border rounded-lg shadow-md bg-card">
             <h2 className="mb-4 text-2xl font-bold text-center">Error</h2>
@@ -232,36 +189,29 @@ export default function SharedPlayer() {
       </Helmet>
       
       <div className="sticky top-0 z-50 w-full bg-background shadow-sm">
-        <nav className="bg-white shadow-sm px-4 py-3 w-full z-10">
-          <div className="flex items-center justify-between">
-            <div className="w-1/3 flex items-center">
-              <button 
-                className="text-neutral-500 hover:text-primary transition-colors"
-                onClick={handleReturn}
-                aria-label="Back to main menu"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="w-1/3 flex justify-center">
-              <h1 className="text-lg font-semibold text-primary text-center">
-                {story.title}
-              </h1>
-            </div>
-            <div className="w-1/3 flex items-center justify-end space-x-2">
-              <ShareButton 
-                title={story.title} 
-                variant="outline" 
-                size="sm" 
-              />
-            </div>
-          </div>
-        </nav>
+        <NavBar />
       </div>
       <main className="flex flex-col flex-grow relative overflow-hidden mt-2">
-
+        <div className="absolute top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-sm shadow-md border-b border-border/30">
+          <div className="container px-2 py-2 mx-auto sm:px-4">
+            <div className="flex justify-between items-center py-1">
+              <div>
+                <h1 className="text-lg sm:text-xl font-semibold text-foreground/90">{story.title}</h1>
+                <p className="text-xs text-muted-foreground">Shared Visual Novel</p>
+              </div>
+              <div className="flex gap-2">
+                <ShareButton 
+                  title={story.title} 
+                  variant="outline" 
+                  size="sm" 
+                  className="bg-primary/10 hover:bg-primary/20 border-primary/30"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
         
-        <div className="flex-grow h-full">
+        <div className="flex-grow h-full pt-10">
           <VnPlayer
             actData={story.actData}
             actNumber={story.actNumber}

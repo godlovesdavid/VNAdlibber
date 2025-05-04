@@ -12,14 +12,13 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Input } from "@/components/ui/input";
 
 interface PlayerNavbarProps {
-  title?: string;
   actNumber: number;
   onRestart: () => void;
   onReturn: () => void;
   dialogueLog: Array<{speaker: string, text: string}>;
 }
 
-export function PlayerNavbar({ title, actNumber, onRestart, onReturn, dialogueLog }: PlayerNavbarProps) {
+export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog }: PlayerNavbarProps) {
   const { playerData, updatePlayerData, resetPlayerData } = useVnContext();
   const [showLog, setShowLog] = useState(false);
   const [showDataEditor, setShowDataEditor] = useState(false);
@@ -231,10 +230,17 @@ export function PlayerNavbar({ title, actNumber, onRestart, onReturn, dialogueLo
           </Sheet>
         </div>
         
-        <div className="flex-1 text-center">
-          <h2 className="text-sm sm:text-base font-semibold text-primary-200">
-            {title ? title : `Act ${actNumber}`}
-          </h2>
+        <div className="text-neutral-300 text-[8px] sm:text-[10px] md:text-xs max-w-[150px] sm:max-w-none truncate sm:truncate-none overflow-hidden">
+          {/* Display relationships, inventory, and skills */}
+          {Object.entries(playerData.relationships).map(([key, value]) => (
+            <span key={key} className="mx-1">{key}: {value}</span>
+          ))}
+          {Object.entries(playerData.inventory).map(([key, value]) => (
+            <span key={key} className="mx-1">{key}: {value}</span>
+          ))}
+          {Object.entries(playerData.skills).map(([key, value]) => (
+            <span key={key} className="mx-1">{key}: {value}</span>
+          ))}
         </div>
         
         <div className="flex space-x-2 sm:space-x-4">
