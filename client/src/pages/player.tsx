@@ -258,7 +258,7 @@ export default function Player() {
 
   // UI with navbar and wrapper for the player
   return (
-    <div className="flex flex-col min-h-screen overflow-hidden">
+    <div className="flex flex-col min-h-screen">
       <Helmet>
         <title>{getStoryTitle()} | VN Adlibber</title>
         <meta name="description" content={getStoryDescription()} />
@@ -276,34 +276,29 @@ export default function Player() {
         <meta name="twitter:description" content={getStoryDescription()} />
       </Helmet>
       
-      <div className="sticky top-0 z-50 w-full bg-background shadow-sm">
-        <NavBar />
-      </div>
-      <main className="flex flex-col flex-grow relative overflow-hidden mt-2">
+      <NavBar />
+      <main className="flex flex-col flex-grow">
         {shouldShowShareUI() && (
-          <div className="absolute top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-sm shadow-md border-b border-border/30">
-            <div className="container px-2 py-2 mx-auto sm:px-4">
-              <div className="flex justify-between items-center py-1">
-                <div>
-                  <h1 className="text-lg sm:text-xl font-semibold text-foreground/90">{getStoryTitle()}</h1>
-                  <p className="text-xs text-muted-foreground">
-                    Act {actNumber} of {Object.keys(projectData?.generatedActs || {}).length || 1}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <ShareButton 
-                    title={getStoryTitle()} 
-                    variant="outline" 
-                    size="sm" 
-                    className="bg-primary/10 hover:bg-primary/20 border-primary/30"
-                  />
-                </div>
+          <div className="container px-2 py-4 mx-auto sm:px-4">
+            <div className="mb-4 flex justify-between items-center">
+              <div>
+                <h1 className="text-2xl font-semibold">{getStoryTitle()}</h1>
+                <p className="text-sm text-muted-foreground">
+                  Act {actNumber} of {Object.keys(projectData?.generatedActs || {}).length || 1}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <ShareButton 
+                  title={getStoryTitle()} 
+                  variant="outline" 
+                  size="sm" 
+                />
               </div>
             </div>
           </div>
         )}
         
-        <div className="flex-grow h-full">
+        <div className="flex-grow">
           {renderContent()}
         </div>
       </main>

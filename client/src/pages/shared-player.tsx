@@ -170,7 +170,7 @@ export default function SharedPlayer() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen overflow-hidden">
+    <div className="flex flex-col min-h-screen">
       <Helmet>
         <title>{story.title} | VN Adlibber</title>
         <meta name="description" content={getStoryDescription()} />
@@ -188,36 +188,27 @@ export default function SharedPlayer() {
         <meta name="twitter:description" content={getStoryDescription()} />
       </Helmet>
       
-      <div className="sticky top-0 z-50 w-full bg-background shadow-sm">
-        <NavBar />
-      </div>
-      <main className="flex flex-col flex-grow relative overflow-hidden mt-2">
-        <div className="absolute top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-sm shadow-md border-b border-border/30">
-          <div className="container px-2 py-2 mx-auto sm:px-4">
-            <div className="flex justify-between items-center py-1">
-              <div>
-                <h1 className="text-lg sm:text-xl font-semibold text-foreground/90">{story.title}</h1>
-                <p className="text-xs text-muted-foreground">Shared Visual Novel</p>
-              </div>
-              <div className="flex gap-2">
-                <ShareButton 
-                  title={story.title} 
-                  variant="outline" 
-                  size="sm" 
-                  className="bg-primary/10 hover:bg-primary/20 border-primary/30"
-                />
-              </div>
+      <NavBar />
+      <main className="flex flex-col flex-grow">
+        <div className="container px-2 py-4 mx-auto sm:px-4">
+          <div className="mb-4 flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-semibold">{story.title}</h1>
+              <p className="text-sm text-muted-foreground">Shared Visual Novel</p>
+            </div>
+            <div className="flex gap-2">
+              <ShareButton title={story.title} variant="outline" size="sm" />
             </div>
           </div>
-        </div>
-        
-        <div className="flex-grow h-full pt-10">
-          <VnPlayer
-            actData={story.actData}
-            actNumber={story.actNumber}
-            onReturn={handleReturn}
-            mode="imported"
-          />
+          
+          <div className="flex-grow">
+            <VnPlayer
+              actData={story.actData}
+              actNumber={story.actNumber}
+              onReturn={handleReturn}
+              mode="imported"
+            />
+          </div>
         </div>
       </main>
     </div>
