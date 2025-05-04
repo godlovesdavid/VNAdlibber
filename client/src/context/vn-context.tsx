@@ -14,6 +14,28 @@ import {
 } from "@/types/vn";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
+// Helper function to create a hash/checksum of project data
+function generateProjectHash(projectData: any): string {
+  // Create a normalized version of the data without irrelevant fields
+  const normalizedData = { ...projectData };
+  
+  // Remove fields that don't affect content
+  delete normalizedData.id;
+  delete normalizedData.createdAt;
+  delete normalizedData.updatedAt;
+  delete normalizedData.lastSavedHash;
+  
+  // Simple string hash function
+  const str = JSON.stringify(normalizedData);
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return hash.toString(16);
+}
+
 // Helper function to calculate the current step based on a project's data
 export function calculateCurrentStep(project: Partial<VnProjectData>): number {
   let step = 1; // Start with basic step

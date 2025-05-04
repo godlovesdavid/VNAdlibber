@@ -120,6 +120,7 @@ export interface VnProjectData {
   generatedActs?: Record<string, any>; // Fixed GeneratedAct reference
   playerData?: PlayerData;
   currentStep: number;
+  lastSavedHash?: string; // Hash of the last saved state to detect unsaved changes
 }
 
 // Exported story structure
