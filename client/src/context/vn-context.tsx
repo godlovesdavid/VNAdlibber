@@ -82,6 +82,7 @@ const defaultPlayerData: PlayerData = {
   relationships: {},
   inventory: {},
   skills: {},
+  storyTitle: "", // Empty story title by default
 };
 
 const VnContext = createContext<VnContextType | undefined>(undefined);
@@ -378,6 +379,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       },
       inventory: { ...prev.inventory, ...(newData.inventory || {}) },
       skills: { ...prev.skills, ...(newData.skills || {}) },
+      storyTitle: newData.storyTitle !== undefined ? newData.storyTitle : prev.storyTitle,
     }));
 
     if (projectData) {
@@ -390,6 +392,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
           },
           inventory: { ...playerData.inventory, ...(newData.inventory || {}) },
           skills: { ...playerData.skills, ...(newData.skills || {}) },
+          storyTitle: newData.storyTitle !== undefined ? newData.storyTitle : playerData.storyTitle,
         },
         updatedAt: new Date().toISOString(),
       });

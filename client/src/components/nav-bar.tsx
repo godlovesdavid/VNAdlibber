@@ -3,14 +3,41 @@ import { Link, useLocation } from "wouter";
 import { SaveProjectButton } from "@/components/save-project-button";
 import { ArrowLeft, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
 
 export function NavBar() {
   const [location, setLocation] = useLocation();
   const { projectData } = useVnContext();
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   
-  // Go back to main menu
-  const goToMainMenu = () => {
+  // Check if we're on a form page
+  const isFormPage = () => {
+    return location.includes('/create/');
+  };
+  
+  // Go back to main menu with confirmation for form pages
+  const handleBackClick = () => {
+    if (isFormPage()) {
+      setConfirmDialogOpen(true);
+    } else {
+      setLocation("/");
+    }
+  };
+  
+  // Confirm navigation to main menu
+  const confirmGoToMainMenu = () => {
     setLocation("/");
+    setConfirmDialogOpen(false);
   };
   
   // Check if we're on a player page to hide the SaveProjectButton
@@ -19,31 +46,42 @@ export function NavBar() {
   };
   
   return (
-    <nav className="bg-white shadow-sm px-4 py-3 fixed top-0 left-0 w-full z-10">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <button 
-            className="text-neutral-500 hover:text-primary transition-colors"
-            onClick={goToMainMenu}
-            aria-label="Back to main menu"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <h1 className="text-lg font-semibold text-primary">
-            {projectData?.title ? projectData.title : 'VN Adlibber'}
-          </h1>
+    <>
+      <nav className="bg-white shadow-sm px-4 py-3 fixed top-0 left-0 w-full z-10">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <button 
+              className="text-neutral-500 hover:text-primary transition-colors"
+              onClick={handleBackClick}
+              aria-label="Back to main menu"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <h1 className="text-lg font-semibold text-primary">
+              {projectData?.title ? projectData.title : 'VN Adlibber'}
+            </h1>
+          </div>
+          <div className="flex items-center space-x-2">
+            {/* Only show the save button when not on player pages */}
+            {!isPlayerPage() && <SaveProjectButton />}
+          </div>
         </div>
-        <div className="flex items-center space-x-2">
-          {/* <Link href="/font-demo">
-            <Button size="sm" variant="ghost" className="flex items-center gap-1">
-              <Type className="h-4 w-4" />
-              <span className="hidden sm:inline">Fonts</span>
-            </Button>
-          </Link> */}
-          {/* Only show the save button when not on player pages */}
-          {!isPlayerPage() && <SaveProjectButton />}
-        </div>
-      </div>
-    </nav>
+      </nav>
+      
+      <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Return to Main Menu?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Any unsaved changes on this form will be lost. Are you sure you want to return to the main menu?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmGoToMainMenu}>Continue</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
