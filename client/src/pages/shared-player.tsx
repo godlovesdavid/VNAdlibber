@@ -2,11 +2,10 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'wouter';
 import { Loader2 } from 'lucide-react';
 import { VnPlayer } from '@/components/vn-player';
-import { NavBar } from '@/components/nav-bar';
 import { useToast } from '@/hooks/use-toast';
-import { SocialShareButtons } from '@/components/social-share-buttons';
+import { PlayerLayout } from '@/components/player-layout';
 import { Button } from '@/components/ui/button';
-import { Helmet } from 'react-helmet';
+import { NavBar } from '@/components/nav-bar';
 
 interface SharedPlayerParams {
   shareId: string;
@@ -130,37 +129,17 @@ export default function SharedPlayer() {
 
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Helmet>
-        <title>{story.title} | VN Adlibber</title>
-        <meta name="description" content={getStoryDescription()} />
-        
-        {/* Open Graph / Facebook */}
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={window.location.href} />
-        <meta property="og:title" content={`${story.title} | VN Adlibber`} />
-        <meta property="og:description" content={getStoryDescription()} />
-        
-        {/* Twitter */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:url" content={window.location.href} />
-        <meta name="twitter:title" content={`${story.title} | VN Adlibber`} />
-        <meta name="twitter:description" content={getStoryDescription()} />
-      </Helmet>
-      
-      <NavBar />
-      <main className="flex flex-col flex-grow relative">
-        <SocialShareButtons title={story.title} />
-        
-        <div className="flex-grow">
-          <VnPlayer
-            actData={story.actData}
-            actNumber={story.actNumber}
-            onReturn={handleReturn}
-            mode="imported"
-          />
-        </div>
-      </main>
-    </div>
+    <PlayerLayout
+      title={story.title}
+      description={getStoryDescription()}
+      showShareButtons={true}
+    >
+      <VnPlayer
+        actData={story.actData}
+        actNumber={story.actNumber}
+        onReturn={handleReturn}
+        mode="imported"
+      />
+    </PlayerLayout>
   );
 }

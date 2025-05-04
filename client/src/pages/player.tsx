@@ -3,10 +3,8 @@ import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useParams } from "wouter";
 import { VnPlayer } from "@/components/vn-player";
-import { NavBar } from "@/components/nav-bar";
 import { Loader2 } from "lucide-react";
-import { SocialShareButtons } from "@/components/social-share-buttons";
-import { Helmet } from "react-helmet";
+import { PlayerLayout } from "@/components/player-layout";
 import { GeneratedAct } from "@/types/vn";
 
 export default function Player() {
@@ -256,36 +254,14 @@ export default function Player() {
     return actId !== "imported";
   };
 
-  // UI with navbar and wrapper for the player
+  // Use the clean PlayerLayout component for a distraction-free experience
   return (
-    <div className="flex flex-col min-h-screen">
-      <Helmet>
-        <title>{getStoryTitle()} | VN Adlibber</title>
-        <meta name="description" content={getStoryDescription()} />
-        
-        {/* Open Graph / Facebook */}
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={window.location.href} />
-        <meta property="og:title" content={`${getStoryTitle()} | VN Adlibber`} />
-        <meta property="og:description" content={getStoryDescription()} />
-        
-        {/* Twitter */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:url" content={window.location.href} />
-        <meta name="twitter:title" content={`${getStoryTitle()} | VN Adlibber`} />
-        <meta name="twitter:description" content={getStoryDescription()} />
-      </Helmet>
-      
-      <NavBar />
-      <main className="flex flex-col flex-grow relative">
-        {shouldShowShareUI() && (
-          <SocialShareButtons title={getStoryTitle()} />
-        )}
-        
-        <div className="flex-grow">
-          {renderContent()}
-        </div>
-      </main>
-    </div>
+    <PlayerLayout
+      title={getStoryTitle()}
+      description={getStoryDescription()}
+      showShareButtons={shouldShowShareUI()}
+    >
+      {renderContent()}
+    </PlayerLayout>
   );
 }
