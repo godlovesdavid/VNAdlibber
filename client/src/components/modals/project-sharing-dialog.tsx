@@ -105,7 +105,8 @@ export function ProjectSharingDialog({ open, onOpenChange }: ProjectSharingDialo
               body: JSON.stringify({
                 projectId: project.id,
                 actNumber,
-                title: project.conceptData?.title || `${project.title} - Act ${actNumber}`
+                title: project.conceptData?.title || `${project.title} - Act ${actNumber}`,
+                actData: actData // Pass the act data for newly generated acts
               })
             });
             
@@ -311,7 +312,7 @@ export function ProjectSharingDialog({ open, onOpenChange }: ProjectSharingDialo
                       <CardTitle className="text-md">{link.title}</CardTitle>
                       <CardDescription className="flex items-center text-xs">
                         <LinkIcon className="h-3 w-3 mr-1" />
-                        <span className="truncate">{window.location.origin}{link.url}</span>
+                        <span className="truncate w-48 md:w-80">{window.location.origin}{link.url}</span>
                       </CardDescription>
                     </CardHeader>
                     <CardFooter className="pt-2 flex gap-2 flex-wrap">

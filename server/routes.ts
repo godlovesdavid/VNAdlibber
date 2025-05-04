@@ -379,12 +379,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         actNum = parseInt(actKey.replace('act', ''), 10);
       }
       
+      // Initialize actData variable
+      let actData; 
+      
       // Make sure the requested act exists
       if (!generatedActs[actKey]) {
-        return res.status(400).json({ error: `Act ${actNum} not found in this project` });
+        // Check if act exists in memory but isn't saved to the database yet
+        // This happens right after generating a new act
+        if (req.body.actData) {
+          // User provided the act data directly - use it instead of looking it up
+          actData = req.body.actData;
+        } else {
+          return res.status(400).json({ error: `Act ${actNum} not found in this project` });
+        }
+      } else {
+        // Get the act data from the project
+        actData = generatedActs[actKey];
       }
-      
-      const actData = generatedActs[actKey];
       const storyTitle = title || project.title || `Visual Novel Act ${actNum}`;
       
       // Create a new story entry in the database
