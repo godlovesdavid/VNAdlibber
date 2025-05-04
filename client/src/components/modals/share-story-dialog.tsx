@@ -109,7 +109,7 @@ export function ShareStoryDialog({
     }
     
     // If opening and there are unsaved changes, show warning
-    if (hasUnsavedChanges) {
+    if (hasUnsavedChanges()) {
       // Show warning alert instead of opening share dialog directly
       setIsAlertOpen(true);
     } else {

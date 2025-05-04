@@ -297,7 +297,9 @@ export class DatabaseStorage implements IStorage {
       },
       currentStep: insertProject.currentStep || 1,
       // Make sure userId is null if undefined
-      userId: insertProject.userId || null
+      userId: insertProject.userId || null,
+      // Make sure lastSavedHash is null if undefined
+      lastSavedHash: insertProject.lastSavedHash || null
     };
 
     // Insert the project
