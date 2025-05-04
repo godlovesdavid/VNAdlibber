@@ -102,6 +102,7 @@ export interface PlayerData {
   relationships: Record<string, number>;
   inventory: Record<string, number>;
   skills: Record<string, number>;
+  storyTitle?: string; // Title of the current story for display in the player navbar
 }
 
 // Complete VN Project data structure

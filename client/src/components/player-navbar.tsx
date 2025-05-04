@@ -230,17 +230,9 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog }: Pl
           </Sheet>
         </div>
         
-        <div className="text-neutral-300 text-[8px] sm:text-[10px] md:text-xs max-w-[150px] sm:max-w-none truncate sm:truncate-none overflow-hidden">
-          {/* Display relationships, inventory, and skills */}
-          {Object.entries(playerData.relationships).map(([key, value]) => (
-            <span key={key} className="mx-1">{key}: {value}</span>
-          ))}
-          {Object.entries(playerData.inventory).map(([key, value]) => (
-            <span key={key} className="mx-1">{key}: {value}</span>
-          ))}
-          {Object.entries(playerData.skills).map(([key, value]) => (
-            <span key={key} className="mx-1">{key}: {value}</span>
-          ))}
+        <div className="text-white font-medium text-[9px] sm:text-xs md:text-sm max-w-[200px] sm:max-w-none truncate text-center">
+          {/* Display story title and act number */}
+          <span>Act {actNumber} - {playerData.storyTitle || "Visual Novel"}</span>
         </div>
         
         <div className="flex space-x-2 sm:space-x-4">
