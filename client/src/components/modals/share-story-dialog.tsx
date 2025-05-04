@@ -80,16 +80,33 @@ export function ShareStoryDialog({
   const saveAndShare = async () => {
     try {
       setIsLoading(true);
+      console.log('[Share Dialog] Starting saveAndShare process');
+      
       // Save the project first - await to make sure it completes
       const savedProject = await saveProject();
-      console.log('Project saved with hash:', savedProject.lastSavedHash);
+      console.log('[Share Dialog] Project saved with hash:', savedProject.lastSavedHash);
+      
+      // Add a delay to ensure all state updates have been processed
+      // This helps address potential race conditions with React state updates
+      console.log('[Share Dialog] Adding delay before share link generation');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Verify that changes are actually saved
+      console.log('[Share Dialog] Rechecking for unsaved changes after save');
+      const stillHasChanges = hasUnsavedChanges();
+      console.log('[Share Dialog] Project still has unsaved changes?', stillHasChanges);
+      
+      if (stillHasChanges) {
+        console.warn('[Share Dialog] Warning: Project still reports unsaved changes after saving');
+      }
 
       // Then generate the share link
+      console.log('[Share Dialog] Generating share link');
       await generateShareLink();
       setIsAlertOpen(false);
       setIsOpen(true); // Make sure dialog opens
     } catch (error) {
-      console.error('Error saving project before sharing:', error);
+      console.error('[Share Dialog] Error saving project before sharing:', error);
       toast({
         title: 'Error',
         description: 'Failed to save project before sharing',

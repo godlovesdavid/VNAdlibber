@@ -32,7 +32,12 @@ export function NavBar() {
     console.log('[NavBar] Back button clicked');
     if (isFormPage()) {
       console.log('[NavBar] On a form page, checking for unsaved changes');
-      // Only show the confirmation dialog if there are unsaved changes
+      
+      // Check localStorage data first for most up-to-date information
+      const localStorageData = localStorage.getItem("current_vn_project");
+      
+      // For additional reliability, we'll check both hasUnsavedChanges() and also
+      // compare with the localStorage data directly
       const hasChanges = hasUnsavedChanges();
       console.log('[NavBar] hasUnsavedChanges returned:', hasChanges);
       

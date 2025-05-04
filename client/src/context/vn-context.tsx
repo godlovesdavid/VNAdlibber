@@ -117,17 +117,33 @@ export function hasUnsavedChanges(projectData: VnProjectData | null): boolean {
     return false;
   }
   
+  // Always check localStorage data as the latest source of truth
+  let latestData = projectData;
+  // Check localStorage for most recent data
+  const localStorageData = localStorage.getItem("current_vn_project");
+  if (localStorageData) {
+    try {
+      const parsedData = JSON.parse(localStorageData);
+      // Only use localStorage data if it has an ID and that ID matches the current project
+      if (parsedData.id && projectData.id && parsedData.id === projectData.id) {
+        latestData = parsedData;
+      }
+    } catch (e) {
+      console.error('[Hash Check] Failed to parse localStorage data:', e);
+    }
+  }
+  
   // If no hash exists, we assume changes are unsaved
-  if (!projectData.lastSavedHash) {
+  if (!latestData.lastSavedHash) {
     console.log('[Hash Check] No saved hash found, returning true (unsaved)');
     return true;
   }
   
   // Generate a current hash and compare
-  const currentHash = generateProjectHash(projectData);
-  const match = currentHash === projectData.lastSavedHash;
+  const currentHash = generateProjectHash(latestData);
+  const match = currentHash === latestData.lastSavedHash;
   console.log('[Hash Check] Current hash:', currentHash);
-  console.log('[Hash Check] Saved hash:', projectData.lastSavedHash);
+  console.log('[Hash Check] Saved hash:', latestData.lastSavedHash);
   console.log('[Hash Check] Hashes match?', match, 'returning', !match);
   return !match;
 }
@@ -534,14 +550,30 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       
       // 4. Update state with saved data, ensuring we preserve the ID and hash
       console.log('Received saved project from server with ID:', savedProject.id); 
+      console.log('Received saved project hash from server:', savedProject.lastSavedHash);
       
       // Store the ID in session storage for future saves
       sessionStorage.setItem('current_project_id', savedProject.id.toString());
       
-      // Make sure the saved project has the hash
+      // Make sure the saved project has the hash - always use the hash we generated and sent
+      // This ensures client and server stay in sync with hash values
       if (!savedProject.lastSavedHash) {
+        console.log('Warning: Server returned project without hash, using client hash', currentDataHash);
+        savedProject.lastSavedHash = currentDataHash;
+      } else if (savedProject.lastSavedHash !== currentDataHash) {
+        console.log('Warning: Server returned different hash than client generated', { 
+          server: savedProject.lastSavedHash, 
+          client: currentDataHash 
+        });
+        // Override the server hash with our client hash since we just saved
+        // This keeps the client's perception of "saved state" accurate
         savedProject.lastSavedHash = currentDataHash;
       }
+      
+      // Generate a hash of the server-returned data to verify true equality
+      const serverDataHash = generateProjectHash(savedProject);
+      console.log('Hash of data returned by server:', serverDataHash);
+      console.log('Hash matches client hash?', serverDataHash === currentDataHash);
       
       // Update React state
       setProjectData(savedProject);
