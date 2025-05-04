@@ -18,9 +18,74 @@ interface ShareDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+interface SharedStoryInfo {
+  shareId: string;
+  storyId: number;
+  url: string;
+  title?: string;
+}
+
 export function ShareDialog({ open, onOpenChange }: ShareDialogProps) {
   const { toast } = useToast();
-  const [shareUrl, setShareUrl] = useState("https://vn-adlibber.replit.com/s/echoes-of-tomorrow");
+  const { projectData } = useVnContext();
+  const [shareUrl, setShareUrl] = useState("");
+  const [shareTitle, setShareTitle] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [sharedStories, setSharedStories] = useState<SharedStoryInfo[]>([]);
+  
+  // When the dialog is opened, fetch or create a share link
+  useEffect(() => {
+    if (open && projectData) {
+      loadSharedStories();
+    }
+  }, [open, projectData]);
+  
+  // Load existing shared stories or create a new one
+  const loadSharedStories = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      if (!projectData) {
+        throw new Error("No project data available");
+      }
+
+      // Create a new shared story
+      const response = await fetch("/api/share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectId: projectData.id,
+          actNumber: 1, // Default to first act
+          title: projectData.conceptData?.title || projectData.title || "Visual Novel Adventure",
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to create share link");
+      }
+      
+      const sharedStory: SharedStoryInfo = await response.json();
+      setSharedStories([sharedStory]);
+      
+      const fullUrl = `${window.location.origin}${sharedStory.url}`;
+      setShareUrl(fullUrl);
+      setShareTitle(projectData.conceptData?.title || projectData.title || "Visual Novel Adventure");
+      
+    } catch (err) {
+      console.error("Error creating share link:", err);
+      setError(err instanceof Error ? err.message : "Unknown error occurred");
+      toast({
+        title: "Error",
+        description: "Failed to create share link",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
   
   const handleCopy = () => {
     navigator.clipboard.writeText(shareUrl).then(() => {
@@ -38,21 +103,28 @@ export function ShareDialog({ open, onOpenChange }: ShareDialogProps) {
   
   const handleShare = (platform: string) => {
     let url = "";
+    const shareText = `Check out my visual novel "${shareTitle}" created with VN Adlibber!`;
     
     switch(platform) {
       case "twitter":
-        url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent("Check out my visual novel created with VN Adlibber!")}`;
+        url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
         break;
       case "facebook":
         url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
         break;
       case "email":
-        url = `mailto:?subject=${encodeURIComponent("Check out my visual novel")}&body=${encodeURIComponent(`I created a visual novel with VN Adlibber! Check it out here: ${shareUrl}`)}`;
+        url = `mailto:?subject=${encodeURIComponent(`Check out my visual novel - ${shareTitle}`)}&body=${encodeURIComponent(`${shareText}\n\n${shareUrl}`)}`;
         break;
     }
     
     if (url) {
       window.open(url, "_blank");
+    }
+  };
+  
+  const handleTestPlay = () => {
+    if (shareUrl) {
+      window.open(shareUrl, "_blank");
     }
   };
   
