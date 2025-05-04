@@ -112,14 +112,24 @@ const defaultPlayerData: PlayerData = {
 
 // Function to check if there are unsaved changes by comparing hashes
 export function hasUnsavedChanges(projectData: VnProjectData | null): boolean {
-  if (!projectData) return false;
+  if (!projectData) {
+    console.log('[Hash Check] No project data, returning false');
+    return false;
+  }
   
   // If no hash exists, we assume changes are unsaved
-  if (!projectData.lastSavedHash) return true;
+  if (!projectData.lastSavedHash) {
+    console.log('[Hash Check] No saved hash found, returning true (unsaved)');
+    return true;
+  }
   
   // Generate a current hash and compare
   const currentHash = generateProjectHash(projectData);
-  return currentHash !== projectData.lastSavedHash;
+  const match = currentHash === projectData.lastSavedHash;
+  console.log('[Hash Check] Current hash:', currentHash);
+  console.log('[Hash Check] Saved hash:', projectData.lastSavedHash);
+  console.log('[Hash Check] Hashes match?', match, 'returning', !match);
+  return !match;
 }
 
 const VnContext = createContext<VnContextType | undefined>(undefined);
@@ -485,7 +495,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       
       // Generate a hash of the current data
       const currentDataHash = generateProjectHash(dataToSave);
-      console.log('Generated hash for current project state:', currentDataHash);
+      console.log('[saveProject] Generated hash for current project state:', currentDataHash);
+      console.log('[saveProject] Data to save has lastSavedHash:', dataToSave.lastSavedHash);
       
       // 2. Make sure we have all required fields with defaults
       const finalDataToSave = {

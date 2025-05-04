@@ -29,15 +29,23 @@ export function NavBar() {
   
   // Go back to main menu with confirmation for form pages
   const handleBackClick = () => {
+    console.log('[NavBar] Back button clicked');
     if (isFormPage()) {
+      console.log('[NavBar] On a form page, checking for unsaved changes');
       // Only show the confirmation dialog if there are unsaved changes
-      if (hasUnsavedChanges()) {
+      const hasChanges = hasUnsavedChanges();
+      console.log('[NavBar] hasUnsavedChanges returned:', hasChanges);
+      
+      if (hasChanges) {
+        console.log('[NavBar] Showing confirmation dialog');
         setConfirmDialogOpen(true);
       } else {
         // No unsaved changes, just go back to main menu
+        console.log('[NavBar] No unsaved changes, going back to main menu');
         setLocation("/");
       }
     } else {
+      console.log('[NavBar] Not on a form page, going back to main menu');
       setLocation("/");
     }
   };

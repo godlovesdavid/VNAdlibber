@@ -104,6 +104,7 @@ export function ShareStoryDialog({
   const handleOpenChange = (open: boolean) => {
     // If closing, simply close
     if (!open) {
+      console.log('[Share Dialog] Closing dialog');
       setIsOpen(open);
       // Reset state when dialog closes
       setShareLink('');
@@ -112,11 +113,17 @@ export function ShareStoryDialog({
     }
     
     // If opening and there are unsaved changes, show warning
-    if (hasUnsavedChanges()) {
+    console.log('[Share Dialog] Checking for unsaved changes');
+    const hasChanges = hasUnsavedChanges();
+    console.log('[Share Dialog] hasUnsavedChanges returned:', hasChanges);
+    
+    if (hasChanges) {
       // Show warning alert instead of opening share dialog directly
+      console.log('[Share Dialog] Showing unsaved changes alert');
       setIsAlertOpen(true);
     } else {
       // No unsaved changes, proceed to open dialog and generate link
+      console.log('[Share Dialog] No unsaved changes, proceeding to generate link');
       setIsOpen(open);
       generateShareLink();
     }
