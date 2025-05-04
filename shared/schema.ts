@@ -30,6 +30,7 @@ export const vnProjects = pgTable("vn_projects", {
   generatedActs: jsonb("generated_acts").default({}),
   playerData: jsonb("player_data").default({}),
   currentStep: integer("current_step").notNull().default(1),
+  lastSavedHash: text("last_saved_hash"),
 });
 
 export const insertVnProjectSchema = createInsertSchema(vnProjects).omit({

@@ -70,6 +70,7 @@ export class MemStorage implements IStorage {
       title: "Echoes of Tomorrow",
       createdAt: now,
       updatedAt: now,
+      lastSavedHash: null,
       basicData: {
         theme: "identity",
         tone: "melancholic",
@@ -141,7 +142,8 @@ export class MemStorage implements IStorage {
         inventory: {},
         skills: {}
       },
-      currentStep: insertProject.currentStep || 1
+      currentStep: insertProject.currentStep || 1,
+      lastSavedHash: insertProject.lastSavedHash || null
     };
     
     this.projects.set(id, project);
