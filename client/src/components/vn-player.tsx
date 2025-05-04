@@ -253,7 +253,7 @@ export function VnPlayer({
       // Start new animation
       setIsTextAnimating(true);
       let currentIndex = 0;
-      if (!text.length)
+      if (!text?.length)
         return
       const totalLength = text.length;
 

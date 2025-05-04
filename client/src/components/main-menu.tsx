@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { LoadProjectDialog } from "@/components/modals/load-project-dialog";
-import { ShareDialog } from "@/components/modals/share-dialog";
+import { ProjectSharingDialog } from "@/components/modals/project-sharing-dialog";
 import { Pencil, FolderOpen, Play, Share2, Beaker } from "lucide-react";
 import logoImage from "@assets/image_1746248981035.png";
 
@@ -103,7 +103,7 @@ export function MainMenu() {
       />
 
       {/* Share Dialog */}
-      <ShareDialog 
+      <ProjectSharingDialog 
         open={showShareDialog} 
         onOpenChange={setShowShareDialog} 
       />

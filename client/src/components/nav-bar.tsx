@@ -1,7 +1,8 @@
 import { useVnContext } from "@/context/vn-context";
 import { Link, useLocation } from "wouter";
 import { SaveProjectButton } from "@/components/save-project-button";
-import { ArrowLeft, Type } from "lucide-react";
+import { ArrowLeft, Share } from "lucide-react";
+import { ProjectSharingDialog } from "@/components/modals/project-sharing-dialog";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -19,6 +20,7 @@ export function NavBar() {
   const [location, setLocation] = useLocation();
   const { projectData } = useVnContext();
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [sharingDialogOpen, setSharingDialogOpen] = useState(false);
   
   // Check if we're on a form page
   const isFormPage = () => {
@@ -62,8 +64,21 @@ export function NavBar() {
             </h1>
           </div>
           <div className="flex items-center space-x-2">
-            {/* Only show the save button when not on player pages */}
-            {!isPlayerPage() && <SaveProjectButton />}
+            {/* Only show these buttons when not on player pages */}
+            {!isPlayerPage() && (
+              <>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center gap-1"
+                  onClick={() => setSharingDialogOpen(true)}
+                >
+                  <Share className="h-4 w-4" />
+                  <span className="hidden sm:inline">Share</span>
+                </Button>
+                <SaveProjectButton />
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -82,6 +97,12 @@ export function NavBar() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {/* Sharing Dialog */}
+      <ProjectSharingDialog
+        open={sharingDialogOpen}
+        onOpenChange={setSharingDialogOpen}
+      />
     </>
   );
 }
