@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect , useRef} from "react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -190,7 +190,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
   const [playerData, setPlayerData] = useState<PlayerData>(defaultPlayerData);
   const [isLoading, setIsLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
-
+  
   // Load project from localStorage on mount
   useEffect(() => {
     const savedProject = localStorage.getItem("current_vn_project");
@@ -280,7 +280,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
   // Step data setters
   const setBasicData = (data: BasicData) => {
     if (!projectData) return;
-
     setProjectData({
       ...projectData,
       basicData: data,
@@ -291,7 +290,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const setConceptData = (data: ConceptData) => {
     if (!projectData) return;
-
     setProjectData({
       ...projectData,
       title: data.title || projectData.title,
@@ -493,7 +491,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
           skills: { ...playerData.skills, ...(newData.skills || {}) },
           storyTitle: newData.storyTitle !== undefined ? newData.storyTitle : playerData.storyTitle,
         },
-        updatedAt: new Date().toISOString(),
       });
     }
   };
@@ -505,7 +502,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       setProjectData({
         ...projectData,
         playerData: defaultPlayerData,
-        updatedAt: new Date().toISOString(),
       });
     }
   };
@@ -857,18 +853,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       setProjectData(updatedProject);
     }
 
-    //generate a new context hash every time it gets saved
-    useEffect(() => {
-      if (projectData && projectData.id) {
-        // Only update hashes for existing projects, not new ones
-        const currentHash = generateProjectHash(projectData);
-        console.log('[Context Change] Generated new hash:', currentHash);
-
-        // We're not saving this as the "saved" hash - just tracking the current state
-        sessionStorage.setItem('current_hash', currentHash);
-      }
-    }, [projectData]);
-    
     // Navigate to appropriate step
     const stepRoutes = [
       "/create/basic",
@@ -881,6 +865,23 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
 
     setLocation(stepRoutes[stepNumber - 1]);
   };
+  
+  // In VnProvider
+  useEffect(() => {
+    if (projectData && projectData.id) {
+      // Only update hashes for existing projects, not new ones
+      const currentHash = generateProjectHash(projectData);
+      console.log('[Context Change] Generated new hash:', currentHash);
+      // alert(currentHash)
+      // We're not saving this as the "saved" hash - just tracking the current state
+      const projectId = projectData.id ? projectData.id.toString() : 'new_project';
+      const savedHashKey = `saved_hash_${projectId}`;
+      const savedHash = sessionStorage.getItem(savedHashKey);
+      if (currentHash != savedHash)
+        sessionStorage.setItem(savedHashKey, currentHash);
+    }
+  }, [projectData]);
+  
 
   const value: VnContextType = {
     projectData,
