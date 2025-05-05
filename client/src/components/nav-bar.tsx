@@ -27,17 +27,29 @@ export function NavBar() {
     return location.includes('/create/');
   };
   
+  // Helper function to save form to context before checking for changes
+  const saveFormToContext = async () => {
+    // Dispatch a save-form-to-context event to trigger the form to save data
+    console.log('[NavBar] Dispatching save-form-to-context event');
+    const event = new CustomEvent('save-form-to-context');
+    document.dispatchEvent(event);
+    
+    // Give the context a moment to update
+    await new Promise(resolve => setTimeout(resolve, 200));
+  };
+  
   // Go back to main menu with confirmation for form pages
-  const handleBackClick = () => {
+  const handleBackClick = async () => {
     console.log('[NavBar] Back button clicked');
     if (isFormPage()) {
-      console.log('[NavBar] On a form page, checking for unsaved changes');
+      console.log('[NavBar] On a form page, saving form data first');
       
-      // Check localStorage data first for most up-to-date information
-      const localStorageData = localStorage.getItem("current_vn_project");
+      // First save the form data to context
+      await saveFormToContext();
       
-      // For additional reliability, we'll check both hasUnsavedChanges() and also
-      // compare with the localStorage data directly
+      // Now check for unsaved changes with the updated context
+      console.log('[NavBar] Form saved to context, now checking for unsaved changes');
+      
       const hasChanges = hasUnsavedChanges();
       console.log('[NavBar] hasUnsavedChanges returned:', hasChanges);
       
