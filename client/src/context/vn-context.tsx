@@ -25,60 +25,27 @@ function generateProjectHash(projectData: any): string {
   delete normalizedData.updatedAt;
   delete normalizedData.lastSavedHash;
   
-  // Create a simplified version with only essential data for stable hashing
-  // This solves issues with React/JSON stringification differences
-  
-  // First, process basic data fields with consistent key order
-  const sortedBasicData = normalizedData.basicData ? {
-    genre: normalizedData.basicData.genre || '',
-    setting: normalizedData.basicData.setting || '',
-    theme: normalizedData.basicData.theme || '',
-    tone: normalizedData.basicData.tone || ''
-  } : {};
-  
-  // Process concept data with consistent key order
-  const sortedConceptData = normalizedData.conceptData ? {
-    premise: normalizedData.conceptData.premise || '',
-    tagline: normalizedData.conceptData.tagline || '',
-    title: normalizedData.conceptData.title || ''
-  } : {};
-  
-  // Create a highly simplified essential data with predictable structure
-  const essentialData = {
-    title: normalizedData.title || '',
-    basicData: sortedBasicData,
-    conceptData: sortedConceptData,
-    // Extract character names which is most critical for change detection
-    characterNames: normalizedData.charactersData ? Object.keys(normalizedData.charactersData).sort() : [],
-    // Extract path names which is most critical for change detection
-    pathNames: normalizedData.pathsData ? Object.keys(normalizedData.pathsData).sort() : [],
-    // Simply check if plotData exists 
-    hasPlot: !!(normalizedData.plotData && normalizedData.plotData),
-    // Extract act numbers which is most critical for change detection
-    actNumbers: normalizedData.generatedActs ? Object.keys(normalizedData.generatedActs).sort() : [],
-  };
-  
-  // Create a stable JSON string with sorted keys
-  // This ensures consistent hashing even if object properties are in different order
-  function stableStringify(obj: any): string {
-    if (typeof obj !== 'object' || obj === null) {
-      return JSON.stringify(obj);
-    }
+  // // Create a stable JSON string with sorted keys
+  // // This ensures consistent hashing even if object properties are in different order
+  // function stableStringify(obj: any): string {
+  //   if (typeof obj !== 'object' || obj === null) {
+  //     return JSON.stringify(obj);
+  //   }
     
-    const sortedKeys = Object.keys(obj).sort();
-    const pairs = sortedKeys.map(key => {
-      return `"${key}":${stableStringify(obj[key])}`;
-    });
+  //   const sortedKeys = Object.keys(obj).sort();
+  //   const pairs = sortedKeys.map(key => {
+  //     return `"${key}":${stableStringify(obj[key])}`;
+  //   });
     
-    if (Array.isArray(obj)) {
-      return `[${pairs.join(',')}]`;
-    } else {
-      return `{${pairs.join(',')}}`;  
-    }
-  }
-  
-  const str = stableStringify(essentialData);
-  console.log('[Hash Generation] Using essential data:', str);
+  //   if (Array.isArray(obj)) {
+  //     return `[${pairs.join(',')}]`;
+  //   } else {
+  //     return `{${pairs.join(',')}}`;  
+  //   }
+  // }
+
+  // const str = stableStringify(normalizedData);
+  const str = JSON.stringify(normalizedData);
   
   // Use a more reliable hash function
   let hash = 0;
@@ -578,44 +545,23 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       // Calculate the correct step based on available data
       const calculatedStep = calculateCurrentStep(dataToSave);
       
-      // First create a clean version of the data we're about to save
-      // This includes only essential fields and is used for a more reliable hash
-      // Use the same normalized structure as in the generateProjectHash function
-      
-      // Create sorted basic data with consistent order
-      const sortedBasicData = dataToSave.basicData ? {
-        genre: dataToSave.basicData.genre || '',
-        setting: dataToSave.basicData.setting || '',
-        theme: dataToSave.basicData.theme || '',
-        tone: dataToSave.basicData.tone || ''
-      } : {};
-      
-      // Create sorted concept data with consistent order
-      const sortedConceptData = dataToSave.conceptData ? {
-        premise: dataToSave.conceptData.premise || '',
-        tagline: dataToSave.conceptData.tagline || '',
-        title: dataToSave.conceptData.title || ''
-      } : {};
-      
-      // Create a very simplified version of the project data for hashing
-      const essentialData = {
-        title: dataToSave.title || '',
-        basicData: sortedBasicData,
-        conceptData: sortedConceptData,
-        // Character names are more reliable than full data
-        characterNames: dataToSave.charactersData ? Object.keys(dataToSave.charactersData).sort() : [],
-        // Path names are more reliable than full data
-        pathNames: dataToSave.pathsData ? Object.keys(dataToSave.pathsData).sort() : [],
-        // Check if plot data is present
-        hasPlot: !!(dataToSave.plotData && dataToSave.plotData),
-        // Only track presence of acts, not their full content (causes hash mismatches)
-        actNumbers: dataToSave.generatedActs ? Object.keys(dataToSave.generatedActs).sort() : []
-      };
       
       // Generate a hash of the essential data only
-      const currentDataHash = generateProjectHash(essentialData);
+      const currentDataHash = generateProjectHash(dataToSave);
       console.log('[saveProject] Generated hash for essential project data:', currentDataHash);
       console.log('[saveProject] Data to save has lastSavedHash:', dataToSave.lastSavedHash);
+
+      // Before starting the save process
+      sessionStorage?.getItem(`saved_hash_${projectId}`)
+      alert(dataToSave)
+      if (currentDataHash === sessionStorage?.getItem(`saved_hash_${projectId}`)) {
+        console.log('[saveProject] No changes detected, skipping save operation');
+        toast({
+          title: "No Changes",
+          description: "No changes to save",
+        });
+        return dataToSave; // Return the existing data
+      }
       
       // 2. Make sure we have all required fields with defaults
       const finalDataToSave = {
