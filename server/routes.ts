@@ -669,8 +669,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       console.error("Error generating characters:", error);
-      res.status(500).json({
+      
+      // Extract detailed error information
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      const errorCause = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause 
+        ? String(error.cause.message) 
+        : null;
+      const isOverloaded = typeof errorMessage === 'string' && errorMessage.includes("overloaded");
+      const statusCode = isOverloaded ? 503 : 500; // Service Unavailable for overloaded model
+      
+      res.status(statusCode).json({
         message: "Failed to generate characters",
+        technicalDetails: errorMessage,
+        rootCause: errorCause || errorMessage,
+        isModelOverloaded: isOverloaded,
+        retryRecommended: isOverloaded
       });
     }
   });
@@ -726,7 +739,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       console.error("Error generating paths:", error);
-      res.status(500).json({ message: "Failed to generate paths" });
+      
+      // Extract detailed error information
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      const errorCause = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause 
+        ? String(error.cause.message) 
+        : null;
+      const isOverloaded = typeof errorMessage === 'string' && errorMessage.includes("overloaded");
+      const statusCode = isOverloaded ? 503 : 500; // Service Unavailable for overloaded model
+      
+      res.status(statusCode).json({
+        message: "Failed to generate paths",
+        technicalDetails: errorMessage,
+        rootCause: errorCause || errorMessage,
+        isModelOverloaded: isOverloaded,
+        retryRecommended: isOverloaded
+      });
     }
   });
 

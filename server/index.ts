@@ -53,7 +53,17 @@ app.use((req, res, next) => {
     
     log(`ERROR: ${status} - ${message}`);
     
-    res.status(status).json({ message });
+    // Include detailed error information for client debugging
+    const errorDetails = {
+      message,
+      technicalDetails: err.message,
+      rootCause: err.cause?.message || err.stack?.split('\n')[0] || message,
+      originalError: err.originalError?.message || null,
+      // If there's a more detailed error inside the base error, include it
+      nestedError: err.error?.message || null
+    };
+    
+    res.status(status).json(errorDetails);
     // Don't rethrow the error as it will crash the server
     // throw err;
   });
