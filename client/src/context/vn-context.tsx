@@ -170,7 +170,6 @@ export function hasUnsavedChanges(projectData: VnProjectData | null): boolean {
     console.log('[Hash Check] No project data, returning false');
     return false;
   }
-  alert(JSON.stringify(projectData))
   // Get the current hash of the project data
   const currentHash = generateProjectHash(projectData);
   console.log('[Hash Check] Generated current hash:', currentHash);
@@ -189,7 +188,7 @@ export function hasUnsavedChanges(projectData: VnProjectData | null): boolean {
   const projectId = projectData.id ? projectData.id.toString() : 'new_project';
   const savedHashKey = `saved_hash_${projectId}`;
   const savedHash = sessionStorage.getItem(savedHashKey);
-  
+  alert(JSON.stringify(projectData) + ' ' + currentHash + ' ' + savedHashKey)
   if (!savedHash) {
     // If we don't have a saved hash in session storage, check the project object
     if (!projectData.lastSavedHash) {
@@ -600,23 +599,19 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       // Create a very simplified version of the project data for hashing
       const essentialData = {
         title: dataToSave.title || '',
-        basicData: sortedBasicData,
-        conceptData: sortedConceptData,
-        // Character names are more reliable than full data
-        characterNames: dataToSave.charactersData ? Object.keys(dataToSave.charactersData).sort() : [],
-        // Path names are more reliable than full data
-        pathNames: dataToSave.pathsData ? Object.keys(dataToSave.pathsData).sort() : [],
-        // Check if plot data is present
-        hasPlot: !!(dataToSave.plotData && dataToSave.plotData),
-        // Only track presence of acts, not their full content (causes hash mismatches)
-        actNumbers: dataToSave.generatedActs ? Object.keys(dataToSave.generatedActs).sort() : []
+        // basicData: sortedBasicData,
+        // conceptData: sortedConceptData,
+        // characterNames: dataToSave.charactersData ? Object.keys(dataToSave.charactersData).sort() : [],
+        // pathNames: dataToSave.pathsData ? Object.keys(dataToSave.pathsData).sort() : [],
+        // hasPlot: !!(dataToSave.plotData && dataToSave.plotData),
+        // actNumbers: dataToSave.generatedActs ? Object.keys(dataToSave.generatedActs).sort() : []
       };
       
       // Generate a hash of the essential data only
       const currentDataHash = generateProjectHash(essentialData);
       console.log('[saveProject] Generated hash for essential project data:', currentDataHash);
       console.log('[saveProject] Data to save has lastSavedHash:', dataToSave.lastSavedHash);
-      
+      alert(currentdataHash)
       // 2. Make sure we have all required fields with defaults
       const finalDataToSave = {
         ...dataToSave,

@@ -46,7 +46,6 @@ export function NavBar() {
       
       // First save the form data to context
       await saveFormToContext();
-      alert(JSON.stringify(projectData))
       // Now check for unsaved changes with the updated context
       console.log('[NavBar] Form saved to context, now checking for unsaved changes');
       
