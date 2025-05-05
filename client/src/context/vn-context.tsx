@@ -551,10 +551,12 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       console.log('[saveProject] Generated hash for essential project data:', currentDataHash);
       console.log('[saveProject] Data to save has lastSavedHash:', dataToSave.lastSavedHash);
 
-      // Before starting the save process
-      sessionStorage?.getItem(`saved_hash_${projectId}`)
-      alert(dataToSave)
-      if (currentDataHash === sessionStorage?.getItem(`saved_hash_${projectId}`)) {
+      // Get project ID from either the data or session storage
+      const projectId = dataToSave.id || sessionStorage.getItem('current_project_id') || 'new_project';
+      const savedHashKey = `saved_hash_${projectId}`;
+      
+      // Compare hashes
+      if (currentDataHash === sessionStorage?.getItem(savedHashKey)) {
         console.log('[saveProject] No changes detected, skipping save operation');
         toast({
           title: "No Changes",
