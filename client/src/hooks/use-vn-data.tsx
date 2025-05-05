@@ -476,14 +476,6 @@ export const useVnData = () => {
       // Clear the abort controller
       setAbortController(null);
       
-      // Since we're now getting the data directly in {act1: {...}} format from the server,
-      // we need to wrap it in the plotOutline property that the client expects
-      if (result && Object.keys(result).some(key => key.startsWith('act'))) {
-        console.log('Received direct act data, wrapping in plotOutline');
-        return {
-          plotOutline: result
-        };
-      }
       
       // Return the result as is if it already has the right structure
       return result;

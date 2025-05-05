@@ -52,8 +52,8 @@ function generateProjectHash(projectData: any): string {
     characterNames: normalizedData.charactersData ? Object.keys(normalizedData.charactersData).sort() : [],
     // Extract path names which is most critical for change detection
     pathNames: normalizedData.pathsData ? Object.keys(normalizedData.pathsData).sort() : [],
-    // Simply check if plotData exists and has plotOutline
-    hasPlot: !!(normalizedData.plotData && normalizedData.plotData.plotOutline),
+    // Simply check if plotData exists 
+    hasPlot: !!(normalizedData.plotData && normalizedData.plotData),
     // Extract act numbers which is most critical for change detection
     actNumbers: normalizedData.generatedActs ? Object.keys(normalizedData.generatedActs).sort() : [],
   };
@@ -113,7 +113,7 @@ export function calculateCurrentStep(project: Partial<VnProjectData>): number {
     step = 5; // Plot step
   }
   
-  if (project.plotData && project.plotData.plotOutline) {
+  if (project.plotData && Object.keys(project.plotData).length > 0) {
     step = 6; // Generate step
   }
   
@@ -607,7 +607,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
         // Path names are more reliable than full data
         pathNames: dataToSave.pathsData ? Object.keys(dataToSave.pathsData).sort() : [],
         // Check if plot data is present
-        hasPlot: !!(dataToSave.plotData && dataToSave.plotData.plotOutline),
+        hasPlot: !!(dataToSave.plotData && dataToSave.plotData),
         // Only track presence of acts, not their full content (causes hash mismatches)
         actNumbers: dataToSave.generatedActs ? Object.keys(dataToSave.generatedActs).sort() : []
       };

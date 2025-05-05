@@ -45,16 +45,6 @@ function getActTitle(actNumber: number, projectData: VnProjectData | null): stri
     }
   }
   
-  // Fallback to the plotOutline if it exists
-  if (plotData.plotOutline && typeof plotData.plotOutline === 'object') {
-    const plotOutline = plotData.plotOutline as Record<string, any>;
-    if (plotOutline[actKey] && typeof plotOutline[actKey] === 'object') {
-      const outlineData = plotOutline[actKey];
-      if ('title' in outlineData) {
-        return String(outlineData.title);
-      }
-    }
-  }
   
   return `Act ${actNumber}`;
 }
@@ -63,7 +53,6 @@ function getActSummary(actNumber: number, projectData: VnProjectData | null): st
   // Check if plotData exists and contains plot information
   if (!projectData?.plotData) return "No summary available";
   
-  // Renamed from plotOutline to just the actN key directly in the plotData object
   const actKey = `act${actNumber}`;
   
   // Try to get the act from plotData directly first
@@ -76,16 +65,6 @@ function getActSummary(actNumber: number, projectData: VnProjectData | null): st
     }
   }
   
-  // Fallback to the plotOutline if it exists
-  if (plotData.plotOutline && typeof plotData.plotOutline === 'object') {
-    const plotOutline = plotData.plotOutline as Record<string, any>;
-    if (plotOutline[actKey] && typeof plotOutline[actKey] === 'object') {
-      const outlineData = plotOutline[actKey];
-      if ('summary' in outlineData) {
-        return String(outlineData.summary);
-      }
-    }
-  }
   
   return "No summary available";
 }
