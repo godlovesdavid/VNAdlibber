@@ -52,8 +52,8 @@ function generateProjectHash(projectData: any): string {
     characterNames: normalizedData.charactersData ? Object.keys(normalizedData.charactersData).sort() : [],
     // Extract path names which is most critical for change detection
     pathNames: normalizedData.pathsData ? Object.keys(normalizedData.pathsData).sort() : [],
-    // Simply check if plotData exists 
-    hasPlot: !!(normalizedData.plotData && normalizedData.plotData),
+    // Simply check if plotData exists and has plotOutline
+    hasPlot: !!(normalizedData.plotData && normalizedData.plotData.plotOutline),
     // Extract act numbers which is most critical for change detection
     actNumbers: normalizedData.generatedActs ? Object.keys(normalizedData.generatedActs).sort() : [],
   };
@@ -113,7 +113,7 @@ export function calculateCurrentStep(project: Partial<VnProjectData>): number {
     step = 5; // Plot step
   }
   
-  if (project.plotData && Object.keys(project.plotData).length > 0) {
+  if (project.plotData && project.plotData.plotOutline) {
     step = 6; // Generate step
   }
   
@@ -170,6 +170,7 @@ export function hasUnsavedChanges(projectData: VnProjectData | null): boolean {
     console.log('[Hash Check] No project data, returning false');
     return false;
   }
+  
   // Get the current hash of the project data
   const currentHash = generateProjectHash(projectData);
   console.log('[Hash Check] Generated current hash:', currentHash);
@@ -188,7 +189,7 @@ export function hasUnsavedChanges(projectData: VnProjectData | null): boolean {
   const projectId = projectData.id ? projectData.id.toString() : 'new_project';
   const savedHashKey = `saved_hash_${projectId}`;
   const savedHash = sessionStorage.getItem(savedHashKey);
-  alert(JSON.stringify(projectData) + ' ' + currentHash + ' ' + savedHashKey)
+  
   if (!savedHash) {
     // If we don't have a saved hash in session storage, check the project object
     if (!projectData.lastSavedHash) {
@@ -316,8 +317,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     setProjectData({
       ...projectData,
       basicData: data,
-      currentStep: Math.max(projectData.currentStep, 1)
-      // Removed updatedAt as it causes unnecessary hash changes
+      currentStep: Math.max(projectData.currentStep, 1),
+      updatedAt: new Date().toISOString(),
     });
   };
 
@@ -328,8 +329,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       ...projectData,
       title: data.title || projectData.title,
       conceptData: data,
-      currentStep: Math.max(projectData.currentStep, 2)
-      // Removed updatedAt as it causes unnecessary hash changes
+      currentStep: Math.max(projectData.currentStep, 2),
+      updatedAt: new Date().toISOString(),
     });
   };
 
@@ -447,8 +448,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       ...projectData,
       charactersData: sanitizedData,
       protagonist: protagonist || projectData.protagonist,
-      currentStep: Math.max(projectData.currentStep, 3)
-      // Removed updatedAt as it causes unnecessary hash changes
+      currentStep: Math.max(projectData.currentStep, 3),
+      updatedAt: new Date().toISOString(),
     });
 
     // Verify the data was successfully set
@@ -463,8 +464,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     setProjectData({
       ...projectData,
       pathsData: data,
-      currentStep: Math.max(projectData.currentStep, 4)
-      // Removed updatedAt as it causes unnecessary hash changes
+      currentStep: Math.max(projectData.currentStep, 4),
+      updatedAt: new Date().toISOString(),
     });
   };
 
@@ -474,8 +475,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     setProjectData({
       ...projectData,
       plotData: data,
-      currentStep: Math.max(projectData.currentStep, 5)
-      // Removed updatedAt as it causes unnecessary hash changes
+      currentStep: Math.max(projectData.currentStep, 5),
+      updatedAt: new Date().toISOString(),
     });
   };
 
@@ -496,8 +497,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
         ...projectData.generatedActs,
         [`act${actNumber}`]: data,
       },
-      currentStep: Math.max(projectData.currentStep, 6)
-      // Removed updatedAt as it causes unnecessary hash changes
+      currentStep: Math.max(projectData.currentStep, 6),
+      updatedAt: new Date().toISOString(),
     });
   };
 
@@ -524,8 +525,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
           inventory: { ...playerData.inventory, ...(newData.inventory || {}) },
           skills: { ...playerData.skills, ...(newData.skills || {}) },
           storyTitle: newData.storyTitle !== undefined ? newData.storyTitle : playerData.storyTitle,
-        }
-        // Removed updatedAt as it causes unnecessary hash changes
+        },
+        updatedAt: new Date().toISOString(),
       });
     }
   };
@@ -536,8 +537,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     if (projectData) {
       setProjectData({
         ...projectData,
-        playerData: defaultPlayerData
-        // Removed updatedAt as it causes unnecessary hash changes
+        playerData: defaultPlayerData,
+        updatedAt: new Date().toISOString(),
       });
     }
   };
@@ -599,19 +600,23 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       // Create a very simplified version of the project data for hashing
       const essentialData = {
         title: dataToSave.title || '',
-        // basicData: sortedBasicData,
-        // conceptData: sortedConceptData,
-        // characterNames: dataToSave.charactersData ? Object.keys(dataToSave.charactersData).sort() : [],
-        // pathNames: dataToSave.pathsData ? Object.keys(dataToSave.pathsData).sort() : [],
-        // hasPlot: !!(dataToSave.plotData && dataToSave.plotData),
-        // actNumbers: dataToSave.generatedActs ? Object.keys(dataToSave.generatedActs).sort() : []
+        basicData: sortedBasicData,
+        conceptData: sortedConceptData,
+        // Character names are more reliable than full data
+        characterNames: dataToSave.charactersData ? Object.keys(dataToSave.charactersData).sort() : [],
+        // Path names are more reliable than full data
+        pathNames: dataToSave.pathsData ? Object.keys(dataToSave.pathsData).sort() : [],
+        // Check if plot data is present
+        hasPlot: !!(dataToSave.plotData && dataToSave.plotData.plotOutline),
+        // Only track presence of acts, not their full content (causes hash mismatches)
+        actNumbers: dataToSave.generatedActs ? Object.keys(dataToSave.generatedActs).sort() : []
       };
       
       // Generate a hash of the essential data only
       const currentDataHash = generateProjectHash(essentialData);
       console.log('[saveProject] Generated hash for essential project data:', currentDataHash);
       console.log('[saveProject] Data to save has lastSavedHash:', dataToSave.lastSavedHash);
-      alert(currentdataHash)
+      
       // 2. Make sure we have all required fields with defaults
       const finalDataToSave = {
         ...dataToSave,

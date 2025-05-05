@@ -409,6 +409,39 @@ export const useVnData = () => {
         pathsData: vnContext.projectData.pathsData,
       };
 
+      // // STEP 1: Validate the content first
+      // console.log("🔍 Validating plot context before generation...");
+      // const validationResponse = await apiRequest(
+      //   "POST",
+      //   "/api/validate",
+      //   { projectContext, contentType: "plot" },
+      //   controller.signal
+      // );
+
+      // // Check if the validation controller was aborted
+      // if (controller.signal.aborted) {
+      //   console.log("Plot validation was cancelled by user");
+      //   return null;
+      // }
+
+      // const validationResult = await validationResponse.json();
+
+      // // If validation failed, show error and stop
+      // if (!validationResult.valid || validationResult.message) {
+      //   const errorMessage = validationResult.message || "Content validation failed";
+      //   toast({
+      //     title: "Content Validation Failed",
+      //     description: errorMessage,
+      //     variant: "destructive",
+      //     duration: 60000,
+      //   });
+      //   setIsGenerating(false);
+      //   setAbortController(null);
+      //   return null;
+      // }
+
+      // console.log("✅ Plot context validated successfully, proceeding to generation");
+
       // STEP 2: Generate the plot after validation passes
       // Use the API directly instead of the wrapper function
       // Ensure we use consistent property names between frontend and backend
@@ -444,9 +477,12 @@ export const useVnData = () => {
       setAbortController(null);
       
       // Since we're now getting the data directly in {act1: {...}} format from the server,
+      // we need to wrap it in the plotOutline property that the client expects
       if (result && Object.keys(result).some(key => key.startsWith('act'))) {
-        console.log('Received direct act data');
-        return result
+        console.log('Received direct act data, wrapping in plotOutline');
+        return {
+          plotOutline: result
+        };
       }
       
       // Return the result as is if it already has the right structure

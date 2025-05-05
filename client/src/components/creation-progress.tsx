@@ -52,11 +52,11 @@ export function CreationProgress({ currentStep }: CreationProgressProps) {
         return `Paths: ${Object.keys(projectData.pathsData).join(", ")}`; 
       
       case 5: // Plot
-        if (!projectData?.plotData) return "Plot not set";
+        if (!projectData.plotData?.plotOutline) return "Plot not set";
         const acts = [];
         for (let i = 1; i <= 5; i++) {
           const actKey = `act${i}`;
-          const act = projectData.plotData[actKey as keyof typeof projectData.plotData];
+          const act = projectData.plotData.plotOutline[actKey as keyof typeof projectData.plotData.plotOutline];
           if (act && typeof act === 'object' && 'title' in act) {
             acts.push(`Act ${i}: ${act.title || 'Not set'}`);
           } else {

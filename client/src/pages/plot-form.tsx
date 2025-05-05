@@ -77,10 +77,10 @@ export default function PlotForm() {
   const handleGeneratePlot = async () => {
     const generatedPlot = await generatePlotData();
 
-    if (generatedPlot) {
+    if (generatedPlot && generatedPlot.plotOutline) {
       // Store the generated plot outline in our state
       // This follows the object-based storage pattern we're implementing throughout the app
-      setPlotActs(generatedPlot);
+      setPlotActs(generatedPlot.plotOutline);
 
       // Expand the first act after generation to show the user results immediately
       setExpandedActs({
@@ -91,7 +91,7 @@ export default function PlotForm() {
       // Log generation to console for debugging
       console.log(
         "Generated plot outline using object-based pattern:",
-        generatedPlot,
+        generatedPlot.plotOutline,
       );
     } else if (generatedPlot) {
       // Handle case where server might return data without the expected structure
