@@ -22,19 +22,19 @@ export function PlayerLayout({
   return (
     <div className="flex flex-col min-h-screen bg-black overflow-hidden">
       <Helmet>
-        <title>{title} | VN Adlibber</title>
+        <title>{title} | VN Ad Libber</title>
         <meta name="description" content={description} />
         
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={window.location.href} />
-        <meta property="og:title" content={`${title} | VN Adlibber`} />
+        <meta property="og:title" content={`${title} | VN Ad Libber`} />
         <meta property="og:description" content={description} />
         
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:url" content={window.location.href} />
-        <meta name="twitter:title" content={`${title} | VN Adlibber`} />
+        <meta name="twitter:title" content={`${title} | VN Ad Libber`} />
         <meta name="twitter:description" content={description} />
       </Helmet>
       

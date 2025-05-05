@@ -46,7 +46,7 @@ export function NavBar() {
       
       // First save the form data to context
       await saveFormToContext();
-      
+      alert(JSON.stringify(projectData))
       // Now check for unsaved changes with the updated context
       console.log('[NavBar] Form saved to context, now checking for unsaved changes');
       
@@ -91,7 +91,7 @@ export function NavBar() {
               <ArrowLeft className="h-5 w-5" />
             </button>
             <h1 className="text-lg font-semibold text-primary">
-              {projectData?.title ? projectData.title : 'VN Adlibber'}
+              {projectData?.title ? projectData.title : 'VN Ad Libber'}
             </h1>
           </div>
           <div className="flex items-center space-x-2">

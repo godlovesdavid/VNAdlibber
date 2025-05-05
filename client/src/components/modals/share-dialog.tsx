@@ -103,7 +103,7 @@ export function ShareDialog({ open, onOpenChange }: ShareDialogProps) {
   
   const handleShare = (platform: string) => {
     let url = "";
-    const shareText = `Check out my visual novel "${shareTitle}" created with VN Adlibber!`;
+    const shareText = `Check out my visual novel "${shareTitle}" created with VN Ad Libber!`;
     
     switch(platform) {
       case "twitter":

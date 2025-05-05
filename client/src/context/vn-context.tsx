@@ -52,8 +52,8 @@ function generateProjectHash(projectData: any): string {
     characterNames: normalizedData.charactersData ? Object.keys(normalizedData.charactersData).sort() : [],
     // Extract path names which is most critical for change detection
     pathNames: normalizedData.pathsData ? Object.keys(normalizedData.pathsData).sort() : [],
-    // Simply check if plotData exists and has plotOutline
-    hasPlot: !!(normalizedData.plotData && normalizedData.plotData.plotOutline),
+    // Simply check if plotData exists 
+    hasPlot: !!(normalizedData.plotData && normalizedData.plotData),
     // Extract act numbers which is most critical for change detection
     actNumbers: normalizedData.generatedActs ? Object.keys(normalizedData.generatedActs).sort() : [],
   };
@@ -113,7 +113,7 @@ export function calculateCurrentStep(project: Partial<VnProjectData>): number {
     step = 5; // Plot step
   }
   
-  if (project.plotData && project.plotData.plotOutline) {
+  if (project.plotData && Object.keys(project.plotData).length > 0) {
     step = 6; // Generate step
   }
   
@@ -170,7 +170,7 @@ export function hasUnsavedChanges(projectData: VnProjectData | null): boolean {
     console.log('[Hash Check] No project data, returning false');
     return false;
   }
-  
+  alert(JSON.stringify(projectData))
   // Get the current hash of the project data
   const currentHash = generateProjectHash(projectData);
   console.log('[Hash Check] Generated current hash:', currentHash);
@@ -317,8 +317,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     setProjectData({
       ...projectData,
       basicData: data,
-      currentStep: Math.max(projectData.currentStep, 1),
-      updatedAt: new Date().toISOString(),
+      currentStep: Math.max(projectData.currentStep, 1)
+      // Removed updatedAt as it causes unnecessary hash changes
     });
   };
 
@@ -329,8 +329,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       ...projectData,
       title: data.title || projectData.title,
       conceptData: data,
-      currentStep: Math.max(projectData.currentStep, 2),
-      updatedAt: new Date().toISOString(),
+      currentStep: Math.max(projectData.currentStep, 2)
+      // Removed updatedAt as it causes unnecessary hash changes
     });
   };
 
@@ -448,8 +448,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       ...projectData,
       charactersData: sanitizedData,
       protagonist: protagonist || projectData.protagonist,
-      currentStep: Math.max(projectData.currentStep, 3),
-      updatedAt: new Date().toISOString(),
+      currentStep: Math.max(projectData.currentStep, 3)
+      // Removed updatedAt as it causes unnecessary hash changes
     });
 
     // Verify the data was successfully set
@@ -464,8 +464,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     setProjectData({
       ...projectData,
       pathsData: data,
-      currentStep: Math.max(projectData.currentStep, 4),
-      updatedAt: new Date().toISOString(),
+      currentStep: Math.max(projectData.currentStep, 4)
+      // Removed updatedAt as it causes unnecessary hash changes
     });
   };
 
@@ -475,8 +475,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     setProjectData({
       ...projectData,
       plotData: data,
-      currentStep: Math.max(projectData.currentStep, 5),
-      updatedAt: new Date().toISOString(),
+      currentStep: Math.max(projectData.currentStep, 5)
+      // Removed updatedAt as it causes unnecessary hash changes
     });
   };
 
@@ -497,8 +497,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
         ...projectData.generatedActs,
         [`act${actNumber}`]: data,
       },
-      currentStep: Math.max(projectData.currentStep, 6),
-      updatedAt: new Date().toISOString(),
+      currentStep: Math.max(projectData.currentStep, 6)
+      // Removed updatedAt as it causes unnecessary hash changes
     });
   };
 
@@ -525,8 +525,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
           inventory: { ...playerData.inventory, ...(newData.inventory || {}) },
           skills: { ...playerData.skills, ...(newData.skills || {}) },
           storyTitle: newData.storyTitle !== undefined ? newData.storyTitle : playerData.storyTitle,
-        },
-        updatedAt: new Date().toISOString(),
+        }
+        // Removed updatedAt as it causes unnecessary hash changes
       });
     }
   };
@@ -537,8 +537,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     if (projectData) {
       setProjectData({
         ...projectData,
-        playerData: defaultPlayerData,
-        updatedAt: new Date().toISOString(),
+        playerData: defaultPlayerData
+        // Removed updatedAt as it causes unnecessary hash changes
       });
     }
   };
@@ -607,7 +607,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
         // Path names are more reliable than full data
         pathNames: dataToSave.pathsData ? Object.keys(dataToSave.pathsData).sort() : [],
         // Check if plot data is present
-        hasPlot: !!(dataToSave.plotData && dataToSave.plotData.plotOutline),
+        hasPlot: !!(dataToSave.plotData && dataToSave.plotData),
         // Only track presence of acts, not their full content (causes hash mismatches)
         actNumbers: dataToSave.generatedActs ? Object.keys(dataToSave.generatedActs).sort() : []
       };
