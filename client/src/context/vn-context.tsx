@@ -551,12 +551,9 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       console.log('[saveProject] Generated hash for essential project data:', currentDataHash);
       console.log('[saveProject] Data to save has lastSavedHash:', dataToSave.lastSavedHash);
 
-      // Get project ID from either the data or session storage
-      const projectId = dataToSave.id || sessionStorage.getItem('current_project_id') || 'new_project';
-      const savedHashKey = `saved_hash_${projectId}`;
-      
-      // Compare hashes
-      if (currentDataHash === sessionStorage?.getItem(savedHashKey)) {
+      // Before starting the save process
+      sessionStorage?.getItem(`saved_hash_${storedProjectId}`)
+      if (currentDataHash === sessionStorage.getItem(`saved_hash_${storedProjectId}`)) {
         console.log('[saveProject] No changes detected, skipping save operation');
         toast({
           title: "No Changes",
@@ -860,6 +857,18 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       setProjectData(updatedProject);
     }
 
+    //generate a new context hash every time it gets saved
+    useEffect(() => {
+      if (projectData && projectData.id) {
+        // Only update hashes for existing projects, not new ones
+        const currentHash = generateProjectHash(projectData);
+        console.log('[Context Change] Generated new hash:', currentHash);
+
+        // We're not saving this as the "saved" hash - just tracking the current state
+        sessionStorage.setItem('current_hash', currentHash);
+      }
+    }, [projectData]);
+    
     // Navigate to appropriate step
     const stepRoutes = [
       "/create/basic",

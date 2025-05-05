@@ -15,7 +15,7 @@ export function SaveProjectButton() {
       
       // Add a longer delay to ensure context is updated
       console.log('Waiting for context to update...');
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       // Then save everything to the database
       console.log('Saving to database now');
