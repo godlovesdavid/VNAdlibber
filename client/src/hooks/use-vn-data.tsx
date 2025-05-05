@@ -481,23 +481,54 @@ export const useVnData = () => {
       return result;
     } catch (error: any) {
       if ((error as Error).name !== "AbortError") {
-        // Try to extract error message from the error response if it exists
-        let errorMsg = "Failed to generate plot outline. Please try again.";
+        // Get all technical details from the error for debugging
+        let errorMsg = "";
+        let technicalDetails = "";
+        let rootCause = "";
+        let isModelOverloaded = false;
 
         try {
-          // If error has a data property with message
-          if (error.data && (error.data.message || error.data.error)) {
-            errorMsg = error.data.message || error.data.error;
-          }
-          // If error has detailed message in the error string
-          else if (error.message && error.message.includes(":")) {
-            const parts = error.message.split(":");
-            if (parts.length > 1) {
-              errorMsg = parts.slice(1).join(":").trim();
+          // Extract all available error data
+          if (error.data) {
+            // Technical details directly from server
+            if (error.data.technicalDetails) {
+              technicalDetails = error.data.technicalDetails;
+              errorMsg = technicalDetails; // Use technical details as the primary message
             }
+            // Root cause from server
+            if (error.data.rootCause) {
+              rootCause = error.data.rootCause;
+            }
+            // Check for model overload
+            if (error.data.isModelOverloaded) {
+              isModelOverloaded = true;
+            }
+            // Fallback to message or error
+            if (!errorMsg && (error.data.message || error.data.error)) {
+              errorMsg = error.data.message || error.data.error;
+            }
+          }
+          
+          // If no message was extracted, try the error message itself
+          if (!errorMsg && error.message) {
+            errorMsg = error.message;
+            // Further parse colon-separated error messages
+            if (error.message.includes(":")) {
+              const parts = error.message.split(":");
+              if (parts.length > 1) {
+                errorMsg = parts.slice(1).join(":").trim();
+              }
+            }
+          }
+          
+          // Still no message? Use a generic one but include error object in console
+          if (!errorMsg) {
+            console.error("Failed to extract error details from:", error);
+            errorMsg = "Unknown error during plot generation. See console for details.";
           }
         } catch (parseError) {
           console.error("Failed to parse error data:", parseError);
+          errorMsg = "Error parsing error details. See console logs.";
         }
 
         toast({
@@ -611,23 +642,54 @@ export const useVnData = () => {
         return { data: result } as GenerationResult<any>;
       } catch (error: any) {
         if ((error as Error).name !== "AbortError") {
-          // Try to extract error message from the error response if it exists
-          let errorMsg = `Failed to generate Act ${actNumber}. Please try again.`;
+          // Get all technical details from the error for debugging
+          let errorMsg = "";
+          let technicalDetails = "";
+          let rootCause = "";
+          let isModelOverloaded = false;
 
           try {
-            // If error has a data property with message
-            if (error.data && (error.data.message || error.data.error)) {
-              errorMsg = error.data.message || error.data.error;
-            }
-            // If error has detailed message in the error string
-            else if (error.message && error.message.includes(":")) {
-              const parts = error.message.split(":");
-              if (parts.length > 1) {
-                errorMsg = parts.slice(1).join(":").trim();
+            // Extract all available error data
+            if (error.data) {
+              // Technical details directly from server
+              if (error.data.technicalDetails) {
+                technicalDetails = error.data.technicalDetails;
+                errorMsg = technicalDetails; // Use technical details as the primary message
               }
+              // Root cause from server
+              if (error.data.rootCause) {
+                rootCause = error.data.rootCause;
+              }
+              // Check for model overload
+              if (error.data.isModelOverloaded) {
+                isModelOverloaded = true;
+              }
+              // Fallback to message or error
+              if (!errorMsg && (error.data.message || error.data.error)) {
+                errorMsg = error.data.message || error.data.error;
+              }
+            }
+            
+            // If no message was extracted, try the error message itself
+            if (!errorMsg && error.message) {
+              errorMsg = error.message;
+              // Further parse colon-separated error messages
+              if (error.message.includes(":")) {
+                const parts = error.message.split(":");
+                if (parts.length > 1) {
+                  errorMsg = parts.slice(1).join(":").trim();
+                }
+              }
+            }
+            
+            // Still no message? Use a generic one but include error object in console
+            if (!errorMsg) {
+              console.error("Failed to extract error details from:", error);
+              errorMsg = `Unknown error during Act ${actNumber} generation. See console for details.`;
             }
           } catch (parseError) {
             console.error("Failed to parse error data:", parseError);
+            errorMsg = "Error parsing error details. See console logs.";
           }
 
           toast({
@@ -749,23 +811,54 @@ export const useVnData = () => {
         return null;
       } catch (error: any) {
         if ((error as Error).name !== "AbortError") {
-          // Try to extract error message from the error response if it exists
-          let errorMsg = "Failed to generate characters. Please try again.";
+          // Get all technical details from the error for debugging
+          let errorMsg = "";
+          let technicalDetails = "";
+          let rootCause = "";
+          let isModelOverloaded = false;
 
           try {
-            // If error has a data property with message
-            if (error.data && (error.data.message || error.data.error)) {
-              errorMsg = error.data.message || error.data.error;
-            }
-            // If error has detailed message in the error string
-            else if (error.message && error.message.includes(":")) {
-              const parts = error.message.split(":");
-              if (parts.length > 1) {
-                errorMsg = parts.slice(1).join(":").trim();
+            // Extract all available error data
+            if (error.data) {
+              // Technical details directly from server
+              if (error.data.technicalDetails) {
+                technicalDetails = error.data.technicalDetails;
+                errorMsg = technicalDetails; // Use technical details as the primary message
               }
+              // Root cause from server
+              if (error.data.rootCause) {
+                rootCause = error.data.rootCause;
+              }
+              // Check for model overload
+              if (error.data.isModelOverloaded) {
+                isModelOverloaded = true;
+              }
+              // Fallback to message or error
+              if (!errorMsg && (error.data.message || error.data.error)) {
+                errorMsg = error.data.message || error.data.error;
+              }
+            }
+            
+            // If no message was extracted, try the error message itself
+            if (!errorMsg && error.message) {
+              errorMsg = error.message;
+              // Further parse colon-separated error messages
+              if (error.message.includes(":")) {
+                const parts = error.message.split(":");
+                if (parts.length > 1) {
+                  errorMsg = parts.slice(1).join(":").trim();
+                }
+              }
+            }
+            
+            // Still no message? Use a generic one but include error object in console
+            if (!errorMsg) {
+              console.error("Failed to extract error details from:", error);
+              errorMsg = "Unknown error during character generation. See console for details.";
             }
           } catch (parseError) {
             console.error("Failed to parse error data:", parseError);
+            errorMsg = "Error parsing error details. See console logs.";
           }
 
           toast({
@@ -902,23 +995,54 @@ export const useVnData = () => {
         return null;
       } catch (error: any) {
         if ((error as Error).name !== "AbortError") {
-          // Try to extract error message from the error response if it exists
-          let errorMsg = "Failed to generate paths. Please try again.";
+          // Get all technical details from the error for debugging
+          let errorMsg = "";
+          let technicalDetails = "";
+          let rootCause = "";
+          let isModelOverloaded = false;
 
           try {
-            // If error has a data property with message
-            if (error.data && (error.data.message || error.data.error)) {
-              errorMsg = error.data.message || error.data.error;
-            }
-            // If error has detailed message in the error string
-            else if (error.message && error.message.includes(":")) {
-              const parts = error.message.split(":");
-              if (parts.length > 1) {
-                errorMsg = parts.slice(1).join(":").trim();
+            // Extract all available error data
+            if (error.data) {
+              // Technical details directly from server
+              if (error.data.technicalDetails) {
+                technicalDetails = error.data.technicalDetails;
+                errorMsg = technicalDetails; // Use technical details as the primary message
               }
+              // Root cause from server
+              if (error.data.rootCause) {
+                rootCause = error.data.rootCause;
+              }
+              // Check for model overload
+              if (error.data.isModelOverloaded) {
+                isModelOverloaded = true;
+              }
+              // Fallback to message or error
+              if (!errorMsg && (error.data.message || error.data.error)) {
+                errorMsg = error.data.message || error.data.error;
+              }
+            }
+            
+            // If no message was extracted, try the error message itself
+            if (!errorMsg && error.message) {
+              errorMsg = error.message;
+              // Further parse colon-separated error messages
+              if (error.message.includes(":")) {
+                const parts = error.message.split(":");
+                if (parts.length > 1) {
+                  errorMsg = parts.slice(1).join(":").trim();
+                }
+              }
+            }
+            
+            // Still no message? Use a generic one but include error object in console
+            if (!errorMsg) {
+              console.error("Failed to extract error details from:", error);
+              errorMsg = "Unknown error during path generation. See console for details.";
             }
           } catch (parseError) {
             console.error("Failed to parse error data:", parseError);
+            errorMsg = "Error parsing error details. See console logs.";
           }
 
           toast({
