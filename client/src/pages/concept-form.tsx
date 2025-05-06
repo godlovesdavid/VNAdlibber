@@ -43,14 +43,6 @@ export default function ConceptForm() {
     const timeoutId = setTimeout(() => {
       // Increment save counter for debugging
       const newSaveCount = saveCount + 1;
-      setSaveCount(newSaveCount);
-      
-      // Log the save operation
-      window.console.log(`Autosaving to context (save #${newSaveCount}):`, {
-        title,
-        tagline,
-        premise
-      });
       
       // Save to context
       setConceptData({
@@ -69,20 +61,18 @@ export default function ConceptForm() {
     };
   }, [title, tagline, premise, lastEdited, projectData, setConceptData, saveCount]);
   
-  // Handle form field changes
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTitle(e.target.value);
-    setLastEdited(Date.now()); // Track edit time for debounce
-  };
-  
-  const handleTaglineChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTagline(e.target.value);
-    setLastEdited(Date.now()); // Track edit time for debounce
-  };
-  
-  const handlePremiseChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setPremise(e.target.value);
-    setLastEdited(Date.now()); // Track edit time for debounce
+  // Generic field change handler for all form fields
+  const handleFieldChange = (
+    field: 'title' | 'tagline' | 'premise',
+    value: string
+  ) => {
+    // Update the appropriate field based on the field name
+    if (field === 'title') setTitle(value);
+    else if (field === 'tagline') setTagline(value);
+    else if (field === 'premise') setPremise(value);
+    
+    // Track edit time for debounce
+    setLastEdited(Date.now());
   };
   
   // Load existing data if available or clear form if starting a new project
@@ -219,7 +209,7 @@ export default function ConceptForm() {
                 id="title"
                 placeholder="e.g. Chronicles of the Hidden City"
                 value={title}
-                onChange={handleTitleChange}
+                onChange={(e) => handleFieldChange('title', e.target.value)}
               />
             </div>
 
@@ -238,7 +228,7 @@ export default function ConceptForm() {
                 id="tagline"
                 placeholder="e.g. When secrets become weapons, who can you trust?"
                 value={tagline}
-                onChange={handleTaglineChange}
+                onChange={(e) => handleFieldChange('tagline', e.target.value)}
               />
             </div>
 
@@ -258,7 +248,7 @@ export default function ConceptForm() {
                 rows={4}
                 placeholder="e.g. In a city where memories can be traded like currency, a young archivist discovers a forbidden memory that reveals a conspiracy at the heart of society. As they navigate a web of deception, they must choose between exposing the truth or protecting those they love."
                 value={premise}
-                onChange={handlePremiseChange}
+                onChange={(e) => handleFieldChange('premise', e.target.value)}
               />
             </div>
 
