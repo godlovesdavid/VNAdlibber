@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useVnData } from "@/hooks/use-vn-data";
-import { useDebounceCallback } from "@/hooks/use-debounce";
 import { CreationProgress } from "@/components/creation-progress";
 import { NavBar } from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
@@ -23,28 +22,50 @@ export default function ConceptForm() {
   const [tagline, setTagline] = useState("");
   const [premise, setPremise] = useState("");
   const [autosaving, setAutosaving] = useState(false);
+  const [autosaveTimeout, setAutosaveTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  // Create a debounced version of setConceptData that will trigger 1.5 seconds after the last change
-  const [debouncedSave, isSaving] = useDebounceCallback(
-    (formData: { title: string; tagline: string; premise: string }) => {
-      console.log("Autosaving concept data to context:", formData);
-      setConceptData(formData);
-      setAutosaving(false); // Clear autosaving status once done
-    },
-    1500 // 1.5 second delay
-  );
-  
-  // Watch form state changes and trigger the debounced save function
+  // Function to autosave concept data
+  const autosaveToContext = useCallback(() => {
+    if (!projectData) return;
+    
+    console.log("Autosaving to context:", { title, tagline, premise });
+    setConceptData({
+      title,
+      tagline,
+      premise,
+    });
+    setAutosaving(false);
+  }, [title, tagline, premise, projectData, setConceptData]);
+
+  // Debounced autosave effect
   useEffect(() => {
-    // Only autosave if we have at least some data and the project exists
+    // Only attempt to save if we have data to save and project exists
     if (projectData && (title || tagline || premise)) {
-      console.log("Form changed, queueing autosave...");
-      setAutosaving(true); // Indicate we're waiting to save
-      debouncedSave({ title, tagline, premise });
+      // Clear any existing timeout
+      if (autosaveTimeout) {
+        clearTimeout(autosaveTimeout);
+      }
+      
+      // Set autosaving indicator
+      setAutosaving(true);
+      console.log("Content changed, queueing autosave in 1.5 seconds...");
+      
+      // Create new timeout for autosaving
+      const timeout = setTimeout(() => {
+        autosaveToContext();
+      }, 1500);
+      
+      // Store the timeout so we can clear it if needed
+      setAutosaveTimeout(timeout);
     }
-  }, [title, tagline, premise, projectData, debouncedSave]);
-  
-  // The debounced autosave will occur after the user stops typing for 1.5 seconds
+    
+    // Clean up the timeout on unmount
+    return () => {
+      if (autosaveTimeout) {
+        clearTimeout(autosaveTimeout);
+      }
+    };
+  }, [title, tagline, premise, projectData, autosaveToContext]);
   
   // Load existing data if available or clear form if starting a new project
   useEffect(() => {
@@ -222,7 +243,7 @@ export default function ConceptForm() {
                   Back
                 </Button>
                 {/* Autosave indicator */}
-                {(autosaving || isSaving) && (
+                {autosaving && (
                   <div className="ml-3 flex items-center text-xs text-gray-500">
                     <svg
                       className="animate-spin mr-1 h-3 w-3 text-gray-500"
