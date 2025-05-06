@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useVnData } from "@/hooks/use-vn-data";
@@ -22,73 +22,68 @@ export default function ConceptForm() {
   const [tagline, setTagline] = useState("");
   const [premise, setPremise] = useState("");
   const [autosaving, setAutosaving] = useState(false);
+  const [saveCount, setSaveCount] = useState(0);
+  const [lastEdited, setLastEdited] = useState(0);
   
-  // Use refs for handling timeouts
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const saveCountRef = useRef(0);
-  
-  // Handle title changes with debounce
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTitle = e.target.value;
-    setTitle(newTitle);
-    triggerAutosave(newTitle, tagline, premise);
-  };
-  
-  // Handle tagline changes with debounce
-  const handleTaglineChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTagline = e.target.value;
-    setTagline(newTagline);
-    triggerAutosave(title, newTagline, premise);
-  };
-  
-  // Handle premise changes with debounce
-  const handlePremiseChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newPremise = e.target.value;
-    setPremise(newPremise);
-    triggerAutosave(title, tagline, newPremise);
-  };
-  
-  // Trigger autosave with debounce
-  const triggerAutosave = useCallback((
-    currentTitle: string, 
-    currentTagline: string, 
-    currentPremise: string
-  ) => {
-    // Only attempt to save if project exists
-    if (!projectData) return;
+  // Simple debounced autosave when any form field changes
+  useEffect(() => {
+    // Skip the initial load
+    if (lastEdited === 0) return;
     
-    // Set autosaving indicator
+    // Only attempt to save if project exists and we have data to save
+    if (!projectData || !(title || tagline || premise)) return;
+    
+    // Show autosaving indicator
     setAutosaving(true);
-    console.log("Content changed, queueing autosave in 1.5 seconds...");
     
-    // Clear any existing timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    // Log to browser console (open DevTools to see these)
+    window.console.log("Content changed, queueing autosave in 1.5 seconds...");
     
-    // Create new timeout
-    timeoutRef.current = setTimeout(() => {
+    // Set a timeout to save after 1.5 seconds of no changes
+    const timeoutId = setTimeout(() => {
       // Increment save counter for debugging
-      saveCountRef.current += 1;
+      const newSaveCount = saveCount + 1;
+      setSaveCount(newSaveCount);
       
-      console.log(`Autosaving to context (save #${saveCountRef.current}):`, {
-        title: currentTitle,
-        tagline: currentTagline,
-        premise: currentPremise
+      // Log the save operation
+      window.console.log(`Autosaving to context (save #${newSaveCount}):`, {
+        title,
+        tagline,
+        premise
       });
       
       // Save to context
       setConceptData({
-        title: currentTitle,
-        tagline: currentTagline,
-        premise: currentPremise
+        title,
+        tagline,
+        premise
       });
       
-      // Clear autosaving state
+      // Clear autosaving indicator
       setAutosaving(false);
-      timeoutRef.current = null;
     }, 1500);
-  }, [projectData, setConceptData]);
+    
+    // Clean up timeout if component unmounts or dependencies change
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [title, tagline, premise, lastEdited, projectData, setConceptData, saveCount]);
+  
+  // Handle form field changes
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTitle(e.target.value);
+    setLastEdited(Date.now()); // Track edit time for debounce
+  };
+  
+  const handleTaglineChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTagline(e.target.value);
+    setLastEdited(Date.now()); // Track edit time for debounce
+  };
+  
+  const handlePremiseChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setPremise(e.target.value);
+    setLastEdited(Date.now()); // Track edit time for debounce
+  };
   
   // Load existing data if available or clear form if starting a new project
   useEffect(() => {
@@ -107,16 +102,7 @@ export default function ConceptForm() {
     }
   }, [projectData]);
   
-  // Cleanup effect - clear any pending autosave timers on unmount
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        console.log("Cleaning up autosave timeout on unmount");
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
-    };
-  }, []);
+  // No need for extra cleanup as our main useEffect handles it
 
   // Go back to previous step
   const handleBack = () => {
@@ -195,9 +181,10 @@ export default function ConceptForm() {
         premise: generatedConcept.premise,
       });
       
-      // Also trigger the save counter to show this was an explicit save
-      saveCountRef.current += 1;
-      console.log(`Manual save after generation (save #${saveCountRef.current})`);
+      // Also increment save counter to show this was an explicit save
+      const newSaveCount = saveCount + 1;
+      setSaveCount(newSaveCount);
+      console.log(`Manual save after generation (save #${newSaveCount})`);
     }
   };
 
