@@ -313,9 +313,29 @@ export class DatabaseStorage implements IStorage {
 
   async updateProject(id: number, projectData: Partial<VnProject>): Promise<VnProject> {
     // Make sure to update the updatedAt timestamp
+    // Generate server-side hash of project data
+    function generateServerHash(data: any): string {
+      const normalizedData = { ...data };
+      delete normalizedData.id;
+      delete normalizedData.createdAt;
+      delete normalizedData.updatedAt;
+      delete normalizedData.lastSavedHash;
+      
+      const str = JSON.stringify(normalizedData);
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+      }
+      return hash.toString(16);
+    }
+
+    const serverHash = generateServerHash(projectData);
     const dataToUpdate = {
       ...projectData,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
+      lastSavedHash: serverHash
     };
 
     console.log(`[STORAGE] Updating project ${id} with hash:`, projectData.lastSavedHash);
