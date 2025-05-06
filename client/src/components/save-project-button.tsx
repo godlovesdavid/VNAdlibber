@@ -1,4 +1,5 @@
-import { useVnContext, type VnProjectData } from "@/context/vn-context";
+import { useVnContext } from "@/context/vn-context";
+import { VnProjectData } from "@/types/vn";
 import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
 import { useLocation } from "wouter";
@@ -85,8 +86,26 @@ export function SaveProjectButton() {
   
   // Creates an updated project data object with the current form data
   const updateProjectDataWithFormData = async (formData: any): Promise<VnProjectData> => {
-    // Create a copy of the current project data
-    const currentData = { ...projectData };
+    if (!projectData) {
+      throw new Error('No project data available');
+    }
+    
+    // Create a deep copy of the current project data
+    const currentData = {
+      ...projectData,
+      title: projectData.title || 'Untitled Project',
+      createdAt: projectData.createdAt || new Date().toISOString(),
+      updatedAt: projectData.updatedAt || new Date().toISOString(),
+      basicData: { ...projectData.basicData },
+      // Make sure we have all the required fields even if they're empty
+      conceptData: projectData.conceptData || {},
+      charactersData: projectData.charactersData || {},
+      pathsData: projectData.pathsData || {},
+      plotData: projectData.plotData || {},
+      generatedActs: projectData.generatedActs || {},
+      playerData: projectData.playerData || {},
+      currentStep: projectData.currentStep || 1
+    };
     
     // Based on location, update the appropriate section of the project data
     if (location.includes('/basic')) {
@@ -101,7 +120,7 @@ export function SaveProjectButton() {
       currentData.plotData = formData;
     }
     
-    return currentData;
+    return currentData as VnProjectData;
   };
   
   

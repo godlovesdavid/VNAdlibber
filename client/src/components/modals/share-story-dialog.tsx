@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Copy, Facebook, Twitter, Mail, Check, Share as ShareIcon, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useVnContext } from '@/context/vn-context';
+import { VnProjectData } from '@/types/vn';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 interface ShareStoryDialogProps {
@@ -36,7 +37,7 @@ export function ShareStoryDialog({
   const [shareLink, setShareLink] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
-  const { hasUnsavedChanges, saveProject } = useVnContext();
+  const { hasUnsavedChanges, saveProject, projectData } = useVnContext();
 
   // Function to generate a share link
   const generateShareLink = async () => {
@@ -82,12 +83,30 @@ export function ShareStoryDialog({
       setIsLoading(true);
       console.log('[Share Dialog] Starting saveAndShare process');
       
-      // Get a copy of the current project data
-      const currentData = { ...projectData };
+      if (!projectData) {
+        throw new Error('No project data available');
+      }
       
-      // Save the project first with the current project data
+      // Create a deep copy of the current project data with all required fields
+      const currentData = {
+        ...projectData,
+        title: projectData.title || 'Untitled Project',
+        createdAt: projectData.createdAt || new Date().toISOString(),
+        updatedAt: projectData.updatedAt || new Date().toISOString(),
+        basicData: { ...projectData.basicData },
+        // Make sure we have all the required fields even if they're empty
+        conceptData: projectData.conceptData || {},
+        charactersData: projectData.charactersData || {},
+        pathsData: projectData.pathsData || {},
+        plotData: projectData.plotData || {},
+        generatedActs: projectData.generatedActs || {},
+        playerData: projectData.playerData || {},
+        currentStep: projectData.currentStep || 1
+      };
+      
+      // Save the project with the explicitly updated data
       // This ensures we save the most up-to-date state
-      const savedProject = await saveProject({ updatedData: currentData });
+      const savedProject = await saveProject({ updatedData: currentData as VnProjectData });
       console.log('[Share Dialog] Project saved with hash:', savedProject.lastSavedHash);
       
       // Add a delay to ensure all state updates have been processed
