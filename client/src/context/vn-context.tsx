@@ -57,36 +57,6 @@ function generateProjectHash(projectData: any): string {
   return hash.toString(16);
 }
 
-// Helper function to calculate the current step based on a project's data
-export function calculateCurrentStep(project: Partial<VnProjectData>): number {
-  let step = 1; // Start with basic step
-  
-  // Check what data is present and calculate the appropriate step
-  if (project.basicData && Object.keys(project.basicData).length > 0 && 
-      project.basicData.theme && project.basicData.tone && project.basicData.genre) {
-    step = 2; // Concept step
-  }
-  
-  if (project.conceptData && Object.keys(project.conceptData).length > 0 && 
-      project.conceptData.title && project.conceptData.premise) {
-    step = 3; // Characters step
-  }
-  
-  if (project.charactersData && Object.keys(project.charactersData).length > 0) {
-    step = 4; // Paths step
-  }
-  
-  if (project.pathsData && Object.keys(project.pathsData).length > 0) {
-    step = 5; // Plot step
-  }
-  
-  if (project.plotData && Object.keys(project.plotData).length > 0) {
-    step = 6; // Generate step
-  }
-  
-  return step;
-}
-
 interface VnContextType {
   // Project data
   projectData: VnProjectData | null;
@@ -283,7 +253,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     setProjectData({
       ...projectData,
       basicData: data,
-      currentStep: Math.max(projectData.currentStep, 1),
+      currentStep:1,
       updatedAt: new Date().toISOString(),
     });
   };
@@ -294,14 +264,13 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       ...projectData,
       title: data.title || projectData.title,
       conceptData: data,
-      currentStep: Math.max(projectData.currentStep, 2),
+      currentStep: 2,
       updatedAt: new Date().toISOString(),
     });
   };
 
   const setCharactersData = (data: CharactersData, protagonist?: string) => {
     if (!projectData) return;
-
     console.log("Setting character data in context:", data);
     console.log("Setting protagonist:", protagonist);
 
@@ -413,7 +382,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       ...projectData,
       charactersData: sanitizedData,
       protagonist: protagonist || projectData.protagonist,
-      currentStep: Math.max(projectData.currentStep, 3),
+      currentStep: 3,
       updatedAt: new Date().toISOString(),
     });
 
@@ -429,7 +398,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     setProjectData({
       ...projectData,
       pathsData: data,
-      currentStep: Math.max(projectData.currentStep, 4),
+      currentStep: 4,
       updatedAt: new Date().toISOString(),
     });
   };
@@ -440,7 +409,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     setProjectData({
       ...projectData,
       plotData: data,
-      currentStep: Math.max(projectData.currentStep, 5),
+      currentStep: 5,
       updatedAt: new Date().toISOString(),
     });
   };
@@ -462,7 +431,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
         ...projectData.generatedActs,
         [`act${actNumber}`]: data,
       },
-      currentStep: Math.max(projectData.currentStep, 6),
+      currentStep: 6,
       updatedAt: new Date().toISOString(),
     });
   };
@@ -511,15 +480,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       setSaveLoading(true);
 
-      // Before starting the save process
-      if (!hasUnsavedChanges(projectData)) {
-        console.log('[saveProject] No changes detected, skipping save operation');
-        toast({
-          title: "No Changes",
-          description: "No changes to save",
-        });
-        return projectData; // Return the existing data
-      }
       
       // 1. Always check localStorage first for most up-to-date data
       // This addresses race conditions between form data saves and API requests
@@ -548,9 +508,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       // This is more reliable than the dataToSave.id since createNewProject may have cleared the ID from projectData
       const storedProjectId = sessionStorage.getItem('current_project_id');
       
-      // Calculate the correct step based on available data
-      const calculatedStep = calculateCurrentStep(dataToSave);
-      
       
       // Generate a hash of the essential data only
       const currentDataHash = generateProjectHash(dataToSave);
@@ -570,7 +527,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
         plotData: dataToSave.plotData || {},
         playerData: dataToSave.playerData || defaultPlayerData,
         // Use our calculated step instead of relying on the stored value
-        currentStep: calculatedStep,
         updatedAt: new Date().toISOString(),
         // Add the hash of the current state to track changes
         lastSavedHash: currentDataHash
@@ -673,13 +629,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
           genre: "",
         };
       }
-      
-      // Recalculate current step based on available data
-      const calculatedStep = calculateCurrentStep(loadedProject);
-      
-      // Update the currentStep value based on our calculation
-      loadedProject.currentStep = calculatedStep;
-
       // Store the project ID in session storage for persistence tracking
       sessionStorage.setItem('current_project_id', projectId.toString());
       console.log(`Loaded project ID ${projectId} and stored in sessionStorage`);
