@@ -84,6 +84,7 @@ interface VnContextType {
   createNewProject: () => void;
   saveProject: () => Promise<any>; // Return type changed to allow returning the saved project
   loadProject: (projectId: number) => Promise<void>;
+  loadFromLocalStorage: () => boolean; // Explicit function to load from localStorage
   deleteProject: (projectId: number) => Promise<void>;
 
   // Export functionality
