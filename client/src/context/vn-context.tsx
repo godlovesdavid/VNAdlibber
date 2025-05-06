@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useEffect , useRef} from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+} from "react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -18,40 +24,40 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 function generateProjectHash(projectData: any): string {
   // Create a normalized version of the data without irrelevant fields
   const normalizedData = { ...projectData };
-  
+
   // Remove fields that don't affect content or vary between client/server
   delete normalizedData.id;
   delete normalizedData.createdAt;
   delete normalizedData.updatedAt;
   delete normalizedData.lastSavedHash;
-  
-  // // Create a stable JSON string with sorted keys
-  // // This ensures consistent hashing even if object properties are in different order
-  // function stableStringify(obj: any): string {
-  //   if (typeof obj !== 'object' || obj === null) {
-  //     return JSON.stringify(obj);
-  //   }
-    
-  //   const sortedKeys = Object.keys(obj).sort();
-  //   const pairs = sortedKeys.map(key => {
-  //     return `"${key}":${stableStringify(obj[key])}`;
-  //   });
-    
-  //   if (Array.isArray(obj)) {
-  //     return `[${pairs.join(',')}]`;
-  //   } else {
-  //     return `{${pairs.join(',')}}`;  
-  //   }
-  // }
 
-  // const str = stableStringify(normalizedData);
-  const str = JSON.stringify(normalizedData);
-  
+  // Create a stable JSON string with sorted keys
+  // This ensures consistent hashing even if object properties are in different order
+  function stableStringify(obj: any): string {
+    const sortKeys = (input: any): any => {
+      if (Array.isArray(input)) {
+        return input.map(sortKeys);
+      } else if (input !== null && typeof input === "object") {
+        return Object.keys(input)
+          .sort()
+          .reduce((acc: any, key) => {
+            acc[key] = sortKeys(input[key]);
+            return acc;
+          }, {});
+      }
+      return input; // primitive
+    };
+
+    return JSON.stringify(sortKeys(obj));
+  }
+
+  const str = stableStringify(normalizedData).normalize();
+  console.log(str);
   // Use a more reliable hash function
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32bit integer
   }
   return hash.toString(16);
@@ -82,7 +88,7 @@ interface VnContextType {
 
   // Export functionality
   exportActs: () => Promise<void>;
-  
+
   // Change detection
   hasUnsavedChanges: () => boolean;
 
@@ -104,47 +110,48 @@ const defaultPlayerData: PlayerData = {
 // Function to check if there are unsaved changes using pure hash comparison
 export function hasUnsavedChanges(projectData: VnProjectData | null): boolean {
   if (!projectData) {
-    console.log('[Hash Check] No project data, returning false');
+    console.log("[Hash Check] No project data, returning false");
     return false;
   }
-  
+
   // Get the current hash of the project data
   const currentHash = generateProjectHash(projectData);
-  console.log('[Hash Check] Generated current hash:', currentHash);
-  alert(currentHash)
+  console.log("[Hash Check] Generated current hash:", currentHash);
+
   // Check for a new project scenario
   if (!projectData.id) {
-    const newProjectFlag = sessionStorage.getItem('vn_fresh_project');
-    if (newProjectFlag === 'true') {
-      console.log('[Hash Check] Fresh project detected, considering it saved');
+    const newProjectFlag = sessionStorage.getItem("vn_fresh_project");
+    if (newProjectFlag === "true") {
+      console.log("[Hash Check] Fresh project detected, considering it saved");
       return false;
     }
   }
-  
+
   // Get the last saved hash from session storage instead of the project object
   // This way we're comparing against what WE saved, not what the server returned
-  const projectId = projectData.id ? projectData.id.toString() : 'new_project';
+  const projectId = projectData.id ? projectData.id.toString() : "new_project";
   const savedHashKey = `saved_hash_${projectId}`;
   const savedHash = sessionStorage.getItem(savedHashKey);
-  
+
   if (!savedHash) {
     // If we don't have a saved hash in session storage, check the project object
     if (!projectData.lastSavedHash) {
-      console.log('[Hash Check] No saved hash found anywhere, considering unsaved');
+      console.log(
+        "[Hash Check] No saved hash found anywhere, considering unsaved",
+      );
       return true;
     }
     // Use the hash from the project object as fallback
-    console.log('[Hash Check] Using hash from project object as fallback');
+    console.log("[Hash Check] Using hash from project object as fallback");
     return currentHash !== projectData.lastSavedHash;
   }
-  
   // Compare the current hash with the saved hash from session storage
   const hashesMatch = currentHash === savedHash;
-  
-  console.log('[Hash Check] Current hash:', currentHash);
-  console.log('[Hash Check] Session saved hash:', savedHash);
-  console.log('[Hash Check] Hashes match?', hashesMatch);
-  
+
+  console.log("[Hash Check] Current hash:", currentHash);
+  console.log("[Hash Check] Session saved hash:", savedHash);
+  console.log("[Hash Check] Hashes match?", hashesMatch);
+
   // If hashes don't match, the project has unsaved changes
   return !hashesMatch;
 }
@@ -160,7 +167,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
   const [playerData, setPlayerData] = useState<PlayerData>(defaultPlayerData);
   const [isLoading, setIsLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
-  
+
   // Load project from localStorage on mount
   useEffect(() => {
     const savedProject = localStorage.getItem("current_vn_project");
@@ -179,7 +186,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       // Store the current working project (with or without ID) in localStorage
       // This is just for maintaining current working state, not for database persistence
       localStorage.setItem("current_vn_project", JSON.stringify(projectData));
-      
+
       // If this project has an ID, also store it in sessionStorage for persistence tracking
       if (projectData.id) {
         sessionStorage.setItem("current_project_id", projectData.id.toString());
@@ -187,7 +194,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     }
   }, [projectData]);
-  
+
   const createNewProject = () => {
     // Clear any existing project data from localStorage
     localStorage.removeItem("current_vn_project");
@@ -198,7 +205,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     const initialProject: VnProjectData = {
       title: "Untitled Project",
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(), //set by server only
       basicData: {
         theme: "",
         tone: "",
@@ -217,32 +224,35 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       playerData: defaultPlayerData,
       currentStep: 1,
     };
-    
+
     // Save the new project data to localStorage only
     // No database interaction at this point
     localStorage.setItem("current_vn_project", JSON.stringify(initialProject));
-    
+
     // Update state with the new project data
     setProjectData(initialProject);
-    
+
     // Clear any previous project ID tracking
-    sessionStorage.removeItem('current_project_id');
-    
+    sessionStorage.removeItem("current_project_id");
+
     // Set a flag to indicate this is a fresh project that needs randomization
-    sessionStorage.setItem('vn_fresh_project', 'true');
-    
+    sessionStorage.setItem("vn_fresh_project", "true");
+
     // Create a hash for the fresh project and save it to session storage
     const initialHash = generateProjectHash(initialProject);
-    sessionStorage.setItem('saved_hash_new_project', initialHash);
-    console.log(`[createNewProject] Created initial project hash: ${initialHash}`);
-    
+    sessionStorage.setItem("saved_hash_new_project", initialHash);
+    console.log(
+      `[createNewProject] Created initial project hash: ${initialHash}`,
+    );
+
     // Navigate to the first step
     setLocation("/create/basic");
-    
+
     // Show confirmation toast
     toast({
       title: "New Project Created",
-      description: "Starting with a fresh project. Changes will be saved when you click Save Project.",
+      description:
+        "Starting with a fresh project. Changes will be saved when you click Save Project.",
       duration: 3000,
     });
   };
@@ -254,7 +264,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       ...projectData,
       basicData: data,
       currentStep: 1,
-      updatedAt: new Date().toISOString(),
     });
   };
 
@@ -265,7 +274,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       title: data.title || projectData.title,
       conceptData: data,
       currentStep: 2,
-      updatedAt: new Date().toISOString(),
     });
   };
 
@@ -357,9 +365,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       // Add the cleaned character to the sanitized data with proper typing
       // Create a properly typed Character object from the cleaned data
       const typedCharacter: Character = {
-        role: name === protagonist
-        ? "Protagonist"
-        : cleanCharacter.role || "",
+        role: name === protagonist ? "Protagonist" : cleanCharacter.role || "",
         occupation: cleanCharacter.occupation || "To be defined",
         gender: cleanCharacter.gender || "To be defined",
         age: cleanCharacter.age || "To be defined",
@@ -384,7 +390,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       charactersData: sanitizedData,
       protagonist: protagonist || projectData.protagonist,
       currentStep: 3,
-      updatedAt: new Date().toISOString(),
     });
 
     // Verify the data was successfully set
@@ -400,7 +405,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       ...projectData,
       pathsData: data,
       currentStep: 4,
-      updatedAt: new Date().toISOString(),
     });
   };
 
@@ -411,7 +415,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       ...projectData,
       plotData: data,
       currentStep: 5,
-      updatedAt: new Date().toISOString(),
     });
   };
 
@@ -433,7 +436,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
         [`act${actNumber}`]: data,
       },
       currentStep: 6,
-      updatedAt: new Date().toISOString(),
     });
   };
 
@@ -446,7 +448,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       },
       inventory: { ...prev.inventory, ...(newData.inventory || {}) },
       skills: { ...prev.skills, ...(newData.skills || {}) },
-      storyTitle: newData.storyTitle !== undefined ? newData.storyTitle : prev.storyTitle,
+      storyTitle:
+        newData.storyTitle !== undefined ? newData.storyTitle : prev.storyTitle,
     }));
 
     if (projectData) {
@@ -459,7 +462,10 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
           },
           inventory: { ...playerData.inventory, ...(newData.inventory || {}) },
           skills: { ...playerData.skills, ...(newData.skills || {}) },
-          storyTitle: newData.storyTitle !== undefined ? newData.storyTitle : playerData.storyTitle,
+          storyTitle:
+            newData.storyTitle !== undefined
+              ? newData.storyTitle
+              : playerData.storyTitle,
         },
       });
     }
@@ -480,62 +486,70 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
   const saveProject = async () => {
     try {
       setSaveLoading(true);
-
       // Before starting the save process
       if (!hasUnsavedChanges(projectData)) {
-        console.log('[saveProject] No changes detected, skipping save operation');
+        console.log(
+          "[saveProject] No changes detected, skipping save operation",
+        );
         toast({
           title: "No Changes",
           description: "No changes to save",
         });
         return projectData; // Return the existing data
       }
-      
+
       // 1. Always check localStorage first for most up-to-date data
       // This addresses race conditions between form data saves and API requests
-      console.log('Loading project data to save');
-      
+      console.log("Loading project data to save");
+
       // Use projectData as default but prioritize localStorage
       let dataToSave = projectData;
-      
+
       // Check localStorage for most recent data
       const localStorageData = localStorage.getItem("current_vn_project");
       if (localStorageData) {
         try {
           const parsedData = JSON.parse(localStorageData);
-          console.log('Using localStorage data for saving:', parsedData.basicData);
+          console.log(
+            "Using localStorage data for saving:",
+            parsedData.basicData,
+          );
           dataToSave = parsedData;
         } catch (e) {
-          console.error('Failed to parse localStorage data:', e);
+          console.error("Failed to parse localStorage data:", e);
         }
       }
-      
+
       if (!dataToSave) {
-        throw new Error('No project data to save');
+        throw new Error("No project data to save");
       }
-      
+
       // Check if we have a stored ID in session storage
       // This is more reliable than the dataToSave.id since createNewProject may have cleared the ID from projectData
-      const storedProjectId = sessionStorage.getItem('current_project_id');
-      
+      const storedProjectId = sessionStorage.getItem("current_project_id");
+
       // Generate a hash of the essential data only
       const currentDataHash = generateProjectHash(dataToSave);
-      console.log('[saveProject] Generated hash for essential project data:', currentDataHash);
-      console.log('[saveProject] Data to save has lastSavedHash:', dataToSave.lastSavedHash);
+      console.log(
+        "[saveProject] Generated hash for essential project data:",
+        currentDataHash,
+      );
+      console.log(
+        "[saveProject] Data to save has lastSavedHash:",
+        dataToSave.lastSavedHash,
+      );
 
-      
       // 2. Make sure we have all required fields with defaults
-      const finalDataToSave = {
-        ...dataToSave,
-        // ...(storedProjectId ? { id: parseInt(storedProjectId) } : {}),
-        // playerData: dataToSave.playerData || defaultPlayerData,
-        // currentStep: dataToSave.currentStep,
-        // updatedAt: new Date().toISOString(),
-        // lastSavedHash: currentDataHash
-      };
-      
-      console.log('Saving data to server:', dataToSave.basicData);
-      
+      // const finalDataToSave = {
+      // ...dataToSave,
+      // ...(storedProjectId ? { id: parseInt(storedProjectId) } : {}),
+      // playerData: dataToSave.playerData || defaultPlayerData,
+      // currentStep: dataToSave.currentStep,
+      // lastSavedHash: currentDataHash
+      // };
+
+      console.log("Saving data to server:", dataToSave.basicData);
+
       // 3. Send to API - determine if it's an update or new project
       let response;
       if (dataToSave.id) {
@@ -544,63 +558,76 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
         response = await apiRequest("POST", "/api/projects", dataToSave);
       } else {
         // It's a new project
-        console.log('Creating new project in database');
+        console.log("Creating new project in database");
         response = await apiRequest("POST", "/api/projects", dataToSave);
       }
-      
+
       const savedProject = await response.json();
-      
+
       // 4. Update state with saved data, ensuring we preserve the ID and hash
-      console.log('Received saved project from server with ID:', savedProject.id); 
-      console.log('Received saved project hash from server:', savedProject.lastSavedHash);
-      
+      console.log(
+        "Received saved project from server with ID:",
+        savedProject.id,
+      );
+      console.log(
+        "Received saved project hash from server:",
+        savedProject.lastSavedHash,
+      );
+
       // Store the ID in session storage for future saves
-      sessionStorage.setItem('current_project_id', savedProject.id.toString());
-      
+      sessionStorage.setItem("current_project_id", savedProject.id.toString());
+
       // Make sure the saved project has the hash - always use the hash we generated and sent
       // This ensures client and server stay in sync with hash values
-      if (!savedProject.lastSavedHash) {
-        console.log('Warning: Server returned project without hash, using client hash', currentDataHash);
-        savedProject.lastSavedHash = currentDataHash;
-      } else if (savedProject.lastSavedHash !== currentDataHash) {
-        console.log('Warning: Server returned different hash than client generated', { 
-          server: savedProject.lastSavedHash, 
-          client: currentDataHash 
-        });
+      if (savedProject.lastSavedHash !== currentDataHash) {
+        console.log(
+          "Warning: Server returned different hash than client generated",
+          {
+            server: savedProject.lastSavedHash,
+            client: currentDataHash,
+          },
+        );
         // Override the server hash with our client hash since we just saved
         // This keeps the client's perception of "saved state" accurate
         savedProject.lastSavedHash = currentDataHash;
       }
-      
+
       // Generate a hash of the server-returned data to verify true equality
       const serverDataHash = generateProjectHash(savedProject);
-      console.log('Hash of data returned by server:', serverDataHash);
-      console.log('Hash matches client hash?', serverDataHash === currentDataHash);
-      
+      console.log("Hash of data returned by server:", serverDataHash);
+      console.log(
+        "Hash matches client hash?",
+        serverDataHash === currentDataHash,
+      );
+
       // Update React state
       setProjectData(savedProject);
-      
+
       // 5. Also update localStorage for consistency
       localStorage.setItem("current_vn_project", JSON.stringify(savedProject));
-      
+
       // 6. Record hash in session storage for client-side change detection
-      const projectId = savedProject.id ? savedProject.id.toString() : 'new_project';
+      const projectId = savedProject.id
+        ? savedProject.id.toString()
+        : "new_project";
       const savedHashKey = `saved_hash_${projectId}`;
       sessionStorage.setItem(savedHashKey, currentDataHash);
-      console.log(`[saveProject] Saving hash ${currentDataHash} in session storage with key ${savedHashKey}`);
-      
+      console.log(
+        `[saveProject] Saving hash ${currentDataHash} in session storage with key ${savedHashKey}`,
+      );
+
       // Also clear the new project time and other tracker values
-      sessionStorage.removeItem('vn_new_project_time');
-      sessionStorage.removeItem('vn_fresh_project');
-      
+      sessionStorage.removeItem("vn_new_project_time");
+      sessionStorage.removeItem("vn_fresh_project");
+
       // 7. Invalidate the projects query to refresh the project list
-      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
 
       toast({
         title: "Success",
         description: "Project saved successfully",
       });
-      
+
       return savedProject;
     } catch (error) {
       console.error("Error saving project:", error);
@@ -631,26 +658,31 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
           genre: "",
         };
       }
-      
+
       // Store the project ID in session storage for persistence tracking
-      sessionStorage.setItem('current_project_id', projectId.toString());
-      console.log(`Loaded project ID ${projectId} and stored in sessionStorage`);
+      sessionStorage.setItem("current_project_id", projectId.toString());
+      console.log(
+        `Loaded project ID ${projectId} and stored in sessionStorage`,
+      );
 
       // Generate a hash for loaded project for proper change tracking
       const loadedHash = generateProjectHash(loadedProject);
-      console.log(`[loadProject] Generated hash for loaded project: ${loadedHash}`);
-      
+      console.log(
+        `[loadProject] Generated hash for loaded project: ${loadedHash}`,
+      );
+
       // Ensure the loaded project has the hash for change detection
       loadedProject.lastSavedHash = loadedHash;
-      
+
       // IMPORTANT: Force localStorage update with the loaded project FIRST
       localStorage.setItem("current_vn_project", JSON.stringify(loadedProject));
-      
+
       // Store the hash in session storage for our pure client-side change detection
       const savedHashKey = `saved_hash_${projectId}`;
       sessionStorage.setItem(savedHashKey, loadedHash);
-      console.log(`[loadProject] Saving hash ${loadedHash} in session storage with key ${savedHashKey}`);
-      alert(loadedHash)
+      console.log(
+        `[loadProject] Saving hash ${loadedHash} in session storage with key ${savedHashKey}`,
+      );
       // Clear any "fresh project" flags
       sessionStorage.removeItem("vn_fresh_project");
 
@@ -695,14 +727,16 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
   const deleteProject = async (projectId: number) => {
     try {
       await apiRequest("DELETE", `/api/projects/${projectId}`);
-      
+
       // Check if the deleted project is the currently active one
-      const currentId = sessionStorage.getItem('current_project_id');
+      const currentId = sessionStorage.getItem("current_project_id");
       if (currentId && parseInt(currentId) === projectId) {
         // If we're deleting the active project, clear the ID from sessionStorage
-        console.log(`Clearing active project ID ${projectId} from sessionStorage`);
-        sessionStorage.removeItem('current_project_id');
-        
+        console.log(
+          `Clearing active project ID ${projectId} from sessionStorage`,
+        );
+        sessionStorage.removeItem("current_project_id");
+
         // Also clear localStorage if it contains this project
         const localProject = localStorage.getItem("current_vn_project");
         if (localProject) {

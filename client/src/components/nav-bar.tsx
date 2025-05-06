@@ -1,5 +1,5 @@
 import { useVnContext } from "@/context/vn-context";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { SaveProjectButton } from "@/components/save-project-button";
 import { ArrowLeft, Share } from "lucide-react";
 import { ProjectSharingDialog } from "@/components/modals/project-sharing-dialog";
@@ -34,8 +34,6 @@ export function NavBar() {
     const event = new CustomEvent('save-form-to-context');
     document.dispatchEvent(event);
     
-    // Give the context a moment to update
-    await new Promise(resolve => setTimeout(resolve, 100));
   };
   
   // Go back to main menu with confirmation for form pages
@@ -46,6 +44,9 @@ export function NavBar() {
       
       // First save the form data to context
       await saveFormToContext();
+
+      // Give the context a moment to update
+      await new Promise(resolve => setTimeout(resolve, 200));
       
       // Now check for unsaved changes with the updated context
       console.log('[NavBar] Form saved to context, now checking for unsaved changes');

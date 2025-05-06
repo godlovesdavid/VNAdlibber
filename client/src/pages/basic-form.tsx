@@ -198,9 +198,8 @@ export default function BasicForm() {
     };
 
     setBasicData(basicObj);
-
     // Additional server-side validation
-    setIsValidating(true);
+    // setIsValidating(true);
 
     try {
       // const isValid = await validateFormContent({ basicData: basicObj }, "basic");
@@ -214,7 +213,7 @@ export default function BasicForm() {
         variant: "destructive",
       });
     } finally {
-      setIsValidating(false);
+      // setIsValidating(false);
     }
   };
 
