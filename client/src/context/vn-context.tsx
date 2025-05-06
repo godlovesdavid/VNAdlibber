@@ -114,7 +114,7 @@ interface VnContextType {
   exportActs: () => Promise<void>;
   
   // Change detection
-  hasUnsavedChanges: () => boolean;
+  hasUnsavedChanges: () => Promise<boolean>;
 
   // Navigation
   goToStep: (stepNumber: number) => void;
@@ -882,7 +882,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     loadProject,
     deleteProject,
     exportActs,
-    hasUnsavedChanges: () => hasUnsavedChanges(projectData),
+    hasUnsavedChanges: async () => await hasUnsavedChanges(projectData),
     goToStep,
     isLoading,
     saveLoading,

@@ -33,7 +33,10 @@ export function NavBar() {
     console.log('[NavBar] Dispatching save-form-to-context event');
     const event = new CustomEvent('save-form-to-context');
     document.dispatchEvent(event);
-  
+    
+    // Return a promise that resolves after a short delay to allow form data to be saved to context
+    // This ensures the state updates from the event have time to complete
+    return new Promise<void>(resolve => setTimeout(resolve, 50));
   };
   
   // Go back to main menu with confirmation for form pages
@@ -48,7 +51,9 @@ export function NavBar() {
       // Now check for unsaved changes with the updated context
       console.log('[NavBar] Form saved to context, now checking for unsaved changes');
       
-      const hasChanges = hasUnsavedChanges();
+      // Using the Promise-based hasUnsavedChanges with await
+      // This will use the projectData from context internally
+      const hasChanges = await hasUnsavedChanges();
       console.log('[NavBar] hasUnsavedChanges returned:', hasChanges);
       
       if (hasChanges) {

@@ -13,9 +13,15 @@ export function SaveProjectButton() {
       // Before saving to database, make sure the current form's data is in the context
       console.log('Save button clicked - saving form to context first');
       await saveFormToContext(location);
-
-      // Before starting the save process
-      if (!hasUnsavedChanges(projectData)) {
+      
+      // Add a small delay to ensure React state updates are processed
+      console.log('[saveProject] Waiting briefly for state updates to finish');
+      
+      // Before starting the save process, check for unsaved changes
+      // Now using await with the Promise-based hasUnsavedChanges
+      // This gets projectData from context internally
+      const hasChanges = await hasUnsavedChanges();
+      if (!hasChanges) {
         console.log('[saveProject] No changes detected, skipping save operation');
         toast({
           title: "No Changes",
@@ -23,6 +29,7 @@ export function SaveProjectButton() {
         });
         return projectData; // Return the existing data
       }
+      
       // Then save everything to the database
       console.log('Saving to database now');
       await saveProject();
@@ -44,6 +51,9 @@ export function SaveProjectButton() {
     console.log('Dispatching save-form-to-context event');
     const event = new CustomEvent('save-form-to-context');
     document.dispatchEvent(event);
+    
+    // Return a promise that resolves after a short delay to allow form data to be saved to context
+    return new Promise<void>(resolve => setTimeout(resolve, 50));
   };
   
   return (
