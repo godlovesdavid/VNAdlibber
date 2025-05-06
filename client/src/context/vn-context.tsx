@@ -168,17 +168,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
 
-  // Load project from localStorage on mount
-  useEffect(() => {
-    const savedProject = localStorage.getItem("current_vn_project");
-    if (savedProject) {
-      try {
-        setProjectData(JSON.parse(savedProject));
-      } catch (error) {
-        console.error("Error loading saved project from localStorage:", error);
-      }
-    }
-  }, []);
+  // We've removed the auto-load from localStorage on mount
+  // Now loading only happens explicitly when the user requests it
 
   // Update localStorage when project data changes
   useEffect(() => {
@@ -852,6 +843,51 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     setLocation(stepRoutes[stepNumber - 1]);
   };
 
+  // Add explicit function to load from localStorage only - for continuing where they left off
+  const loadFromLocalStorage = () => {
+    const savedProject = localStorage.getItem("current_vn_project");
+    if (savedProject) {
+      try {
+        const parsedProject = JSON.parse(savedProject);
+        setProjectData(parsedProject);
+        
+        // If the project has an ID, ensure it's tracked in sessionStorage
+        if (parsedProject.id) {
+          sessionStorage.setItem("current_project_id", parsedProject.id.toString());
+          console.log(`Loaded project ID ${parsedProject.id} from localStorage and stored in sessionStorage`);
+        }
+        
+        // If there's a current step, navigate to that step
+        if (parsedProject.currentStep) {
+          const stepRoutes = [
+            "/create/basic",
+            "/create/concept",
+            "/create/characters",
+            "/create/paths",
+            "/create/plot",
+            "/create/generate-vn",
+          ];
+          const stepIndex = Math.min(parsedProject.currentStep - 1, stepRoutes.length - 1);
+          setLocation(stepRoutes[stepIndex]);
+        } else {
+          // Default to the first step if no step is specified
+          setLocation("/create/basic");
+        }
+        
+        return true; // Successfully loaded
+      } catch (error) {
+        console.error("Error loading saved project from localStorage:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load the last project you were working on.",
+          variant: "destructive"
+        });
+        return false;
+      }
+    }
+    return false; // No project in localStorage
+  };
+  
   const value: VnContextType = {
     projectData,
     setBasicData,
@@ -866,6 +902,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     createNewProject,
     saveProject,
     loadProject,
+    loadFromLocalStorage,
     deleteProject,
     exportActs,
     hasUnsavedChanges: () => hasUnsavedChanges(projectData),
