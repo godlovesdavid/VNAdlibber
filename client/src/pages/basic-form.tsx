@@ -99,15 +99,26 @@ export default function BasicForm() {
   useEffect(() => {
     const saveFormHandler = () => {
       // Skip if not all fields are filled
-      if (!theme || !tone || !genre || !setting) return;
+      if (!theme || !tone || !genre || !setting) {
+        console.log("Basic form: Some fields are empty, not saving to context");
+        // Dispatch event indicating save was completed (even though we didn't actually save)
+        document.dispatchEvent(new CustomEvent('form-saved-to-context'));
+        return;
+      }
 
       console.log("Saving basic form data to context");
+      
+      // Save data to context
       setBasicData({
         theme,
         tone,
         genre,
         setting,
       });
+      
+      // Immediately dispatch event indicating the form data has been saved to context
+      console.log("Basic form: Dispatching form-saved-to-context event");
+      document.dispatchEvent(new CustomEvent('form-saved-to-context'));
     };
 
     // Add event listener

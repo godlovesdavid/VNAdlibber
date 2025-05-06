@@ -21,7 +21,7 @@ export function SaveProjectButton() {
       // Before starting the save process, check for unsaved changes
       // Now using await with the Promise-based hasUnsavedChanges
       // This gets projectData from context internally
-      const hasChanges = await hasUnsavedChanges();
+      const hasChanges = await hasUnsavedChanges(projectData);
       if (!hasChanges) {
         console.log('[saveProject] No changes detected, skipping save operation');
         toast({

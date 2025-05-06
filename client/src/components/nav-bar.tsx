@@ -70,8 +70,8 @@ export function NavBar() {
       console.log('[NavBar] Form saved to context, now checking for unsaved changes');
       
       // Using the Promise-based hasUnsavedChanges with await
-      // This will use the projectData from context internally
-      const hasChanges = await hasUnsavedChanges();
+      // We explicitly pass projectData to ensure we're checking the latest state
+      const hasChanges = await hasUnsavedChanges(projectData);
       console.log('[NavBar] hasUnsavedChanges returned:', hasChanges);
       
       if (hasChanges) {
