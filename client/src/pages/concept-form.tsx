@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useVnData } from "@/hooks/use-vn-data";
+import { useDebounceCallback } from "@/hooks/use-debounce";
 import { CreationProgress } from "@/components/creation-progress";
 import { NavBar } from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
@@ -21,9 +22,29 @@ export default function ConceptForm() {
   const [title, setTitle] = useState("");
   const [tagline, setTagline] = useState("");
   const [premise, setPremise] = useState("");
+  const [autosaving, setAutosaving] = useState(false);
 
-  // Instead of autosaving to context on every keystroke, we'll do it on form navigation
-  // This prevents potential race conditions with different forms updating context simultaneously
+  // Create a debounced version of setConceptData that will trigger 1.5 seconds after the last change
+  const [debouncedSave, isSaving] = useDebounceCallback(
+    (formData: { title: string; tagline: string; premise: string }) => {
+      console.log("Autosaving concept data to context:", formData);
+      setConceptData(formData);
+      setAutosaving(false); // Clear autosaving status once done
+    },
+    1500 // 1.5 second delay
+  );
+  
+  // Watch form state changes and trigger the debounced save function
+  useEffect(() => {
+    // Only autosave if we have at least some data and the project exists
+    if (projectData && (title || tagline || premise)) {
+      console.log("Form changed, queueing autosave...");
+      setAutosaving(true); // Indicate we're waiting to save
+      debouncedSave({ title, tagline, premise });
+    }
+  }, [title, tagline, premise, projectData, debouncedSave]);
+  
+  // The debounced autosave will occur after the user stops typing for 1.5 seconds
   
   // Load existing data if available or clear form if starting a new project
   useEffect(() => {
@@ -196,9 +217,37 @@ export default function ConceptForm() {
             </div>
 
             <div className="pt-6 flex justify-between">
-              <Button variant="outline" onClick={handleBack}>
-                Back
-              </Button>
+              <div className="flex items-center">
+                <Button variant="outline" onClick={handleBack}>
+                  Back
+                </Button>
+                {/* Autosave indicator */}
+                {(autosaving || isSaving) && (
+                  <div className="ml-3 flex items-center text-xs text-gray-500">
+                    <svg
+                      className="animate-spin mr-1 h-3 w-3 text-gray-500"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Autosaving...
+                  </div>
+                )}
+              </div>
               <div className="flex space-x-3">
                 <Button
                   variant="outline"
