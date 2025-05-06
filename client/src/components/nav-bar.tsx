@@ -33,9 +33,7 @@ export function NavBar() {
     console.log('[NavBar] Dispatching save-form-to-context event');
     const event = new CustomEvent('save-form-to-context');
     document.dispatchEvent(event);
-    
-    // Give the context a moment to update
-    await new Promise(resolve => setTimeout(resolve, 100));
+  
   };
   
   // Go back to main menu with confirmation for form pages

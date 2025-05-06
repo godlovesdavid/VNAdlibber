@@ -132,51 +132,61 @@ const defaultPlayerData: PlayerData = {
 };
 
 // Function to check if there are unsaved changes using pure hash comparison
-export function hasUnsavedChanges(projectData: VnProjectData | null): boolean {
-  if (!projectData) {
-    console.log('[Hash Check] No project data, returning false');
-    return false;
-  }
-  
-  // Get the current hash of the project data
-  const currentHash = generateProjectHash(projectData);
-  console.log('[Hash Check] Generated current hash:', currentHash);
-  
-  // Check for a new project scenario
-  if (!projectData.id) {
-    const newProjectFlag = sessionStorage.getItem('vn_fresh_project');
-    if (newProjectFlag === 'true') {
-      console.log('[Hash Check] Fresh project detected, considering it saved');
-      return false;
-    }
-  }
-  
-  // Get the last saved hash from session storage instead of the project object
-  // This way we're comparing against what WE saved, not what the server returned
-  const projectId = projectData.id ? projectData.id.toString() : 'new_project';
-  const savedHashKey = `saved_hash_${projectId}`;
-  const savedHash = sessionStorage.getItem(savedHashKey);
-  
-  if (!savedHash) {
-    // If we don't have a saved hash in session storage, check the project object
-    if (!projectData.lastSavedHash) {
-      console.log('[Hash Check] No saved hash found anywhere, considering unsaved');
-      return true;
-    }
-    // Use the hash from the project object as fallback
-    console.log('[Hash Check] Using hash from project object as fallback');
-    return currentHash !== projectData.lastSavedHash;
-  }
-  
-  // Compare the current hash with the saved hash from session storage
-  const hashesMatch = currentHash === savedHash;
-  
-  console.log('[Hash Check] Current hash:', currentHash);
-  console.log('[Hash Check] Session saved hash:', savedHash);
-  console.log('[Hash Check] Hashes match?', hashesMatch);
-  
-  // If hashes don't match, the project has unsaved changes
-  return !hashesMatch;
+// Now returns a Promise to allow proper sequencing after state updates
+export function hasUnsavedChanges(projectData: VnProjectData | null): Promise<boolean> {
+  return new Promise((resolve) => {
+    // Small timeout to allow state updates to finish
+    setTimeout(() => {
+      if (!projectData) {
+        console.log('[Hash Check] No project data, returning false');
+        resolve(false);
+        return;
+      }
+      
+      // Get the current hash of the project data
+      const currentHash = generateProjectHash(projectData);
+      console.log('[Hash Check] Generated current hash:', currentHash);
+      
+      // Check for a new project scenario
+      if (!projectData.id) {
+        const newProjectFlag = sessionStorage.getItem('vn_fresh_project');
+        if (newProjectFlag === 'true') {
+          console.log('[Hash Check] Fresh project detected, considering it saved');
+          resolve(false);
+          return;
+        }
+      }
+      
+      // Get the last saved hash from session storage instead of the project object
+      // This way we're comparing against what WE saved, not what the server returned
+      const projectId = projectData.id ? projectData.id.toString() : 'new_project';
+      const savedHashKey = `saved_hash_${projectId}`;
+      const savedHash = sessionStorage.getItem(savedHashKey);
+      
+      if (!savedHash) {
+        // If we don't have a saved hash in session storage, check the project object
+        if (!projectData.lastSavedHash) {
+          console.log('[Hash Check] No saved hash found anywhere, considering unsaved');
+          resolve(true);
+          return;
+        }
+        // Use the hash from the project object as fallback
+        console.log('[Hash Check] Using hash from project object as fallback');
+        resolve(currentHash !== projectData.lastSavedHash);
+        return;
+      }
+      
+      // Compare the current hash with the saved hash from session storage
+      const hashesMatch = currentHash === savedHash;
+      
+      console.log('[Hash Check] Current hash:', currentHash);
+      console.log('[Hash Check] Session saved hash:', savedHash);
+      console.log('[Hash Check] Hashes match?', hashesMatch);
+      
+      // If hashes don't match, the project has unsaved changes
+      resolve(!hashesMatch);
+    }, 10); // Small delay to let React state updates complete
+  });
 }
 
 const VnContext = createContext<VnContextType | undefined>(undefined);
@@ -510,16 +520,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
   const saveProject = async () => {
     try {
       setSaveLoading(true);
-
-      // Before starting the save process
-      if (!hasUnsavedChanges(projectData)) {
-        console.log('[saveProject] No changes detected, skipping save operation');
-        toast({
-          title: "No Changes",
-          description: "No changes to save",
-        });
-        return projectData; // Return the existing data
-      }
       
       // 1. Always check localStorage first for most up-to-date data
       // This addresses race conditions between form data saves and API requests
