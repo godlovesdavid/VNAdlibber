@@ -510,6 +510,16 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
   const saveProject = async () => {
     try {
       setSaveLoading(true);
+
+      // Before starting the save process
+      if (!hasUnsavedChanges(projectData)) {
+        console.log('[saveProject] No changes detected, skipping save operation');
+        toast({
+          title: "No Changes",
+          description: "No changes to save",
+        });
+        return projectData; // Return the existing data
+      }
       
       // 1. Always check localStorage first for most up-to-date data
       // This addresses race conditions between form data saves and API requests
@@ -547,16 +557,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       console.log('[saveProject] Generated hash for essential project data:', currentDataHash);
       console.log('[saveProject] Data to save has lastSavedHash:', dataToSave.lastSavedHash);
 
-      // Before starting the save process
-      sessionStorage?.getItem(`saved_hash_${storedProjectId}`)
-      if (currentDataHash === sessionStorage.getItem(`saved_hash_${storedProjectId}`)) {
-        console.log('[saveProject] No changes detected, skipping save operation');
-        toast({
-          title: "No Changes",
-          description: "No changes to save",
-        });
-        return dataToSave; // Return the existing data
-      }
       
       // 2. Make sure we have all required fields with defaults
       const finalDataToSave = {
@@ -865,23 +865,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
 
     setLocation(stepRoutes[stepNumber - 1]);
   };
-  
-  // In VnProvider
-  useEffect(() => {
-    if (projectData && projectData.id) {
-      // Only update hashes for existing projects, not new ones
-      const currentHash = generateProjectHash(projectData);
-      console.log('[Context Change] Generated new hash:', currentHash);
-      // alert(currentHash)
-      // We're not saving this as the "saved" hash - just tracking the current state
-      const projectId = projectData.id ? projectData.id.toString() : 'new_project';
-      const savedHashKey = `saved_hash_${projectId}`;
-      const savedHash = sessionStorage.getItem(savedHashKey);
-      if (currentHash != savedHash)
-        sessionStorage.setItem(savedHashKey, currentHash);
-    }
-  }, [projectData]);
-  
 
   const value: VnContextType = {
     projectData,
