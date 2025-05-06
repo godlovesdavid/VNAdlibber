@@ -34,22 +34,13 @@ export default function PlotForm() {
 
   // Save form data to context when the event is triggered
   useEffect(() => {
-    const saveFormHandler = () => {
       console.log('Saving plot form data to context');
       
       // Skip if no plot acts
       if (!plotActs || Object.keys(plotActs).length === 0) return;
       
       setPlotData(plotActs);
-    };
     
-    // Add event listener
-    document.addEventListener('save-form-to-context', saveFormHandler);
-    
-    // Cleanup
-    return () => {
-      document.removeEventListener('save-form-to-context', saveFormHandler);
-    };
   }, [plotActs, setPlotData]);
   
   // Load existing data if available

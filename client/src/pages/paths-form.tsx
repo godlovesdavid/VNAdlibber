@@ -60,27 +60,14 @@ export default function PathsForm() {
   const [generatingPathIndex, setGeneratingPathIndex] = useState<number | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const { toast } = useToast();
-  
-  // Save form data to context when the event is triggered
+
+  //autosave to context
   useEffect(() => {
-    const saveFormHandler = () => {
-      console.log('Saving paths form data to context');
-      
-      // Skip if no routes or all routes are empty
       if (routes.length === 0) return;
       if (routes.every(route => !route.title)) return;
       
-      // Use our savePathData helper function
       savePathData();
-    };
     
-    // Add event listener
-    document.addEventListener('save-form-to-context', saveFormHandler);
-    
-    // Cleanup
-    return () => {
-      document.removeEventListener('save-form-to-context', saveFormHandler);
-    };
   }, [routes]);
 
   // Load existing data if available

@@ -93,26 +93,11 @@ export default function GenerateVnForm() {
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   
-  // Save form data to context when the event is triggered
+  // autosave to context
   useEffect(() => {
-    const saveFormHandler = () => {
-      console.log('Saving generate-vn form data to context');
-      
-      // Since most of the data is stored when generating acts, we just need to make sure
-      // the player data is updated if needed
-      if (playerData) {
+      if (playerData) 
         updatePlayerData(playerData);
-      }
-    };
-    
-    // Add event listener
-    document.addEventListener('save-form-to-context', saveFormHandler);
-    
-    // Cleanup
-    return () => {
-      document.removeEventListener('save-form-to-context', saveFormHandler);
-    };
-  }, [playerData, updatePlayerData]);
+  }, [playerData]);
 
   // Player data editing state
   const [editablePlayerData, setEditablePlayerData] = useState<PlayerData>({

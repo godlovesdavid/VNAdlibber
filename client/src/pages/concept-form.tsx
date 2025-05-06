@@ -25,26 +25,6 @@ export default function ConceptForm() {
   const [tagline, setTagline] = useState("");
   const [premise, setPremise] = useState("");
 
-  // Save form data to context when the event is triggered
-  useEffect(() => {
-    const saveFormHandler = () => {
-      console.log("Saving concept form data to context");
-      setConceptData({
-        title,
-        tagline,
-        premise,
-      });
-    };
-
-    // Add event listener
-    document.addEventListener("save-form-to-context", saveFormHandler);
-
-    // Cleanup
-    return () => {
-      document.removeEventListener("save-form-to-context", saveFormHandler);
-    };
-  }, [title, tagline, premise, setConceptData]);
-
   // Load existing data if available or clear form if starting a new project
   useEffect(() => {
     // If project data exists and has concept data
@@ -60,13 +40,18 @@ export default function ConceptForm() {
     }
   }, [projectData]);
 
+  // Save form data to context when the event is triggered
+  useEffect(() => {
+      setConceptData({
+        title,
+        tagline,
+        premise,
+      });
+
+  }, [title, tagline, premise]);
+
   // Go back to previous step
   const handleBack = () => {
-    // Save data
-
-    setConceptData({title,
-                    tagline,
-                    premise,});
     goToStep(1);
   };
 
@@ -82,11 +67,6 @@ export default function ConceptForm() {
       return;
     }
 
-    // Save data
-    setConceptData({title,
-                    tagline,
-                    premise,});
-
     if (!projectData) {
       toast({
         title: "Error",
@@ -97,7 +77,7 @@ export default function ConceptForm() {
     }
 
     // Additional server-side validation
-    setIsValidating(true);
+    // setIsValidating(true);
 
     try {
       // Create validation context
@@ -112,7 +92,7 @@ export default function ConceptForm() {
       // if (isValid)
       setLocation("/create/characters");
     } finally {
-      setIsValidating(false);
+      // setIsValidating(false);
     }
   };
 

@@ -60,7 +60,6 @@ export default function CharactersForm() {
 
   // Save form data to context when the event is triggered
   useEffect(() => {
-    const saveFormHandler = () => {
       console.log('Saving characters form data to context');
       
       // Skip if no characters
@@ -99,16 +98,8 @@ export default function CharactersForm() {
       });
       
       setCharactersData(charactersObj, protagonist);
-    };
     
-    // Add event listener
-    document.addEventListener('save-form-to-context', saveFormHandler);
-    
-    // Cleanup
-    return () => {
-      document.removeEventListener('save-form-to-context', saveFormHandler);
-    };
-  }, [characters, setCharactersData]);
+  }, [characters]);
   
   // Load existing data if available
   useEffect(() => {
