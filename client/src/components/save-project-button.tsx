@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { flushSync } from 'react-dom';
 
 export function SaveProjectButton() {
   const { saveProject, saveLoading, projectData } = useVnContext();
@@ -49,11 +50,29 @@ export function SaveProjectButton() {
     // Each route path corresponds to a specific form
     // We'll dispatch a custom event to trigger the form to save to context
     console.log('Dispatching save-form-to-context event');
-    const event = new CustomEvent('save-form-to-context');
-    document.dispatchEvent(event);
     
-    // Return a promise that resolves after a short delay to allow form data to be saved to context
-    return new Promise<void>(resolve => setTimeout(resolve, 50));
+    return new Promise<void>((resolve) => {
+      // Use the event listener to know when the form has actually saved its data
+      const handleSaved = () => {
+        document.removeEventListener('form-saved-to-context', handleSaved);
+        console.log('[saveFormToContext] Form reported data saved to context');
+        resolve();
+      };
+      
+      // Listen for the completion event
+      document.addEventListener('form-saved-to-context', handleSaved);
+      
+      // Dispatch the event to trigger the form to save
+      const event = new CustomEvent('save-form-to-context');
+      document.dispatchEvent(event);
+      
+      // Add a timeout in case the event is never fired (as a fallback)
+      setTimeout(() => {
+        document.removeEventListener('form-saved-to-context', handleSaved);
+        console.log('[saveFormToContext] Timeout reached waiting for form to save');
+        resolve();
+      }, 100);
+    });
   };
   
   return (

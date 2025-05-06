@@ -1,4 +1,5 @@
 import { useVnContext } from "@/context/vn-context";
+import { flushSync } from 'react-dom';
 import { Link, useLocation } from "wouter";
 import { SaveProjectButton } from "@/components/save-project-button";
 import { ArrowLeft, Share } from "lucide-react";
@@ -29,14 +30,31 @@ export function NavBar() {
   
   // Helper function to save form to context before checking for changes
   const saveFormToContext = async () => {
-    // Dispatch a save-form-to-context event to trigger the form to save data
-    console.log('[NavBar] Dispatching save-form-to-context event');
-    const event = new CustomEvent('save-form-to-context');
-    document.dispatchEvent(event);
+    console.log('[NavBar] Preparing to save form to context');
     
-    // Return a promise that resolves after a short delay to allow form data to be saved to context
-    // This ensures the state updates from the event have time to complete
-    return new Promise<void>(resolve => setTimeout(resolve, 50));
+    return new Promise<void>((resolve) => {
+      // Use the event listener to know when the form has actually saved its data
+      const handleSaved = () => {
+        document.removeEventListener('form-saved-to-context', handleSaved);
+        console.log('[NavBar] Form reported data saved to context');
+        resolve();
+      };
+      
+      // Listen for the completion event
+      document.addEventListener('form-saved-to-context', handleSaved);
+      
+      // Dispatch the event to trigger the form to save
+      console.log('[NavBar] Dispatching save-form-to-context event');
+      const event = new CustomEvent('save-form-to-context');
+      document.dispatchEvent(event);
+      
+      // Add a timeout in case the event is never fired (as a fallback)
+      setTimeout(() => {
+        document.removeEventListener('form-saved-to-context', handleSaved);
+        console.log('[NavBar] Timeout reached waiting for form to save');
+        resolve();
+      }, 100);
+    });
   };
   
   // Go back to main menu with confirmation for form pages
