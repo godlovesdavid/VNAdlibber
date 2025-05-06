@@ -17,40 +17,41 @@ export default function ConceptForm() {
   const { generateConceptData, isGenerating, cancelGeneration } = useVnData();
   const { toast } = useToast();
 
-  // Track validation state
-  const [isValidating, setIsValidating] = useState(false);
-
   // Form state
   const [title, setTitle] = useState("");
   const [tagline, setTagline] = useState("");
   const [premise, setPremise] = useState("");
 
+  // Instead of autosaving to context on every keystroke, we'll do it on form navigation
+  // This prevents potential race conditions with different forms updating context simultaneously
+  
   // Load existing data if available or clear form if starting a new project
   useEffect(() => {
     // If project data exists and has concept data
-    if (projectData?.conceptData?.title) {
+    if (projectData?.conceptData) {
+      console.log("Loading concept data from project:", projectData.conceptData);
       setTitle(projectData.conceptData.title || "");
       setTagline(projectData.conceptData.tagline || "");
       setPremise(projectData.conceptData.premise || "");
     } else {
       // Clear form values if no project data or it's a new project
+      console.log("No concept data found in project, clearing form");
       setTitle("");
       setTagline("");
       setPremise("");
     }
-  }, [location]);
+  }, [projectData]);
 
-  // Save form data to context when the event is triggered
-  useEffect(() => {
+  // Go back to previous step
+  const handleBack = () => {
+    // Save current form state to context before navigating back
+    console.log("Saving concept data before navigating back:", { title, tagline, premise });
     setConceptData({
       title,
       tagline,
       premise,
     });
-  }, [title, tagline, premise]);
-
-  // Go back to previous step
-  const handleBack = () => {
+    
     goToStep(1);
   };
 
@@ -75,23 +76,25 @@ export default function ConceptForm() {
       return;
     }
 
-    // Additional server-side validation
-    // setIsValidating(true);
-
     try {
-      // Create validation context
-      // const contextData = {
-      //   basicData: projectData.basicData,
-      //   conceptData: conceptObj,
-      // };
-
-      // Use our validation utility
-      // const isValid = await validateFormContent(contextData, "concept");
-
-      // if (isValid)
+      // Important: Save the current form data to context BEFORE navigating
+      // This ensures the latest form state is saved to context
+      console.log("Saving concept data to context before navigation:", { title, tagline, premise });
+      setConceptData({
+        title,
+        tagline,
+        premise,
+      });
+      
+      // Navigate to the next step
       setLocation("/create/characters");
-    } finally {
-      // setIsValidating(false);
+    } catch (error) {
+      console.error("Error saving concept data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save your concept data.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -100,6 +103,7 @@ export default function ConceptForm() {
     const generatedConcept = await generateConceptData();
 
     if (generatedConcept) {
+      // First update local state
       setTitle(generatedConcept.title);
       setTagline(generatedConcept.tagline);
       setPremise(generatedConcept.premise);
@@ -107,10 +111,12 @@ export default function ConceptForm() {
       // Log generation to console
       console.log("Generated concept:", generatedConcept);
 
+      // Then save the generated values to context (not using the state variables which would have old values)
+      // This prevents a race condition where we'd save the old state values before they're updated
       setConceptData({
-        title,
-        tagline,
-        premise,
+        title: generatedConcept.title,
+        tagline: generatedConcept.tagline,
+        premise: generatedConcept.premise,
       });
     }
   };
