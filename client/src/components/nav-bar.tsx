@@ -21,7 +21,6 @@ export function NavBar() {
   const { projectData, hasUnsavedChanges } = useVnContext();
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [sharingDialogOpen, setSharingDialogOpen] = useState(false);
-  const [savingToContext, setSavingToContext] = useState(false);
 
   // Check if we're on a form page
   const isFormPage = () => {
@@ -36,30 +35,16 @@ export function NavBar() {
 
   // Helper function to save form to context before checking for changes
   const saveFormToContext = async () => {
-    setSavingToContext(true);
     // Dispatch a save-form-to-context event to trigger the form to save data
     console.log("[NavBar] Dispatching save-form-to-context event");
     const event = new CustomEvent("save-form-to-context");
     document.dispatchEvent(event);
-    setSavingToContext(false);
   };
 
   // Go back to main menu with confirmation for form pages
   const handleBackClick = async () => {
     console.log("[NavBar] Back button clicked");
     if (isFormPage()) {
-      console.log("[NavBar] On a form page, saving form data first");
-
-      // First save the form data to context
-      await saveFormToContext();
-
-      await waitForFlagToBeFalse(() => savingToContext);
-
-      // Now check for unsaved changes with the updated context
-      console.log(
-        "[NavBar] Form saved to context, now checking for unsaved changes",
-      );
-
       const hasChanges = hasUnsavedChanges();
       console.log("[NavBar] hasUnsavedChanges returned:", hasChanges);
 

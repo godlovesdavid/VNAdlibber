@@ -129,21 +129,8 @@ export function ShareStoryDialog({
       return;
     }
     
-    // If opening and there are unsaved changes, show warning
-    console.log('[Share Dialog] Checking for unsaved changes');
-    const hasChanges = hasUnsavedChanges();
-    console.log('[Share Dialog] hasUnsavedChanges returned:', hasChanges);
-    
-    if (hasChanges) {
-      // Show warning alert instead of opening share dialog directly
-      console.log('[Share Dialog] Showing unsaved changes alert');
-      setIsAlertOpen(true);
-    } else {
-      // No unsaved changes, proceed to open dialog and generate link
-      console.log('[Share Dialog] No unsaved changes, proceeding to generate link');
-      setIsOpen(open);
-      generateShareLink();
-    }
+    setIsOpen(open);
+    generateShareLink();
   };
 
   // Function to copy link to clipboard

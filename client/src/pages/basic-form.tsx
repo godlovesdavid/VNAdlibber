@@ -159,6 +159,21 @@ export default function BasicForm() {
     setLocation("/");
   };
 
+  // Manual reset for debugging
+  const handleManualReset = () => {
+    console.log("Manual reset requested");
+
+    // Clear all browser storage
+    localStorage.clear();
+    sessionStorage.clear();
+
+    // Randomize form values
+    randomizeForm();
+
+    // Show confirmation
+    window.alert("Form values manually reset and randomized.");
+  };
+
   // We no longer need this effect as we handle initialization in the projectData effect
   // This was causing the duplicate randomization
 
@@ -183,9 +198,8 @@ export default function BasicForm() {
     };
 
     setBasicData(basicObj);
-
     // Additional server-side validation
-    setIsValidating(true);
+    // setIsValidating(true);
 
     try {
       // const isValid = await validateFormContent({ basicData: basicObj }, "basic");
@@ -199,7 +213,7 @@ export default function BasicForm() {
         variant: "destructive",
       });
     } finally {
-      setIsValidating(false);
+      // setIsValidating(false);
     }
   };
 

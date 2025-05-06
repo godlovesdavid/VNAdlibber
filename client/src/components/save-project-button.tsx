@@ -3,23 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
-import React, { useState} from "react";
 export function SaveProjectButton() {
   const { saveProject, saveLoading, projectData } = useVnContext();
   const [location] = useLocation();
   const { toast } = useToast();
-  const [savingToContext, setSavingToContext] = useState(false);
 
-  const waitForFlagToBeFalse = async (getFlag: () => boolean) => {
-    while (getFlag()) {
-      await new Promise(res => setTimeout(res, 100)); // brief delay
-    }
-  };
-  
   // Helper function to save the current form's data to the context
   const saveFormToContext = async (path: string) => {
-    setSavingToContext(true)
-    
+
     // Get the form data based on the current route
     if (!projectData) {
       console.log('No project data available to save');
@@ -31,20 +22,15 @@ export function SaveProjectButton() {
     console.log('Dispatching save-form-to-context event');
     const event = new CustomEvent('save-form-to-context');
     document.dispatchEvent(event);
-    setSavingToContext(false)
   };
-  
+
   const handleSave = async () => {
     try {
       // Before saving to database, make sure the current form's data is in the context
-      console.log('Save button clicked - saving form to context first');
-      await saveFormToContext(location);
-
-      await waitForFlagToBeFalse(() => savingToContext);
-      
-
+      console.log('Save button clicked ');
       // Before starting the save process
       if (!hasUnsavedChanges(projectData)) {
+
         console.log('[saveProject] No changes detected, skipping save operation');
         toast({
           title: "No Changes",
@@ -52,7 +38,7 @@ export function SaveProjectButton() {
         });
         return;
       }
-      
+
       // Then save everything to the database
       console.log('Saving to database now');
       await saveProject();
@@ -60,8 +46,8 @@ export function SaveProjectButton() {
       console.error('Error during save process:', error);
     }
   };
-  
-  
+
+
   return (
     <Button
       variant="outline"
