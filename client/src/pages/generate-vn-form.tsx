@@ -70,7 +70,7 @@ function getActSummary(actNumber: number, projectData: VnProjectData | null): st
 }
 
 export default function GenerateVnForm() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const {
     projectData,
     setGeneratedAct,
@@ -91,9 +91,8 @@ export default function GenerateVnForm() {
   const [regenerateConfirmOpen, setRegenerateConfirmOpen] = useState(false);
   const [actToRegenerate, setActToRegenerate] = useState<number | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
-  const [isValidating, setIsValidating] = useState(false);
-  
-  // autosave to context
+
+  // autosave playerData to context
   useEffect(() => {
       if (playerData) 
         updatePlayerData(playerData);

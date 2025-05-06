@@ -99,7 +99,7 @@ export default function CharactersForm() {
       
       setCharactersData(charactersObj, protagonist);
     
-  }, [location]);
+  }, [characters]);
   
   // Load existing data if available
   useEffect(() => {
@@ -136,7 +136,7 @@ export default function CharactersForm() {
       console.log("Final characters array to set in form:", charactersArray);
       setCharacters(charactersArray);
     }
-  }, [projectData]);
+  }, [location]);
 
   // Add a new character card
   const addCharacter = () => {
@@ -454,9 +454,6 @@ export default function CharactersForm() {
 
   // Go back to previous step
   const handleBack = () => {
-    // Save data
-    saveCharacterData();
-    
     // Navigate to previous step
     goToStep(2);
   };

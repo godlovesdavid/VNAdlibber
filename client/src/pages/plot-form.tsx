@@ -97,11 +97,6 @@ export default function PlotForm() {
 
   // Go back to previous step
   const handleBack = () => {
-    // Save data using the new direct object pattern
-    if (plotActs) {
-      setPlotData(plotActs);
-    }
-
     goToStep(4);
   };
 
@@ -117,9 +112,6 @@ export default function PlotForm() {
       return;
     }
 
-    // Save data using the new direct object pattern
-    setPlotData(plotActs);
-    
     // Validate content before proceeding
     // setIsValidating(true);
     if (!projectData) {

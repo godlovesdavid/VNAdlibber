@@ -42,12 +42,11 @@ export default function ConceptForm() {
 
   // Save form data to context when the event is triggered
   useEffect(() => {
-      setConceptData({
-        title,
-        tagline,
-        premise,
-      });
-
+    setConceptData({
+      title,
+      tagline,
+      premise,
+    });
   }, [title, tagline, premise]);
 
   // Go back to previous step
@@ -107,6 +106,12 @@ export default function ConceptForm() {
 
       // Log generation to console
       console.log("Generated concept:", generatedConcept);
+
+      setConceptData({
+        title,
+        tagline,
+        premise,
+      });
     }
   };
 

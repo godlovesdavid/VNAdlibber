@@ -92,9 +92,6 @@ export default function BasicForm() {
   const [genre, setGenre] = useState("");
   const [setting, setSetting] = useState("");
 
-  // State to track if the form has been initialized with random values
-  const [initialized, setInitialized] = useState(false);
-
   useEffect(() => {
       if (!theme || !tone || !genre || !setting) return;
       setBasicData({
@@ -112,7 +109,13 @@ export default function BasicForm() {
     setTone(getRandomItem(tones));
     setGenre(getRandomItem(genres));
     setSetting(getRandomItem(settings));
-    setInitialized(true);
+
+    setBasicData({
+                  theme,
+                  tone,
+                  genre,
+                  setting,
+                });
   };
 
   // Load or reset form values based on projectData
@@ -135,8 +138,6 @@ export default function BasicForm() {
       setTone(projectData.basicData.tone || "");
       setGenre(projectData.basicData.genre || "");
       setSetting(projectData.basicData.setting || "");
-      // Explicitly set initialized to true to prevent auto-randomization
-      setInitialized(true);
     }
   }, [location]);
 
@@ -156,18 +157,6 @@ export default function BasicForm() {
       });
       return;
     }
-
-    // Save data
-    const basicObj = {
-      theme,
-      tone,
-      genre,
-      setting,
-    };
-
-    setBasicData(basicObj);
-    // Additional server-side validation
-    // setIsValidating(true);
 
     try {
       // const isValid = await validateFormContent({ basicData: basicObj }, "basic");
