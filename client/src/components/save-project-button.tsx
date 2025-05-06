@@ -1,128 +1,37 @@
 import { useVnContext } from "@/context/vn-context";
-import { VnProjectData } from "@/types/vn";
 import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
-import { useLocation } from "wouter";
 
 export function SaveProjectButton() {
-  const { saveProject, saveLoading, projectData } = useVnContext();
-  const [location] = useLocation();
+  const { saveProject, saveLoading } = useVnContext();
 
-  // Helper function to save the current form's data to the context
-  const saveFormToContext = async (path: string) => {
-    // Get the form data based on the current route
-    if (!projectData) {
-      console.log('No project data available to save');
-      return;
-    }
-
-    // Each route path corresponds to a specific form
-    // We'll dispatch a custom event to trigger the form to save to context
-    console.log('Dispatching save-form-to-context event');
-    const event = new CustomEvent('save-form-to-context');
-    document.dispatchEvent(event);
-    
-  };
+  // Simplified save handler that uses the improved saveProject function
   const handleSave = async () => {
     try {
-      // First, save the current form data to a local variable
-      // This will let us capture the latest form data directly
-      console.log('Save button clicked - getting current form data');
-      const formData = await getCurrentFormData();
+      // First, trigger all form components to save their data to context
+      console.log('Save button clicked - saving form data to context');
+      await saveFormToContext();
       
-      if (!formData) {
-        console.log('No form data to save from current form');
-        // If no form data available, save the project as-is
-        await saveProject();
-        return;
-      }
+      // Brief delay to ensure all context updates have completed
+      await new Promise(resolve => setTimeout(resolve, 100));
       
-      // Create an updated project data object with the current form data
-      // This ensures we're working with the most up-to-date form data
-      console.log('Updating project data with current form data');
-      const updatedProjectData = await updateProjectDataWithFormData(formData);
-      
-      // Save the project with the explicitly updated data
-      console.log('Saving project with explicitly updated data');
-      await saveProject({ updatedData: updatedProjectData });
+      // Then save the project using the updated context
+      console.log('Saving project with updated context data');
+      await saveProject();
     } catch (error) {
       console.error('Error during save process:', error);
     }
   };
   
-  // Gets the current form data based on the current route
-  const getCurrentFormData = async (): Promise<any> => {
-    // Create a promise that will be resolved with the form data
-    return new Promise((resolve) => {
-      // Create a unique event ID for this save operation
-      const eventId = Date.now().toString();
-      
-      // Function to handle the event when form data is returned
-      const handleFormData = (e: CustomEvent) => {
-        // Check if this event corresponds to our request
-        if (e.detail && e.detail.eventId === eventId) {
-          // Remove the event listener
-          document.removeEventListener('form-data-available', handleFormData as EventListener);
-          // Resolve the promise with the form data
-          resolve(e.detail.data);
-        }
-      };
-      
-      // Add the event listener for form data
-      document.addEventListener('form-data-available', handleFormData as EventListener);
-      
-      // Dispatch event to request form data
-      const event = new CustomEvent('get-form-data', { detail: { eventId } });
-      document.dispatchEvent(event);
-      
-      // Set a timeout in case the form doesn't respond
-      setTimeout(() => {
-        document.removeEventListener('form-data-available', handleFormData as EventListener);
-        console.log('Timed out waiting for form data');
-        resolve(null);
-      }, 500);
-    });
+  // Trigger form data save to context
+  const saveFormToContext = async () => {
+    console.log('[SaveButton] Dispatching save-form-to-context event');
+    const event = new CustomEvent('save-form-to-context');
+    document.dispatchEvent(event);
+    
+    // Wait a brief moment to let forms process the event
+    await new Promise(resolve => setTimeout(resolve, 50));
   };
-  
-  // Creates an updated project data object with the current form data
-  const updateProjectDataWithFormData = async (formData: any): Promise<VnProjectData> => {
-    if (!projectData) {
-      throw new Error('No project data available');
-    }
-    
-    // Create a deep copy of the current project data
-    const currentData = {
-      ...projectData,
-      title: projectData.title || 'Untitled Project',
-      createdAt: projectData.createdAt || new Date().toISOString(),
-      updatedAt: projectData.updatedAt || new Date().toISOString(),
-      basicData: { ...projectData.basicData },
-      // Make sure we have all the required fields even if they're empty
-      conceptData: projectData.conceptData || {},
-      charactersData: projectData.charactersData || {},
-      pathsData: projectData.pathsData || {},
-      plotData: projectData.plotData || {},
-      generatedActs: projectData.generatedActs || {},
-      playerData: projectData.playerData || {},
-      currentStep: projectData.currentStep || 1
-    };
-    
-    // Based on location, update the appropriate section of the project data
-    if (location.includes('/basic')) {
-      currentData.basicData = formData;
-    } else if (location.includes('/concept')) {
-      currentData.conceptData = formData;
-    } else if (location.includes('/characters')) {
-      currentData.charactersData = formData;
-    } else if (location.includes('/paths')) {
-      currentData.pathsData = formData;
-    } else if (location.includes('/plot')) {
-      currentData.plotData = formData;
-    }
-    
-    return currentData as VnProjectData;
-  };
-  
   
   return (
     <Button

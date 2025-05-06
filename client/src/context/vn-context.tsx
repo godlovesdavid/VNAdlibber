@@ -487,11 +487,24 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       setSaveLoading(true);
       
-      // Use the provided updated data if available, otherwise use projectData from state
-      const dataToCheck = options?.updatedData || projectData;
+      // If a save is triggered from a component with updatedData, we want to use that data
+      // immediately rather than checking context state which might be stale
+      let dataToCheck = options?.updatedData || null;
+      
+      if (dataToCheck === null) {
+        // Wait a brief moment to let any pending state updates complete
+        // This addresses potential race conditions with React state updates
+        await new Promise(resolve => setTimeout(resolve, 50));
+        
+        // Then use the updated context state
+        dataToCheck = projectData || null;
+        console.log('[saveProject] Using context state after brief delay');
+      } else {
+        console.log('[saveProject] Using explicitly provided data instead of context state');
+      }
       
       // Check for changes using the most up-to-date data
-      if (!hasUnsavedChanges(dataToCheck)) {
+      if (dataToCheck && !hasUnsavedChanges(dataToCheck)) {
         console.log(
           "[saveProject] No changes detected, skipping save operation",
         );

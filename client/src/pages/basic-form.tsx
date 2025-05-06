@@ -109,13 +109,50 @@ export default function BasicForm() {
         setting,
       });
     };
+    
+    // Handler for get-form-data events that returns the current form data
+    const getFormDataHandler = (e: CustomEvent) => {
+      console.log("[BasicForm] Received get-form-data event with ID:", e.detail?.eventId);
+      
+      // Get the event ID from the detail
+      const eventId = e.detail?.eventId;
+      
+      // Skip if no event ID or if form is not complete
+      if (!eventId) {
+        console.log("[BasicForm] No event ID provided, ignoring request");
+        return;
+      }
+      
+      // Create the form data object
+      const formData = {
+        theme,
+        tone,
+        genre,
+        setting,
+      };
+      
+      console.log("[BasicForm] Returning form data:", formData);
+      
+      // Create a custom event with the form data and the original event ID
+      const responseEvent = new CustomEvent('form-data-available', {
+        detail: {
+          eventId,
+          data: formData
+        }
+      });
+      
+      // Dispatch the event
+      document.dispatchEvent(responseEvent);
+    };
 
-    // Add event listener
+    // Add event listeners
     document.addEventListener("save-form-to-context", saveFormHandler);
+    document.addEventListener("get-form-data", getFormDataHandler as EventListener);
 
     // Cleanup
     return () => {
       document.removeEventListener("save-form-to-context", saveFormHandler);
+      document.removeEventListener("get-form-data", getFormDataHandler as EventListener);
     };
   }, [theme, tone, genre, setting, setBasicData]);
 
