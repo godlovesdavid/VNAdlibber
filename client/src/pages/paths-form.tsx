@@ -32,7 +32,7 @@ interface RouteForm extends Route {
 }
 
 export default function PathsForm() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { projectData, setPathsData, goToStep } = useVnContext();
   const {
     generatePathData,
@@ -83,7 +83,7 @@ export default function PathsForm() {
       );
       setRoutes(routesArray);
     }
-  }, [projectData]);
+  }, [location]);
 
   // Add a new path card
   const addPath = () => {

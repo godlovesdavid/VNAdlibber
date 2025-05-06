@@ -12,7 +12,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { validateFormContent } from "@/lib/validation";
 
 export default function PlotForm() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { projectData, setPlotData, goToStep } = useVnContext();
   const { generatePlotData, isGenerating, cancelGeneration } = useVnData();
   const { toast } = useToast();
@@ -54,7 +54,7 @@ export default function PlotForm() {
         act1: true,
       });
     }
-  }, [projectData]);
+  }, [location]);
 
   // Toggle act expansion
   const toggleAct = (act: string) => {

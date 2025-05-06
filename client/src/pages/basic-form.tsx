@@ -79,7 +79,7 @@ function getRandomItem(array: string[]): string {
 }
 
 export default function BasicForm() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { projectData, setBasicData } = useVnContext();
   const { toast } = useToast();
 
@@ -138,7 +138,7 @@ export default function BasicForm() {
       // Explicitly set initialized to true to prevent auto-randomization
       setInitialized(true);
     }
-  }, [projectData?.basicData]);
+  }, [location]);
 
   // Go back to main menu
   const goBack = () => {

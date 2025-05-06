@@ -20,7 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { validateFormContent } from "@/lib/validation";
 
 export default function CharactersForm() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { projectData, setCharactersData, goToStep } = useVnContext();
   const {
     generateCharacterData,
@@ -99,7 +99,7 @@ export default function CharactersForm() {
       
       setCharactersData(charactersObj, protagonist);
     
-  }, [characters]);
+  }, [location]);
   
   // Load existing data if available
   useEffect(() => {

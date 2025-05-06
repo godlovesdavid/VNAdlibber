@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { validateFormContent } from "@/lib/validation";
 
 export default function ConceptForm() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { projectData, setConceptData, goToStep } = useVnContext();
   const { generateConceptData, isGenerating, cancelGeneration } = useVnData();
   const { toast } = useToast();
@@ -38,7 +38,7 @@ export default function ConceptForm() {
       setTagline("");
       setPremise("");
     }
-  }, [projectData]);
+  }, [location]);
 
   // Save form data to context when the event is triggered
   useEffect(() => {
