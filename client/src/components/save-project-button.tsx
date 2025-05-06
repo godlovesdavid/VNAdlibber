@@ -1,36 +1,43 @@
 import { useVnContext } from "@/context/vn-context";
 import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
+import { useLocation } from "wouter";
 
 export function SaveProjectButton() {
-  const { saveProject, saveLoading } = useVnContext();
-
-  // Simplified save handler that uses the improved saveProject function
+  const { saveProject, saveLoading, projectData } = useVnContext();
+  const [location] = useLocation();
+  
   const handleSave = async () => {
     try {
-      // First, trigger all form components to save their data to context
-      console.log('Save button clicked - saving form data to context');
-      await saveFormToContext();
+      // Before saving to database, make sure the current form's data is in the context
+      console.log('Save button clicked - saving form to context first');
+      await saveFormToContext(location);
       
-      // Brief delay to ensure all context updates have completed
+      // Add a longer delay to ensure context is updated
+      console.log('Waiting for context to update...');
       await new Promise(resolve => setTimeout(resolve, 100));
       
-      // Then save the project using the updated context
-      console.log('Saving project with updated context data');
+      // Then save everything to the database
+      console.log('Saving to database now');
       await saveProject();
     } catch (error) {
       console.error('Error during save process:', error);
     }
   };
   
-  // Trigger form data save to context
-  const saveFormToContext = async () => {
-    console.log('[SaveButton] Dispatching save-form-to-context event');
+  // Helper function to save the current form's data to the context
+  const saveFormToContext = async (path: string) => {
+    // Get the form data based on the current route
+    if (!projectData) {
+      console.log('No project data available to save');
+      return;
+    }
+
+    // Each route path corresponds to a specific form
+    // We'll dispatch a custom event to trigger the form to save to context
+    console.log('Dispatching save-form-to-context event');
     const event = new CustomEvent('save-form-to-context');
     document.dispatchEvent(event);
-    
-    // Wait a brief moment to let forms process the event
-    await new Promise(resolve => setTimeout(resolve, 50));
   };
   
   return (

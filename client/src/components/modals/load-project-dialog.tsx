@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useVnContext } from "@/context/vn-context";
+import { useVnContext, calculateCurrentStep } from "@/context/vn-context";
 import { useQuery } from "@tanstack/react-query";
 import {
   Dialog,
@@ -156,7 +156,7 @@ export function LoadProjectDialog({ open, onOpenChange }: LoadProjectDialogProps
                       <h4 className="font-medium text-sm sm:text-base">{project.title}</h4>
                       <div className="text-xs sm:text-sm text-muted-foreground">
                         <p className="mb-1 sm:mb-0">Last edited: {formatDistanceToNow(new Date(project.updatedAt), { addSuffix: true })}</p>
-                        <p>Progress: {project.currentStep}/6 steps</p>
+                        <p>Progress: {calculateCurrentStep(project)}/6 steps</p>
                       </div>
                     </div>
                     <div className="flex space-x-2 absolute top-3 right-3 sm:static">
