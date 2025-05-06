@@ -1,5 +1,4 @@
 import { useVnContext } from "@/context/vn-context";
-import { flushSync } from 'react-dom';
 import { Link, useLocation } from "wouter";
 import { SaveProjectButton } from "@/components/save-project-button";
 import { ArrowLeft, Share } from "lucide-react";
@@ -30,31 +29,13 @@ export function NavBar() {
   
   // Helper function to save form to context before checking for changes
   const saveFormToContext = async () => {
-    console.log('[NavBar] Preparing to save form to context');
+    // Dispatch a save-form-to-context event to trigger the form to save data
+    console.log('[NavBar] Dispatching save-form-to-context event');
+    const event = new CustomEvent('save-form-to-context');
+    document.dispatchEvent(event);
     
-    return new Promise<void>((resolve) => {
-      // Use the event listener to know when the form has actually saved its data
-      const handleSaved = () => {
-        document.removeEventListener('form-saved-to-context', handleSaved);
-        console.log('[NavBar] Form reported data saved to context');
-        resolve();
-      };
-      
-      // Listen for the completion event
-      document.addEventListener('form-saved-to-context', handleSaved);
-      
-      // Dispatch the event to trigger the form to save
-      console.log('[NavBar] Dispatching save-form-to-context event');
-      const event = new CustomEvent('save-form-to-context');
-      document.dispatchEvent(event);
-      
-      // Add a timeout in case the event is never fired (as a fallback)
-      setTimeout(() => {
-        document.removeEventListener('form-saved-to-context', handleSaved);
-        console.log('[NavBar] Timeout reached waiting for form to save');
-        resolve();
-      }, 100);
-    });
+    // Give the context a moment to update
+    await new Promise(resolve => setTimeout(resolve, 100));
   };
   
   // Go back to main menu with confirmation for form pages
@@ -69,9 +50,7 @@ export function NavBar() {
       // Now check for unsaved changes with the updated context
       console.log('[NavBar] Form saved to context, now checking for unsaved changes');
       
-      // Using the Promise-based hasUnsavedChanges with await
-      // We explicitly pass projectData to ensure we're checking the latest state
-      const hasChanges = await hasUnsavedChanges(projectData);
+      const hasChanges = hasUnsavedChanges();
       console.log('[NavBar] hasUnsavedChanges returned:', hasChanges);
       
       if (hasChanges) {

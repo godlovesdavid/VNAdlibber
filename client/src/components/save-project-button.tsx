@@ -1,35 +1,21 @@
-import { useVnContext, hasUnsavedChanges } from "@/context/vn-context";
+import { useVnContext } from "@/context/vn-context";
 import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
 import { useLocation } from "wouter";
-import { useToast } from "@/hooks/use-toast";
-import { flushSync } from 'react-dom';
 
 export function SaveProjectButton() {
   const { saveProject, saveLoading, projectData } = useVnContext();
   const [location] = useLocation();
-  const { toast } = useToast();
+  
   const handleSave = async () => {
     try {
       // Before saving to database, make sure the current form's data is in the context
       console.log('Save button clicked - saving form to context first');
       await saveFormToContext(location);
       
-      // Add a small delay to ensure React state updates are processed
-      console.log('[saveProject] Waiting briefly for state updates to finish');
-      
-      // Before starting the save process, check for unsaved changes
-      // Now using await with the Promise-based hasUnsavedChanges
-      // This gets projectData from context internally
-      const hasChanges = await hasUnsavedChanges(projectData);
-      if (!hasChanges) {
-        console.log('[saveProject] No changes detected, skipping save operation');
-        toast({
-          title: "No Changes",
-          description: "No changes to save",
-        });
-        return projectData; // Return the existing data
-      }
+      // Add a longer delay to ensure context is updated
+      console.log('Waiting for context to update...');
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       // Then save everything to the database
       console.log('Saving to database now');
@@ -50,29 +36,8 @@ export function SaveProjectButton() {
     // Each route path corresponds to a specific form
     // We'll dispatch a custom event to trigger the form to save to context
     console.log('Dispatching save-form-to-context event');
-    
-    return new Promise<void>((resolve) => {
-      // Use the event listener to know when the form has actually saved its data
-      const handleSaved = () => {
-        document.removeEventListener('form-saved-to-context', handleSaved);
-        console.log('[saveFormToContext] Form reported data saved to context');
-        resolve();
-      };
-      
-      // Listen for the completion event
-      document.addEventListener('form-saved-to-context', handleSaved);
-      
-      // Dispatch the event to trigger the form to save
-      const event = new CustomEvent('save-form-to-context');
-      document.dispatchEvent(event);
-      
-      // Add a timeout in case the event is never fired (as a fallback)
-      setTimeout(() => {
-        document.removeEventListener('form-saved-to-context', handleSaved);
-        console.log('[saveFormToContext] Timeout reached waiting for form to save');
-        resolve();
-      }, 100);
-    });
+    const event = new CustomEvent('save-form-to-context');
+    document.dispatchEvent(event);
   };
   
   return (
