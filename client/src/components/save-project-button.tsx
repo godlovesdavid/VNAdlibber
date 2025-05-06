@@ -1,4 +1,4 @@
-import { useVnContext } from "@/context/vn-context";
+import { useVnContext, type VnProjectData } from "@/context/vn-context";
 import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
 import { useLocation } from "wouter";
@@ -24,21 +24,84 @@ export function SaveProjectButton() {
   };
   const handleSave = async () => {
     try {
-      // Before saving to database, make sure the current form's data is in the context
-      console.log('Save button clicked - saving form to context first');
-      await saveFormToContext(location);
-
-      // Add a longer delay to ensure context is updated
-      console.log('Waiting for context to update...');
-      await new Promise(resolve => setTimeout(resolve, 200));
-
-      // Then save everything to the database with forceUpdate to bypass change detection
-      // This ensures we save the form data that was just updated in context
-      console.log('Saving to database with forceUpdate=true');
-      await saveProject({ forceUpdate: true });
+      // First, save the current form data to a local variable
+      // This will let us capture the latest form data directly
+      console.log('Save button clicked - getting current form data');
+      const formData = await getCurrentFormData();
+      
+      if (!formData) {
+        console.log('No form data to save from current form');
+        // If no form data available, save the project as-is
+        await saveProject();
+        return;
+      }
+      
+      // Create an updated project data object with the current form data
+      // This ensures we're working with the most up-to-date form data
+      console.log('Updating project data with current form data');
+      const updatedProjectData = await updateProjectDataWithFormData(formData);
+      
+      // Save the project with the explicitly updated data
+      console.log('Saving project with explicitly updated data');
+      await saveProject({ updatedData: updatedProjectData });
     } catch (error) {
       console.error('Error during save process:', error);
     }
+  };
+  
+  // Gets the current form data based on the current route
+  const getCurrentFormData = async (): Promise<any> => {
+    // Create a promise that will be resolved with the form data
+    return new Promise((resolve) => {
+      // Create a unique event ID for this save operation
+      const eventId = Date.now().toString();
+      
+      // Function to handle the event when form data is returned
+      const handleFormData = (e: CustomEvent) => {
+        // Check if this event corresponds to our request
+        if (e.detail && e.detail.eventId === eventId) {
+          // Remove the event listener
+          document.removeEventListener('form-data-available', handleFormData as EventListener);
+          // Resolve the promise with the form data
+          resolve(e.detail.data);
+        }
+      };
+      
+      // Add the event listener for form data
+      document.addEventListener('form-data-available', handleFormData as EventListener);
+      
+      // Dispatch event to request form data
+      const event = new CustomEvent('get-form-data', { detail: { eventId } });
+      document.dispatchEvent(event);
+      
+      // Set a timeout in case the form doesn't respond
+      setTimeout(() => {
+        document.removeEventListener('form-data-available', handleFormData as EventListener);
+        console.log('Timed out waiting for form data');
+        resolve(null);
+      }, 500);
+    });
+  };
+  
+  // Creates an updated project data object with the current form data
+  const updateProjectDataWithFormData = async (formData: any): Promise<VnProjectData> => {
+    // Create a copy of the current project data
+    const currentData = { ...projectData };
+    
+    // Based on location, update the appropriate section of the project data
+    if (location.includes('/basic')) {
+      currentData.basicData = formData;
+    } else if (location.includes('/concept')) {
+      currentData.conceptData = formData;
+    } else if (location.includes('/characters')) {
+      currentData.charactersData = formData;
+    } else if (location.includes('/paths')) {
+      currentData.pathsData = formData;
+    } else if (location.includes('/plot')) {
+      currentData.plotData = formData;
+    }
+    
+    return currentData;
   };
   
   
