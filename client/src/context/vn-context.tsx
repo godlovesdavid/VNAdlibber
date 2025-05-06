@@ -82,7 +82,7 @@ interface VnContextType {
 
   // Project management
   createNewProject: () => void;
-  saveProject: () => Promise<any>; // Return type changed to allow returning the saved project
+  saveProject: (options?: { forceUpdate?: boolean }) => Promise<any>; // Return type changed to allow returning the saved project
   loadProject: (projectId: number) => Promise<void>;
   deleteProject: (projectId: number) => Promise<void>;
 
@@ -483,11 +483,11 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // Save project to server
-  const saveProject = async () => {
+  const saveProject = async (options?: { forceUpdate?: boolean }) => {
     try {
       setSaveLoading(true);
       // Before starting the save process
-      if (!hasUnsavedChanges(projectData)) {
+      if (!options?.forceUpdate && !hasUnsavedChanges(projectData)) {
         console.log(
           "[saveProject] No changes detected, skipping save operation",
         );

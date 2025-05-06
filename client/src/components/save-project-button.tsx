@@ -32,9 +32,10 @@ export function SaveProjectButton() {
       console.log('Waiting for context to update...');
       await new Promise(resolve => setTimeout(resolve, 200));
 
-      // Then save everything to the database
-      console.log('Saving to database now');
-      await saveProject();
+      // Then save everything to the database with forceUpdate to bypass change detection
+      // This ensures we save the form data that was just updated in context
+      console.log('Saving to database with forceUpdate=true');
+      await saveProject({ forceUpdate: true });
     } catch (error) {
       console.error('Error during save process:', error);
     }

@@ -83,7 +83,8 @@ export function ShareStoryDialog({
       console.log('[Share Dialog] Starting saveAndShare process');
       
       // Save the project first - await to make sure it completes
-      const savedProject = await saveProject();
+      // Use forceUpdate to bypass change detection
+      const savedProject = await saveProject({ forceUpdate: true });
       console.log('[Share Dialog] Project saved with hash:', savedProject.lastSavedHash);
       
       // Add a delay to ensure all state updates have been processed
