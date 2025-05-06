@@ -57,36 +57,6 @@ function generateProjectHash(projectData: any): string {
   return hash.toString(16);
 }
 
-// Helper function to calculate the current step based on a project's data
-export function calculateCurrentStep(project: Partial<VnProjectData>): number {
-  let step = 1; // Start with basic step
-  
-  // Check what data is present and calculate the appropriate step
-  if (project.basicData && Object.keys(project.basicData).length > 0 && 
-      project.basicData.theme && project.basicData.tone && project.basicData.genre) {
-    step = 2; // Concept step
-  }
-  
-  if (project.conceptData && Object.keys(project.conceptData).length > 0 && 
-      project.conceptData.title && project.conceptData.premise) {
-    step = 3; // Characters step
-  }
-  
-  if (project.charactersData && Object.keys(project.charactersData).length > 0) {
-    step = 4; // Paths step
-  }
-  
-  if (project.pathsData && Object.keys(project.pathsData).length > 0) {
-    step = 5; // Plot step
-  }
-  
-  if (project.plotData && Object.keys(project.plotData).length > 0) {
-    step = 6; // Generate step
-  }
-  
-  return step;
-}
-
 interface VnContextType {
   // Project data
   projectData: VnProjectData | null;
@@ -141,7 +111,7 @@ export function hasUnsavedChanges(projectData: VnProjectData | null): boolean {
   // Get the current hash of the project data
   const currentHash = generateProjectHash(projectData);
   console.log('[Hash Check] Generated current hash:', currentHash);
-  
+  alert(currentHash)
   // Check for a new project scenario
   if (!projectData.id) {
     const newProjectFlag = sessionStorage.getItem('vn_fresh_project');
@@ -283,7 +253,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     setProjectData({
       ...projectData,
       basicData: data,
-      currentStep: Math.max(projectData.currentStep, 1),
+      currentStep: 1,
       updatedAt: new Date().toISOString(),
     });
   };
@@ -294,7 +264,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       ...projectData,
       title: data.title || projectData.title,
       conceptData: data,
-      currentStep: Math.max(projectData.currentStep, 2),
+      currentStep: 2,
       updatedAt: new Date().toISOString(),
     });
   };
@@ -413,7 +383,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       ...projectData,
       charactersData: sanitizedData,
       protagonist: protagonist || projectData.protagonist,
-      currentStep: Math.max(projectData.currentStep, 3),
+      currentStep: 3,
       updatedAt: new Date().toISOString(),
     });
 
@@ -429,7 +399,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     setProjectData({
       ...projectData,
       pathsData: data,
-      currentStep: Math.max(projectData.currentStep, 4),
+      currentStep: 4,
       updatedAt: new Date().toISOString(),
     });
   };
@@ -440,7 +410,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     setProjectData({
       ...projectData,
       plotData: data,
-      currentStep: Math.max(projectData.currentStep, 5),
+      currentStep: 5,
       updatedAt: new Date().toISOString(),
     });
   };
@@ -462,7 +432,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
         ...projectData.generatedActs,
         [`act${actNumber}`]: data,
       },
-      currentStep: Math.max(projectData.currentStep, 6),
+      currentStep: 6,
       updatedAt: new Date().toISOString(),
     });
   };
@@ -548,10 +518,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       // This is more reliable than the dataToSave.id since createNewProject may have cleared the ID from projectData
       const storedProjectId = sessionStorage.getItem('current_project_id');
       
-      // Calculate the correct step based on available data
-      const calculatedStep = calculateCurrentStep(dataToSave);
-      
-      
       // Generate a hash of the essential data only
       const currentDataHash = generateProjectHash(dataToSave);
       console.log('[saveProject] Generated hash for essential project data:', currentDataHash);
@@ -561,33 +527,25 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       // 2. Make sure we have all required fields with defaults
       const finalDataToSave = {
         ...dataToSave,
-        // Use the stored ID if available (for updates)
-        ...(storedProjectId ? { id: parseInt(storedProjectId) } : {}),
-        basicData: dataToSave.basicData || {},
-        conceptData: dataToSave.conceptData || {},
-        charactersData: dataToSave.charactersData || {},
-        pathsData: dataToSave.pathsData || {},
-        plotData: dataToSave.plotData || {},
-        playerData: dataToSave.playerData || defaultPlayerData,
-        // Use our calculated step instead of relying on the stored value
-        currentStep: calculatedStep,
-        updatedAt: new Date().toISOString(),
-        // Add the hash of the current state to track changes
-        lastSavedHash: currentDataHash
+        // ...(storedProjectId ? { id: parseInt(storedProjectId) } : {}),
+        // playerData: dataToSave.playerData || defaultPlayerData,
+        // currentStep: dataToSave.currentStep,
+        // updatedAt: new Date().toISOString(),
+        // lastSavedHash: currentDataHash
       };
       
-      console.log('Saving data to server:', finalDataToSave.basicData);
+      console.log('Saving data to server:', dataToSave.basicData);
       
       // 3. Send to API - determine if it's an update or new project
       let response;
-      if (finalDataToSave.id) {
+      if (dataToSave.id) {
         // It's an existing project, use the ID to update it
-        console.log(`Updating existing project with ID ${finalDataToSave.id}`);
-        response = await apiRequest("POST", "/api/projects", finalDataToSave);
+        console.log(`Updating existing project with ID ${dataToSave.id}`);
+        response = await apiRequest("POST", "/api/projects", dataToSave);
       } else {
         // It's a new project
         console.log('Creating new project in database');
-        response = await apiRequest("POST", "/api/projects", finalDataToSave);
+        response = await apiRequest("POST", "/api/projects", dataToSave);
       }
       
       const savedProject = await response.json();
@@ -674,12 +632,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
         };
       }
       
-      // Recalculate current step based on available data
-      const calculatedStep = calculateCurrentStep(loadedProject);
-      
-      // Update the currentStep value based on our calculation
-      loadedProject.currentStep = calculatedStep;
-
       // Store the project ID in session storage for persistence tracking
       sessionStorage.setItem('current_project_id', projectId.toString());
       console.log(`Loaded project ID ${projectId} and stored in sessionStorage`);
@@ -698,7 +650,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       const savedHashKey = `saved_hash_${projectId}`;
       sessionStorage.setItem(savedHashKey, loadedHash);
       console.log(`[loadProject] Saving hash ${loadedHash} in session storage with key ${savedHashKey}`);
-
+      alert(loadedHash)
       // Clear any "fresh project" flags
       sessionStorage.removeItem("vn_fresh_project");
 
