@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { useVnData } from "@/hooks/use-vn-data";
@@ -22,50 +22,73 @@ export default function ConceptForm() {
   const [tagline, setTagline] = useState("");
   const [premise, setPremise] = useState("");
   const [autosaving, setAutosaving] = useState(false);
-  const [autosaveTimeout, setAutosaveTimeout] = useState<NodeJS.Timeout | null>(null);
-
-  // Function to autosave concept data
-  const autosaveToContext = useCallback(() => {
+  
+  // Use refs for handling timeouts
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const saveCountRef = useRef(0);
+  
+  // Handle title changes with debounce
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTitle = e.target.value;
+    setTitle(newTitle);
+    triggerAutosave(newTitle, tagline, premise);
+  };
+  
+  // Handle tagline changes with debounce
+  const handleTaglineChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTagline = e.target.value;
+    setTagline(newTagline);
+    triggerAutosave(title, newTagline, premise);
+  };
+  
+  // Handle premise changes with debounce
+  const handlePremiseChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newPremise = e.target.value;
+    setPremise(newPremise);
+    triggerAutosave(title, tagline, newPremise);
+  };
+  
+  // Trigger autosave with debounce
+  const triggerAutosave = useCallback((
+    currentTitle: string, 
+    currentTagline: string, 
+    currentPremise: string
+  ) => {
+    // Only attempt to save if project exists
     if (!projectData) return;
     
-    console.log("Autosaving to context:", { title, tagline, premise });
-    setConceptData({
-      title,
-      tagline,
-      premise,
-    });
-    setAutosaving(false);
-  }, [title, tagline, premise, projectData, setConceptData]);
-
-  // Debounced autosave effect
-  useEffect(() => {
-    // Only attempt to save if we have data to save and project exists
-    if (projectData && (title || tagline || premise)) {
-      // Clear any existing timeout
-      if (autosaveTimeout) {
-        clearTimeout(autosaveTimeout);
-      }
-      
-      // Set autosaving indicator
-      setAutosaving(true);
-      console.log("Content changed, queueing autosave in 1.5 seconds...");
-      
-      // Create new timeout for autosaving
-      const timeout = setTimeout(() => {
-        autosaveToContext();
-      }, 1500);
-      
-      // Store the timeout so we can clear it if needed
-      setAutosaveTimeout(timeout);
+    // Set autosaving indicator
+    setAutosaving(true);
+    console.log("Content changed, queueing autosave in 1.5 seconds...");
+    
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
     }
     
-    // Clean up the timeout on unmount
-    return () => {
-      if (autosaveTimeout) {
-        clearTimeout(autosaveTimeout);
-      }
-    };
-  }, [title, tagline, premise, projectData, autosaveToContext]);
+    // Create new timeout
+    timeoutRef.current = setTimeout(() => {
+      // Increment save counter for debugging
+      saveCountRef.current += 1;
+      
+      console.log(`Autosaving to context (save #${saveCountRef.current}):`, {
+        title: currentTitle,
+        tagline: currentTagline,
+        premise: currentPremise
+      });
+      
+      // Save to context
+      setConceptData({
+        title: currentTitle,
+        tagline: currentTagline,
+        premise: currentPremise
+      });
+      
+      // Clear autosaving state
+      setAutosaving(false);
+      timeoutRef.current = null;
+    }, 1500);
+  }, [projectData, setConceptData]);
   
   // Load existing data if available or clear form if starting a new project
   useEffect(() => {
@@ -83,6 +106,17 @@ export default function ConceptForm() {
       setPremise("");
     }
   }, [projectData]);
+  
+  // Cleanup effect - clear any pending autosave timers on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        console.log("Cleaning up autosave timeout on unmount");
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+  }, []);
 
   // Go back to previous step
   const handleBack = () => {
@@ -160,6 +194,10 @@ export default function ConceptForm() {
         tagline: generatedConcept.tagline,
         premise: generatedConcept.premise,
       });
+      
+      // Also trigger the save counter to show this was an explicit save
+      saveCountRef.current += 1;
+      console.log(`Manual save after generation (save #${saveCountRef.current})`);
     }
   };
 
@@ -194,7 +232,7 @@ export default function ConceptForm() {
                 id="title"
                 placeholder="e.g. Chronicles of the Hidden City"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={handleTitleChange}
               />
             </div>
 
@@ -213,7 +251,7 @@ export default function ConceptForm() {
                 id="tagline"
                 placeholder="e.g. When secrets become weapons, who can you trust?"
                 value={tagline}
-                onChange={(e) => setTagline(e.target.value)}
+                onChange={handleTaglineChange}
               />
             </div>
 
@@ -233,7 +271,7 @@ export default function ConceptForm() {
                 rows={4}
                 placeholder="e.g. In a city where memories can be traded like currency, a young archivist discovers a forbidden memory that reveals a conspiracy at the heart of society. As they navigate a web of deception, they must choose between exposing the truth or protecting those they love."
                 value={premise}
-                onChange={(e) => setPremise(e.target.value)}
+                onChange={handlePremiseChange}
               />
             </div>
 
