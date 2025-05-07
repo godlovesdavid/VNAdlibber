@@ -26,6 +26,7 @@ import { Route } from "@/types/vn";
 import { useToast } from "@/hooks/use-toast";
 import { validateFormContent } from "@/lib/validation";
 import { useSimpleAutosave } from "@/lib/autosave";
+import { apiRequest } from "@/lib/queryClient";
 
 // Extended interface for form use that includes a title property
 interface RouteForm extends Route {
