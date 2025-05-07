@@ -164,25 +164,8 @@ export default function PathsForm() {
     setRoutes(updatedRoutes);
   };
 
-  // Update path field with title uniqueness check
+  // Update path field
   const updatePath = (index: number, field: keyof Route, value: any) => {
-    // Special handling for title field to ensure uniqueness
-    if (field === 'title' && value) {
-      // Check if this title already exists in another path
-      const titleExists = routes.some(
-        (route, idx) => idx !== index && route.title === value
-      );
-      
-      if (titleExists) {
-        toast({
-          title: "Duplicate Title",
-          description: "Each path must have a unique title. Please choose a different name.",
-          variant: "destructive"
-        });
-        return; // Don't update if duplicate
-      }
-    }
-    
     const updatedRoutes = [...routes];
     updatedRoutes[index] = {
       ...updatedRoutes[index],
@@ -217,9 +200,38 @@ export default function PathsForm() {
           return obj;
         }, {} as Record<string, any>) as Route;
         
-      // Use title as key or generate a placeholder for untitled routes
-      const routeKey = title ? title : `untitled-path-${idx}`;
-      // Store with routeKey as key but don't include title in the value
+      // Store using a persistent ID if the path had no title
+      // This allows for better editing experience where titles can be empty temporarily
+      let routeKey;
+      
+      // For UI display in forms, allow empty titles during editing
+      // But for storage in context, use a persistent ID
+      if (title) {
+        // If a title is provided, use it as the key
+        routeKey = title;
+      } else {
+        // Generate a stable key for untitled paths
+        // We'll try to use any existing key from the previous data if possible
+        const existingKeys = Object.keys(projectData?.pathsData || {});
+        const tempKey = `New Path ${idx}`;
+        
+        // Find if this path index already had a key we can reuse
+        if (existingKeys.length > idx) {
+          // Use the existing key at this index position 
+          // if it starts with "New Path"
+          const existingKey = existingKeys[idx];
+          if (existingKey.startsWith("New Path")) {
+            routeKey = existingKey;
+          } else {
+            routeKey = tempKey;
+          }
+        } else {
+          // No existing key, generate a new one
+          routeKey = tempKey;
+        }
+      }
+      
+      // Store the path data with the determined key
       pathsObj[routeKey] = cleanRoute;
     });
     
