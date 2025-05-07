@@ -18,6 +18,7 @@ import { Wand2, Trash, Plus } from "lucide-react";
 import { Character } from "@/types/vn";
 import { useToast } from "@/hooks/use-toast";
 import { validateFormContent } from "@/lib/validation";
+import { useSimpleAutosave } from "@/lib/autosave";
 
 export default function CharactersForm() {
   const [location, setLocation] = useLocation();
@@ -57,19 +58,25 @@ export default function CharactersForm() {
   const [generatingCharacterIndex, setGeneratingCharacterIndex] = useState<
     number | null
   >(null);
+  
+  const [isAutosaving, setIsAutosaving] = useState(false);
 
-  // Save form data to context when the event is triggered
-  useEffect(() => {
-      console.log('Saving characters form data to context');
-      
+  // Setup autosave with the improved hook
+  useSimpleAutosave(
+    characters, 
+    (charactersData) => {
       // Skip if no characters
-      if (characters.length === 0) return;
+      if (charactersData.length === 0) return;
       
+      // Show autosaving indicator
+      setIsAutosaving(true);
+      
+      // Create a save function that converts from array to object format
       const charactersObj: Record<string, Character> = {};
       let protagonist = '';
       
       // Convert from array to object format for storage
-      characters.forEach((char, idx) => {
+      charactersData.forEach((char, idx) => {
         if (char.name) {
           // Extract name but don't store it in the object
           const { name, ...characterWithoutName } = char;
@@ -97,9 +104,15 @@ export default function CharactersForm() {
         }
       });
       
+      // Save to context
       setCharactersData(charactersObj, protagonist);
-    
-  }, [characters]);
+      
+      // Clear autosaving indicator after a short delay
+      setTimeout(() => setIsAutosaving(false), 300);
+    },
+    1500, // 1.5 second delay
+    "CharactersForm" // Log prefix
+  );
   
   // Load existing data if available
   useEffect(() => {
@@ -814,11 +827,39 @@ export default function CharactersForm() {
                 </Button>
               </div>
               <div className="flex justify-between">
-                <Button variant="outline" onClick={handleBack}
-                  title={projectData?.conceptData ? `Back to: ${projectData.conceptData.title || 'Concept'}` : 'Back'}
-                >
-                  Back
-                </Button>
+                <div className="flex items-center">
+                  <Button variant="outline" onClick={handleBack}
+                    title={projectData?.conceptData ? `Back to: ${projectData.conceptData.title || 'Concept'}` : 'Back'}
+                  >
+                    Back
+                  </Button>
+                  {/* Autosave indicator */}
+                  {isAutosaving && (
+                    <div className="ml-3 flex items-center text-xs text-gray-500">
+                      <svg
+                        className="animate-spin mr-1 h-3 w-3 text-gray-500"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Autosaving...
+                    </div>
+                  )}
+                </div>
                 <Button onClick={handleNext} disabled={isValidating || isGenerating}>
                   {isValidating ? (
                     <>

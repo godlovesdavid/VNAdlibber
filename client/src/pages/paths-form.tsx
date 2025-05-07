@@ -25,6 +25,7 @@ import { Wand2, Trash, Plus } from "lucide-react";
 import { Route } from "@/types/vn";
 import { useToast } from "@/hooks/use-toast";
 import { validateFormContent } from "@/lib/validation";
+import { useSimpleAutosave } from "@/lib/autosave";
 
 // Extended interface for form use that includes a title property
 interface RouteForm extends Route {
@@ -59,16 +60,28 @@ export default function PathsForm() {
 
   const [generatingPathIndex, setGeneratingPathIndex] = useState<number | null>(null);
   const [isValidating, setIsValidating] = useState(false);
+  const [isAutosaving, setIsAutosaving] = useState(false);
   const { toast } = useToast();
 
-  //autosave to context
-  useEffect(() => {
-      if (routes.length === 0) return;
-      if (routes.every(route => !route.title)) return;
+  // Setup autosave with the improved hook
+  useSimpleAutosave(
+    routes,
+    (routesData) => {
+      if (routesData.length === 0) return;
+      if (routesData.every(route => !route.title)) return;
       
-      savePathData();
-    
-  }, [routes]);
+      // Show autosaving indicator
+      setIsAutosaving(true);
+      
+      // Save the data
+      savePathData(routesData);
+      
+      // Clear autosaving indicator after a short delay
+      setTimeout(() => setIsAutosaving(false), 300);
+    },
+    1500, // 1.5 second delay
+    "PathsForm" // Log prefix
+  );
 
   // Load existing data if available
   useEffect(() => {
@@ -588,11 +601,39 @@ export default function PathsForm() {
                 </Button>
               </div>
               <div className="flex justify-between">
-                <Button variant="outline" onClick={handleBack}
-                  title={projectData?.charactersData ? `Back to: ${Object.keys(projectData.charactersData).length} characters` : 'Back'}
-                >
-                  Back
-                </Button>
+                <div className="flex items-center">
+                  <Button variant="outline" onClick={handleBack}
+                    title={projectData?.charactersData ? `Back to: ${Object.keys(projectData.charactersData).length} characters` : 'Back'}
+                  >
+                    Back
+                  </Button>
+                  {/* Autosave indicator */}
+                  {isAutosaving && (
+                    <div className="ml-3 flex items-center text-xs text-gray-500">
+                      <svg
+                        className="animate-spin mr-1 h-3 w-3 text-gray-500"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Autosaving...
+                    </div>
+                  )}
+                </div>
                 <Button onClick={handleNext} disabled={isValidating || isGenerating}>
                   {isValidating ? (
                     <>
