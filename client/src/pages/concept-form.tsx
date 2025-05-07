@@ -159,8 +159,29 @@ export default function ConceptForm() {
       });
       
       // Log the manual save
-      console.log("Manual save after generation");
     }
+  };
+  
+  // Reset form fields to empty values
+  const handleResetForm = () => {
+    // Reset all form fields
+    setTitle("");
+    setTagline("");
+    setPremise("");
+    
+    // Save empty data to context
+    setConceptData({
+      title: "",
+      tagline: "",
+      premise: ""
+    });
+    
+    // Show toast notification
+    toast({
+      title: "Form Reset",
+      description: "Concept form has been reset.",
+      variant: "default"
+    });
   };
 
   return (
@@ -270,6 +291,14 @@ export default function ConceptForm() {
                 )}
               </div>
               <div className="flex space-x-3">
+                <Button
+                  variant="outline"
+                  className="border-red-300 text-red-600 hover:bg-red-50"
+                  onClick={handleResetForm}
+                  disabled={isGenerating}
+                >
+                  Reset
+                </Button>
                 <Button
                   variant="outline"
                   className="border-primary text-primary hover:bg-primary-100"
