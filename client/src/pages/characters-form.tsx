@@ -337,24 +337,30 @@ export default function CharactersForm() {
       const charactersObj: Record<string, Character> = {};
       
       data.forEach((char, idx) => {
-        if (char.name) {
-          // Extract name but don't store it in the object
-          const { name, ...characterWithoutName } = char;
+        // Always include the character regardless of name being present
+        // This ensures empty characters are preserved during autosave
+        
+        // Extract name but don't store it in the object
+        const { name, ...characterWithoutName } = char;
+        
+        // Remove any numeric keys that might be causing unintended nesting
+        const cleanCharacter = Object.entries(characterWithoutName)
+          .filter(([key]) => isNaN(Number(key)))
+          .reduce((obj, [key, value]) => {
+            obj[key] = value;
+            return obj;
+          }, {} as Record<string, any>) as Character;
           
-          // Remove any numeric keys that might be causing unintended nesting
-          const cleanCharacter = Object.entries(characterWithoutName)
-            .filter(([key]) => isNaN(Number(key)))
-            .reduce((obj, [key, value]) => {
-              obj[key] = value;
-              return obj;
-            }, {} as Record<string, any>) as Character;
-            
-          charactersObj[name] = cleanCharacter;
-        }
+        // Use character index as key if name is empty
+        const characterKey = name ? name : `untitled-character-${idx}`;
+        charactersObj[characterKey] = cleanCharacter;
       });
       
       // Save to context
       setCharactersData(charactersObj);
+      
+      // Log for debugging
+      console.log('Saving characters data to context:', charactersObj);
       
       // Clear autosaving indicator after a short delay
       setTimeout(() => setIsAutosaving(false), 300);

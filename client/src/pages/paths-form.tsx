@@ -68,7 +68,6 @@ export default function PathsForm() {
     routes,
     (routesData) => {
       if (routesData.length === 0) return;
-      if (routesData.every(route => !route.title)) return;
       
       // Show autosaving indicator
       setIsAutosaving(true);
@@ -189,22 +188,22 @@ export default function PathsForm() {
   const savePathData = (routesToSave: Route[] = routes) => {
     // Convert array to object format for storage
     const pathsObj: Record<string, Route> = {};
-    routesToSave.forEach(route => {
-      if (route.title) {
-        // Create a copy of the route without the redundant title property
-        const { title, ...routeWithoutTitle } = route;
+    routesToSave.forEach((route, idx) => {
+      // Create a copy of the route without the redundant title property
+      const { title, ...routeWithoutTitle } = route;
+      
+      // Remove any numeric keys that might be causing unintended nesting
+      const cleanRoute = Object.entries(routeWithoutTitle)
+        .filter(([key]) => isNaN(Number(key)))
+        .reduce((obj, [key, value]) => {
+          obj[key] = value;
+          return obj;
+        }, {} as Record<string, any>) as Route;
         
-        // Remove any numeric keys that might be causing unintended nesting
-        const cleanRoute = Object.entries(routeWithoutTitle)
-          .filter(([key]) => isNaN(Number(key)))
-          .reduce((obj, [key, value]) => {
-            obj[key] = value;
-            return obj;
-          }, {} as Record<string, any>) as Route;
-          
-        // Store with title as key but don't include title in the value
-        pathsObj[title] = cleanRoute;
-      }
+      // Use title as key or generate a placeholder for untitled routes
+      const routeKey = title ? title : `untitled-path-${idx}`;
+      // Store with routeKey as key but don't include title in the value
+      pathsObj[routeKey] = cleanRoute;
     });
     
     // Set the paths data in the context
