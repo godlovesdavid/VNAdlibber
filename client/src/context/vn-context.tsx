@@ -169,9 +169,47 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
 
-  // We've removed the auto-load from localStorage on mount
-  // Now loading only happens explicitly when the user requests it
-
+  // Auto-load from localStorage on mount
+  useEffect(() => {
+    // Only try to load from localStorage if we don't already have project data
+    if (!projectData) {
+      const savedProject = localStorage.getItem("current_vn_project");
+      
+      if (savedProject) {
+        try {
+          console.log("Found saved project in localStorage, auto-loading...");
+          const parsedProject = JSON.parse(savedProject);
+          setProjectData(parsedProject);
+          
+          // If the project has an ID, ensure it's tracked in sessionStorage
+          if (parsedProject.id) {
+            sessionStorage.setItem("current_project_id", parsedProject.id.toString());
+            console.log(`Auto-loaded project ID ${parsedProject.id} from localStorage and stored in sessionStorage`);
+          }
+          
+          // If we're on the main menu and there's a current step, navigate to that step
+          // We don't do this for other pages to avoid unexpected redirects
+          const currentPath = window.location.pathname;
+          if (currentPath === "/" && parsedProject.currentStep) {
+            const stepRoutes = [
+              "/create/basic",
+              "/create/concept",
+              "/create/characters",
+              "/create/paths",
+              "/create/plot",
+              "/create/generate-vn",
+            ];
+            const stepIndex = Math.min(parsedProject.currentStep - 1, stepRoutes.length - 1);
+            setLocation(stepRoutes[stepIndex]);
+          }
+        } catch (error) {
+          console.error("Error auto-loading saved project from localStorage:", error);
+          // Don't show an error toast for auto-loading failures
+        }
+      }
+    }
+  }, []);
+  
   // Update localStorage when project data changes
   useEffect(() => {
     if (projectData) {

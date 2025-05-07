@@ -10,18 +10,11 @@ import logoImage from "@assets/image_1746248981035.png";
 
 export function MainMenu() {
   const [, setLocation] = useLocation();
-  const { createNewProject, loadFromLocalStorage } = useVnContext();
+  const { createNewProject } = useVnContext();
   const { toast } = useToast();
   const [showLoadDialog, setShowLoadDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
-  const [hasContinueProject, setHasContinueProject] = useState(false);
   
-  // Check if there's a project to continue on mount
-  useEffect(() => {
-    const savedProject = localStorage.getItem("current_vn_project");
-    setHasContinueProject(!!savedProject);
-  }, []);
-
   // Handle creating a new story
   const handleCreateNewStory = () => {
     createNewProject();
@@ -30,18 +23,6 @@ export function MainMenu() {
   // Handle loading project dialog
   const handleLoadProject = () => {
     setShowLoadDialog(true);
-  };
-  
-  // Handle continuing the last project
-  const handleContinueProject = () => {
-    const success = loadFromLocalStorage();
-    if (!success) {
-      toast({
-        title: "No project found",
-        description: "Could not find a recent project to continue.",
-        variant: "destructive"
-      });
-    }
   };
 
   // Handle play story
@@ -76,7 +57,7 @@ export function MainMenu() {
           Create New Story
         </Button>
         
-        {hasContinueProject && (
+        {/* {hasContinueProject && (
           <Button 
             onClick={handleContinueProject} 
             className="w-full flex items-center justify-center bg-white border border-green-600 text-green-600 hover:bg-green-50 py-6"
@@ -86,7 +67,7 @@ export function MainMenu() {
             <RotateCcw className="mr-2 h-5 w-5" />
             Continue Recent Project
           </Button>
-        )}
+        )} */}
         
         <Button 
           onClick={handleLoadProject} 
