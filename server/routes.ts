@@ -554,7 +554,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(validationResult);
     } catch (error) {
       console.error("Error validating content:", error);
-      res.status(500).json({ message: "Failed to validate content" });
+      
+      // Extract detailed error information
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      const errorCause = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause 
+        ? String(error.cause.message) 
+        : null;
+      const isOverloaded = typeof errorMessage === 'string' && errorMessage.includes("overloaded");
+      const statusCode = isOverloaded ? 503 : 500; // Service Unavailable for overloaded model
+      
+      res.status(statusCode).json({
+        message: "Failed to validate content",
+        technicalDetails: errorMessage,
+        rootCause: errorCause || errorMessage,
+        isModelOverloaded: isOverloaded,
+        retryRecommended: isOverloaded
+      });
     }
   });
 
@@ -581,7 +596,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(generatedConcept);
     } catch (error) {
       console.error("Error generating concept:", error);
-      res.status(500).json({ message: "Failed to generate concept" });
+      
+      // Extract detailed error information
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      const errorCause = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause 
+        ? String(error.cause.message) 
+        : null;
+      const isOverloaded = typeof errorMessage === 'string' && errorMessage.includes("overloaded");
+      const statusCode = isOverloaded ? 503 : 500; // Service Unavailable for overloaded model
+      
+      res.status(statusCode).json({
+        message: "Failed to generate concept",
+        technicalDetails: errorMessage,
+        rootCause: errorCause || errorMessage,
+        isModelOverloaded: isOverloaded,
+        retryRecommended: isOverloaded
+      });
     }
   });
 
@@ -800,7 +830,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       console.error("Error generating plot:", error);
-      res.status(500).json({ message: "Failed to generate plot" });
+      
+      // Extract detailed error information
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      const errorCause = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause 
+        ? String(error.cause.message) 
+        : null;
+      const isOverloaded = typeof errorMessage === 'string' && errorMessage.includes("overloaded");
+      const statusCode = isOverloaded ? 503 : 500; // Service Unavailable for overloaded model
+      
+      res.status(statusCode).json({
+        message: "Failed to generate plot",
+        technicalDetails: errorMessage,
+        rootCause: errorCause || errorMessage,
+        isModelOverloaded: isOverloaded,
+        retryRecommended: isOverloaded
+      });
     }
   });
 
@@ -877,9 +922,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
 
       res.json(JSON.parse(responseContent));
-    } catch (e) {
-      console.error("Error generating act:", e);
-      res.status(500).json({ message: "Failed to generate act" });
+    } catch (error) {
+      console.error("Error generating act:", error);
+      
+      // Extract detailed error information
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      const errorCause = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause 
+        ? String(error.cause.message) 
+        : null;
+      const isOverloaded = typeof errorMessage === 'string' && errorMessage.includes("overloaded");
+      const statusCode = isOverloaded ? 503 : 500; // Service Unavailable for overloaded model
+      
+      res.status(statusCode).json({
+        message: "Failed to generate act",
+        technicalDetails: errorMessage,
+        rootCause: errorCause || errorMessage,
+        isModelOverloaded: isOverloaded,
+        retryRecommended: isOverloaded
+      });
     }
   });
 
