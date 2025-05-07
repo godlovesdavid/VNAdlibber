@@ -91,6 +91,8 @@ export default function GenerateVnForm() {
   const [regenerateConfirmOpen, setRegenerateConfirmOpen] = useState(false);
   const [actToRegenerate, setActToRegenerate] = useState<number | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const { hasUnsavedChanges } = useVnContext();
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
   // autosave playerData to context
   useEffect(() => {
@@ -217,7 +219,17 @@ export default function GenerateVnForm() {
 
   // Handle finish
   const handleFinish = () => {
-    setLocation("/");
+    const hasChanges = hasUnsavedChanges();
+    console.log("[NavBar] hasUnsavedChanges returned:", hasChanges);
+
+    if (hasChanges) {
+      console.log("[NavBar] Showing confirmation dialog");
+      setConfirmDialogOpen(true);
+    } else {
+      // No unsaved changes, just go back to main menu
+      console.log("[NavBar] No unsaved changes, going back to main menu");
+      setLocation("/");
+    }
   };
 
   return (

@@ -285,6 +285,9 @@ export default function PathsForm() {
       });
       return;
     }
+
+    // Save the data
+    savePathData();
     
     // Additional server-side validation
     setIsValidating(true);
@@ -298,13 +301,54 @@ export default function PathsForm() {
         pathsData: pathsObj,
       };
       
-      // Use our validation utility
-      const isValid = await validateFormContent(contextData, "paths");
-      
-      if (isValid) {
-        // Navigate to next step
-        setLocation("/create/plot");
+      try {
+        // Call validate endpoint directly to handle error messages properly
+        const validationResponse = await apiRequest("POST", "/api/validate", {
+          projectContext: contextData,
+          contentType: "paths",
+        });
+        
+        const validationResult = await validationResponse.json();
+        
+        if (validationResult.valid) {
+          toast({
+            title: "Validation Passed",
+            description: validationResult.message || "Paths validated successfully."
+          });
+          
+          // Navigate to the next step
+          setLocation("/create/plot");
+        } else {
+          // Show the specific validation error from the server
+          toast({
+            title: "Path Validation Failed",
+            description: validationResult.issues || validationResult.message || "Your paths don't align with the characters and story.",
+            variant: "destructive",
+            // Set longer duration for validation errors
+            duration: 10000,
+          });
+        }
+      } catch (error: any) {
+        console.error("Validation error:", error);
+        
+        // Extract the specific message from the error object
+        const errorMessage = error.data?.message || 
+                            "Please check your path data and try again.";
+        
+        toast({
+          title: "Path Validation Error",
+          description: errorMessage,
+          variant: "destructive",
+          duration: 10000,
+        });
       }
+    } catch (error) {
+      console.error("Error in path validation flow:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsValidating(false);
     }

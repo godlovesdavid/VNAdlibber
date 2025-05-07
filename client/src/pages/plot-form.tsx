@@ -54,7 +54,7 @@ export default function PlotForm() {
         act1: true,
       });
     }
-  }, [location]);
+  }, [projectData]);
 
   // Toggle act expansion
   const toggleAct = (act: string) => {
@@ -97,6 +97,8 @@ export default function PlotForm() {
 
   // Go back to previous step
   const handleBack = () => {
+    if (plotActs)
+      setPlotData(plotActs);
     goToStep(4);
   };
 
@@ -123,7 +125,8 @@ export default function PlotForm() {
       // setIsValidating(false);
       return;
     }
-    
+
+    setPlotData(plotActs);
     // Prepare the project context data for validation
     // const contextData = {
     //   basicData: projectData.basicData,

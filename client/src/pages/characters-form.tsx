@@ -19,6 +19,7 @@ import { Character } from "@/types/vn";
 import { useToast } from "@/hooks/use-toast";
 import { validateFormContent } from "@/lib/validation";
 import { useSimpleAutosave } from "@/lib/autosave";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function CharactersForm() {
   const [location, setLocation] = useLocation();
@@ -278,24 +279,52 @@ export default function CharactersForm() {
         charactersData: charactersObj,
       };
       
-      // Use our validation utility
-      const isValid = await validateFormContent(contextData, "characters");
-      
-      if (isValid) {
-        // Navigate to the next step
-        setLocation("/create/paths");
-      } else {
+      try {
+        // Call validate endpoint directly to handle error messages properly
+        const validationResponse = await apiRequest("POST", "/api/validate", {
+          projectContext: contextData,
+          contentType: "characters",
+        });
+        
+        const validationResult = await validationResponse.json();
+        
+        if (validationResult.valid) {
+          toast({
+            title: "Validation Passed",
+            description: validationResult.message || "Characters validated successfully."
+          });
+          
+          // Navigate to the next step
+          setLocation("/create/paths");
+        } else {
+          // Show the specific validation error from the server
+          toast({
+            title: "Character Validation Failed",
+            description: validationResult.issues || validationResult.message || "Your characters don't align with the story.",
+            variant: "destructive",
+            // Set longer duration for validation errors
+            duration: 10000,
+          });
+        }
+      } catch (error: any) {
+        console.error("Validation error:", error);
+        
+        // Extract the specific message from the error object
+        const errorMessage = error.data?.message || 
+                            "Please check your character data and try again.";
+        
         toast({
-          title: "Validation Error",
-          description: "Please check the character data and try again.",
-          variant: "destructive"
+          title: "Character Validation Error",
+          description: errorMessage,
+          variant: "destructive",
+          duration: 10000,
         });
       }
     } catch (error) {
-      console.error("Error validating characters:", error);
+      console.error("Error in character validation flow:", error);
       toast({
         title: "Error",
-        description: "Failed to validate character data.",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive"
       });
     } finally {
