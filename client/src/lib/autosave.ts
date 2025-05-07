@@ -18,18 +18,22 @@ export function useSimpleAutosave<T>(
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Previous value reference to detect changes
-  const previousValueRef = useRef<T | null>(null);
+  const previousValueRef = useRef<string | null>(null);
   
   // Setup effect to watch for changes and save with debounce
   useEffect(() => {
+    // Convert current data to string representation for comparison
+    const currentDataString = JSON.stringify(data);
+    
     // Skip if this is the first render or no actual change
     const isFirstRender = previousValueRef.current === null;
+    const hasChanged = previousValueRef.current !== currentDataString;
     
     // Update the previous value
-    previousValueRef.current = data;
+    previousValueRef.current = currentDataString;
     
-    // Skip the first render
-    if (isFirstRender) return;
+    // Skip the first render or if data hasn't changed
+    if (isFirstRender || !hasChanged) return;
     
     // Optional logging
     if (logPrefix) {
