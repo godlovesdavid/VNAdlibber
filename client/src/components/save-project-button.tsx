@@ -8,21 +8,6 @@ export function SaveProjectButton() {
   const [location] = useLocation();
   const { toast } = useToast();
 
-  // Helper function to save the current form's data to the context
-  const saveFormToContext = async (path: string) => {
-
-    // Get the form data based on the current route
-    if (!projectData) {
-      console.log('No project data available to save');
-      return;
-    }
-
-    // Each route path corresponds to a specific form
-    // We'll dispatch a custom event to trigger the form to save to context
-    console.log('Dispatching save-form-to-context event');
-    const event = new CustomEvent('save-form-to-context');
-    document.dispatchEvent(event);
-  };
 
   const handleSave = async () => {
     try {

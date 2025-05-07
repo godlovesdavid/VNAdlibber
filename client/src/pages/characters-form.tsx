@@ -19,6 +19,7 @@ import { Character } from "@/types/vn";
 import { useToast } from "@/hooks/use-toast";
 import { useSimpleAutosave } from "@/lib/autosave";
 import { apiRequest } from "@/lib/queryClient";
+import { json } from "express";
 
 export default function CharactersForm() {
   const [location, setLocation] = useLocation();
@@ -43,7 +44,7 @@ export default function CharactersForm() {
   const [characters, setCharacters] = useState<CharacterForm[]>([
     {
       name: "",
-      role: "Protagonist",
+      role: "protagonist",
       occupation: "",
       gender: "",
       age: "",
@@ -73,7 +74,7 @@ export default function CharactersForm() {
       ...characters,
       {
         name: "",
-        role: "",
+        role: characters.length === 0 ? "protagonist" : "",
         occupation: "",
         gender: "",
         age: "",
@@ -241,40 +242,8 @@ export default function CharactersForm() {
           return obj;
         }, {} as Record<string, any>) as Character;
           
-      // Store using a permanent ID if the character had no name
-      // This allows us to keep the character's data while editing the name
-      let characterKey;
-      
-      // For UI display in forms, allow empty names during editing
-      // But for storage, use a persistent ID
-      if (name) {
-        // If a name is provided, use it as the key
-        characterKey = name;
-      } else {
-        // Generate a stable key for unnamed characters
-        // We'll try to use any existing key from the previous data if possible
-        const existingKeys = Object.keys(projectData?.charactersData || {});
-        const tempKey = `New Character ${idx}`;
-        
-        // Find if this character index already had a key we can reuse
-        // This is a simplistic approach and might not always work 
-        // if characters are reordered extensively
-        if (existingKeys.length > idx) {
-          // Use the existing key at this index position 
-          // if it starts with "New Character"
-          const existingKey = existingKeys[idx];
-          if (existingKey.startsWith("New Character")) {
-            characterKey = existingKey;
-          } else {
-            characterKey = tempKey;
-          }
-        } else {
-          // No existing key, generate a new one
-          characterKey = tempKey;
-        }
-      }
-      
-      // Store the character data with the determined key
+      // Use character index as key if name is empty
+      const characterKey = name ? name : `untitled-character-${idx}`;
       charactersObj[characterKey] = cleanCharacter;
     });
 
@@ -412,39 +381,8 @@ export default function CharactersForm() {
             return obj;
           }, {} as Record<string, any>) as Character;
           
-        // Store using a persistent ID if the character had no name
-        // This allows for better editing experience where names can be empty temporarily
-        let characterKey;
-        
-        // For UI display in forms, allow empty names during editing
-        // But for storage in context, use a persistent ID
-        if (name) {
-          // If a name is provided, use it as the key
-          characterKey = name;
-        } else {
-          // Generate a stable key for unnamed characters
-          // We'll try to use any existing key from the previous data if possible
-          const existingKeys = Object.keys(projectData?.charactersData || {});
-          const tempKey = `New Character ${idx}`;
-          
-          // Find if this character index already had a key we can reuse
-          // This is a simplistic approach but should work for most cases
-          if (existingKeys.length > idx) {
-            // Use the existing key at this index position 
-            // if it starts with "New Character"
-            const existingKey = existingKeys[idx];
-            if (existingKey.startsWith("New Character")) {
-              characterKey = existingKey;
-            } else {
-              characterKey = tempKey;
-            }
-          } else {
-            // No existing key, generate a new one
-            characterKey = tempKey;
-          }
-        }
-        
-        // Store the character data with the determined key
+        // Use character index as key if name is empty
+        const characterKey = name ? name : `untitled-character-${idx}`;
         charactersObj[characterKey] = cleanCharacter;
       });
       
