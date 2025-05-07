@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { validateFormContent } from "@/lib/validation";
+import { useSimpleAutosave } from "@/lib/autosave";
 
 // Arrays for each dropdown type
 const tones = [
@@ -91,31 +92,46 @@ export default function BasicForm() {
   const [tone, setTone] = useState("");
   const [genre, setGenre] = useState("");
   const [setting, setSetting] = useState("");
-
-  useEffect(() => {
-      if (!theme || !tone || !genre || !setting) return;
-      setBasicData({
-        theme,
-        tone,
-        genre,
-        setting,
-      });
-  }, [theme, tone, genre, setting]);
+  
+  // Create form data object for autosave
+  const formData = { theme, tone, genre, setting };
+  
+  // Setup autosave
+  useSimpleAutosave(
+    formData, 
+    (data) => {
+      // Skip saving if any required field is empty
+      if (!data.theme || !data.tone || !data.genre || !data.setting) return;
+      
+      // Save to context
+      setBasicData(data);
+    },
+    1500, // 1.5 second delay
+    "BasicForm" // Log prefix
+  );
 
   // Function to randomize all form values
   const randomizeForm = () => {
     console.log("Randomizing form values");
-    setTheme(getRandomItem(themes));
-    setTone(getRandomItem(tones));
-    setGenre(getRandomItem(genres));
-    setSetting(getRandomItem(settings));
-
+    // Get random values first
+    const randomTheme = getRandomItem(themes);
+    const randomTone = getRandomItem(tones);
+    const randomGenre = getRandomItem(genres);
+    const randomSetting = getRandomItem(settings);
+    
+    // Update state
+    setTheme(randomTheme);
+    setTone(randomTone);
+    setGenre(randomGenre);
+    setSetting(randomSetting);
+    
+    // Manually save the new values immediately
     setBasicData({
-                  theme,
-                  tone,
-                  genre,
-                  setting,
-                });
+      theme: randomTheme,
+      tone: randomTone,
+      genre: randomGenre,
+      setting: randomSetting,
+    });
   };
 
   // Load or reset form values based on projectData

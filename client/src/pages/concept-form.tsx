@@ -53,7 +53,7 @@ export default function ConceptForm() {
       
       // Clear autosaving indicator
       setAutosaving(false);
-    }, 1500);
+    }, 1000);
     
     // Clean up timeout if component unmounts or dependencies change
     return () => {
