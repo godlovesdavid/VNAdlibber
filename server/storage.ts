@@ -321,25 +321,39 @@ export class DatabaseStorage implements IStorage {
       delete normalizedData.updatedAt;
       delete normalizedData.lastSavedHash;
 
-      // Create a stable JSON string with sorted keys
-      // This ensures consistent hashing even if object properties are in different order
       function stableStringify(obj: any): string {
-        const sortKeys = (input: any): any => {
+        const sortKeys = (input: any, parentKey?: string): any => {
           if (Array.isArray(input)) {
-            return input.map(sortKeys);
+            return input.map((item) => sortKeys(item, parentKey));
           } else if (input !== null && typeof input === "object") {
-            return Object.keys(input)
-              .sort()
-              .reduce((acc: any, key) => {
-                acc[key] = sortKeys(input[key]);
-                return acc;
-              }, {});
+            let keys = Object.keys(input);
+
+            // Special logic for characterData
+            if (parentKey === "characterData") {
+              keys.sort((a, b) => {
+                const roleA = input[a]?.role;
+                const roleB = input[b]?.role;
+
+                // Protagonist comes first
+                if (roleA === "Protagonist" && roleB !== "Protagonist") return -1;
+                if (roleB === "Protagonist" && roleA !== "Protagonist") return 1;
+                return a.localeCompare(b); // fallback alphabetical
+              });
+            } else {
+              keys.sort(); // default alphabetical
+            }
+
+            return keys.reduce((acc: any, key) => {
+              acc[key] = sortKeys(input[key], key);
+              return acc;
+            }, {});
           }
           return input; // primitive
         };
 
         return JSON.stringify(sortKeys(obj));
       }
+
 
       const str = stableStringify(normalizedData).normalize();
       let hash = 0;

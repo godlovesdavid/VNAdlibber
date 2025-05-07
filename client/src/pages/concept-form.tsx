@@ -47,7 +47,7 @@ export default function ConceptForm() {
       // Clear autosaving indicator after a short delay
       setTimeout(() => setAutosaving(false), 300);
     },
-    1500, // 1.5 second delay
+    500, // 1.5 second delay
     "ConceptForm" // Log prefix
   );
   

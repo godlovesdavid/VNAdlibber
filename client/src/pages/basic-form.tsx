@@ -106,7 +106,7 @@ export default function BasicForm() {
       // Save to context
       setBasicData(data);
     },
-    1500, // 1.5 second delay
+    500, // 1.5 second delay
     "BasicForm" // Log prefix
   );
 

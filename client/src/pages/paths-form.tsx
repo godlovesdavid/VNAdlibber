@@ -80,7 +80,7 @@ export default function PathsForm() {
       // Clear autosaving indicator after a short delay
       setTimeout(() => setIsAutosaving(false), 300);
     },
-    1500, // 1.5 second delay
+    500, 
     "PathsForm" // Log prefix
   );
 
@@ -97,7 +97,7 @@ export default function PathsForm() {
       );
       setRoutes(routesArray);
     }
-  }, [location]);
+  }, [projectData]);
 
   // Add a new path card
   const addPath = () => {

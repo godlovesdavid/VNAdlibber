@@ -303,7 +303,7 @@ export default function CharactersForm() {
             description: validationResult.issues || validationResult.message || "Your characters don't align with the story.",
             variant: "destructive",
             // Set longer duration for validation errors
-            duration: 10000,
+            duration: 120000,
           });
         }
       } catch (error: any) {
@@ -317,7 +317,7 @@ export default function CharactersForm() {
           title: "Character Validation Error",
           description: errorMessage,
           variant: "destructive",
-          duration: 10000,
+          duration: 120000,
         });
       }
     } catch (error) {
@@ -374,7 +374,7 @@ export default function CharactersForm() {
       // Clear autosaving indicator after a short delay
       setTimeout(() => setIsAutosaving(false), 300);
     },
-    1500, // 1.5 second delay
+    500, 
     "CharactersForm" // Log prefix
   );
   
