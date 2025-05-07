@@ -162,8 +162,13 @@ export default function ConceptForm() {
     }
   };
   
-  // Reset form fields to empty values
+  // Reset form fields to empty values with confirmation
   const handleResetForm = () => {
+    // Ask for confirmation before clearing
+    if (!window.confirm("Are you sure you want to reset all concept information? This action cannot be undone.")) {
+      return; // User canceled the reset
+    }
+    
     // Reset all form fields
     setTitle("");
     setTagline("");
