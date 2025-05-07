@@ -27,6 +27,19 @@ export function NavBar() {
     return location.includes("/create/");
   };
 
+  const waitForFlagToBeFalse = async (getFlag: () => boolean) => {
+    while (getFlag()) {
+      await new Promise((res) => setTimeout(res, 100)); // brief delay
+    }
+  };
+
+  // Helper function to save form to context before checking for changes
+  const saveFormToContext = async () => {
+    // Dispatch a save-form-to-context event to trigger the form to save data
+    console.log("[NavBar] Dispatching save-form-to-context event");
+    const event = new CustomEvent("save-form-to-context");
+    document.dispatchEvent(event);
+  };
 
   // Go back to main menu with confirmation for form pages
   const handleBackClick = async () => {
