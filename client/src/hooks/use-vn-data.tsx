@@ -45,18 +45,6 @@ export const useVnData = () => {
 
       setAbortController(null);
 
-      // Check for validation errors from AI
-      if (result && result.error) {
-        toast({
-          title: "Content Validation Failed",
-          description: result.error,
-          variant: "destructive",
-          // Use infinite duration for validation errors to ensure user sees them
-          duration: Infinity,
-        });
-        return null;
-      }
-
       return result.data;
     } catch (error) {
       if ((error as Error).name !== "AbortError") {
@@ -238,41 +226,6 @@ export const useVnData = () => {
           charactersData: vnContext.projectData.charactersData,
         };
 
-        // // STEP 1: Validate the content first
-        // console.log("🔍 Validating content before generation...");
-        // const validationResponse = await apiRequest(
-        //   "POST",
-        //   "/api/validate",
-        //   { projectContext, contentType: "paths" },
-        //   controller.signal
-        // );
-
-        // // Check if the validation controller was aborted
-        // if (controller.signal.aborted) {
-        //   console.log("Validation was cancelled by user");
-        //   return null;
-        // }
-
-        // const validationResult = await validationResponse.json();
-
-        // // If validation failed, show error and stop
-        // if (!validationResult.valid || validationResult.message) {
-        //   const errorMessage = validationResult.message || "Content validation failed";
-        //   toast({
-        //     title: "Content Validation Failed",
-        //     description: errorMessage,
-        //     variant: "destructive",
-        //     duration: 60000,
-        //   });
-        //   setIsGenerating(false);
-        //   setAbortController(null);
-        //   return null;
-        // }
-
-        // console.log("✅ Content validated successfully, proceeding to generation");
-
-        // STEP 2: Generate the path after validation passes
-        // Use our simplified path endpoint
         const generationResponse = await apiRequest(
           "POST",
           "/api/generate/path",
@@ -401,50 +354,6 @@ export const useVnData = () => {
       const controller = new AbortController();
       setAbortController(controller);
 
-      // Create the project context object used for both validation and generation
-      const projectContext = {
-        basicData: vnContext.projectData.basicData,
-        conceptData: vnContext.projectData.conceptData,
-        charactersData: vnContext.projectData.charactersData,
-        pathsData: vnContext.projectData.pathsData,
-      };
-
-      // // STEP 1: Validate the content first
-      // console.log("🔍 Validating plot context before generation...");
-      // const validationResponse = await apiRequest(
-      //   "POST",
-      //   "/api/validate",
-      //   { projectContext, contentType: "plot" },
-      //   controller.signal
-      // );
-
-      // // Check if the validation controller was aborted
-      // if (controller.signal.aborted) {
-      //   console.log("Plot validation was cancelled by user");
-      //   return null;
-      // }
-
-      // const validationResult = await validationResponse.json();
-
-      // // If validation failed, show error and stop
-      // if (!validationResult.valid || validationResult.message) {
-      //   const errorMessage = validationResult.message || "Content validation failed";
-      //   toast({
-      //     title: "Content Validation Failed",
-      //     description: errorMessage,
-      //     variant: "destructive",
-      //     duration: 60000,
-      //   });
-      //   setIsGenerating(false);
-      //   setAbortController(null);
-      //   return null;
-      // }
-
-      // console.log("✅ Plot context validated successfully, proceeding to generation");
-
-      // STEP 2: Generate the plot after validation passes
-      // Use the API directly instead of the wrapper function
-      // Ensure we use consistent property names between frontend and backend
       const generationResponse = await apiRequest(
         "POST",
         "/api/generate/plot",
@@ -587,41 +496,6 @@ export const useVnData = () => {
           playerData: vnContext.playerData,
         };
 
-        // // STEP 1: Validate the content first
-        // console.log(`🔍 Validating Act ${actNumber} content before generation...`);
-        // const validationResponse = await apiRequest(
-        //   "POST",
-        //   "/api/validate",
-        //   { projectContext, contentType: "act" },
-        //   controller.signal
-        // );
-
-        // // Check if the validation controller was aborted
-        // if (controller.signal.aborted) {
-        //   console.log(`Act ${actNumber} validation was cancelled by user`);
-        //   return null;
-        // }
-
-        // const validationResult = await validationResponse.json();
-
-        // // If validation failed, show error and stop
-        // if (!validationResult.valid || validationResult.message) {
-        //   const errorMessage = validationResult.message || "Content validation failed";
-        //   toast({
-        //     title: "Content Validation Failed",
-        //     description: errorMessage,
-        //     variant: "destructive",
-        //     duration: 60000,
-        //   });
-        //   setIsGenerating(false);
-        //   setAbortController(null);
-        //   return { error: errorMessage } as GenerationResult<any>;
-        // }
-
-        // console.log(`✅ Act ${actNumber} content validated successfully, proceeding to generation`);
-
-        // STEP 2: Generate the act after validation passes
-        // Use the API directly instead of the wrapper function
         const generationResponse = await apiRequest(
           "POST",
           "/api/generate/act",
@@ -929,53 +803,6 @@ export const useVnData = () => {
         setIsGenerating(true);
         const controller = new AbortController();
         setAbortController(controller);
-
-        // Create the project context object used for both validation and generation
-        const projectContext = {
-          basicData: vnContext.projectData.basicData,
-          conceptData: vnContext.projectData.conceptData,
-          charactersData: vnContext.projectData.charactersData,
-        };
-
-        // // STEP 1: Validate the content first
-        // console.log("🔍 Validating content before generation...");
-        // const validationResponse = await apiRequest(
-        //   "POST",
-        //   "/api/validate",
-        //   { projectContext: projectContext, contentType: "paths" },
-        //   controller.signal
-        // );
-
-        // // Check if the validation controller was aborted
-        // if (controller.signal.aborted) {
-        //   console.log("Validation was cancelled by user");
-        //   return null;
-        // }
-
-        // const validationResult = await validationResponse.json();
-
-        // // If validation failed, show error and stop
-        // if (!validationResult.valid || validationResult.message) {
-        //   const errorMessage = validationResult.message || "Content validation failed";
-        //   toast({
-        //     title: "Content Validation Failed",
-        //     description: errorMessage,
-        //     variant: "destructive",
-        //     duration: 60000,
-        //   });
-        //   setIsGenerating(false);
-        //   setAbortController(null);
-        //   return null;
-        // }
-
-        // console.log("✅ Content validated successfully, proceeding to generation");
-
-        // STEP 2: Generate the paths after validation passes
-        // Create indices based on the number of templates
-        const indices = Array.from(
-          { length: pathTemplates.length },
-          (_, i) => i,
-        );
 
         // Use our simplified path endpoint
         const generationResponse = await apiRequest(

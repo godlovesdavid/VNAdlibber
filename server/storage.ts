@@ -329,7 +329,7 @@ export class DatabaseStorage implements IStorage {
             let keys = Object.keys(input);
 
             // Special logic for characterData
-            if (parentKey === "characterData") {
+            if (parentKey === "charactersData") {
               keys.sort((a, b) => {
                 const roleA = input[a]?.role;
                 const roleB = input[b]?.role;

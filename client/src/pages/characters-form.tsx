@@ -17,9 +17,9 @@ import {
 import { Wand2, Trash, Plus } from "lucide-react";
 import { Character } from "@/types/vn";
 import { useToast } from "@/hooks/use-toast";
-import { validateFormContent } from "@/lib/validation";
 import { useSimpleAutosave } from "@/lib/autosave";
 import { apiRequest } from "@/lib/queryClient";
+import { json } from "express";
 
 export default function CharactersForm() {
   const [location, setLocation] = useLocation();
@@ -102,14 +102,14 @@ export default function CharactersForm() {
   // Reset all characters with confirmation
   const handleResetForm = () => {
     // Ask for confirmation before clearing
-    if (!window.confirm("Are you sure you want to reset all character information? This action cannot be undone.")) {
+    if (!window.confirm("Are you sure?")) {
       return; // User canceled the reset
     }
     
     // Create a default protagonist character
     const defaultCharacter: CharacterForm = {
       name: "",
-      role: "protagonist",
+      role: "Protagonist",
       occupation: "",
       gender: "",
       age: "",
@@ -124,7 +124,7 @@ export default function CharactersForm() {
     setCharacters([defaultCharacter]);
     
     // Save empty data to context
-    setCharactersData({}, "");
+    setCharactersData({});
     
     // Show toast notification
     toast({
@@ -176,10 +176,9 @@ export default function CharactersForm() {
   // Generate all characters
   const handleGenerateAllCharacters = async () => {
     // Only generate for existing characters
-    if (characters.length === 0) {
+    if (characters.length === 0) 
       return;
-    }
-
+    
     // Make a copy of the current characters array
     const allCharacters = [...characters];
 
@@ -190,7 +189,6 @@ export default function CharactersForm() {
       // Generate all characters in one API call
       const generatedCharacters =
         await generateMultipleCharactersData(allCharacters);
-
       if (generatedCharacters && Array.isArray(generatedCharacters)) {
         // Merge the generated characters with existing character data
         const updatedCharacters = allCharacters.map((char, idx) => {
@@ -214,25 +212,18 @@ export default function CharactersForm() {
   const saveCharacterData = () => {
     // Transform array to object format
     const charactersObj: Record<string, Character> = {};
-    let protagonist = "";
-    
-    characters.forEach((char, index) => {
+
+    characters.forEach((char) => {
       if (char.name) {
-        // Extract name but don't store it in the object
         const { name, ...characterWithoutName } = char;
         charactersObj[name] = characterWithoutName as Character;
-        
-        // Store the protagonist name (first character is always protagonist)
-        if (index === 0) {
-          protagonist = name;
-        }
       }
     });
+
+    // Set the characters data
+    setCharactersData(charactersObj);
     
-    // Set the characters data with protagonist field
-    setCharactersData(charactersObj, protagonist);
-    
-    return { charactersObj, protagonist };
+    return { charactersObj };
   };
 
   // Go back to previous step
@@ -344,7 +335,6 @@ export default function CharactersForm() {
       
       // Transform to object format for storage
       const charactersObj: Record<string, Character> = {};
-      let protagonist = "";
       
       data.forEach((char, idx) => {
         if (char.name) {
@@ -360,16 +350,11 @@ export default function CharactersForm() {
             }, {} as Record<string, any>) as Character;
             
           charactersObj[name] = cleanCharacter;
-          
-          // Store the protagonist name (first character is always protagonist)
-          if (idx === 0) {
-            protagonist = name;
-          }
         }
       });
       
       // Save to context
-      setCharactersData(charactersObj, protagonist);
+      setCharactersData(charactersObj);
       
       // Clear autosaving indicator after a short delay
       setTimeout(() => setIsAutosaving(false), 300);
@@ -390,17 +375,6 @@ export default function CharactersForm() {
           };
         }
       );
-      
-      // If there's a protagonist field set, ensure it appears first in the array
-      if (projectData.protagonist && projectData.charactersData[projectData.protagonist]) {
-        const protagonistIndex = charactersArray.findIndex(char => char.name === projectData.protagonist);
-        
-        if (protagonistIndex > 0) { // If not already first
-          const protagonist = charactersArray[protagonistIndex];
-          charactersArray.splice(protagonistIndex, 1); // Remove from current position
-          charactersArray.unshift(protagonist); // Add to beginning
-        }
-      }
       
       setCharacters(charactersArray);
     }

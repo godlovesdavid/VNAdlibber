@@ -39,7 +39,7 @@ function generateProjectHash(projectData: any): string {
         let keys = Object.keys(input);
 
         // Special logic for characterData
-        if (parentKey === "characterData") {
+        if (parentKey === "charactersData") {
           keys.sort((a, b) => {
             const roleA = input[a]?.role;
             const roleB = input[b]?.role;
@@ -84,7 +84,7 @@ interface VnContextType {
   // Step data setters
   setBasicData: (data: BasicData) => void;
   setConceptData: (data: ConceptData) => void;
-  setCharactersData: (data: CharactersData, protagonist?: string) => void;
+  setCharactersData: (data: CharactersData) => void;
   setPathsData: (data: PathsData) => void;
   setPlotData: (data: PlotData) => void;
   setGeneratedAct: (actNumber: number, data: GeneratedAct) => void;
@@ -321,118 +321,13 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   };
 
-  const setCharactersData = (data: CharactersData, protagonist?: string) => {
+  const setCharactersData = (data: CharactersData) => {
     if (!projectData) return;
-
-    console.log("Setting character data in context:", data);
-    console.log("Setting protagonist:", protagonist);
-
-    // Deep check of character data structure
-    const characterNames = Object.keys(data);
-    console.log(
-      `Received ${characterNames.length} characters:`,
-      characterNames,
-    );
-
-    // Create a sanitized copy of the character data with fixed structure
-    const sanitizedData: CharactersData = {};
-
-    // Check if each character has the expected structure
-    characterNames.forEach((name) => {
-      const character = data[name];
-      console.log(
-        `Character ${name} object structure:`,
-        Object.keys(character),
-      );
-
-      // Create a new clean character object with correct typing
-      const cleanCharacter: Record<string, any> = {};
-
-      // Check for any unexpected nested objects and fix them
-      Object.entries(character).forEach(([key, value]) => {
-        // Skip numeric keys (prevent array indexes from being treated as properties)
-        if (!isNaN(Number(key))) {
-          console.log(`Skipping numeric key ${key} in character ${name}`);
-          return;
-        }
-
-        // Handle nested objects - convert to string representations except relationshipPotential
-        if (
-          typeof value === "object" &&
-          value !== null &&
-          key !== "relationshipPotential"
-        ) {
-          console.log(
-            `WARNING: Character ${name} has nested object in property ${key}:`,
-            value,
-          );
-          console.log(`Converting nested object to string`);
-          cleanCharacter[key] = JSON.stringify(value);
-        } else {
-          cleanCharacter[key] = value;
-        }
-      });
-
-      // Verify Character has the expected fields
-      const expectedKeys = [
-        "role",
-        "occupation",
-        "gender",
-        "age",
-        "appearance",
-        "personality",
-        "goals",
-        "relationshipPotential",
-        "conflict",
-      ];
-      const missingKeys = expectedKeys.filter(
-        (key) => !(key in cleanCharacter),
-      );
-      if (missingKeys.length > 0) {
-        console.log(
-          `WARNING: Character ${name} is missing expected fields:`,
-          missingKeys,
-        );
-
-        // Add placeholder values for missing keys
-        missingKeys.forEach((key) => {
-          if (key === "relationshipPotential") {
-            // For missing relationshipPotential, set to null for protagonist, empty string for others
-            cleanCharacter[key] = name === protagonist ? null : "";
-          } else {
-            cleanCharacter[key] = ``;
-            console.log(`Added placeholder for ${key} in character ${name}`);
-          }
-        });
-      }
-
-      // Add the cleaned character to the sanitized data with proper typing
-      // Create a properly typed Character object from the cleaned data
-      const typedCharacter: Character = {
-        role: name === protagonist ? "Protagonist" : cleanCharacter.role || "",
-        occupation: cleanCharacter.occupation || "",
-        gender: cleanCharacter.gender || "",
-        age: cleanCharacter.age || "",
-        appearance: cleanCharacter.appearance || "",
-        personality: cleanCharacter.personality || "",
-        goals: cleanCharacter.goals || "",
-        relationshipPotential:
-          name === protagonist
-            ? "N/A"
-            : cleanCharacter.relationshipPotential || "",
-        conflict: cleanCharacter.conflict || "",
-      };
-
-      sanitizedData[name] = typedCharacter;
-    });
-
-    console.log("Sanitized character data for storage:", sanitizedData);
 
     // Set the new data while preserving the rest
     setProjectData({
       ...projectData,
-      charactersData: sanitizedData,
-      protagonist: protagonist || projectData.protagonist,
+      charactersData: data,
       currentStep: 3,
     });
 

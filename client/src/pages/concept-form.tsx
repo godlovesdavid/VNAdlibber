@@ -165,7 +165,7 @@ export default function ConceptForm() {
   // Reset form fields to empty values with confirmation
   const handleResetForm = () => {
     // Ask for confirmation before clearing
-    if (!window.confirm("Are you sure you want to reset all concept information? This action cannot be undone.")) {
+    if (!window.confirm("Are you sure?")) {
       return; // User canceled the reset
     }
     

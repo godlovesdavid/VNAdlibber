@@ -683,33 +683,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log("Raw response from Gemini:", responseContent);
 
-      // Try to parse response
       try {
-        if (responseContent === "{}") throw new Error("Empty response");
-
-        // Try to repair JSON if needed
-        let fixedContent = responseContent;
-        try {
-          if (responseContent.includes("(Leave blank)")) {
-            // Replace (Leave blank) with N/A value
-            fixedContent = responseContent.replace(
-              /"\(Leave blank\)"/g,
-              "N/A",
-            );
-          }
-        } catch (repairError) {
-          console.error("Could not repair JSON:", repairError);
-          fixedContent = responseContent; // Fall back to original
-        }
-
-        // Parse the response
-        const parsed = JSON.parse(fixedContent);
-        console.log("Parsed character data:", parsed);
-        parsed[Object.keys(parsed)[0]].role = 'Protagonist'
-        parsed[Object.keys(parsed)[0]].relationshipPotential = 'N/A'
-        
-        // Now we're expecting an object with character names as keys
-        // No format conversion needed - returning the object directly
+        const parsed = JSON.parse(jsonrepair(responseContent));
+        if (characterTemplates.length > 1)
+          parsed[Object.keys(parsed)[0]].role = 'Protagonist'
+          parsed[Object.keys(parsed)[0]].relationshipPotential = 'N/A'
         res.json(parsed);
       } catch (e) {
         console.error("Problem parsing character JSON:", e);

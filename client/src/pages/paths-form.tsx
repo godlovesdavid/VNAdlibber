@@ -24,7 +24,6 @@ import {
 import { Wand2, Trash, Plus } from "lucide-react";
 import { Route } from "@/types/vn";
 import { useToast } from "@/hooks/use-toast";
-import { validateFormContent } from "@/lib/validation";
 import { useSimpleAutosave } from "@/lib/autosave";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -34,7 +33,7 @@ interface RouteForm extends Route {
 }
 
 export default function PathsForm() {
-  const [location, setLocation] = useLocation();
+  const [, setLocation] = useLocation();
   const { projectData, setPathsData, goToStep } = useVnContext();
   const {
     generatePathData,
@@ -99,6 +98,39 @@ export default function PathsForm() {
     }
   }, [projectData]);
 
+  // Reset all characters with confirmation
+  const handleResetForm = () => {
+    // Ask for confirmation before clearing
+    if (!window.confirm("Are you sure?")) {
+      return; // User canceled the reset
+    }
+
+    // Create a default protagonist character
+    const defaultRoute: RouteForm = {
+      title: "",
+      loveInterest: null,
+      keyChoices: "",
+      beginning: "",
+      middle: "",
+      climax: "",
+      goodEnding: "",
+      badEnding: "",
+    };
+
+    // Reset to a single empty character form
+    setRoutes([defaultRoute]);
+
+    // Save empty data to context
+    setPathsData({});
+
+    // Show toast notification
+    toast({
+      title: "Form Reset",
+      description: "Form reset.",
+      variant: "default"
+    });
+  };
+  
   // Add a new path card
   const addPath = () => {
     if (routes.length >= 3) {
@@ -326,7 +358,7 @@ export default function PathsForm() {
             description: validationResult.issues || validationResult.message || "Your paths don't align with the characters and story.",
             variant: "destructive",
             // Set longer duration for validation errors
-            duration: 10000,
+            duration: 120000,
           });
         }
       } catch (error: any) {
@@ -340,7 +372,7 @@ export default function PathsForm() {
           title: "Path Validation Error",
           description: errorMessage,
           variant: "destructive",
-          duration: 10000,
+          duration: 120000,
         });
       }
     } catch (error) {
@@ -679,6 +711,15 @@ export default function PathsForm() {
                     </div>
                   )}
                 </div>
+                <div className="flex space-x-3">
+                <Button
+                  variant="outline"
+                  className="border-red-300 text-red-600 hover:bg-red-50"
+                  onClick={handleResetForm}
+                  disabled={isGenerating}
+                >
+                  Reset
+                </Button>
                 <Button onClick={handleNext} disabled={isValidating || isGenerating}>
                   {isValidating ? (
                     <>
@@ -708,6 +749,7 @@ export default function PathsForm() {
                     "Next: Plot"
                   )}
                 </Button>
+                  </div>
               </div>
             </div>
 
