@@ -10,86 +10,6 @@ import {
 import { apiRequest } from "@/lib/queryClient";
 import { getUserFriendlyErrorMessage } from "@/lib/error-messages";
 
-/**
- * Helper function to handle and display API errors in a standardized way
- */
-const handleApiError = (error: any, toast: any, contextMessage: string = "") => {
-  if ((error as Error).name === "AbortError") {
-    return; // Silently ignore aborted requests
-  }
-  
-  // Get all technical details from the error for debugging
-  let errorMsg = "";
-  let technicalDetails = "";
-  let rootCause = "";
-  let isModelOverloaded = false;
-
-  try {
-    // Extract all available error data
-    if (error.data) {
-      // Technical details directly from server
-      if (error.data.technicalDetails) {
-        technicalDetails = error.data.technicalDetails;
-        errorMsg = technicalDetails; // Use technical details as the primary message
-      }
-      // Root cause from server
-      if (error.data.rootCause) {
-        rootCause = error.data.rootCause;
-      }
-      // Check for model overload
-      if (error.data.isModelOverloaded) {
-        isModelOverloaded = true;
-      }
-      // Fallback to message or error
-      if (!errorMsg && (error.data.message || error.data.error)) {
-        errorMsg = error.data.message || error.data.error;
-      }
-    }
-    
-    // If no message was extracted, try the error message itself
-    if (!errorMsg && error.message) {
-      errorMsg = error.message;
-      // Further parse colon-separated error messages
-      if (error.message.includes(":")) {
-        const parts = error.message.split(":");
-        if (parts.length > 1) {
-          errorMsg = parts.slice(1).join(":").trim();
-        }
-      }
-    }
-    
-    // Still no message? Use a generic one but include error object in console
-    if (!errorMsg) {
-      console.error("Failed to extract error details from:", error);
-      errorMsg = `Unknown error ${contextMessage ? `during ${contextMessage}` : ""}. See console for details.`;
-    }
-  } catch (parseError) {
-    console.error("Failed to parse error data:", parseError);
-    errorMsg = "Error parsing error details. See console logs.";
-  }
-
-  // Create a more detailed error message that includes the model status
-  let toastTitle = "Generation Failed";
-  let toastVariant: "default" | "destructive" = "destructive";
-  let toastDuration = 60000;
-  
-  // For overloaded models, provide a more specific message
-  if (isModelOverloaded) {
-    toastTitle = "AI Model Overloaded";
-    // Add note about retrying later
-    errorMsg = `${errorMsg}\n\nPlease try again in a few minutes when the AI service is less busy.`;
-  }
-  
-  toast({
-    title: toastTitle,
-    description: errorMsg,
-    variant: toastVariant,
-    duration: toastDuration,
-  });
-  
-  console.error(`Error ${contextMessage ? `in ${contextMessage}` : ""}:`, error);
-};
-
 // To make this hook compatible with Fast Refresh, we use a named function
 // expression instead of a function declaration
 export const useVnData = () => {
@@ -613,7 +533,7 @@ export const useVnData = () => {
 
         // Create a more detailed error message that includes the model status
         let toastTitle = "Generation Failed";
-        let toastVariant = "destructive";
+        let toastVariant: "default" | "destructive" = "destructive";
         let toastDuration = 60000;
         
         // For overloaded models, provide a more specific message
@@ -784,11 +704,23 @@ export const useVnData = () => {
             errorMsg = "Error parsing error details. See console logs.";
           }
 
+          // Create a more detailed error message that includes the model status
+          let toastTitle = "Generation Failed";
+          let toastVariant: "default" | "destructive" = "destructive";
+          let toastDuration = 60000;
+          
+          // For overloaded models, provide a more specific message
+          if (isModelOverloaded) {
+            toastTitle = "AI Model Overloaded";
+            // Add note about retrying later
+            errorMsg = `${errorMsg}\n\nPlease try again in a few minutes when the AI service is less busy.`;
+          }
+          
           toast({
-            title: "Generation Failed",
+            title: toastTitle,
             description: errorMsg,
-            variant: "destructive",
-            duration: 60000,
+            variant: toastVariant,
+            duration: toastDuration,
           });
           console.error(
             `Error in two-step Act ${actNumber} generation:`,
@@ -953,11 +885,23 @@ export const useVnData = () => {
             errorMsg = "Error parsing error details. See console logs.";
           }
 
+          // Create a more detailed error message that includes the model status
+          let toastTitle = "Generation Failed";
+          let toastVariant: "default" | "destructive" = "destructive";
+          let toastDuration = 60000;
+          
+          // For overloaded models, provide a more specific message
+          if (isModelOverloaded) {
+            toastTitle = "AI Model Overloaded";
+            // Add note about retrying later
+            errorMsg = `${errorMsg}\n\nPlease try again in a few minutes when the AI service is less busy.`;
+          }
+          
           toast({
-            title: "Generation Failed",
+            title: toastTitle,
             description: errorMsg,
-            variant: "destructive",
-            duration: 60000,
+            variant: toastVariant,
+            duration: toastDuration,
           });
           console.error("Error generating multiple characters:", error);
         }
@@ -1137,11 +1081,23 @@ export const useVnData = () => {
             errorMsg = "Error parsing error details. See console logs.";
           }
 
+          // Create a more detailed error message that includes the model status
+          let toastTitle = "Generation Failed";
+          let toastVariant: "default" | "destructive" = "destructive";
+          let toastDuration = 60000;
+          
+          // For overloaded models, provide a more specific message
+          if (isModelOverloaded) {
+            toastTitle = "AI Model Overloaded";
+            // Add note about retrying later
+            errorMsg = `${errorMsg}\n\nPlease try again in a few minutes when the AI service is less busy.`;
+          }
+          
           toast({
-            title: "Generation Failed",
+            title: toastTitle,
             description: errorMsg,
-            variant: "destructive",
-            duration: 60000,
+            variant: toastVariant,
+            duration: toastDuration,
           });
           console.error("Error in two-step path generation:", error);
         }
