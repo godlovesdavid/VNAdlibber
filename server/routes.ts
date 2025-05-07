@@ -591,9 +591,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const systemPrompt =
         "You're a visual novel brainstormer with wildly creative ideas";
       const responseContent = await generateWithGemini(prompt, systemPrompt);
-      const generatedConcept = JSON.parse(responseContent || "{}");
-      generatedConcept.title = generatedConcept.title.replace("Echo Bloom: ", '') //ai likes to put this weird thing as the title
-      res.json(generatedConcept);
+      
+      // Try to parse response
+      try {
+        if (responseContent === "{}" || !responseContent) throw new Error("Empty response");
+        const generatedConcept = JSON.parse(responseContent);
+        
+        // Clean up title if needed
+        if (generatedConcept.title) {
+          generatedConcept.title = generatedConcept.title.replace("Echo Bloom: ", ''); //ai likes to put this weird thing as the title
+        }
+        
+        res.json(generatedConcept);
+      } catch (e) {
+        console.error("Problem parsing concept JSON:", e);
+        console.error("Problematic content:", responseContent);
+        res.status(500).json({
+          message: "Failed to parse concept data from AI response",
+          technicalDetails: e instanceof Error ? e.message : "Invalid JSON response",
+          rootCause: "The AI generated a response that couldn't be properly converted to JSON",
+          invalidResponse: responseContent?.substring(0, 500), // First 500 chars for debugging
+          isModelOverloaded: false,
+          retryRecommended: true
+        });
+      }
     } catch (error) {
       console.error("Error generating concept:", error);
       
@@ -695,6 +716,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("Problematic content:", responseContent);
         res.status(500).json({
           message: "Failed to parse character data from AI response",
+          technicalDetails: e instanceof Error ? e.message : "Invalid JSON response",
+          rootCause: "The AI generated a response that couldn't be properly converted to JSON",
+          invalidResponse: responseContent.substring(0, 500), // First 500 chars for debugging
+          isModelOverloaded: false,
+          retryRecommended: true
         });
       }
     } catch (error) {
@@ -771,7 +797,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "Failed to parse path data from AI response",
           technicalDetails: e instanceof Error ? e.message : "Invalid JSON response",
           rootCause: "The AI generated a response that couldn't be properly converted to JSON",
-          invalidResponse: responseContent.substring(0, 500) // First 500 chars for debugging
+          invalidResponse: responseContent.substring(0, 500), // First 500 chars for debugging
+          isModelOverloaded: false,
+          retryRecommended: true
         });
       }
     } catch (error) {
@@ -839,7 +867,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "Failed to parse plot data from AI response",
           technicalDetails: e instanceof Error ? e.message : "Invalid JSON response",
           rootCause: "The AI generated a response that couldn't be properly converted to JSON",
-          invalidResponse: responseContent.substring(0, 500) // First 500 chars for debugging
+          invalidResponse: responseContent.substring(0, 500), // First 500 chars for debugging
+          isModelOverloaded: false,
+          retryRecommended: true
         });
       }
     } catch (error) {
@@ -947,7 +977,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "Failed to parse act data from AI response",
           technicalDetails: e instanceof Error ? e.message : "Invalid JSON response",
           rootCause: "The AI generated a response that couldn't be properly converted to JSON",
-          invalidResponse: responseContent.substring(0, 500) // First 500 chars for debugging
+          invalidResponse: responseContent.substring(0, 500), // First 500 chars for debugging
+          isModelOverloaded: false,
+          retryRecommended: true
         });
       }
     } catch (error) {
