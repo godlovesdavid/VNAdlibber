@@ -478,17 +478,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
   const saveProject = async () => {
     try {
       setSaveLoading(true);
-      // Before starting the save process
-      if (!hasUnsavedChanges(projectData)) {
-        console.log(
-          "[saveProject] No changes detected, skipping save operation",
-        );
-        toast({
-          title: "No Changes",
-          description: "No changes to save",
-        });
-        return projectData; // Return the existing data
-      }
 
       // 1. Always check localStorage first for most up-to-date data
       // This addresses race conditions between form data saves and API requests
