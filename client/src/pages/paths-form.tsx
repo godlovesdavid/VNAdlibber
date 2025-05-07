@@ -193,13 +193,25 @@ export default function PathsForm() {
       if (route.title) {
         // Create a copy of the route without the redundant title property
         const { title, ...routeWithoutTitle } = route;
+        
+        // Remove any numeric keys that might be causing unintended nesting
+        const cleanRoute = Object.entries(routeWithoutTitle)
+          .filter(([key]) => isNaN(Number(key)))
+          .reduce((obj, [key, value]) => {
+            obj[key] = value;
+            return obj;
+          }, {} as Record<string, any>) as Route;
+          
         // Store with title as key but don't include title in the value
-        pathsObj[title] = routeWithoutTitle;
+        pathsObj[title] = cleanRoute;
       }
     });
     
     // Set the paths data in the context
     setPathsData(pathsObj);
+    
+    // Log the saved data for debugging
+    console.log('Saving paths data to context:', pathsObj);
     
     return pathsObj;
   };
@@ -318,9 +330,6 @@ export default function PathsForm() {
       });
       return;
     }
-
-    // Save the data
-    savePathData();
     
     // Additional server-side validation
     setIsValidating(true);
