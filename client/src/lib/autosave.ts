@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 /**
  * Simple hook for automatic debounced saving to context
@@ -14,40 +14,47 @@ export function useSimpleAutosave<T>(
   debounceMs = 1500,
   logPrefix?: string
 ) {
-  const [lastChanged, setLastChanged] = useState(0);
-
-  // Save to context whenever data changes (with debounce)
+  // Use a ref to hold the timeout ID
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Previous value reference to detect changes
+  const previousValueRef = useRef<T | null>(null);
+  
+  // Setup effect to watch for changes and save with debounce
   useEffect(() => {
-    // Skip initial render/mount
-    if (lastChanged === 0) return;
+    // Skip if this is the first render or no actual change
+    const isFirstRender = previousValueRef.current === null;
+    
+    // Update the previous value
+    previousValueRef.current = data;
+    
+    // Skip the first render
+    if (isFirstRender) return;
     
     // Optional logging
     if (logPrefix) {
-      console.log(`${logPrefix}: Change detected, will save in ${debounceMs}ms`);
+      console.log(`${logPrefix}: Content changed, queueing autosave in ${debounceMs}ms...`);
     }
     
-    // Set up debounced save
-    const timeoutId = setTimeout(() => {
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    
+    // Set up a new timeout
+    timeoutRef.current = setTimeout(() => {
       saveFunction(data);
       
-      // Optional logging
       if (logPrefix) {
-        console.log(`${logPrefix}: Saved data to context`);
+        console.log(`${logPrefix}: Autosaved data to context`);
       }
     }, debounceMs);
     
-    // Cleanup timeout
-    return () => clearTimeout(timeoutId);
-  }, [data, lastChanged, saveFunction, debounceMs, logPrefix]);
-
-  // Update lastChanged whenever data changes
-  useEffect(() => {
-    // Skip initial render
-    if (lastChanged === 0) {
-      setLastChanged(Date.now());
-      return;
-    }
-    
-    setLastChanged(Date.now());
-  }, [data]);
+    // Cleanup function
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [data, saveFunction, debounceMs, logPrefix]);
 }

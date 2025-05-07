@@ -114,23 +114,23 @@ export default function BasicForm() {
   const randomizeForm = () => {
     console.log("Randomizing form values");
     // Get random values first
-    const randomTheme = getRandomItem(themes);
-    const randomTone = getRandomItem(tones);
-    const randomGenre = getRandomItem(genres);
-    const randomSetting = getRandomItem(settings);
+    const newTheme = getRandomItem(themes);
+    const newTone = getRandomItem(tones);
+    const newGenre = getRandomItem(genres);
+    const newSetting = getRandomItem(settings);
     
     // Update state
-    setTheme(randomTheme);
-    setTone(randomTone);
-    setGenre(randomGenre);
-    setSetting(randomSetting);
+    setTheme(newTheme);
+    setTone(newTone);
+    setGenre(newGenre);
+    setSetting(newSetting);
     
     // Manually save the new values immediately
     setBasicData({
-      theme: randomTheme,
-      tone: randomTone,
-      genre: randomGenre,
-      setting: randomSetting,
+      theme: newTheme,
+      tone: newTone,
+      genre: newGenre,
+      setting: newSetting,
     });
   };
 
@@ -143,7 +143,24 @@ export default function BasicForm() {
     if (isNewProject) {
       console.log("New project flag found, resetting form");
       sessionStorage.removeItem("vn_fresh_project");
-      randomizeForm();
+      // Instead of calling randomizeForm which would create a circular dependency,
+      // do the same thing inline
+      const newTheme = getRandomItem(themes);
+      const newTone = getRandomItem(tones);
+      const newGenre = getRandomItem(genres);
+      const newSetting = getRandomItem(settings);
+      
+      setTheme(newTheme);
+      setTone(newTone);
+      setGenre(newGenre);
+      setSetting(newSetting);
+      
+      setBasicData({
+        theme: newTheme,
+        tone: newTone,
+        genre: newGenre,
+        setting: newSetting,
+      });
       return;
     }
 
@@ -155,10 +172,17 @@ export default function BasicForm() {
       setGenre(projectData.basicData.genre || "");
       setSetting(projectData.basicData.setting || "");
     }
-  }, [location]);
+  }, [projectData, setBasicData]);
 
   // Go back to main menu
   const goBack = () => {
+    // Save current form values before navigating
+    setBasicData({
+      theme,
+      tone,
+      genre,
+      setting,
+    });
     setLocation("/");
   };
 
@@ -173,7 +197,15 @@ export default function BasicForm() {
       });
       return;
     }
-
+    
+    // Save current form values before navigating
+    setBasicData({
+      theme,
+      tone,
+      genre,
+      setting,
+    });
+    
     try {
       // const isValid = await validateFormContent({ basicData: basicObj }, "basic");
       // if (isValid)
