@@ -19,7 +19,6 @@ import { Character } from "@/types/vn";
 import { useToast } from "@/hooks/use-toast";
 import { useSimpleAutosave } from "@/lib/autosave";
 import { apiRequest } from "@/lib/queryClient";
-import { json } from "express";
 
 export default function CharactersForm() {
   const [location, setLocation] = useLocation();
@@ -44,7 +43,7 @@ export default function CharactersForm() {
   const [characters, setCharacters] = useState<CharacterForm[]>([
     {
       name: "",
-      role: "protagonist",
+      role: "Protagonist",
       occupation: "",
       gender: "",
       age: "",
@@ -74,7 +73,7 @@ export default function CharactersForm() {
       ...characters,
       {
         name: "",
-        role: characters.length === 0 ? "protagonist" : "",
+        role: "",
         occupation: "",
         gender: "",
         age: "",
