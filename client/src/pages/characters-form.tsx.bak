@@ -30,10 +30,17 @@ export default function CharactersForm() {
     cancelGeneration,
   } = useVnData();
   const { toast } = useToast();
+  
+  // Track validation state
+  const [isValidating, setIsValidating] = useState(false);
 
-  // State
+  // Extended Character interface for form usage (includes name separately)
+  interface CharacterForm extends Character {
+    name: string; // Only used in the form, not stored in the context
+  }
+
+  // Form state
   const [characters, setCharacters] = useState<CharacterForm[]>([
-    // Default character with protagonist role
     {
       name: "",
       role: "protagonist",
@@ -47,67 +54,58 @@ export default function CharactersForm() {
       conflict: "",
     },
   ]);
-  const [generatingCharacterIndex, setGeneratingCharacterIndex] = useState<number | null>(null);
-  const [isValidating, setIsValidating] = useState(false);
+
+  const [generatingCharacterIndex, setGeneratingCharacterIndex] = useState<
+    number | null
+  >(null);
+  
   const [isAutosaving, setIsAutosaving] = useState(false);
 
-  // Interface for characters with name field
-  interface CharacterForm extends Character {
-    name: string; // Only used in the form, not stored in the context
-  }
-
-  // Load data from context on mount
-  useEffect(() => {
-    if (projectData?.charactersData) {
-      console.log("Loading characters data from project:", projectData.charactersData);
-
-      // Load character data from context
-      const characterEntries = Object.entries(projectData.charactersData);
-      const charactersList: CharacterForm[] = characterEntries.map(([name, character]) => ({
-        name,
-        ...character,
-      }));
-
-      // Ensure we always have at least one character
-      if (charactersList.length === 0) {
-        const defaultCharacter: CharacterForm = {
-          name: "",
-          role: "protagonist",
-          occupation: "",
-          gender: "",
-          age: "",
-          appearance: "",
-          personality: "",
-          goals: "",
-          relationshipPotential: "",
-          conflict: "",
-        };
-        charactersList.push(defaultCharacter);
-      }
-
-      // This will trigger our autosave useEffect
-      setCharacters(charactersList);
-    }
-  }, [projectData]);
-
-  // Autosave using custom hook
+  // Setup autosave with the improved hook
   useSimpleAutosave(
-    characters,
-    (data) => {
-      // Skip saving if we don't have any valid characters
-      if (data.length === 0 || !data[0].name) return;
-
-      console.log("CharactersForm: Content changed, queueing autosave in 1500ms...");
+    characters, 
+    (charactersData) => {
+      // Skip if no characters
+      if (charactersData.length === 0) return;
       
       // Show autosaving indicator
       setIsAutosaving(true);
       
-      // Convert array to object format for storage
-      const { charactersObj, protagonist } = convertCharactersForStorage(data);
+      // Create a save function that converts from array to object format
+      const charactersObj: Record<string, Character> = {};
+      let protagonist = '';
+      
+      // Convert from array to object format for storage
+      charactersData.forEach((char, idx) => {
+        if (char.name) {
+          // Extract name but don't store it in the object
+          const { name, ...characterWithoutName } = char;
+          
+          // Check for numeric keys
+          const numericKeys = Object.keys(characterWithoutName).filter(key => !isNaN(Number(key)));
+          if (numericKeys.length > 0) {
+            console.log(`Found numeric keys for ${name}:`, numericKeys);
+          }
+          
+          // Remove any numeric keys that might be causing unintended nesting
+          const cleanCharacter = Object.entries(characterWithoutName)
+            .filter(([key]) => isNaN(Number(key)))
+            .reduce((obj, [key, value]) => {
+              obj[key] = value;
+              return obj;
+            }, {} as Record<string, any>) as Character;
+            
+          charactersObj[name] = cleanCharacter;
+          
+          // Store the protagonist name (first character is always protagonist)
+          if (idx === 0) {
+            protagonist = name;
+          }
+        }
+      });
       
       // Save to context
       setCharactersData(charactersObj, protagonist);
-      console.log("CharactersForm: Autosaved data to context");
       
       // Clear autosaving indicator after a short delay
       setTimeout(() => setIsAutosaving(false), 300);
@@ -115,43 +113,72 @@ export default function CharactersForm() {
     1500, // 1.5 second delay
     "CharactersForm" // Log prefix
   );
+  
+  // Load existing data if available
+  useEffect(() => {
+    if (projectData?.charactersData && Object.keys(projectData.charactersData).length > 0) {
+      console.log("Loading characters data from context:", projectData.charactersData);
+      
+      // Convert from object to array format for the form
+      const charactersArray = Object.entries(projectData.charactersData).map(
+        ([name, character]) => {
+          console.log(`Processing character '${name}':`, character);
+          return {
+            ...character,
+            name // Add name field for form usage
+          };
+        }
+      );
+      
+      console.log("Converted characters array:", charactersArray);
+      
+      // If there's a protagonist field set, ensure it appears first in the array
+      if (projectData.protagonist && projectData.charactersData[projectData.protagonist]) {
+        console.log("Protagonist from context:", projectData.protagonist);
+        const protagonistIndex = charactersArray.findIndex(char => char.name === projectData.protagonist);
+        console.log("Protagonist index in array:", protagonistIndex);
+        
+        if (protagonistIndex > 0) { // If not already first
+          const protagonist = charactersArray[protagonistIndex];
+          charactersArray.splice(protagonistIndex, 1); // Remove from current position
+          charactersArray.unshift(protagonist); // Add to beginning
+          console.log("Moved protagonist to beginning of array");
+        }
+      }
+      
+      console.log("Final characters array to set in form:", charactersArray);
+      setCharacters(charactersArray);
+    }
+  }, [location]);
 
-  // Add a new character
+  // Add a new character card
   const addCharacter = () => {
     if (characters.length >= 5) {
-      toast({
-        title: "Maximum Characters Reached",
-        description: "You can only create up to 5 characters.",
-        variant: "destructive"
-      });
+      alert("You can only create up to 5 characters.");
       return;
     }
 
-    const newCharacter: CharacterForm = {
-      name: "",
-      role: "side character",
-      occupation: "",
-      gender: "",
-      age: "",
-      appearance: "",
-      personality: "",
-      goals: "",
-      relationshipPotential: "",
-      conflict: "",
-    };
-
-    setCharacters([...characters, newCharacter]);
+    setCharacters([
+      ...characters,
+      {
+        name: "",
+        role: characters.length === 0 ? "protagonist" : "",
+        occupation: "",
+        gender: "",
+        age: "",
+        appearance: "",
+        personality: "",
+        goals: "",
+        relationshipPotential: "",
+        conflict: "",
+      },
+    ]);
   };
 
   // Remove a character
   const removeCharacter = (index: number) => {
-    // Cannot remove protagonist (first character)
-    if (index === 0) {
-      toast({
-        title: "Cannot Remove Protagonist",
-        description: "You must have a protagonist character.",
-        variant: "destructive"
-      });
+    if (characters.length <= 1) {
+      alert("You must have at least one character.");
       return;
     }
 
@@ -160,199 +187,280 @@ export default function CharactersForm() {
     setCharacters(updatedCharacters);
   };
 
-  // Update a character field
+  // Update character field
   const updateCharacter = (
     index: number,
-    field: keyof CharacterForm,
-    value: string
+    field: string, // Using string type to allow 'name' which isn't in Character
+    value: string,
   ) => {
     const updatedCharacters = [...characters];
-    
-    // For the first character (protagonist), always keep the role as "Protagonist"
-    if (index === 0 && field === "role") {
-      value = "protagonist";
-    }
-    
     updatedCharacters[index] = {
       ...updatedCharacters[index],
       [field]: value,
     };
-    
     setCharacters(updatedCharacters);
   };
 
-  // Generate a character
+  // Generate character details using AI
   const handleGenerateCharacter = async (index: number) => {
     setGeneratingCharacterIndex(index);
-    
-    // Get the basic data from the project context
-    const genre = projectData?.basicData?.genre || "";
-    const tone = projectData?.basicData?.tone || "";
-    const setting = projectData?.basicData?.setting || "";
-    const theme = projectData?.basicData?.theme || "";
-
-    // Get the existing character name and role
-    const name = characters[index].name;
-    const role = index === 0 ? "protagonist" : characters[index].role;
 
     try {
-      // Generate the character
-      const generatedCharacter = await generateCharacterData({
-        name,
-        role,
-        genre,
-        tone,
-        setting,
-        theme,
-      });
+      console.log("Calling generateCharacterData for single character...");
+      console.log("Current character before generation:", characters[index]);
+      
+      const generatedCharacter = await generateCharacterData(
+        index,
+        characters[index],
+      );
+      console.log("generateCharacterData returned:", generatedCharacter);
 
       if (generatedCharacter) {
-        // Update the character in the state array
+        console.log("Checking generated character structure for numeric keys...");
+        const hasNumericKeysInGenerated = Object.keys(generatedCharacter).some(key => !isNaN(Number(key)));
+        console.log(`Generated character has numeric keys: ${hasNumericKeysInGenerated}`);
+        
+        if (hasNumericKeysInGenerated) {
+          console.log("Numeric keys found in generated character:", 
+            Object.keys(generatedCharacter).filter(key => !isNaN(Number(key))));
+        }
+        
         const updatedCharacters = [...characters];
+        console.log("Before merge:", updatedCharacters[index]);
+        
         updatedCharacters[index] = {
           ...updatedCharacters[index],
-          name: name || generatedCharacter.name || "",
-          role: index === 0 ? "protagonist" : (role || generatedCharacter.role || ""),
-          occupation: generatedCharacter.occupation || "",
-          gender: generatedCharacter.gender || "",
-          age: generatedCharacter.age || "",
-          appearance: generatedCharacter.appearance || "",
-          personality: generatedCharacter.personality || "",
-          goals: generatedCharacter.goals || "",
-          relationshipPotential: index === 0 ? "" : (generatedCharacter.relationshipPotential || ""),
-          conflict: generatedCharacter.conflict || "",
+          ...generatedCharacter,
         };
         
-        // Update the state
+        console.log("After merge:", updatedCharacters[index]);
         setCharacters(updatedCharacters);
+
+        // Update the project context after character generation
+        const charactersObj: Record<string, Character> = {};
+        let protagonist = "";
+        
+        console.log("Converting to storage format...");
+        
+        updatedCharacters.forEach((char, idx) => {
+          if (char.name) {
+            console.log(`Processing character for save: ${char.name}`);
+            
+            // Extract name but don't store it in the object
+            const { name, ...characterWithoutName } = char;
+            console.log(`Character without name:`, characterWithoutName);
+            
+            // Check for numeric keys
+            const numericKeys = Object.keys(characterWithoutName).filter(key => !isNaN(Number(key)));
+            if (numericKeys.length > 0) {
+              console.log(`Found numeric keys for ${name}:`, numericKeys);
+            }
+            
+            // Remove any numeric keys that might be causing unintended nesting
+            const cleanCharacter = Object.entries(characterWithoutName)
+              .filter(([key]) => isNaN(Number(key)))
+              .reduce((obj, [key, value]) => {
+                obj[key] = value;
+                return obj;
+              }, {} as Record<string, any>) as Character;
+              
+            console.log(`Clean character:`, cleanCharacter);
+            charactersObj[name] = cleanCharacter;
+            
+            // Store the protagonist name (first character is always protagonist)
+            if (idx === 0) {
+              protagonist = name;
+            }
+          }
+        });
+        
+        console.log("Final characters object to save:", charactersObj);
+        console.log("Setting protagonist to:", protagonist);
+        
+        setCharactersData(charactersObj, protagonist);
+
+        // Log generation to console
+        console.log(`Generated character ${index + 1}:`, generatedCharacter);
+        console.log(`Updated project context with character ${index + 1} data`);
+      } else {
+        console.log(`Failed to generate character ${index + 1}`);
       }
     } catch (error) {
-      console.error("Error generating character:", error);
-      toast({
-        title: "Generation Failed",
-        description: "There was a problem generating the character. Please try again.",
-        variant: "destructive"
-      });
+      console.error("Error in handleGenerateCharacter:", error);
     } finally {
       setGeneratingCharacterIndex(null);
     }
   };
 
-  // Generate all characters at once
+  // Generate all characters
   const handleGenerateAllCharacters = async () => {
-    // Set the index to -1 to indicate we're generating all characters
-    setGeneratingCharacterIndex(-1);
-    
-    // Get the basic data from the project context
-    const genre = projectData?.basicData?.genre || "";
-    const tone = projectData?.basicData?.tone || "";
-    const setting = projectData?.basicData?.setting || "";
-    const theme = projectData?.basicData?.theme || "";
+    console.log("Generate All Characters button clicked");
 
-    // Get the existing character names and roles
-    const characterInfos = characters.map((char, index) => ({
-      name: char.name,
-      role: index === 0 ? "protagonist" : char.role,
-    }));
+    // Only generate for existing characters
+    if (characters.length === 0) {
+      console.log("No characters to generate");
+      return;
+    }
+
+    // Make a copy of the current characters array
+    const allCharacters = [...characters];
+
+    // Set state for UI feedback
+    setGeneratingCharacterIndex(-1); // -1 indicates "all"
+    console.log("Setting generating character index to -1");
 
     try {
-      // Generate all characters
-      const generatedCharacters = await generateMultipleCharactersData({
-        characters: characterInfos,
-        genre,
-        tone,
-        setting,
-        theme,
+      // Skip completed protagonist in batch generation
+      const characterTemplates = allCharacters.map((char, idx) => {
+        if (idx === 0 && char.personality && char.goals && char.appearance) {
+          console.log("Keeping existing protagonist data");
+          return {
+            name: char.name,
+            role: char.role,
+            occupation: char.occupation,
+            gender: char.gender,
+            age: char.age,
+            appearance: char.appearance,
+            personality: char.personality,
+            goals: char.goals,
+            relationshipPotential: char.relationshipPotential,
+            conflict: char.conflict,
+          };
+        }
+        return {
+          name: char.name,
+          role: char.role,
+          occupation: char.occupation,
+          gender: char.gender,
+          age: char.age,
+        };
       });
 
-      if (generatedCharacters) {
-        // Create an updated array with the generated characters
-        const updatedCharacters = characters.map((char, index) => {
-          const generated = generatedCharacters[index];
-          
-          // If generation failed or no data returned, keep the existing character
-          if (!generated) return char;
-          
-          // Otherwise, update with the generated data
-          return {
-            ...char,
-            name: char.name || generated.name || "",
-            role: index === 0 ? "protagonist" : (char.role || generated.role || ""),
-            occupation: generated.occupation || char.occupation || "",
-            gender: generated.gender || char.gender || "",
-            age: generated.age || char.age || "",
-            appearance: generated.appearance || char.appearance || "",
-            personality: generated.personality || char.personality || "",
-            goals: generated.goals || char.goals || "",
-            relationshipPotential: index === 0 ? "" : (generated.relationshipPotential || char.relationshipPotential || ""),
-            conflict: generated.conflict || char.conflict || "",
-          };
+      console.log(
+        `Generating ${characterTemplates.length} characters at once...`,
+      );
+
+      // Generate all characters in one API call
+      const generatedCharacters =
+        await generateMultipleCharactersData(characterTemplates);
+
+      if (generatedCharacters && Array.isArray(generatedCharacters)) {
+        console.log("Received generated characters:", generatedCharacters);
+        
+        // Check for numeric keys in generated characters
+        generatedCharacters.forEach((character, idx) => {
+          const hasNumericKeys = Object.keys(character).some(key => !isNaN(Number(key)));
+          if (hasNumericKeys) {
+            console.log(`Generated character ${idx} has numeric keys:`, 
+              Object.keys(character).filter(key => !isNaN(Number(key))));
+          }
         });
         
-        // Update the state
+        // Merge the generated characters with existing character data
+        const updatedCharacters = allCharacters.map((char, idx) => {
+          console.log(`Merging character ${idx}:`);
+          console.log("Original:", char);
+          console.log("Generated:", generatedCharacters[idx]);
+          
+          // Merge the data
+          const merged = {
+            ...char,
+            ...generatedCharacters[idx],
+          };
+          
+          console.log("Result:", merged);
+          return merged;
+        });
+
+        // Update state and project context
         setCharacters(updatedCharacters);
+        
+        // Convert to object format for storage
+        const charactersObj: Record<string, Character> = {};
+        let protagonist = "";
+        
+        console.log("Converting batch-generated characters to storage format...");
+        
+        updatedCharacters.forEach((char, idx) => {
+          if (char.name) {
+            console.log(`Processing character for save: ${char.name}`);
+            
+            // Extract name but don't store it in the object
+            const { name, ...characterWithoutName } = char;
+            console.log(`Character without name:`, characterWithoutName);
+            
+            // Check for numeric keys
+            const numericKeys = Object.keys(characterWithoutName).filter(key => !isNaN(Number(key)));
+            if (numericKeys.length > 0) {
+              console.log(`Found numeric keys for ${name}:`, numericKeys);
+            }
+            
+            // Remove any numeric keys that might be causing unintended nesting
+            const cleanCharacter = Object.entries(characterWithoutName)
+              .filter(([key]) => isNaN(Number(key)))
+              .reduce((obj, [key, value]) => {
+                obj[key] = value;
+                return obj;
+              }, {} as Record<string, any>) as Character;
+              
+            console.log(`Clean character:`, cleanCharacter);
+            charactersObj[name] = cleanCharacter;
+            
+            // Store the protagonist name (first character is always protagonist)
+            if (idx === 0) {
+              protagonist = name;
+            }
+          }
+        });
+        
+        console.log("Final characters object to save:", charactersObj);
+        console.log("Setting protagonist to:", protagonist);
+        
+        setCharactersData(charactersObj, protagonist);
+
+        console.log("Successfully generated all characters at once");
+        console.log("Updated project context with all character data");
+      } else {
+        console.error("Failed to generate characters bundle");
       }
     } catch (error) {
-      console.error("Error generating characters:", error);
-      toast({
-        title: "Generation Failed",
-        description: "There was a problem generating characters. Please try again.",
-        variant: "destructive"
-      });
+      console.error("Error in handleGenerateAllCharacters:", error);
     } finally {
+      console.log("Finished generation, resetting index");
       setGeneratingCharacterIndex(null);
     }
   };
 
   // Helper function to save character data
   const saveCharacterData = () => {
-    const { charactersObj, protagonist } = convertCharactersForStorage(characters);
-    
-    // Save the character data to the context
-    setCharactersData(charactersObj, protagonist);
-    
-    console.log("Characters data after update:", charactersObj);
-    
-    return { charactersObj, protagonist };
-  };
-
-  // Convert array of character forms to storage format
-  const convertCharactersForStorage = (chars: CharacterForm[]) => {
-    // Object to store character data
+    // Transform array to object format
     const charactersObj: Record<string, Character> = {};
-    
-    // Track the protagonist for special handling
     let protagonist = "";
     
-    // Convert each character with a name to an entry in the object
-    chars.forEach((char, index) => {
-      // Skip characters without names
-      if (!char.name || !char.name.trim()) return;
-      
-      // The first character is the protagonist
-      if (index === 0) {
-        protagonist = char.name;
+    characters.forEach((char, index) => {
+      if (char.name) {
+        // Extract name but don't store it in the object
+        const { name, ...characterWithoutName } = char;
+        
+        // Remove any numeric keys that might be causing unintended nesting
+        const cleanCharacter = Object.entries(characterWithoutName)
+          .filter(([key]) => isNaN(Number(key)))
+          .reduce((obj, [key, value]) => {
+            obj[key] = value;
+            return obj;
+          }, {} as Record<string, any>) as Character;
+          
+        charactersObj[name] = cleanCharacter;
+        
+        // Store the protagonist name (first character is always protagonist)
+        if (index === 0) {
+          protagonist = name;
+        }
       }
-      
-      // Store a sanitized version of the character, omitting the name field
-      const { name, ...characterData } = char;
-
-      // Character roles must be lowercase
-      if (characterData.role) {
-        characterData.role = characterData.role.toLowerCase();
-      }
-      
-      // First character is always the protagonist
-      if (index === 0) {
-        characterData.role = "protagonist";
-      }
-      
-      // Store the character in the object using the name as the key
-      charactersObj[name] = characterData;
     });
     
-    console.log("Setting character data in context:", charactersObj);
-    console.log("Setting protagonist:", protagonist);
+    // Set the characters data with protagonist field
+    setCharactersData(charactersObj, protagonist);
     
     return { charactersObj, protagonist };
   };
@@ -722,7 +830,7 @@ export default function CharactersForm() {
                   {generatingCharacterIndex === -1 && isGenerating ? (
                     <>
                       <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary"
+                        className="animate-spin -ml-1 mr-2 h-4 w-4"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -741,7 +849,7 @@ export default function CharactersForm() {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      Generating All...
+                      Generating...
                     </>
                   ) : (
                     <>Generate All Characters</>
@@ -792,50 +900,49 @@ export default function CharactersForm() {
                     Reset
                   </Button>
                   <Button onClick={handleNext} disabled={isValidating || isGenerating}>
-                    {isValidating ? (
-                      <>
-                        <svg
-                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        Validating...
-                      </>
-                    ) : (
-                      "Next: Paths"
-                    )}
-                  </Button>
-                </div>
+                  {isValidating ? (
+                    <>
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Validating...
+                    </>
+                  ) : (
+                    "Next: Paths"
+                  )}
+                </Button>
               </div>
-
-              {isGenerating && generatingCharacterIndex !== null && (
-                <div className="pt-3 flex justify-end">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-red-600 border-red-300 hover:bg-red-50"
-                    onClick={cancelGeneration}
-                  >
-                    Cancel Generation
-                  </Button>
-                </div>
-              )}
             </div>
+
+            {isGenerating && generatingCharacterIndex !== null && (
+              <div className="pt-3 flex justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-red-600 border-red-300 hover:bg-red-50"
+                  onClick={cancelGeneration}
+                >
+                  Cancel Generation
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
