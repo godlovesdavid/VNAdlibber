@@ -11,7 +11,7 @@ import { useEffect, useRef } from 'react';
 export function useSimpleAutosave<T>(
   data: T,
   saveFunction: (data: T) => void,
-  debounceMs = 1500,
+  debounceMs = 500,
   logPrefix?: string
 ) {
   // Use a ref to hold the timeout ID

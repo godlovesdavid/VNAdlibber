@@ -386,7 +386,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
             // For missing relationshipPotential, set to null for protagonist, empty string for others
             cleanCharacter[key] = name === protagonist ? null : "";
           } else {
-            cleanCharacter[key] = `To be defined`;
+            cleanCharacter[key] = ``;
             console.log(`Added placeholder for ${key} in character ${name}`);
           }
         });
@@ -396,17 +396,17 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       // Create a properly typed Character object from the cleaned data
       const typedCharacter: Character = {
         role: name === protagonist ? "Protagonist" : cleanCharacter.role || "",
-        occupation: cleanCharacter.occupation || "To be defined",
-        gender: cleanCharacter.gender || "To be defined",
-        age: cleanCharacter.age || "To be defined",
-        appearance: cleanCharacter.appearance || "To be defined",
-        personality: cleanCharacter.personality || "To be defined",
-        goals: cleanCharacter.goals || "To be defined",
+        occupation: cleanCharacter.occupation || "",
+        gender: cleanCharacter.gender || "",
+        age: cleanCharacter.age || "",
+        appearance: cleanCharacter.appearance || "",
+        personality: cleanCharacter.personality || "",
+        goals: cleanCharacter.goals || "",
         relationshipPotential:
           name === protagonist
             ? "N/A"
             : cleanCharacter.relationshipPotential || "",
-        conflict: cleanCharacter.conflict || "To be defined",
+        conflict: cleanCharacter.conflict || "",
       };
 
       sanitizedData[name] = typedCharacter;

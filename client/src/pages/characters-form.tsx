@@ -60,6 +60,7 @@ export default function CharactersForm() {
   
   // Autosave indicator state
   const [isAutosaving, setIsAutosaving] = useState(false);
+
   
   // Function to add a new character card
   const addCharacter = () => {
@@ -235,6 +236,7 @@ export default function CharactersForm() {
 
   // Go back to previous step
   const handleBack = () => {
+    saveCharacterData()
     // Navigate to previous step
     goToStep(2);
   };
@@ -373,7 +375,7 @@ export default function CharactersForm() {
       
       setCharacters(charactersArray);
     }
-  }, [projectData?.charactersData, projectData?.protagonist]);
+  }, [projectData]);
 
   return (
     <>
@@ -427,6 +429,28 @@ export default function CharactersForm() {
                     }
                     placeholder="Character name"
                   />
+                </div>
+                
+                <div className="form-group">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Role
+                  </label>
+                  {index === 0 ? (
+                    <Input
+                      placeholder="Protagonist"
+                      value="Protagonist"
+                      disabled
+                      className="bg-gray-100 text-gray-500"
+                    />
+                  ) : (
+                    <Input
+                      value={character.role}
+                      placeholder="e.g. antagonist, rival, mentor, sidekick, childhood friend, mother, hidden ally"
+                      onChange={(e) =>
+                        updateCharacter(index, "role", e.target.value)
+                      }
+                    />
+                  )}
                 </div>
 
                 <div>
