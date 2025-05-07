@@ -172,7 +172,7 @@ export default function BasicForm() {
       setGenre(projectData.basicData.genre || "");
       setSetting(projectData.basicData.setting || "");
     }
-  }, [projectData, setBasicData]);
+  }, [projectData]);
 
   // Go back to main menu
   const goBack = () => {

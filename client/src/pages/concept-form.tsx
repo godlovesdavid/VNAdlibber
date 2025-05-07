@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { validateFormContent } from "@/lib/validation";
+import { useSimpleAutosave } from "@/lib/autosave";
 
 export default function ConceptForm() {
   const [location, setLocation] = useLocation();
@@ -22,44 +23,33 @@ export default function ConceptForm() {
   const [tagline, setTagline] = useState("");
   const [premise, setPremise] = useState("");
   const [autosaving, setAutosaving] = useState(false);
-  const [saveCount, setSaveCount] = useState(0);
-  const [lastEdited, setLastEdited] = useState(0);
   
-  // Simple debounced autosave when any form field changes
-  useEffect(() => {
-    // Skip the initial load
-    if (lastEdited === 0) return;
-    
-    // Only attempt to save if project exists and we have data to save
-    if (!projectData || !(title || tagline || premise)) return;
-    
-    // Show autosaving indicator
-    setAutosaving(true);
-    
-    // Log to browser console (open DevTools to see these)
-    window.console.log("Content changed, queueing autosave in 1.5 seconds...");
-    
-    // Set a timeout to save after 1.5 seconds of no changes
-    const timeoutId = setTimeout(() => {
-      // Increment save counter for debugging
-      const newSaveCount = saveCount + 1;
+  // Create form data object for autosave
+  const formData = { title, tagline, premise };
+  
+  // Setup autosave
+  useSimpleAutosave(
+    formData, 
+    (data) => {
+      // Skip saving if not enough data
+      if (!data.title && !data.tagline && !data.premise) return;
+      
+      // Show autosaving indicator
+      setAutosaving(true);
       
       // Save to context
       setConceptData({
-        title,
-        tagline,
-        premise
+        title: data.title,
+        tagline: data.tagline,
+        premise: data.premise
       });
       
-      // Clear autosaving indicator
-      setAutosaving(false);
-    }, 1000);
-    
-    // Clean up timeout if component unmounts or dependencies change
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [title, tagline, premise, lastEdited, projectData, setConceptData, saveCount]);
+      // Clear autosaving indicator after a short delay
+      setTimeout(() => setAutosaving(false), 300);
+    },
+    1500, // 1.5 second delay
+    "ConceptForm" // Log prefix
+  );
   
   // Generic field change handler for all form fields
   const handleFieldChange = (
@@ -70,9 +60,6 @@ export default function ConceptForm() {
     if (field === 'title') setTitle(value);
     else if (field === 'tagline') setTagline(value);
     else if (field === 'premise') setPremise(value);
-    
-    // Track edit time for debounce
-    setLastEdited(Date.now());
   };
   
   // Load existing data if available or clear form if starting a new project
@@ -171,10 +158,8 @@ export default function ConceptForm() {
         premise: generatedConcept.premise,
       });
       
-      // Also increment save counter to show this was an explicit save
-      const newSaveCount = saveCount + 1;
-      setSaveCount(newSaveCount);
-      console.log(`Manual save after generation (save #${newSaveCount})`);
+      // Log the manual save
+      console.log("Manual save after generation");
     }
   };
 
