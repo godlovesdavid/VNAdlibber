@@ -766,6 +766,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json(parsed);
       } catch (e) {
         console.error("Problematic JSON:", e);
+        // Send proper error response with details
+        res.status(500).json({
+          message: "Failed to parse path data from AI response",
+          technicalDetails: e instanceof Error ? e.message : "Invalid JSON response",
+          rootCause: "The AI generated a response that couldn't be properly converted to JSON",
+          invalidResponse: responseContent.substring(0, 500) // First 500 chars for debugging
+        });
       }
     } catch (error) {
       console.error("Error generating paths:", error);
@@ -827,6 +834,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json(generatedPlot);
       } catch (e) {
         console.error("Problematic JSON:", e);
+        // Send proper error response with details
+        res.status(500).json({
+          message: "Failed to parse plot data from AI response",
+          technicalDetails: e instanceof Error ? e.message : "Invalid JSON response",
+          rootCause: "The AI generated a response that couldn't be properly converted to JSON",
+          invalidResponse: responseContent.substring(0, 500) // First 500 chars for debugging
+        });
       }
     } catch (error) {
       console.error("Error generating plot:", error);
@@ -921,7 +935,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // true,
       );
 
-      res.json(JSON.parse(responseContent));
+      // Try to parse response
+      try {
+        if (responseContent === "{}") throw new Error("Empty response");
+        const generatedAct = JSON.parse(responseContent);
+        res.json(generatedAct);
+      } catch (e) {
+        console.error("Problematic JSON:", e);
+        // Send proper error response with details
+        res.status(500).json({
+          message: "Failed to parse act data from AI response",
+          technicalDetails: e instanceof Error ? e.message : "Invalid JSON response",
+          rootCause: "The AI generated a response that couldn't be properly converted to JSON",
+          invalidResponse: responseContent.substring(0, 500) // First 500 chars for debugging
+        });
+      }
     } catch (error) {
       console.error("Error generating act:", error);
       
@@ -1019,10 +1047,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           console.log("Returning error to client:", errorMessage);
 
+          // Use consistent error format
           res.status(500).json({
-            error: errorMessage.includes("RunPod API")
+            message: "Failed to generate background image",
+            technicalDetails: errorMessage,
+            rootCause: errorMessage.includes("RunPod API")
               ? "Error connecting to RunPod API. Please check your API key and endpoint ID."
-              : errorMessage,
+              : "Image generation failed",
+            isModelOverloaded: errorMessage.includes("overloaded"),
+            retryRecommended: true
           });
         }
       } else {
@@ -1030,15 +1063,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(
           "Character image generation requested but not implemented yet",
         );
-        res
-          .status(400)
-          .json({ error: "Character image generation not implemented yet" });
+        res.status(400).json({
+          message: "Character image generation not implemented yet",
+          technicalDetails: "This feature is planned for a future update",
+          rootCause: "Feature not implemented",
+          isModelOverloaded: false,
+          retryRecommended: false
+        });
       }
     } catch (error) {
       console.error("Error processing image generation request:", error);
-      res
-        .status(500)
-        .json({ error: "Failed to process image generation request" });
+      
+      // Extract detailed error information
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      const errorCause = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause 
+        ? String(error.cause.message) 
+        : null;
+      const isOverloaded = typeof errorMessage === 'string' && errorMessage.includes("overloaded");
+      const statusCode = isOverloaded ? 503 : 500; // Service Unavailable for overloaded model
+      
+      res.status(statusCode).json({
+        message: "Failed to process image generation request",
+        technicalDetails: errorMessage,
+        rootCause: errorCause || "An unexpected error occurred during image processing",
+        isModelOverloaded: isOverloaded,
+        retryRecommended: true
+      });
     }
   });
 
