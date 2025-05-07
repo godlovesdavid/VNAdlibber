@@ -134,12 +134,29 @@ export default function CharactersForm() {
     });
   };
 
-  // Update character field
+  // Update character field with name uniqueness check
   const updateCharacter = (
     index: number,
     field: string, // Using string type to allow 'name' which isn't in Character
     value: string,
   ) => {
+    // Special handling for name field to ensure uniqueness
+    if (field === 'name' && value) {
+      // Check if this name already exists in another character
+      const nameExists = characters.some(
+        (character, idx) => idx !== index && character.name === value
+      );
+      
+      if (nameExists) {
+        toast({
+          title: "Duplicate Name",
+          description: "Each character must have a unique name. Please choose a different name.",
+          variant: "destructive"
+        });
+        return; // Don't update if duplicate
+      }
+    }
+    
     const updatedCharacters = [...characters];
     updatedCharacters[index] = {
       ...updatedCharacters[index],
@@ -213,15 +230,28 @@ export default function CharactersForm() {
     // Transform array to object format
     const charactersObj: Record<string, Character> = {};
 
-    characters.forEach((char) => {
-      if (char.name) {
-        const { name, ...characterWithoutName } = char;
-        charactersObj[name] = characterWithoutName as Character;
-      }
+    characters.forEach((char, idx) => {
+      // Extract name but don't store it in the object
+      const { name, ...characterWithoutName } = char;
+        
+      // Remove any numeric keys that might be causing unintended nesting
+      const cleanCharacter = Object.entries(characterWithoutName)
+        .filter(([key]) => isNaN(Number(key)))
+        .reduce((obj, [key, value]) => {
+          obj[key] = value;
+          return obj;
+        }, {} as Record<string, any>) as Character;
+          
+      // Use character index as key if name is empty
+      const characterKey = name ? name : `untitled-character-${idx}`;
+      charactersObj[characterKey] = cleanCharacter;
     });
 
     // Set the characters data
     setCharactersData(charactersObj);
+    
+    // Log for debugging
+    console.log('Saving characters data to context in helper:', charactersObj);
     
     return { charactersObj };
   };

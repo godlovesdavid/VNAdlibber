@@ -164,8 +164,25 @@ export default function PathsForm() {
     setRoutes(updatedRoutes);
   };
 
-  // Update path field
+  // Update path field with title uniqueness check
   const updatePath = (index: number, field: keyof Route, value: any) => {
+    // Special handling for title field to ensure uniqueness
+    if (field === 'title' && value) {
+      // Check if this title already exists in another path
+      const titleExists = routes.some(
+        (route, idx) => idx !== index && route.title === value
+      );
+      
+      if (titleExists) {
+        toast({
+          title: "Duplicate Title",
+          description: "Each path must have a unique title. Please choose a different name.",
+          variant: "destructive"
+        });
+        return; // Don't update if duplicate
+      }
+    }
+    
     const updatedRoutes = [...routes];
     updatedRoutes[index] = {
       ...updatedRoutes[index],
