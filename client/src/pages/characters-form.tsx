@@ -54,104 +54,14 @@ export default function CharactersForm() {
       conflict: "",
     },
   ]);
-
-  const [generatingCharacterIndex, setGeneratingCharacterIndex] = useState<
-    number | null
-  >(null);
   
+  // Track which character is being generated
+  const [generatingCharacterIndex, setGeneratingCharacterIndex] = useState<number | null>(null);
+  
+  // Autosave indicator state
   const [isAutosaving, setIsAutosaving] = useState(false);
-
-  // Setup autosave with the improved hook
-  useSimpleAutosave(
-    characters, 
-    (charactersData) => {
-      // Skip if no characters
-      if (charactersData.length === 0) return;
-      
-      // Show autosaving indicator
-      setIsAutosaving(true);
-      
-      // Create a save function that converts from array to object format
-      const charactersObj: Record<string, Character> = {};
-      let protagonist = '';
-      
-      // Convert from array to object format for storage
-      charactersData.forEach((char, idx) => {
-        if (char.name) {
-          // Extract name but don't store it in the object
-          const { name, ...characterWithoutName } = char;
-          
-          // Check for numeric keys
-          const numericKeys = Object.keys(characterWithoutName).filter(key => !isNaN(Number(key)));
-          if (numericKeys.length > 0) {
-            console.log(`Found numeric keys for ${name}:`, numericKeys);
-          }
-          
-          // Remove any numeric keys that might be causing unintended nesting
-          const cleanCharacter = Object.entries(characterWithoutName)
-            .filter(([key]) => isNaN(Number(key)))
-            .reduce((obj, [key, value]) => {
-              obj[key] = value;
-              return obj;
-            }, {} as Record<string, any>) as Character;
-            
-          charactersObj[name] = cleanCharacter;
-          
-          // Store the protagonist name (first character is always protagonist)
-          if (idx === 0) {
-            protagonist = name;
-          }
-        }
-      });
-      
-      // Save to context
-      setCharactersData(charactersObj, protagonist);
-      
-      // Clear autosaving indicator after a short delay
-      setTimeout(() => setIsAutosaving(false), 300);
-    },
-    1500, // 1.5 second delay
-    "CharactersForm" // Log prefix
-  );
   
-  // Load existing data if available
-  useEffect(() => {
-    if (projectData?.charactersData && Object.keys(projectData.charactersData).length > 0) {
-      console.log("Loading characters data from context:", projectData.charactersData);
-      
-      // Convert from object to array format for the form
-      const charactersArray = Object.entries(projectData.charactersData).map(
-        ([name, character]) => {
-          console.log(`Processing character '${name}':`, character);
-          return {
-            ...character,
-            name // Add name field for form usage
-          };
-        }
-      );
-      
-      console.log("Converted characters array:", charactersArray);
-      
-      // If there's a protagonist field set, ensure it appears first in the array
-      if (projectData.protagonist && projectData.charactersData[projectData.protagonist]) {
-        console.log("Protagonist from context:", projectData.protagonist);
-        const protagonistIndex = charactersArray.findIndex(char => char.name === projectData.protagonist);
-        console.log("Protagonist index in array:", protagonistIndex);
-        
-        if (protagonistIndex > 0) { // If not already first
-          const protagonist = charactersArray[protagonistIndex];
-          charactersArray.splice(protagonistIndex, 1); // Remove from current position
-          charactersArray.unshift(protagonist); // Add to beginning
-          console.log("Moved protagonist to beginning of array");
-        }
-      }
-      
-      console.log("Final characters array to set in form:", charactersArray);
-      setCharacters(charactersArray);
-    }
-  }, [location]);
-
-  // Add a new character card
+  // Function to add a new character card
   const addCharacter = () => {
     if (characters.length >= 5) {
       alert("You can only create up to 5 characters.");
@@ -186,6 +96,41 @@ export default function CharactersForm() {
     updatedCharacters.splice(index, 1);
     setCharacters(updatedCharacters);
   };
+  
+  // Reset all characters with confirmation
+  const handleResetForm = () => {
+    // Ask for confirmation before clearing
+    if (!window.confirm("Are you sure you want to reset all character information? This action cannot be undone.")) {
+      return; // User canceled the reset
+    }
+    
+    // Create a default protagonist character
+    const defaultCharacter: CharacterForm = {
+      name: "",
+      role: "protagonist",
+      occupation: "",
+      gender: "",
+      age: "",
+      appearance: "",
+      personality: "",
+      goals: "",
+      relationshipPotential: "",
+      conflict: ""
+    };
+    
+    // Reset to a single empty character form
+    setCharacters([defaultCharacter]);
+    
+    // Save empty data to context
+    setCharactersData({}, "");
+    
+    // Show toast notification
+    toast({
+      title: "Form Reset",
+      description: "Characters form has been reset.",
+      variant: "default"
+    });
+  };
 
   // Update character field
   const updateCharacter = (
@@ -206,87 +151,21 @@ export default function CharactersForm() {
     setGeneratingCharacterIndex(index);
 
     try {
-      console.log("Calling generateCharacterData for single character...");
-      console.log("Current character before generation:", characters[index]);
-      
       const generatedCharacter = await generateCharacterData(
         index,
         characters[index],
       );
-      console.log("generateCharacterData returned:", generatedCharacter);
 
       if (generatedCharacter) {
-        console.log("Checking generated character structure for numeric keys...");
-        const hasNumericKeysInGenerated = Object.keys(generatedCharacter).some(key => !isNaN(Number(key)));
-        console.log(`Generated character has numeric keys: ${hasNumericKeysInGenerated}`);
-        
-        if (hasNumericKeysInGenerated) {
-          console.log("Numeric keys found in generated character:", 
-            Object.keys(generatedCharacter).filter(key => !isNaN(Number(key))));
-        }
-        
         const updatedCharacters = [...characters];
-        console.log("Before merge:", updatedCharacters[index]);
-        
         updatedCharacters[index] = {
           ...updatedCharacters[index],
           ...generatedCharacter,
         };
-        
-        console.log("After merge:", updatedCharacters[index]);
         setCharacters(updatedCharacters);
-
-        // Update the project context after character generation
-        const charactersObj: Record<string, Character> = {};
-        let protagonist = "";
-        
-        console.log("Converting to storage format...");
-        
-        updatedCharacters.forEach((char, idx) => {
-          if (char.name) {
-            console.log(`Processing character for save: ${char.name}`);
-            
-            // Extract name but don't store it in the object
-            const { name, ...characterWithoutName } = char;
-            console.log(`Character without name:`, characterWithoutName);
-            
-            // Check for numeric keys
-            const numericKeys = Object.keys(characterWithoutName).filter(key => !isNaN(Number(key)));
-            if (numericKeys.length > 0) {
-              console.log(`Found numeric keys for ${name}:`, numericKeys);
-            }
-            
-            // Remove any numeric keys that might be causing unintended nesting
-            const cleanCharacter = Object.entries(characterWithoutName)
-              .filter(([key]) => isNaN(Number(key)))
-              .reduce((obj, [key, value]) => {
-                obj[key] = value;
-                return obj;
-              }, {} as Record<string, any>) as Character;
-              
-            console.log(`Clean character:`, cleanCharacter);
-            charactersObj[name] = cleanCharacter;
-            
-            // Store the protagonist name (first character is always protagonist)
-            if (idx === 0) {
-              protagonist = name;
-            }
-          }
-        });
-        
-        console.log("Final characters object to save:", charactersObj);
-        console.log("Setting protagonist to:", protagonist);
-        
-        setCharactersData(charactersObj, protagonist);
-
-        // Log generation to console
-        console.log(`Generated character ${index + 1}:`, generatedCharacter);
-        console.log(`Updated project context with character ${index + 1} data`);
-      } else {
-        console.log(`Failed to generate character ${index + 1}`);
       }
     } catch (error) {
-      console.error("Error in handleGenerateCharacter:", error);
+      console.error("Error generating character:", error);
     } finally {
       setGeneratingCharacterIndex(null);
     }
@@ -294,11 +173,8 @@ export default function CharactersForm() {
 
   // Generate all characters
   const handleGenerateAllCharacters = async () => {
-    console.log("Generate All Characters button clicked");
-
     // Only generate for existing characters
     if (characters.length === 0) {
-      console.log("No characters to generate");
       return;
     }
 
@@ -307,126 +183,27 @@ export default function CharactersForm() {
 
     // Set state for UI feedback
     setGeneratingCharacterIndex(-1); // -1 indicates "all"
-    console.log("Setting generating character index to -1");
 
     try {
-      // Skip completed protagonist in batch generation
-      const characterTemplates = allCharacters.map((char, idx) => {
-        if (idx === 0 && char.personality && char.goals && char.appearance) {
-          console.log("Keeping existing protagonist data");
-          return {
-            name: char.name,
-            role: char.role,
-            occupation: char.occupation,
-            gender: char.gender,
-            age: char.age,
-            appearance: char.appearance,
-            personality: char.personality,
-            goals: char.goals,
-            relationshipPotential: char.relationshipPotential,
-            conflict: char.conflict,
-          };
-        }
-        return {
-          name: char.name,
-          role: char.role,
-          occupation: char.occupation,
-          gender: char.gender,
-          age: char.age,
-        };
-      });
-
-      console.log(
-        `Generating ${characterTemplates.length} characters at once...`,
-      );
-
       // Generate all characters in one API call
       const generatedCharacters =
-        await generateMultipleCharactersData(characterTemplates);
+        await generateMultipleCharactersData(allCharacters);
 
       if (generatedCharacters && Array.isArray(generatedCharacters)) {
-        console.log("Received generated characters:", generatedCharacters);
-        
-        // Check for numeric keys in generated characters
-        generatedCharacters.forEach((character, idx) => {
-          const hasNumericKeys = Object.keys(character).some(key => !isNaN(Number(key)));
-          if (hasNumericKeys) {
-            console.log(`Generated character ${idx} has numeric keys:`, 
-              Object.keys(character).filter(key => !isNaN(Number(key))));
-          }
-        });
-        
         // Merge the generated characters with existing character data
         const updatedCharacters = allCharacters.map((char, idx) => {
-          console.log(`Merging character ${idx}:`);
-          console.log("Original:", char);
-          console.log("Generated:", generatedCharacters[idx]);
-          
-          // Merge the data
-          const merged = {
+          return {
             ...char,
             ...generatedCharacters[idx],
           };
-          
-          console.log("Result:", merged);
-          return merged;
         });
 
-        // Update state and project context
+        // Update state
         setCharacters(updatedCharacters);
-        
-        // Convert to object format for storage
-        const charactersObj: Record<string, Character> = {};
-        let protagonist = "";
-        
-        console.log("Converting batch-generated characters to storage format...");
-        
-        updatedCharacters.forEach((char, idx) => {
-          if (char.name) {
-            console.log(`Processing character for save: ${char.name}`);
-            
-            // Extract name but don't store it in the object
-            const { name, ...characterWithoutName } = char;
-            console.log(`Character without name:`, characterWithoutName);
-            
-            // Check for numeric keys
-            const numericKeys = Object.keys(characterWithoutName).filter(key => !isNaN(Number(key)));
-            if (numericKeys.length > 0) {
-              console.log(`Found numeric keys for ${name}:`, numericKeys);
-            }
-            
-            // Remove any numeric keys that might be causing unintended nesting
-            const cleanCharacter = Object.entries(characterWithoutName)
-              .filter(([key]) => isNaN(Number(key)))
-              .reduce((obj, [key, value]) => {
-                obj[key] = value;
-                return obj;
-              }, {} as Record<string, any>) as Character;
-              
-            console.log(`Clean character:`, cleanCharacter);
-            charactersObj[name] = cleanCharacter;
-            
-            // Store the protagonist name (first character is always protagonist)
-            if (idx === 0) {
-              protagonist = name;
-            }
-          }
-        });
-        
-        console.log("Final characters object to save:", charactersObj);
-        console.log("Setting protagonist to:", protagonist);
-        
-        setCharactersData(charactersObj, protagonist);
-
-        console.log("Successfully generated all characters at once");
-        console.log("Updated project context with all character data");
-      } else {
-        console.error("Failed to generate characters bundle");
       }
     } catch (error) {
-      console.error("Error in handleGenerateAllCharacters:", error);
+      console.error("Error generating characters:", error);
     } finally {
-      console.log("Finished generation, resetting index");
       setGeneratingCharacterIndex(null);
     }
   };
@@ -441,16 +218,7 @@ export default function CharactersForm() {
       if (char.name) {
         // Extract name but don't store it in the object
         const { name, ...characterWithoutName } = char;
-        
-        // Remove any numeric keys that might be causing unintended nesting
-        const cleanCharacter = Object.entries(characterWithoutName)
-          .filter(([key]) => isNaN(Number(key)))
-          .reduce((obj, [key, value]) => {
-            obj[key] = value;
-            return obj;
-          }, {} as Record<string, any>) as Character;
-          
-        charactersObj[name] = cleanCharacter;
+        charactersObj[name] = characterWithoutName as Character;
         
         // Store the protagonist name (first character is always protagonist)
         if (index === 0) {
@@ -486,7 +254,7 @@ export default function CharactersForm() {
     }
     
     // Save data using our helper function
-    const charactersObj = saveCharacterData();
+    const { charactersObj } = saveCharacterData();
     
     if (!projectData) {
       toast({
@@ -512,13 +280,100 @@ export default function CharactersForm() {
       const isValid = await validateFormContent(contextData, "characters");
       
       if (isValid) {
-        // Navigate to next step
+        // Navigate to the next step
         setLocation("/create/paths");
+      } else {
+        toast({
+          title: "Validation Error",
+          description: "Please check the character data and try again.",
+          variant: "destructive"
+        });
       }
+    } catch (error) {
+      console.error("Error validating characters:", error);
+      toast({
+        title: "Error",
+        description: "Failed to validate character data.",
+        variant: "destructive"
+      });
     } finally {
       setIsValidating(false);
     }
   };
+  
+  // Setup autosave
+  useSimpleAutosave(
+    characters, 
+    (data) => {
+      // Skip saving if no characters
+      if (!data || data.length === 0) return;
+      
+      // Show autosaving indicator
+      setIsAutosaving(true);
+      
+      // Transform to object format for storage
+      const charactersObj: Record<string, Character> = {};
+      let protagonist = "";
+      
+      data.forEach((char, idx) => {
+        if (char.name) {
+          // Extract name but don't store it in the object
+          const { name, ...characterWithoutName } = char;
+          
+          // Remove any numeric keys that might be causing unintended nesting
+          const cleanCharacter = Object.entries(characterWithoutName)
+            .filter(([key]) => isNaN(Number(key)))
+            .reduce((obj, [key, value]) => {
+              obj[key] = value;
+              return obj;
+            }, {} as Record<string, any>) as Character;
+            
+          charactersObj[name] = cleanCharacter;
+          
+          // Store the protagonist name (first character is always protagonist)
+          if (idx === 0) {
+            protagonist = name;
+          }
+        }
+      });
+      
+      // Save to context
+      setCharactersData(charactersObj, protagonist);
+      
+      // Clear autosaving indicator after a short delay
+      setTimeout(() => setIsAutosaving(false), 300);
+    },
+    1500, // 1.5 second delay
+    "CharactersForm" // Log prefix
+  );
+  
+  // Load existing data if available
+  useEffect(() => {
+    if (projectData?.charactersData && Object.keys(projectData.charactersData).length > 0) {
+      // Convert from object to array format for the form
+      const charactersArray = Object.entries(projectData.charactersData).map(
+        ([name, character]) => {
+          return {
+            ...character,
+            name // Add name field for form usage
+          };
+        }
+      );
+      
+      // If there's a protagonist field set, ensure it appears first in the array
+      if (projectData.protagonist && projectData.charactersData[projectData.protagonist]) {
+        const protagonistIndex = charactersArray.findIndex(char => char.name === projectData.protagonist);
+        
+        if (protagonistIndex > 0) { // If not already first
+          const protagonist = charactersArray[protagonistIndex];
+          charactersArray.splice(protagonistIndex, 1); // Remove from current position
+          charactersArray.unshift(protagonist); // Add to beginning
+        }
+      }
+      
+      setCharacters(charactersArray);
+    }
+  }, [projectData?.charactersData, projectData?.protagonist]);
 
   return (
     <>
@@ -528,279 +383,208 @@ export default function CharactersForm() {
       <div className="pt-16">
         <div className="creation-container max-w-4xl mx-auto p-6">
           <div className="mb-6">
-            <h2 className="text-2xl font-semibold text-gray-800">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-2">
               Step 3: Characters
             </h2>
             <p className="text-gray-600">
-              Create the characters who will bring your story to life. You can
-              add up to 5 characters.
+              Create the characters who will bring your story to life. The first character
+              will be the protagonist.
             </p>
           </div>
 
-          <div className="space-y-6">
-            {characters.map((character, index) => (
-              <Card
-                key={index}
-                className="shadow-sm hover:border-primary transition-all"
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="text-lg font-semibold text-gray-800">
-                      Character {index + 1}
-                      {index === 0 && (
-                        <span className="text-primary ml-1">(Protagonist)</span>
-                      )}
-                    </CardTitle>
+          {characters.map((character, index) => (
+            <Card key={index} className="mb-8">
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-center">
+                  <CardTitle>
+                    {index === 0 ? "Protagonist" : `Character ${index + 1}`}
+                  </CardTitle>
+                  {index > 0 && (
                     <Button
+                      size="sm"
                       variant="ghost"
-                      size="icon"
-                      className="text-gray-400 hover:text-gray-600"
-                      title="Remove Character"
+                      className="text-red-500 hover:bg-red-50"
                       onClick={() => removeCharacter(index)}
                     >
                       <Trash className="h-4 w-4" />
                     </Button>
-                  </div>
-                </CardHeader>
-
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Basic Info */}
-                    <div className="space-y-3">
-                      <div className="form-group">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Name
-                        </label>
-                        <Input
-                          placeholder="Character's name"
-                          value={character.name}
-                          onChange={(e) =>
-                            updateCharacter(index, "name", e.target.value)
-                          }
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Role
-                        </label>
-                        {index === 0 ? (
-                          <Input
-                            placeholder="Protagonist"
-                            value="Protagonist"
-                            disabled
-                            className="bg-gray-100 text-gray-500"
-                          />
-                        ) : (
-                          <Input
-                            value={character.role}
-                            placeholder="e.g. antagonist, rival, mentor, sidekick, childhood friend, mother, hidden ally"
-                            onChange={(e) =>
-                              updateCharacter(index, "role", e.target.value)
-                            }
-                          />
-                        )}
-                      </div>
-
-                      <div className="form-group">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Gender
-                        </label>
-                        <Input
-                          placeholder="e.g. Male, Female, Non-binary, Robot/AI"
-                          value={character.gender}
-                          onChange={(e) =>
-                            updateCharacter(index, "gender", e.target.value)
-                          }
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Age
-                        </label>
-                        <Input
-                          placeholder="Character's age"
-                          value={character.age}
-                          onChange={(e) =>
-                            updateCharacter(index, "age", e.target.value)
-                          }
-                        />
-                      </div>
-                      
-                      <div className="form-group">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Occupation
-                        </label>
-                        <Input
-                          placeholder="e.g. student, doctor, teacher, police officer"
-                          value={character.occupation}
-                          onChange={(e) =>
-                            updateCharacter(index, "occupation", e.target.value)
-                          }
-                        />
-                      </div>
-                    </div>
-
-                    {/* Character Details */}
-                    <div className="space-y-3">
-                      <div className="form-group">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Appearance
-                        </label>
-                        <Textarea
-                          rows={2}
-                          placeholder="Brief physical description"
-                          value={character.appearance}
-                          onChange={(e) =>
-                            updateCharacter(index, "appearance", e.target.value)
-                          }
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Personality
-                        </label>
-                        <Textarea
-                          rows={2}
-                          placeholder="Key traits and behaviors"
-                          value={character.personality}
-                          onChange={(e) =>
-                            updateCharacter(
-                              index,
-                              "personality",
-                              e.target.value,
-                            )
-                          }
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Goals
-                        </label>
-                        <Textarea
-                          rows={2}
-                          placeholder="Primary motivations and objectives"
-                          value={character.goals}
-                          onChange={(e) =>
-                            updateCharacter(index, "goals", e.target.value)
-                          }
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Additional Info */}
-                  <div className="mt-4 space-y-3">
-                    <div className="form-group">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Relationship Potential
-                      </label>
-                      {index === 0 ? (
-                        <Textarea
-                          rows={2}
-                          placeholder="N/A - This is the protagonist"
-                          value="This is the protagonist character"
-                          disabled
-                          className="bg-gray-100 text-gray-500"
-                        />
-                      ) : (
-                        <Textarea
-                          rows={2}
-                          placeholder="How they might connect with the protagonist"
-                          value={character.relationshipPotential}
-                          onChange={(e) =>
-                            updateCharacter(
-                              index,
-                              "relationshipPotential",
-                              e.target.value,
-                            )
-                          }
-                        />
-                      )}
-                    </div>
-
-                    <div className="form-group">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Conflict
-                      </label>
-                      <Textarea
-                        rows={2}
-                        placeholder="Their primary internal or external struggle"
-                        value={character.conflict}
-                        onChange={(e) =>
-                          updateCharacter(index, "conflict", e.target.value)
-                        }
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-
-                <CardFooter className="flex justify-end">
-                  <Button
-                    variant="ghost"
-                    className="text-primary hover:text-primary/80 text-sm"
-                    onClick={() => handleGenerateCharacter(index)}
-                    disabled={isGenerating}
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                <div>
+                  <label
+                    htmlFor={`name-${index}`}
+                    className="block text-sm font-medium text-gray-700 mb-1"
                   >
-                    {generatingCharacterIndex === index && isGenerating ? (
-                      <>
-                        <svg
-                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <Wand2 className="mr-1 h-4 w-4" /> Generate Character
-                      </>
-                    )}
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
+                    Name
+                  </label>
+                  <Input
+                    id={`name-${index}`}
+                    value={character.name}
+                    onChange={(e) =>
+                      updateCharacter(index, "name", e.target.value)
+                    }
+                    placeholder="Character name"
+                  />
+                </div>
 
-            <div className="pt-6 flex flex-col space-y-4">
-              <div className="flex justify-center gap-4">
-                <Button
-                  onClick={addCharacter}
-                  variant="secondary"
-                  className="flex items-center"
-                  disabled={characters.length >= 5}
-                >
-                  <Plus className="mr-1 h-4 w-4" /> Add Character
-                </Button>
+                <div>
+                  <label
+                    htmlFor={`occupation-${index}`}
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Occupation
+                  </label>
+                  <Input
+                    id={`occupation-${index}`}
+                    value={character.occupation}
+                    onChange={(e) =>
+                      updateCharacter(index, "occupation", e.target.value)
+                    }
+                    placeholder="Character occupation"
+                  />
+                </div>
 
+                <div>
+                  <label
+                    htmlFor={`gender-${index}`}
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Gender
+                  </label>
+                  <Input
+                    id={`gender-${index}`}
+                    value={character.gender}
+                    onChange={(e) =>
+                      updateCharacter(index, "gender", e.target.value)
+                    }
+                    placeholder="Character gender"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor={`age-${index}`}
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Age
+                  </label>
+                  <Input
+                    id={`age-${index}`}
+                    value={character.age}
+                    onChange={(e) =>
+                      updateCharacter(index, "age", e.target.value)
+                    }
+                    placeholder="Character age"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label
+                    htmlFor={`appearance-${index}`}
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Appearance
+                  </label>
+                  <Textarea
+                    id={`appearance-${index}`}
+                    value={character.appearance}
+                    onChange={(e) =>
+                      updateCharacter(index, "appearance", e.target.value)
+                    }
+                    rows={2}
+                    placeholder="Describe the character's physical appearance"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label
+                    htmlFor={`personality-${index}`}
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Personality
+                  </label>
+                  <Textarea
+                    id={`personality-${index}`}
+                    value={character.personality}
+                    onChange={(e) =>
+                      updateCharacter(index, "personality", e.target.value)
+                    }
+                    rows={2}
+                    placeholder="Describe the character's personality traits, quirks, etc."
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label
+                    htmlFor={`goals-${index}`}
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Goals & Motivations
+                  </label>
+                  <Textarea
+                    id={`goals-${index}`}
+                    value={character.goals}
+                    onChange={(e) =>
+                      updateCharacter(index, "goals", e.target.value)
+                    }
+                    rows={2}
+                    placeholder="What does the character want? What drives them?"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label
+                    htmlFor={`relationshipPotential-${index}`}
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Relationship Potential
+                  </label>
+                  <Textarea
+                    id={`relationshipPotential-${index}`}
+                    value={character.relationshipPotential}
+                    onChange={(e) =>
+                      updateCharacter(
+                        index,
+                        "relationshipPotential",
+                        e.target.value,
+                      )
+                    }
+                    rows={2}
+                    placeholder="How might this character interact with or relate to others?"
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label
+                    htmlFor={`conflict-${index}`}
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Internal/External Conflicts
+                  </label>
+                  <Textarea
+                    id={`conflict-${index}`}
+                    value={character.conflict}
+                    onChange={(e) =>
+                      updateCharacter(index, "conflict", e.target.value)
+                    }
+                    rows={2}
+                    placeholder="What struggles does this character face?"
+                  />
+                </div>
+              </CardContent>
+              <CardFooter>
                 <Button
-                  onClick={handleGenerateAllCharacters}
-                  variant="secondary"
+                  onClick={() => handleGenerateCharacter(index)}
+                  variant="outline"
                   className="flex items-center text-primary border-primary hover:bg-primary/10"
-                  disabled={isGenerating || characters.length === 0}
+                  disabled={isGenerating}
                 >
-                  <Wand2 className="mr-1 h-4 w-4" />
-                  {generatingCharacterIndex === -1 && isGenerating ? (
+                  {generatingCharacterIndex === index && isGenerating ? (
                     <>
                       <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4"
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -822,44 +606,107 @@ export default function CharactersForm() {
                       Generating...
                     </>
                   ) : (
-                    <>Generate All Characters</>
+                    <>
+                      <Wand2 className="mr-1 h-4 w-4" /> Generate Character
+                    </>
                   )}
                 </Button>
+              </CardFooter>
+            </Card>
+          ))}
+
+          <div className="pt-6 flex flex-col space-y-4">
+            <div className="flex justify-center gap-4">
+              <Button
+                onClick={addCharacter}
+                variant="secondary"
+                className="flex items-center"
+                disabled={characters.length >= 5}
+              >
+                <Plus className="mr-1 h-4 w-4" /> Add Character
+              </Button>
+
+              <Button
+                onClick={handleGenerateAllCharacters}
+                variant="secondary"
+                className="flex items-center text-primary border-primary hover:bg-primary/10"
+                disabled={isGenerating || characters.length === 0}
+              >
+                <Wand2 className="mr-1 h-4 w-4" />
+                {generatingCharacterIndex === -1 && isGenerating ? (
+                  <>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Generating...
+                  </>
+                ) : (
+                  <>Generate All Characters</>
+                )}
+              </Button>
+            </div>
+            <div className="flex justify-between">
+              <div className="flex items-center">
+                <Button 
+                  variant="outline" 
+                  onClick={handleBack}
+                  title={projectData?.conceptData ? `Back to: ${projectData.conceptData.title || 'Concept'}` : 'Back'}
+                >
+                  Back
+                </Button>
+                {/* Autosave indicator */}
+                {isAutosaving && (
+                  <div className="ml-3 flex items-center text-xs text-gray-500">
+                    <svg
+                      className="animate-spin mr-1 h-3 w-3 text-gray-500"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Autosaving...
+                  </div>
+                )}
               </div>
-              <div className="flex justify-between">
-                <div className="flex items-center">
-                  <Button variant="outline" onClick={handleBack}
-                    title={projectData?.conceptData ? `Back to: ${projectData.conceptData.title || 'Concept'}` : 'Back'}
-                  >
-                    Back
-                  </Button>
-                  {/* Autosave indicator */}
-                  {isAutosaving && (
-                    <div className="ml-3 flex items-center text-xs text-gray-500">
-                      <svg
-                        className="animate-spin mr-1 h-3 w-3 text-gray-500"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      Autosaving...
-                    </div>
-                  )}
-                </div>
+              <div className="flex space-x-3">
+                <Button
+                  variant="outline"
+                  className="border-red-300 text-red-600 hover:bg-red-50"
+                  onClick={handleResetForm}
+                  disabled={isGenerating}
+                >
+                  Reset
+                </Button>
                 <Button onClick={handleNext} disabled={isValidating || isGenerating}>
                   {isValidating ? (
                     <>
