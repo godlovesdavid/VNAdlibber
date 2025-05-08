@@ -19,7 +19,7 @@ import { useState } from "react";
 export function NavBar() {
   const [location, setLocation] = useLocation();
   const { projectData, hasUnsavedChanges } = useVnContext();
-  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const { confirmDialogOpen, setConfirmDialogOpen } = useVnContext();
   const [sharingDialogOpen, setSharingDialogOpen] = useState(false);
 
   // Check if we're on a form page

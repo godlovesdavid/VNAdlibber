@@ -77,6 +77,10 @@ function generateProjectHash(projectData: any): string {
 }
 
 interface VnContextType {
+  // UI State
+  confirmDialogOpen: boolean;
+  setConfirmDialogOpen: (open: boolean) => void;
+  
   // Project data
   projectData: VnProjectData | null;
 
@@ -176,6 +180,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [projectData, setProjectData] = useState<VnProjectData | null>(null);
   const [playerData, setPlayerData] = useState<PlayerData>(defaultPlayerData);
   const [isLoading, setIsLoading] = useState(false);
@@ -849,6 +854,8 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const value: VnContextType = {
+    confirmDialogOpen,
+    setConfirmDialogOpen,
     projectData,
     setBasicData,
     setConceptData,

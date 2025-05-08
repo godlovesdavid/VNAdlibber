@@ -78,7 +78,7 @@ function getRandomItem(array: string[]): string {
 
 export default function BasicForm() {
   const [, setLocation] = useLocation();
-  const { projectData, setBasicData, saveProject, hasUnsavedChanges } = useVnContext();
+  const { projectData, setBasicData, saveProject, hasUnsavedChanges, setConfirmDialogOpen } = useVnContext();
   const { toast } = useToast();
 
   // Track validation state
