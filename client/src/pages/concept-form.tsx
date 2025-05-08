@@ -28,28 +28,28 @@ export default function ConceptForm() {
   const formData = { title, tagline, premise };
   
   // Setup autosave
-  useSimpleAutosave(
-    formData, 
-    (data) => {
-      // Skip saving if not enough data
-      if (!data.title && !data.tagline && !data.premise) return;
+  // useSimpleAutosave(
+  //   formData, 
+  //   (data) => {
+  //     // Skip saving if not enough data
+  //     if (!data.title && !data.tagline && !data.premise) return;
       
-      // Show autosaving indicator
-      setAutosaving(true);
+  //     // Show autosaving indicator
+  //     setAutosaving(true);
       
-      // Save to context
-      setConceptData({
-        title: data.title,
-        tagline: data.tagline,
-        premise: data.premise
-      });
+  //     // Save to context
+  //     setConceptData({
+  //       title: data.title,
+  //       tagline: data.tagline,
+  //       premise: data.premise
+  //     });
       
-      // Clear autosaving indicator after a short delay
-      setTimeout(() => setAutosaving(false), 300);
-    },
-    500, // 1.5 second delay
-    "ConceptForm" // Log prefix
-  );
+  //     // Clear autosaving indicator after a short delay
+  //     setTimeout(() => setAutosaving(false), 300);
+  //   },
+  //   500, // 1.5 second delay
+  //   "ConceptForm" // Log prefix
+  // );
   
   // Generic field change handler for all form fields
   const handleFieldChange = (

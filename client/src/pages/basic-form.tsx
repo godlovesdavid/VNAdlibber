@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
+import {VnProjectData} from "@/types/vn";
 import { CreationProgress } from "@/components/creation-progress";
 import { NavBar } from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
@@ -11,11 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { validateFormContent } from "@/lib/validation";
-import { useSimpleAutosave } from "@/lib/autosave";
 
 // Arrays for each dropdown type
 const tones = [
@@ -80,8 +77,8 @@ function getRandomItem(array: string[]): string {
 }
 
 export default function BasicForm() {
-  const [location, setLocation] = useLocation();
-  const { projectData, setBasicData } = useVnContext();
+  const [, setLocation] = useLocation();
+  const { projectData, setBasicData, saveProject, hasUnsavedChanges } = useVnContext();
   const { toast } = useToast();
 
   // Track validation state
@@ -92,23 +89,63 @@ export default function BasicForm() {
   const [tone, setTone] = useState("");
   const [genre, setGenre] = useState("");
   const [setting, setSetting] = useState("");
-  
+
   // Create form data object for autosave
   const formData = { theme, tone, genre, setting };
-  
+
   // Setup autosave
-  useSimpleAutosave(
-    formData, 
-    (data) => {
-      // Skip saving if any required field is empty
-      if (!data.theme || !data.tone || !data.genre || !data.setting) return;
-      
-      // Save to context
-      setBasicData(data);
-    },
-    500, // 1.5 second delay
-    "BasicForm" // Log prefix
-  );
+  // useSimpleAutosave(
+  //   formData,
+  //   (data) => {
+  //     // Skip saving if any required field is empty
+  //     if (!data.theme || !data.tone || !data.genre || !data.setting) return;
+
+  //     // Save to context
+  //     setBasicData(data);
+  //   },
+  //   500, // 1.5 second delay
+  //   "BasicForm" // Log prefix
+  // );
+
+  
+  useEffect(() => {
+    const returnButtonHandler = () => {
+      if (projectData) {
+        const data = {
+            theme,
+            tone,
+            genre,
+            setting,
+          }
+        setBasicData(data);
+        const hasChanges = hasUnsavedChanges({...projectData, basicData: data});
+        if (hasChanges) {
+          setConfirmDialogOpen(true);
+        } else {
+          // No unsaved changes, just go back to main menu
+          setLocation("/");
+        }
+      } else {
+        setLocation("/");
+      }
+    }
+    const saveFormHandler = () => {
+      if (!projectData || !theme || !tone || !genre || !setting) return;
+      saveProject({...projectData, basicData: {
+                    theme,
+                    tone,
+                    genre,
+                    setting,
+                  }});
+    }
+    document.addEventListener("return", returnButtonHandler);
+    document.addEventListener("save", saveFormHandler);
+
+    return () => {
+      document.removeEventListener("return", returnButtonHandler);
+      document.removeEventListener("save", saveFormHandler);
+    };
+  }, [theme, tone, genre, setting]);
 
   // Function to randomize all form values
   const randomizeForm = () => {
@@ -118,13 +155,13 @@ export default function BasicForm() {
     const newTone = getRandomItem(tones);
     const newGenre = getRandomItem(genres);
     const newSetting = getRandomItem(settings);
-    
+
     // Update state
     setTheme(newTheme);
     setTone(newTone);
     setGenre(newGenre);
     setSetting(newSetting);
-    
+
     // Manually save the new values immediately
     setBasicData({
       theme: newTheme,
@@ -149,12 +186,12 @@ export default function BasicForm() {
       const newTone = getRandomItem(tones);
       const newGenre = getRandomItem(genres);
       const newSetting = getRandomItem(settings);
-      
+
       setTheme(newTheme);
       setTone(newTone);
       setGenre(newGenre);
       setSetting(newSetting);
-      
+
       setBasicData({
         theme: newTheme,
         tone: newTone,
@@ -197,7 +234,7 @@ export default function BasicForm() {
       });
       return;
     }
-    
+
     // Save current form values before navigating
     setBasicData({
       theme,
@@ -205,7 +242,7 @@ export default function BasicForm() {
       genre,
       setting,
     });
-    
+
     try {
       // const isValid = await validateFormContent({ basicData: basicObj }, "basic");
       // if (isValid)

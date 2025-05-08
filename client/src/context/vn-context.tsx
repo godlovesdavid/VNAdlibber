@@ -64,7 +64,6 @@ function generateProjectHash(projectData: any): string {
     return JSON.stringify(sortKeys(obj));
   }
 
-
   const str = stableStringify(normalizedData).normalize();
   console.log(str);
   // Use a more reliable hash function
@@ -96,7 +95,7 @@ interface VnContextType {
 
   // Project management
   createNewProject: () => void;
-  saveProject: () => Promise<any>; // Return type changed to allow returning the saved project
+  saveProject: (data: VnProjectData) => Promise<any>; // Return type changed to allow returning the saved project
   loadProject: (projectId: number) => Promise<void>;
   loadFromLocalStorage: () => boolean; // Explicit function to load from localStorage
   deleteProject: (projectId: number) => Promise<void>;
@@ -105,7 +104,7 @@ interface VnContextType {
   exportActs: () => Promise<void>;
 
   // Change detection
-  hasUnsavedChanges: () => boolean;
+  hasUnsavedChanges: (projectData: VnProjectData) => boolean;
 
   // Navigation
   goToStep: (stepNumber: number) => void;
@@ -123,12 +122,11 @@ const defaultPlayerData: PlayerData = {
 };
 
 // Function to check if there are unsaved changes using pure hash comparison
-export function hasUnsavedChanges(projectData: VnProjectData | null): boolean {
+export function hasUnsavedChanges(projectData: VnProjectData): boolean {
   if (!projectData) {
     console.log("[Hash Check] No project data, returning false");
     return false;
   }
-
   // Get the current hash of the project data
   const currentHash = generateProjectHash(projectData);
   console.log("[Hash Check] Generated current hash:", currentHash);
@@ -188,19 +186,24 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     // Only try to load from localStorage if we don't already have project data
     if (!projectData) {
       const savedProject = localStorage.getItem("current_vn_project");
-      
+
       if (savedProject) {
         try {
           console.log("Found saved project in localStorage, auto-loading...");
           const parsedProject = JSON.parse(savedProject);
           setProjectData(parsedProject);
-          
+
           // If the project has an ID, ensure it's tracked in sessionStorage
           if (parsedProject.id) {
-            sessionStorage.setItem("current_project_id", parsedProject.id.toString());
-            console.log(`Auto-loaded project ID ${parsedProject.id} from localStorage and stored in sessionStorage`);
+            sessionStorage.setItem(
+              "current_project_id",
+              parsedProject.id.toString(),
+            );
+            console.log(
+              `Auto-loaded project ID ${parsedProject.id} from localStorage and stored in sessionStorage`,
+            );
           }
-          
+
           // If we're on the main menu and there's a current step, navigate to that step
           // We don't do this for other pages to avoid unexpected redirects
           const currentPath = window.location.pathname;
@@ -213,17 +216,23 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
               "/create/plot",
               "/create/generate-vn",
             ];
-            const stepIndex = Math.min(parsedProject.currentStep - 1, stepRoutes.length - 1);
+            const stepIndex = Math.min(
+              parsedProject.currentStep - 1,
+              stepRoutes.length - 1,
+            );
             setLocation(stepRoutes[stepIndex]);
           }
         } catch (error) {
-          console.error("Error auto-loading saved project from localStorage:", error);
+          console.error(
+            "Error auto-loading saved project from localStorage:",
+            error,
+          );
           // Don't show an error toast for auto-loading failures
         }
       }
     }
   }, []);
-  
+
   // Update localStorage when project data changes
   useEffect(() => {
     if (projectData) {
@@ -422,42 +431,38 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // Save project to server
-  const saveProject = async () => {
+  const saveProject = async (projectData: VnProjectData) => {
     try {
       setSaveLoading(true);
-      // Before starting the save process
-      if (!hasUnsavedChanges(projectData)) {
-        console.log(
-          "[saveProject] No changes detected, skipping save operation",
-        );
+      // 1. Always check localStorage first for most up-to-date data
+      // This addresses race conditions between form data saves and API requests
+      console.log("Loading project data to save");
+      if (!hasUnsavedChanges(projectData )) 
+      {
+        console.log('[saveProject] No changes detected, skipping save operation');
         toast({
           title: "No Changes",
           description: "No changes to save",
         });
-        return projectData; // Return the existing data
+        return;
       }
-
-      // 1. Always check localStorage first for most up-to-date data
-      // This addresses race conditions between form data saves and API requests
-      console.log("Loading project data to save");
-
       // Use projectData as default but prioritize localStorage
       let dataToSave = projectData;
 
       // Check localStorage for most recent data
-      const localStorageData = localStorage.getItem("current_vn_project");
-      if (localStorageData) {
-        try {
-          const parsedData = JSON.parse(localStorageData);
-          console.log(
-            "Using localStorage data for saving:",
-            parsedData.basicData,
-          );
-          dataToSave = parsedData;
-        } catch (e) {
-          console.error("Failed to parse localStorage data:", e);
-        }
-      }
+      // const localStorageData = localStorage.getItem("current_vn_project");
+      // if (localStorageData) {
+      //   try {
+      //     const parsedData = JSON.parse(localStorageData);
+      //     console.log(
+      //       "Using localStorage data for saving:",
+      //       parsedData.basicData,
+      //     );
+      //     dataToSave = parsedData;
+      //   } catch (e) {
+      //     console.error("Failed to parse localStorage data:", e);
+      //   }
+      // }
 
       if (!dataToSave) {
         throw new Error("No project data to save");
@@ -488,7 +493,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       // };
 
       console.log("Saving data to server:", dataToSave.basicData);
-
       // 3. Send to API - determine if it's an update or new project
       let response;
       if (dataToSave.id) {
@@ -798,13 +802,18 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         const parsedProject = JSON.parse(savedProject);
         setProjectData(parsedProject);
-        
+
         // If the project has an ID, ensure it's tracked in sessionStorage
         if (parsedProject.id) {
-          sessionStorage.setItem("current_project_id", parsedProject.id.toString());
-          console.log(`Loaded project ID ${parsedProject.id} from localStorage and stored in sessionStorage`);
+          sessionStorage.setItem(
+            "current_project_id",
+            parsedProject.id.toString(),
+          );
+          console.log(
+            `Loaded project ID ${parsedProject.id} from localStorage and stored in sessionStorage`,
+          );
         }
-        
+
         // If there's a current step, navigate to that step
         if (parsedProject.currentStep) {
           const stepRoutes = [
@@ -815,27 +824,30 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
             "/create/plot",
             "/create/generate-vn",
           ];
-          const stepIndex = Math.min(parsedProject.currentStep - 1, stepRoutes.length - 1);
+          const stepIndex = Math.min(
+            parsedProject.currentStep - 1,
+            stepRoutes.length - 1,
+          );
           setLocation(stepRoutes[stepIndex]);
         } else {
           // Default to the first step if no step is specified
           setLocation("/create/basic");
         }
-        
+
         return true; // Successfully loaded
       } catch (error) {
         console.error("Error loading saved project from localStorage:", error);
         toast({
           title: "Error",
           description: "Failed to load the last project you were working on.",
-          variant: "destructive"
+          variant: "destructive",
         });
         return false;
       }
     }
     return false; // No project in localStorage
   };
-  
+
   const value: VnContextType = {
     projectData,
     setBasicData,
@@ -853,7 +865,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     loadFromLocalStorage,
     deleteProject,
     exportActs,
-    hasUnsavedChanges: () => hasUnsavedChanges(projectData),
+    hasUnsavedChanges,
     goToStep,
     isLoading,
     saveLoading,

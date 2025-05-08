@@ -1,37 +1,12 @@
-import { useVnContext, hasUnsavedChanges } from "@/context/vn-context";
+import { useVnContext } from "@/context/vn-context";
 import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
-import { useLocation } from "wouter";
-import { useToast } from "@/hooks/use-toast";
 export function SaveProjectButton() {
-  const { saveProject, saveLoading, projectData } = useVnContext();
-  const [location] = useLocation();
-  const { toast } = useToast();
-
+  const { saveLoading } = useVnContext();
 
   const handleSave = async () => {
-    try {
-      // Before saving to database, make sure the current form's data is in the context
-      console.log('Save button clicked ');
-      // Before starting the save process
-      if (!hasUnsavedChanges(projectData)) {
-
-        console.log('[saveProject] No changes detected, skipping save operation');
-        toast({
-          title: "No Changes",
-          description: "No changes to save",
-        });
-        return;
-      }
-
-      // Then save everything to the database
-      console.log('Saving to database now');
-      await saveProject();
-    } catch (error) {
-      console.error('Error during save process:', error);
-    }
+      document.dispatchEvent(new CustomEvent('save'));
   };
-
 
   return (
     <Button
