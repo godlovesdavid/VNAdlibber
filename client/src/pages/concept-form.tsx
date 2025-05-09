@@ -210,13 +210,6 @@ export default function ConceptForm() {
     setTagline("");
     setPremise("");
     
-    // Save empty data to context
-    setConceptData({
-      title: "",
-      tagline: "",
-      premise: ""
-    });
-    
     // Show toast notification
     toast({
       title: "Form Reset",

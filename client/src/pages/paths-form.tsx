@@ -138,9 +138,6 @@ export default function PathsForm() {
     // Reset to a single empty character form
     setRoutes([defaultRoute]);
 
-    // Save empty data to context
-    setPathsData({});
-
     // Show toast notification
     toast({
       title: "Form Reset",

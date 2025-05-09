@@ -70,7 +70,7 @@ function getActSummary(actNumber: number, projectData: VnProjectData | null): st
 }
 
 export default function GenerateVnForm() {
-  const [location, setLocation] = useLocation();
+  const [, setLocation] = useLocation();
   const {
     projectData,
     setGeneratedAct,
@@ -95,22 +95,25 @@ export default function GenerateVnForm() {
 
   //save and return buttons
   useEffect(() => {
-    const returnHandler = () => {
-      if (projectData) 
-        (hasUnsavedChanges({...projectData, currentStep: 6})? setConfirmDialogOpen(true) : setLocation("/")) 
+    if (!currentGeneratingAct)
+    {
+      const returnHandler = () => {
+        if (projectData) 
+          (hasUnsavedChanges({...projectData, currentStep: 6})? setConfirmDialogOpen(true) : setLocation("/")) 
+      }
+      const saveHandler = () => {
+        if (projectData) 
+          saveProject({...projectData, currentStep: 6});
+      }
+      document.addEventListener("return", returnHandler);
+      document.addEventListener("save", saveHandler);
+  
+      return () => {
+        document.removeEventListener("return", returnHandler);
+        document.removeEventListener("save", saveHandler);
+      };
     }
-    const saveHandler = () => {
-      if (projectData) 
-        saveProject({...projectData, currentStep: 6});
-    }
-    document.addEventListener("return", returnHandler);
-    document.addEventListener("save", saveHandler);
-
-    return () => {
-      document.removeEventListener("return", returnHandler);
-      document.removeEventListener("save", saveHandler);
-    };
-  }, []);
+  }, [playerData, currentGeneratingAct]);
 
   // autosave playerData to context
   useEffect(() => {
