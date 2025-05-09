@@ -17,6 +17,7 @@ interface ConfirmationModalProps {
   confirmText?: string;
   cancelText?: string;
   onConfirm: () => void;
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
 }
 
 export function ConfirmationModal({
@@ -27,6 +28,7 @@ export function ConfirmationModal({
   confirmText = 'Confirm',
   cancelText = 'Cancel',
   onConfirm,
+  variant = 'default',
 }: ConfirmationModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -159,7 +159,7 @@ export function LoadProjectDialog({ open, onOpenChange }: LoadProjectDialogProps
                         <p>Progress: {project.currentStep}/6 steps</p>
                       </div>
                     </div>
-                    <div className="flex space-x-2 absolute top-3 right-3 sm:static">
+                    <div className="flex space-x-2 absolute top-3 right-3">
                       <Button
                         variant="ghost"
                         size="icon"
