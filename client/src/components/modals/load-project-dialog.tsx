@@ -148,26 +148,26 @@ export function LoadProjectDialog({ open, onOpenChange }: LoadProjectDialogProps
               projects.map((project: any) => (
                 <div 
                   key={project.id}
-                  className="border border-border rounded-md p-3 sm:p-4 hover:border-primary cursor-pointer"
+                  className="border border-border rounded-md p-3 sm:p-4 hover:border-primary cursor-pointer relative"
                   onClick={() => handleSelectProject(project.id)}
                 >
-                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                    <div className="flex-1 pr-8 sm:pr-0"> 
+                  <div className="flex flex-col sm:flex-row justify-between items-center gap-2 relative">
+                    <div className="flex-1 w-full"> 
                       <h4 className="font-medium text-sm sm:text-base">{project.title}</h4>
                       <div className="text-xs sm:text-sm text-muted-foreground">
                         <p className="mb-1 sm:mb-0">Last edited: {formatDistanceToNow(new Date(project.updatedAt), { addSuffix: true })}</p>
                         <p>Progress: {project.currentStep}/6 steps</p>
                       </div>
                     </div>
-                    <div className="flex space-x-2 absolute top-3 right-3">
+                    <div className="flex space-x-2 absolute top-2 right-2">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-muted-foreground hover:text-destructive h-7 w-7 sm:h-8 sm:w-8"
+                        className="text-muted-foreground hover:text-destructive h-8 w-8 shadow-sm bg-background/90 border border-gray-100/10"
                         title="Delete Project"
                         onClick={(e) => handleDeleteClick(project.id, e)}
                       >
-                        <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
