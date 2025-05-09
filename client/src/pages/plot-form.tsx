@@ -6,14 +6,13 @@ import { CreationProgress } from "@/components/creation-progress";
 import { NavBar } from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
 import { Wand2, ChevronDown, ChevronUp, CheckCircle } from "lucide-react";
-import { PlotAct } from "@/types/vn";
+import { PlotAct , VnProjectData} from "@/types/vn";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { validateFormContent } from "@/lib/validation";
 
 export default function PlotForm() {
-  const [location, setLocation] = useLocation();
-  const { projectData, setPlotData, goToStep } = useVnContext();
+  const [, setLocation] = useLocation();
+  const { projectData, setPlotData, goToStep, saveProject, hasUnsavedChanges, setConfirmDialogOpen  } = useVnContext();
   const { generatePlotData, isGenerating, cancelGeneration } = useVnData();
   const { toast } = useToast();
   const [isValidating, setIsValidating] = useState(false);
@@ -32,16 +31,25 @@ export default function PlotForm() {
     act5: false,
   });
 
-  // Save form data to context when the event is triggered
+  //save and return buttons
   useEffect(() => {
-      console.log('Saving plot form data to context');
-      
-      // Skip if no plot acts
-      if (!plotActs || Object.keys(plotActs).length === 0) return;
-      
-      setPlotData(plotActs);
-    
-  }, [plotActs, setPlotData]);
+    const returnHandler = () => {
+      if (projectData) 
+        (hasUnsavedChanges({...projectData, currentStep: 5})?  setConfirmDialogOpen(true) : setLocation("/"))
+    }
+    const saveHandler = () => {
+      if (projectData) 
+        saveProject({...projectData, currentStep: 5});
+    }
+    document.addEventListener("return", returnHandler);
+    document.addEventListener("save", saveHandler);
+
+    return () => {
+      document.removeEventListener("return", returnHandler);
+      document.removeEventListener("save", saveHandler);
+    };
+  }, [plotActs]);
+
   
   // Load existing data if available
   useEffect(() => {

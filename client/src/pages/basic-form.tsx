@@ -107,36 +107,33 @@ export default function BasicForm() {
   //   "BasicForm" // Log prefix
   // );
 
-  
+  //save and return buttons
   useEffect(() => {
     const returnButtonHandler = () => {
-      if (projectData) {
-        const data = {
-            theme,
-            tone,
-            genre,
-            setting,
-          }
-        setBasicData(data);
-        const hasChanges = hasUnsavedChanges({...projectData, basicData: data});
-        if (hasChanges) {
-          setConfirmDialogOpen(true);
-        } else {
-          // No unsaved changes, just go back to main menu
-          setLocation("/");
-        }
-      } else {
-        setLocation("/");
+      if (projectData) 
+      {
+        setBasicData({
+                      theme,
+                      tone,
+                      genre,
+                      setting,
+                    });
+        hasUnsavedChanges({...projectData, basicData: {
+                            theme,
+                            tone,
+                            genre,
+                            setting,
+                          }, currentStep: 1})? setConfirmDialogOpen(true): setLocation("/")
       }
     }
     const saveFormHandler = () => {
-      if (!projectData || !theme || !tone || !genre || !setting) return;
-      saveProject({...projectData, basicData: {
-                    theme,
-                    tone,
-                    genre,
-                    setting,
-                  }});
+      if (projectData )
+        saveProject({...projectData, basicData: {
+                      theme,
+                      tone,
+                      genre,
+                      setting,
+                    }, currentStep: 1});
     }
     document.addEventListener("return", returnButtonHandler);
     document.addEventListener("save", saveFormHandler);

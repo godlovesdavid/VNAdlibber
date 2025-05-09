@@ -23,7 +23,7 @@ import { json } from "express";
 
 export default function CharactersForm() {
   const [location, setLocation] = useLocation();
-  const { projectData, setCharactersData, goToStep } = useVnContext();
+  const { projectData, setCharactersData, goToStep, saveProject, hasUnsavedChanges, setConfirmDialogOpen } = useVnContext();
   const {
     generateCharacterData,
     generateMultipleCharactersData,
@@ -134,6 +134,26 @@ export default function CharactersForm() {
     });
   };
 
+  //save and return buttons
+  useEffect(() => {
+    const returnButtonHandler = () => {
+      if (projectData) 
+        (hasUnsavedChanges({...projectData, charactersData: saveCharacterData(), currentStep: 3})? setConfirmDialogOpen(true) : setLocation("/")) 
+    }
+    const saveFormHandler = () => {
+      if (projectData) 
+        saveProject({...projectData, charactersData: saveCharacterData(true), currentStep: 3});
+    }
+    document.addEventListener("return", returnButtonHandler);
+    document.addEventListener("save", saveFormHandler);
+
+    return () => {
+      document.removeEventListener("return", returnButtonHandler);
+      document.removeEventListener("save", saveFormHandler);
+    };
+  }, [characters]);
+
+  
   // Update character field with name uniqueness check
   const updateCharacter = (
     index: number,
@@ -226,11 +246,11 @@ export default function CharactersForm() {
   };
 
   // Helper function to save character data
-  const saveCharacterData = () => {
+  const saveCharacterData = (justReturnObj: Boolean = false) => {
     // Transform array to object format
     const charactersObj: Record<string, Character> = {};
 
-    characters.forEach((char, idx) => {
+    characters.forEach((char) => {
       // Extract name but don't store it in the object
       const { name, ...characterWithoutName } = char;
         
@@ -242,18 +262,17 @@ export default function CharactersForm() {
           return obj;
         }, {} as Record<string, any>) as Character;
           
-      // Use character index as key if name is empty
-      const characterKey = name ? name : `untitled-character-${idx}`;
-      charactersObj[characterKey] = cleanCharacter;
+      charactersObj[name] = cleanCharacter;
     });
 
     // Set the characters data
-    setCharactersData(charactersObj);
+    if (!justReturnObj)
+      setCharactersData(charactersObj);
     
     // Log for debugging
     console.log('Saving characters data to context in helper:', charactersObj);
     
-    return { charactersObj };
+    return  charactersObj ;
   };
 
   // Go back to previous step
@@ -278,7 +297,7 @@ export default function CharactersForm() {
     }
     
     // Save data using our helper function
-    const { charactersObj } = saveCharacterData();
+    const  charactersObj  = saveCharacterData();
     
     if (!projectData) {
       toast({
@@ -354,51 +373,51 @@ export default function CharactersForm() {
   };
   
   // Setup autosave
-  useSimpleAutosave(
-    characters, 
-    (data) => {
-      // Skip saving if no characters
-      if (!data || data.length === 0) return;
+  // useSimpleAutosave(
+  //   characters, 
+  //   (data) => {
+  //     // Skip saving if no characters
+  //     if (!data || data.length === 0) return;
       
-      // Show autosaving indicator
-      setIsAutosaving(true);
+  //     // Show autosaving indicator
+  //     setIsAutosaving(true);
       
-      // Transform to object format for storage
-      const charactersObj: Record<string, Character> = {};
+  //     // Transform to object format for storage
+  //     const charactersObj: Record<string, Character> = {};
       
-      data.forEach((char, idx) => {
-        // Always include the character regardless of name being present
-        // This ensures empty characters are preserved during autosave
+  //     data.forEach((char, idx) => {
+  //       // Always include the character regardless of name being present
+  //       // This ensures empty characters are preserved during autosave
         
-        // Extract name but don't store it in the object
-        const { name, ...characterWithoutName } = char;
+  //       // Extract name but don't store it in the object
+  //       const { name, ...characterWithoutName } = char;
         
-        // Remove any numeric keys that might be causing unintended nesting
-        const cleanCharacter = Object.entries(characterWithoutName)
-          .filter(([key]) => isNaN(Number(key)))
-          .reduce((obj, [key, value]) => {
-            obj[key] = value;
-            return obj;
-          }, {} as Record<string, any>) as Character;
+  //       // Remove any numeric keys that might be causing unintended nesting
+  //       const cleanCharacter = Object.entries(characterWithoutName)
+  //         .filter(([key]) => isNaN(Number(key)))
+  //         .reduce((obj, [key, value]) => {
+  //           obj[key] = value;
+  //           return obj;
+  //         }, {} as Record<string, any>) as Character;
           
-        // Use character index as key if name is empty
-        const characterKey = name ? name : `untitled-character-${idx}`;
-        charactersObj[characterKey] = cleanCharacter;
-      });
+  //       // Use character index as key if name is empty
+  //       const characterKey = name ? name : `untitled-character-${idx}`;
+  //       charactersObj[characterKey] = cleanCharacter;
+  //     });
       
-      // Save to context
-      setCharactersData(charactersObj);
+  //     // Save to context
+  //     setCharactersData(charactersObj);
       
-      // Log for debugging
-      console.log('Saving characters data to context:', charactersObj);
+  //     // Log for debugging
+  //     console.log('Saving characters data to context:', charactersObj);
       
-      // Clear autosaving indicator after a short delay
-      setTimeout(() => setIsAutosaving(false), 300);
-    },
-    500, 
-    "CharactersForm" // Log prefix
-  );
-  
+  //     // Clear autosaving indicator after a short delay
+  //     setTimeout(() => setIsAutosaving(false), 300);
+  //   },
+  //   500, 
+  //   "CharactersForm" // Log prefix
+  // );
+
   // Load existing data if available
   useEffect(() => {
     if (projectData?.charactersData && Object.keys(projectData.charactersData).length > 0) {

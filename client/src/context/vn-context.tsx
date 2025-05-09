@@ -11,7 +11,6 @@ import {
   BasicData,
   ConceptData,
   CharactersData,
-  Character,
   PathsData,
   PlotData,
   GeneratedAct,
@@ -453,7 +452,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       }
       // Use projectData as default but prioritize localStorage
       let dataToSave = projectData;
-
       // Check localStorage for most recent data
       // const localStorageData = localStorage.getItem("current_vn_project");
       // if (localStorageData) {

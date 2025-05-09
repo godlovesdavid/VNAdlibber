@@ -14,7 +14,7 @@ import { useSimpleAutosave } from "@/lib/autosave";
 
 export default function ConceptForm() {
   const [location, setLocation] = useLocation();
-  const { projectData, setConceptData, goToStep } = useVnContext();
+  const { projectData, setConceptData, goToStep, saveProject, hasUnsavedChanges, setConfirmDialogOpen } = useVnContext();
   const { generateConceptData, isGenerating, cancelGeneration } = useVnData();
   const { toast } = useToast();
 
@@ -52,15 +52,51 @@ export default function ConceptForm() {
   // );
   
   // Generic field change handler for all form fields
-  const handleFieldChange = (
-    field: 'title' | 'tagline' | 'premise',
-    value: string
-  ) => {
-    // Update the appropriate field based on the field name
-    if (field === 'title') setTitle(value);
-    else if (field === 'tagline') setTagline(value);
-    else if (field === 'premise') setPremise(value);
-  };
+  // const handleFieldChange = (
+  //   field: 'title' | 'tagline' | 'premise',
+  //   value: string
+  // ) => {
+  //   // Update the appropriate field based on the field name
+  //   if (field === 'title') setTitle(value);
+  //   else if (field === 'tagline') setTagline(value);
+  //   else if (field === 'premise') setPremise(value);
+  // };
+
+
+  //save and return buttons
+  useEffect(() => {
+    const returnButtonHandler = () => {
+      if (projectData) 
+      {
+          setConceptData({
+                          title,
+                          tagline,
+                          premise,
+                        })
+          hasUnsavedChanges({...projectData, conceptData: {
+                               title,
+                               tagline,
+                               premise,
+                             }, currentStep: 2})? setConfirmDialogOpen(true) : setLocation("/")
+      }
+    }
+    const saveFormHandler = () => {
+      if (projectData)
+        saveProject({...projectData, conceptData: {
+                      title,
+                      tagline,
+                      premise,
+                    }, currentStep: 2});
+    }
+    document.addEventListener("return", returnButtonHandler);
+    document.addEventListener("save", saveFormHandler);
+
+    return () => {
+      document.removeEventListener("return", returnButtonHandler);
+      document.removeEventListener("save", saveFormHandler);
+    };
+  }, [title, tagline, premise]);
+
   
   // Load existing data if available or clear form if starting a new project
   useEffect(() => {
@@ -220,7 +256,7 @@ export default function ConceptForm() {
                 id="title"
                 placeholder="e.g. Chronicles of the Hidden City"
                 value={title}
-                onChange={(e) => handleFieldChange('title', e.target.value)}
+                /* onChange={(e) => handleFieldChange('title', e.target.value)} */
               />
             </div>
 
@@ -239,7 +275,7 @@ export default function ConceptForm() {
                 id="tagline"
                 placeholder="e.g. When secrets become weapons, who can you trust?"
                 value={tagline}
-                onChange={(e) => handleFieldChange('tagline', e.target.value)}
+                /* onChange={(e) => handleFieldChange('tagline', e.target.value)} */
               />
             </div>
 
@@ -259,7 +295,7 @@ export default function ConceptForm() {
                 rows={4}
                 placeholder="e.g. In a city where memories can be traded like currency, a young archivist discovers a forbidden memory that reveals a conspiracy at the heart of society. As they navigate a web of deception, they must choose between exposing the truth or protecting those they love."
                 value={premise}
-                onChange={(e) => handleFieldChange('premise', e.target.value)}
+                /* onChange={(e) => handleFieldChange('premise', e.target.value)} */
               />
             </div>
 

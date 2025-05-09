@@ -91,8 +91,26 @@ export default function GenerateVnForm() {
   const [regenerateConfirmOpen, setRegenerateConfirmOpen] = useState(false);
   const [actToRegenerate, setActToRegenerate] = useState<number | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
-  const { hasUnsavedChanges } = useVnContext();
-  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const { saveProject, hasUnsavedChanges, setConfirmDialogOpen } = useVnContext();
+
+  //save and return buttons
+  useEffect(() => {
+    const returnHandler = () => {
+      if (projectData) 
+        (hasUnsavedChanges({...projectData, currentStep: 6})? setConfirmDialogOpen(true) : setLocation("/")) 
+    }
+    const saveHandler = () => {
+      if (projectData) 
+        saveProject({...projectData, currentStep: 6});
+    }
+    document.addEventListener("return", returnHandler);
+    document.addEventListener("save", saveHandler);
+
+    return () => {
+      document.removeEventListener("return", returnHandler);
+      document.removeEventListener("save", saveHandler);
+    };
+  }, []);
 
   // autosave playerData to context
   useEffect(() => {
@@ -219,7 +237,9 @@ export default function GenerateVnForm() {
 
   // Handle finish
   const handleFinish = () => {
-    const hasChanges = hasUnsavedChanges();
+    if (!projectData)
+      return
+    const hasChanges = hasUnsavedChanges(projectData);
     console.log("[NavBar] hasUnsavedChanges returned:", hasChanges);
 
     if (hasChanges) {

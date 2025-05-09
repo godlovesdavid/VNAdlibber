@@ -22,7 +22,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Wand2, Trash, Plus } from "lucide-react";
-import { Route } from "@/types/vn";
+import { Route , VnProjectData} from "@/types/vn";
 import { useToast } from "@/hooks/use-toast";
 import { useSimpleAutosave } from "@/lib/autosave";
 import { apiRequest } from "@/lib/queryClient";
@@ -34,7 +34,7 @@ interface RouteForm extends Route {
 
 export default function PathsForm() {
   const [, setLocation] = useLocation();
-  const { projectData, setPathsData, goToStep } = useVnContext();
+  const { projectData, setPathsData, goToStep,saveProject, hasUnsavedChanges, setConfirmDialogOpen } = useVnContext();
   const {
     generatePathData,
     generateMultiplePathsData,
@@ -45,7 +45,6 @@ export default function PathsForm() {
   // Form state
   const [routes, setRoutes] = useState<Route[]>([
     // Default empty route
-
     {
       title: "",
       loveInterest: null,
@@ -64,24 +63,44 @@ export default function PathsForm() {
   const { toast } = useToast();
 
   // Setup autosave with the improved hook
-  useSimpleAutosave(
-    routes,
-    (routesData) => {
-      if (routesData.length === 0) return;
+  // useSimpleAutosave(
+  //   routes,
+  //   (routesData) => {
+  //     if (routesData.length === 0) return;
       
-      // Show autosaving indicator
-      setIsAutosaving(true);
+  //     // Show autosaving indicator
+  //     setIsAutosaving(true);
       
-      // Save the data
-      savePathData(routesData);
+  //     // Save the data
+  //     savePathData(routesData);
       
-      // Clear autosaving indicator after a short delay
-      setTimeout(() => setIsAutosaving(false), 300);
-    },
-    500, 
-    "PathsForm" // Log prefix
-  );
+  //     // Clear autosaving indicator after a short delay
+  //     setTimeout(() => setIsAutosaving(false), 300);
+  //   },
+  //   500, 
+  //   "PathsForm" // Log prefix
+  // );
 
+  //save and return buttons
+  useEffect(() => {
+    const returnHandler = () => {
+      if (projectData) 
+        (hasUnsavedChanges({...projectData, pathsData: savePathData(), currentStep: 4})? setConfirmDialogOpen(true): setLocation("/") ) 
+    }
+    const saveHandler = () => {
+      if (projectData)
+        saveProject({...projectData, pathsData: savePathData(true), currentStep: 4});
+    }
+    document.addEventListener("return", returnHandler);
+    document.addEventListener("save", saveHandler);
+
+    return () => {
+      document.removeEventListener("return", returnHandler);
+      document.removeEventListener("save", saveHandler);
+    };
+  }, [routes]);
+
+  
   // Load existing data if available
   useEffect(() => {
     if (projectData?.pathsData && Object.keys(projectData.pathsData).length > 0) {
@@ -202,10 +221,10 @@ export default function PathsForm() {
   };
 
   // Helper function to save path data
-  const savePathData = (routesToSave: Route[] = routes) => {
+  const savePathData = (justReturnData: Boolean = false) => {
     // Convert array to object format for storage
     const pathsObj: Record<string, Route> = {};
-    routesToSave.forEach((route, idx) => {
+    routes.forEach((route) => {
       // Create a copy of the route without the redundant title property
       const { title, ...routeWithoutTitle } = route;
       
@@ -217,14 +236,13 @@ export default function PathsForm() {
           return obj;
         }, {} as Record<string, any>) as Route;
         
-      // Use title as key or generate a placeholder for untitled routes
-      const routeKey = title ? title : `untitled-path-${idx}`;
       // Store with routeKey as key but don't include title in the value
-      pathsObj[routeKey] = cleanRoute;
-    });
+      pathsObj[title|| ''] = cleanRoute;
+    })
     
     // Set the paths data in the context
-    setPathsData(pathsObj);
+    if (!justReturnData)
+      setPathsData(pathsObj);
     
     // Log the saved data for debugging
     console.log('Saving paths data to context:', pathsObj);
@@ -246,8 +264,8 @@ export default function PathsForm() {
       };
       setRoutes(updatedRoutes);
 
-      // Update the project context after path generation
-      savePathData(updatedRoutes);
+      // // Update the project context after path generation
+      // savePathData(updatedRoutes);
 
       // Log generation to console
       console.log(`🔥 Generated path ${index + 1}:`, generatedPath);
@@ -296,8 +314,8 @@ export default function PathsForm() {
         // Update state and project context
         setRoutes(updatedRoutes);
         
-        // Save the path data using our helper function
-        savePathData(updatedRoutes);
+        // // Save the path data using our helper function
+        // savePathData(updatedRoutes);
 
         console.log("Successfully generated all paths at once");
         console.log("Updated project context with all path data");
