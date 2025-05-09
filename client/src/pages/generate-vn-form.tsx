@@ -92,7 +92,12 @@ export default function GenerateVnForm() {
   const [actToRegenerate, setActToRegenerate] = useState<number | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const { saveProject, hasUnsavedChanges, setConfirmDialogOpen } = useVnContext();
+ 
+  useEffect(() => {
+    alert(JSON.stringify(projectData))
+    }, [location]);
 
+  
   //save and return buttons
   useEffect(() => {
     if (!currentGeneratingAct)

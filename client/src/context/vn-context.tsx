@@ -217,24 +217,16 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
             );
           }
 
-          // If we're on the main menu and there's a current step, navigate to that step
-          // We don't do this for other pages to avoid unexpected redirects
-          const currentPath = window.location.pathname;
-          if (currentPath === "/" && parsedProject.currentStep) {
-            const stepRoutes = [
-              "/create/basic",
-              "/create/concept",
-              "/create/characters",
-              "/create/paths",
-              "/create/plot",
-              "/create/generate-vn",
-            ];
-            const stepIndex = Math.min(
-              parsedProject.currentStep - 1,
-              stepRoutes.length - 1,
-            );
-            setLocation(stepRoutes[stepIndex]);
-          }
+          // We disable auto-navigation to the last step
+          // User will always start at the main menu and must explicitly choose to continue
+          // This ensures a clean starting experience each time
+          // 
+          // Note: We keep the project data loaded in state for the "Continue" button to work,
+          // but we don't auto-navigate to the last step anymore
+          
+          console.log("Project data loaded but staying on main menu");
+          
+          // To keep project data without navigating, we don't call setLocation here
         } catch (error) {
           console.error(
             "Error auto-loading saved project from localStorage:",
@@ -659,7 +651,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       ];
 
       setLocation(stepRoutes[loadedProject.currentStep - 1] || "/create/basic");
-
+      alert(JSON.stringify(loadedProject))
       toast({
         title: "Success",
         description: "Project loaded successfully",
@@ -823,25 +815,12 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
           );
         }
 
-        // If there's a current step, navigate to that step
-        if (parsedProject.currentStep) {
-          const stepRoutes = [
-            "/create/basic",
-            "/create/concept",
-            "/create/characters",
-            "/create/paths",
-            "/create/plot",
-            "/create/generate-vn",
-          ];
-          const stepIndex = Math.min(
-            parsedProject.currentStep - 1,
-            stepRoutes.length - 1,
-          );
-          setLocation(stepRoutes[stepIndex]);
-        } else {
-          // Default to the first step if no step is specified
-          setLocation("/create/basic");
-        }
+        // We don't automatically navigate to the last step anymore
+        // Instead, we stay on the main menu so the user always starts fresh
+        console.log("Project loaded from localStorage but staying on main menu");
+        
+        // Don't navigate automatically - user must click "Continue" on main menu
+        // This ensures a consistent user experience each time they open the app
 
         return true; // Successfully loaded
       } catch (error) {
