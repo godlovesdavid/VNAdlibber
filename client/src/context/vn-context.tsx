@@ -189,6 +189,15 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     // Only try to load from localStorage if we don't already have project data
     if (!projectData) {
+      // Check if we recently loaded a project explicitly first
+      const recentlyLoadedFlag = sessionStorage.getItem("recently_loaded_project");
+      if (recentlyLoadedFlag === "true") {
+        // Clear the flag and skip auto-loading
+        console.log("Skipping auto-load because a project was recently loaded explicitly");
+        sessionStorage.removeItem("recently_loaded_project");
+        return;
+      }
+      
       const savedProject = localStorage.getItem("current_vn_project");
 
       if (savedProject) {
@@ -585,6 +594,10 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
   const loadProject = async (projectId: number) => {
     try {
       setIsLoading(true);
+      
+      // Set a flag to indicate we're explicitly loading a project
+      // This will prevent the auto-load from localStorage from overriding our data
+      sessionStorage.setItem("recently_loaded_project", "true");
 
       const response = await apiRequest("GET", `/api/projects/${projectId}`);
       const loadedProject = await response.json();
@@ -627,7 +640,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
 
       // Set project data in state
       setProjectData(loadedProject);
-
+      
       // Set player data if it exists
       if (loadedProject.playerData) {
         setPlayerData(loadedProject.playerData);
