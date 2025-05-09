@@ -665,7 +665,7 @@ export default function PathsForm() {
                       </>
                     ) : (
                       <>
-                        <Wand2 className="mr-1 h-4 w-4" /> Generate Path
+                        <Wand2 className="mr-1 h-4 w-4" /> Generate
                       </>
                     )}
                   </Button>

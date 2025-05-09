@@ -63,7 +63,7 @@ export function NavBar() {
             {/* Only show these buttons when not on player pages */}
             {!isPlayerPage() && (
               <>
-                <Button
+                {/* <Button
                   variant="outline"
                   size="sm"
                   className="flex items-center gap-1"
@@ -71,7 +71,7 @@ export function NavBar() {
                 >
                   <Share className="h-4 w-4" />
                   <span className="hidden sm:inline">Share</span>
-                </Button>
+                </Button> */}
                 <SaveProjectButton />
               </>
             )}

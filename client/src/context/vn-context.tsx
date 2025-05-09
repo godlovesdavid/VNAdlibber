@@ -305,13 +305,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     // Navigate to the first step
     setLocation("/create/basic");
 
-    // Show confirmation toast
-    toast({
-      title: "New Project Created",
-      description:
-        "Starting with a fresh project. Changes will be saved when you click Save Project.",
-      duration: 3000,
-    });
   };
 
   // Step data setters

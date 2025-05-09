@@ -124,7 +124,7 @@ export default function CharactersForm() {
     setCharacters([defaultCharacter]);
     
     // Save empty data to context
-    setCharactersData({});
+    // setCharactersData({});
     
     // Show toast notification
     toast({
@@ -689,7 +689,7 @@ export default function CharactersForm() {
                     </>
                   ) : (
                     <>
-                      <Wand2 className="mr-1 h-4 w-4" /> Generate Character
+                      <Wand2 className="mr-1 h-4 w-4" /> Generate
                     </>
                   )}
                 </Button>
