@@ -698,7 +698,7 @@ export default function CharactersForm() {
           ))}
 
           <div className="pt-6 flex flex-col space-y-4">
-            <div className="flex justify-center gap-4">
+            <div className="flex justify-between gap-4">
               <Button
                 onClick={addCharacter}
                 variant="secondary"
@@ -711,7 +711,7 @@ export default function CharactersForm() {
               <Button
                 onClick={handleGenerateAllCharacters}
                 variant="secondary"
-                className="flex items-center text-primary border-primary hover:bg-primary/10"
+                className="flex items-center text-primary border-primary hover:bg-primary/10 ml-auto"
                 disabled={isGenerating || characters.length === 0}
               >
                 <Wand2 className="mr-1 h-4 w-4" />

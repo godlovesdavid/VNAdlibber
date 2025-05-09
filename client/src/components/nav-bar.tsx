@@ -89,8 +89,8 @@ export function NavBar() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmGoToMainMenu}>
+            <AlertDialogCancel className="bg-primary text-primary-foreground hover:bg-primary/90">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmGoToMainMenu} className="bg-secondary text-secondary-foreground hover:bg-secondary/90">
               Continue
             </AlertDialogAction>
           </AlertDialogFooter>
