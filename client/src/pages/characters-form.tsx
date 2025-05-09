@@ -698,7 +698,7 @@ export default function CharactersForm() {
           ))}
 
           <div className="pt-6 flex flex-col space-y-4">
-            <div className="flex justify-center gap-4">
+            <div className="flex justify-between gap-4">
               <Button
                 onClick={addCharacter}
                 variant="secondary"
