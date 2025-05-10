@@ -19,10 +19,12 @@ import {
 } from "@/types/vn";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
-// Helper function to create a hash/checksum of project data
-function generateProjectHash(projectData: any): string {
-  // Create a normalized version of the data without irrelevant fields
-  const normalizedData = { ...projectData };
+// Helper function to normalize project data for comparison
+function normalizeProjectData(projectData: any): any {
+  if (!projectData) return null;
+  
+  // Create a deep copy to avoid modifying the original
+  const normalizedData = JSON.parse(JSON.stringify(projectData));
 
   // Remove fields that don't affect content or vary between client/server
   delete normalizedData.id;
@@ -30,49 +32,18 @@ function generateProjectHash(projectData: any): string {
   delete normalizedData.updatedAt;
   delete normalizedData.lastSavedHash;
 
-  function stableStringify(obj: any): string {
-    const sortKeys = (input: any, parentKey?: string): any => {
-      if (Array.isArray(input)) {
-        return input.map((item) => sortKeys(item, parentKey));
-      } else if (input !== null && typeof input === "object") {
-        let keys = Object.keys(input);
+  return normalizedData;
+}
 
-        // Special logic for characterData
-        if (parentKey === "charactersData") {
-          keys.sort((a, b) => {
-            const roleA = input[a]?.role;
-            const roleB = input[b]?.role;
-
-            // Protagonist comes first
-            if (roleA === "Protagonist" && roleB !== "Protagonist") return -1;
-            if (roleB === "Protagonist" && roleA !== "Protagonist") return 1;
-            return a.localeCompare(b); // fallback alphabetical
-          });
-        } else {
-          keys.sort(); // default alphabetical
-        }
-
-        return keys.reduce((acc: any, key) => {
-          acc[key] = sortKeys(input[key], key);
-          return acc;
-        }, {});
-      }
-      return input; // primitive
-    };
-
-    return JSON.stringify(sortKeys(obj));
-  }
-
-  const str = stableStringify(normalizedData).normalize();
-  console.log(str);
-  // Use a more reliable hash function
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32bit integer
-  }
-  return hash.toString(16);
+// Function to check if two project objects are equivalent
+// This preserves order and doesn't require hashing
+function areProjectsEqual(projectA: any, projectB: any): boolean {
+  if (!projectA || !projectB) return projectA === projectB;
+  
+  const normalizedA = normalizeProjectData(projectA);
+  const normalizedB = normalizeProjectData(projectB);
+  
+  return JSON.stringify(normalizedA) === JSON.stringify(normalizedB);
 }
 
 interface VnContextType {
