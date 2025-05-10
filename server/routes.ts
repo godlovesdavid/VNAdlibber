@@ -134,10 +134,12 @@ const generateConceptSchema = z.object({
     genre: z.string(),
     setting: z.string(),
   }),
+  apiKey: z.string().optional(), // Optional user-provided API key
 });
 
 const generatePlotSchema = z.object({
   projectContext: z.any(),
+  apiKey: z.string().optional(), // Optional user-provided API key
 });
 
 const generateActSchema = z.object({
@@ -986,7 +988,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/generate/act", async (req, res) => {
     try {
-      const { actNumber, scenesCount, projectContext } =
+      const { actNumber, scenesCount, projectContext, apiKey } =
         generateActSchema.parse(req.body);
 
       // Create prompt for the act generation - simplified {scene1: {...}} format
@@ -1053,7 +1055,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         systemPrompt,
         "JSON",
         65536,
-        // true,
+        false, // Use non-pro endpoint
+        apiKey // User-provided API key or undefined for server key
       );
 
       // Try to parse response
