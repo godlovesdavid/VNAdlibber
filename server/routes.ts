@@ -916,7 +916,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         - Use of a narrator is encouraged to explain the scene or provide context.
         - The protagonist may think in parentheses.
         - Unknown characters are named "???" until revealed.
-        - "image_prompt" is only required when visiting the setting for the first time.
+        - "image_prompt" is a prompt directed to Stable Diffusion 1.5 and is used for real time generating a background image for the VN program. It is only required when visiting the setting for the first time. 
         - Maintain the given tone (${projectContext.basicData.tone}) consistent with the story context.
         - You may optionally include [emotion] or [action] tags before dialogue when it enhances the scene.
         - If a choice increases or decreases a relationship, reflect it subtly in the dialogue tone.
