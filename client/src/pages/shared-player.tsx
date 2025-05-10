@@ -41,6 +41,7 @@ export default function SharedPlayer() {
         setLoading(true);
         
         // Call the API to get the shared story
+        console.log("Fetching shared story with ID:", shareId);
         const response = await fetch(`/api/play/${shareId}`);
         
         if (!response.ok) {
@@ -53,6 +54,14 @@ export default function SharedPlayer() {
         }
         
         const data = await response.json();
+        console.log("Received shared story data:", data);
+        
+        // Make sure the actData is valid and properly structured
+        if (!data.story || !data.story.actData) {
+          setError('The shared story data is incomplete or corrupted');
+          return;
+        }
+        
         setStory(data.story);
       } catch (err) {
         console.error('Error fetching shared story:', err);

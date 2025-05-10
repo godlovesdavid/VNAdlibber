@@ -13,6 +13,14 @@ function convertActFormat(actData: any): {
   scenes: Scene[];
   act: number;
 } {
+  // First, verify we have valid data
+  if (!actData) {
+    console.error("convertActFormat received undefined or null actData");
+    return { scenes: [], act: 1 };
+  }
+  
+  console.log("convertActFormat received data:", JSON.stringify(actData).substring(0, 200) + "...");
+  
   // Handle case where the data is already in the correct format
   if (actData.scenes && Array.isArray(actData.scenes)) {
     console.log("Act data is already in the legacy array format");
@@ -21,6 +29,13 @@ function convertActFormat(actData: any): {
 
   let sceneMap = {};
   let actNumber = 1;
+  
+  // Check if it has an explicit act number
+  if (actData.act && typeof actData.act === 'number') {
+    actNumber = actData.act;
+  } else if (actData.act && typeof actData.act === 'string') {
+    actNumber = parseInt(actData.act) || 1;
+  }
 
   // Check for the new simplified format: {scene1: {...}, scene2: {...}}
   if (Object.keys(actData).some((key) => key.startsWith("scene"))) {
@@ -44,35 +59,53 @@ function convertActFormat(actData: any): {
       actNumber = parseInt(actKey.replace("act", "")) || 1;
       sceneMap = actData[actKey] || {};
     } else {
-      console.warn("No scene data found in the expected formats");
+      console.warn("No scene data found in the expected formats, trying to use actData directly");
+      // As a last resort, try to use the actData directly
+      sceneMap = actData;
     }
   }
 
-  // Convert the scene map to an array
-  const scenes: Scene[] = Object.entries(sceneMap).map(
-    ([sceneKey, sceneData]: [string, any]) => {
-      // Use the scene key as the name (instead of any nested name property)
-      // This simplifies scene navigation since we'll reference scenes by their key
-
-      // Make sure the scene's 'next' properties in choices point to actual scene keys
-      const choices =
-        sceneData.choices &&
-        sceneData.choices.map((choice: any) => {
-          // Update any scene references to use the scene keys
-          // No need to look up the name property anymore
+  // Convert the scene map to an array, with additional error checking
+  const scenes: Scene[] = [];
+  
+  try {
+    if (!sceneMap || typeof sceneMap !== 'object') {
+      console.error("Scene map is invalid:", sceneMap);
+      return { scenes: [], act: actNumber };
+    }
+    
+    // Process each scene with error handling
+    Object.entries(sceneMap).forEach(([sceneKey, sceneData]: [string, any]) => {
+      if (!sceneData) {
+        console.warn(`Scene ${sceneKey} has no data, skipping`);
+        return; // Skip this entry
+      }
+      
+      // Process choices with error handling
+      let choices = [];
+      if (sceneData.choices && Array.isArray(sceneData.choices)) {
+        choices = sceneData.choices.map((choice: any) => {
           return {
             ...choice,
-            // We'll use the scene keys directly in next/failNext fields, so no need to transform
+            // We'll use the scene keys directly in next/failNext fields
           };
         });
-
-      return {
+      }
+      
+      // Create the scene with fallbacks for missing properties
+      const scene = {
         ...sceneData,
         name: sceneKey, // Use the scene key as the name
         choices: choices,
+        dialogue: Array.isArray(sceneData.dialogue) ? sceneData.dialogue : [],
+        background: sceneData.background || "Default Scene"
       };
-    },
-  );
+      
+      scenes.push(scene);
+    });
+  } catch (error) {
+    console.error("Error processing scene map:", error);
+  }
 
   return {
     scenes,
