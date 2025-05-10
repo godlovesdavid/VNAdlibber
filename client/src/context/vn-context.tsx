@@ -451,7 +451,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       // ...(storedProjectId ? { id: parseInt(storedProjectId) } : {}),
       // playerData: dataToSave.playerData || defaultPlayerData,
       // currentStep: dataToSave.currentStep,
-      // lastSavedHash: currentDataHash
+      // lastSavedHash: `save-${Date.now()}`
       // };
 
       console.log("Saving data to server:", dataToSave.basicData);
