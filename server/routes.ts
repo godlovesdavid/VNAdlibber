@@ -23,11 +23,15 @@ async function generateWithGemini(
   responseFormat = "JSON",
   maxOutputTokens = 4096, // Reduced from 8192 to optimize throughput and capacity
   isPro = false,
+  userProvidedApiKey: string | null = null, // Optional user-provided API key
 ) {
   try {
+    // Use the user-provided API key if available, otherwise fall back to the server's API key
+    const apiKey = userProvidedApiKey || GEMINI_API_KEY;
+    
     const headers = {
       "Content-Type": "application/json",
-      "x-goog-api-key": GEMINI_API_KEY,
+      "x-goog-api-key": apiKey,
     };
 
     // Add strict JSON formatting instructions
@@ -140,6 +144,7 @@ const generateActSchema = z.object({
   actNumber: z.number(),
   scenesCount: z.number(),
   projectContext: z.any(),
+  apiKey: z.string().optional(), // Optional user-provided API key
 });
 
 
@@ -170,6 +175,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Apply rate limiters to AI generation endpoints
   app.use(["/api/generate/concept", "/api/generate/plot", "/api/generate/path", "/api/generate/character", "/api/generate/act"], aiGenerationLimiter);
   app.use("/api/generate/image", imageLimiter);
+  
+  // Endpoint to validate a Gemini API key
+  app.post("/api/validate-key", async (req, res) => {
+    try {
+      const { key } = req.body;
+      
+      if (!key) {
+        return res.status(400).json({ error: "API key is required" });
+      }
+      
+      // Use a simple test prompt to validate the key
+      try {
+        // We'll use the generateWithGemini function with a simple prompt
+        const result = await generateWithGemini(
+          "Test prompt to validate API key functionality.",
+          "You are a helpful assistant. Respond with 'API key is valid' to validate the key.",
+          "TEXT",
+          50, // Small output for faster validation
+          false, // Use non-pro endpoint
+          key // Use the provided API key
+        );
+        
+        return res.json({ 
+          valid: true, 
+          message: "API key is valid and working correctly." 
+        });
+      } catch (apiError: any) {
+        console.log("API validation error:", apiError.message);
+        
+        // Check if the error is related to authentication
+        if (apiError.message && (
+            apiError.message.includes("API key") || 
+            apiError.message.includes("authentication") ||
+            apiError.message.includes("key not valid") ||
+            apiError.message.includes("Invalid key") ||
+            apiError.message.includes("Unauthorized") ||
+            apiError.message.includes("403")
+          )) {
+          return res.status(401).json({ 
+            valid: false, 
+            message: "Invalid API key. Please check your key and try again."
+          });
+        }
+        
+        // For other API errors, the key might still be valid
+        return res.status(500).json({ 
+          error: "Could not validate the API key. The key might be valid, but encountered an error during testing."
+        });
+      }
+    } catch (error) {
+      console.error("Server error validating API key:", error);
+      return res.status(500).json({ 
+        error: "Failed to validate API key due to a server error."
+      });
+    }
+  });
 
   // Project CRUD operations
   // OpenAI endpoint has been removed in favor of RunPod
