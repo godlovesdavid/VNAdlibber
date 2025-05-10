@@ -20,6 +20,56 @@ export const useVnData = () => {
   // For batch operations we'll use a separate controller
   const [batchMode, setBatchMode] = useState(false);
   const vnContext = useVnContext();
+  
+  // Helper function to check if an error is related to API key issues
+  const checkForApiKeyError = (errorMessage: string) => {
+    // Check for common API key related error messages
+    const apiKeyErrorPatterns = [
+      "api key",
+      "apikey",
+      "authentication",
+      "auth",
+      "unauthorized",
+      "401",
+      "403",
+      "invalid key",
+      "key not valid",
+      "credential"
+    ];
+    
+    const lowerCaseMsg = errorMessage.toLowerCase();
+    const isApiKeyError = apiKeyErrorPatterns.some(pattern => 
+      lowerCaseMsg.includes(pattern.toLowerCase())
+    );
+    
+    if (isApiKeyError) {
+      // Show a helpful message directing the user to the settings page
+      toast({
+        title: "API Key Required",
+        description: (
+          <div>
+            <p>This request requires a valid Gemini API key.</p>
+            <p className="mt-2">
+              <a 
+                href="/settings" 
+                className="font-medium underline cursor-pointer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.location.href = '/settings';
+                }}
+              >
+                Go to Settings to add your API key
+              </a>
+            </p>
+          </div>
+        ),
+        variant: "destructive",
+        duration: 10000,
+      });
+      return true;
+    }
+    return false;
+  };
 
   // Generate concept using AI
   const generateConceptData = useCallback(async () => {
@@ -337,6 +387,13 @@ export const useVnData = () => {
             }
           } catch (parseError) {
             console.error("Failed to parse error response:", parseError);
+          }
+          
+          // Check if this is an API key related error
+          const isApiKeyIssue = checkForApiKeyError(errorMsg);
+          if (isApiKeyIssue) {
+            // Already showed a specialized message, so return early
+            return null;
           }
 
           toast({
@@ -979,55 +1036,7 @@ export const useVnData = () => {
     [vnContext.projectData, toast],
   );
 
-  // Helper function to check if an error is related to API key issues
-  const checkForApiKeyError = useCallback((errorMessage: string) => {
-    // Check for common API key related error messages
-    const apiKeyErrorPatterns = [
-      "api key",
-      "apikey",
-      "authentication",
-      "auth",
-      "unauthorized",
-      "401",
-      "403",
-      "invalid key",
-      "key not valid",
-      "credential"
-    ];
-    
-    const lowerCaseMsg = errorMessage.toLowerCase();
-    const isApiKeyError = apiKeyErrorPatterns.some(pattern => 
-      lowerCaseMsg.includes(pattern.toLowerCase())
-    );
-    
-    if (isApiKeyError) {
-      // Show a helpful message directing the user to the settings page
-      toast({
-        title: "API Key Required",
-        description: (
-          <div>
-            <p>This request requires a valid Gemini API key.</p>
-            <p className="mt-2">
-              <a 
-                href="/settings" 
-                className="font-medium underline cursor-pointer"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/settings';
-                }}
-              >
-                Go to Settings to add your API key
-              </a>
-            </p>
-          </div>
-        ),
-        variant: "destructive",
-        duration: 10000,
-      });
-      return true;
-    }
-    return false;
-  }, [toast]);
+
   
   // Cancel ongoing generation
   const cancelGeneration = useCallback(() => {
