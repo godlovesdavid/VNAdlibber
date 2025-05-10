@@ -62,7 +62,8 @@ export function ShareStoryDialog({
       const data = await response.json();
       
       // Construct the full share URL
-      const shareUrl = `${window.location.origin}/play/shared/${data.shareId}`;
+      // Use the actual URL path returned from the API
+      const shareUrl = `${window.location.origin}${data.url}`;
       setShareLink(shareUrl);
     } catch (error) {
       console.error('Error sharing story:', error);
