@@ -754,7 +754,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Character generation endpoint
   app.post("/api/generate/character", async (req, res) => {
     try {
-      const { characterTemplates, projectContext } = req.body;
+      const { characterTemplates, projectContext, apiKey } = req.body;
 
       // Create indices array based on the number of templates
       const indices = Array.from(
@@ -794,7 +794,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate characters using Gemini
       const systemPrompt =
         "You're a visual novel brainstormer with wildly creative ideas";
-      const responseContent = await generateWithGemini(prompt, systemPrompt);
+      const responseContent = await generateWithGemini(
+        prompt, 
+        systemPrompt,
+        "JSON", 
+        8192,
+        false,
+        apiKey // Use user-provided API key if available
+      );
 
       console.log("Raw response from Gemini:", responseContent);
 
@@ -840,7 +847,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Path generation endpoint - renamed from paths to path
   app.post("/api/generate/path", async (req, res) => {
     try {
-      const { pathTemplates, projectContext } = req.body;
+      const { pathTemplates, projectContext, apiKey } = req.body;
 
       // Create indices array based on the number of templates
       const indices = Array.from({ length: pathTemplates.length }, (_, i) => i);
@@ -875,7 +882,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate paths using Gemini
       const systemPrompt =
         "You're a visual novel brainstormer with wildly creative ideas";
-      const responseContent = await generateWithGemini(prompt, systemPrompt);
+      const responseContent = await generateWithGemini(
+        prompt, 
+        systemPrompt, 
+        "JSON", 
+        8192,
+        false,
+        apiKey // Use user-provided API key if available
+      );
 
       // Try to parse response
       try {
