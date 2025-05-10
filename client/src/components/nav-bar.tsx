@@ -56,7 +56,7 @@ export function NavBar() {
               <ArrowLeft className="h-5 w-5" />
             </button>
             <h1 className="text-lg font-semibold text-primary">
-              {projectData?.title ? projectData.title : "VN Ad Libber"}
+              {projectData?.title ? projectData.title : "Untitled"}
             </h1>
           </div>
           <div className="flex items-center space-x-2">

@@ -651,7 +651,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       ];
 
       setLocation(stepRoutes[loadedProject.currentStep - 1] || "/create/basic");
-      alert(JSON.stringify(loadedProject))
+      // alert(JSON.stringify(loadedProject))
       toast({
         title: "Success",
         description: "Project loaded successfully",

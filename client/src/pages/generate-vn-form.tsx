@@ -70,7 +70,7 @@ function getActSummary(actNumber: number, projectData: VnProjectData | null): st
 }
 
 export default function GenerateVnForm() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const {
     projectData,
     setGeneratedAct,
@@ -94,8 +94,8 @@ export default function GenerateVnForm() {
   const { saveProject, hasUnsavedChanges, setConfirmDialogOpen } = useVnContext();
  
   useEffect(() => {
-    alert(JSON.stringify(projectData))
-    }, [location]);
+    console.log(JSON.stringify(projectData))
+    }, [projectData]);
 
   
   //save and return buttons
@@ -103,8 +103,7 @@ export default function GenerateVnForm() {
     if (!currentGeneratingAct)
     {
       const returnHandler = () => {
-        if (projectData) 
-          (hasUnsavedChanges({...projectData, currentStep: 6})? setConfirmDialogOpen(true) : setLocation("/")) 
+          (projectData && hasUnsavedChanges({...projectData, currentStep: 6})? setConfirmDialogOpen(true) : setLocation("/")) 
       }
       const saveHandler = () => {
         if (projectData) 

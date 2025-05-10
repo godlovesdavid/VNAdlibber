@@ -125,6 +125,10 @@ export default function BasicForm() {
                             setting,
                           }, currentStep: 1})? setConfirmDialogOpen(true): setLocation("/")
       }
+      else
+      {
+        setLocation("/")
+      }
     }
     const saveFormHandler = () => {
       if (projectData )

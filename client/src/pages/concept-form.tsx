@@ -79,6 +79,10 @@ export default function ConceptForm() {
                                premise,
                              }, currentStep: 2})? setConfirmDialogOpen(true) : setLocation("/")
       }
+      else
+      {
+        setLocation("/")
+      }
     }
     const saveFormHandler = () => {
       if (projectData)

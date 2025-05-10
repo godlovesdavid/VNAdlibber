@@ -137,8 +137,7 @@ export default function CharactersForm() {
   //save and return buttons
   useEffect(() => {
     const returnButtonHandler = () => {
-      if (projectData) 
-        (hasUnsavedChanges({...projectData, charactersData: saveCharacterData(), currentStep: 3})? setConfirmDialogOpen(true) : setLocation("/")) 
+        (projectData && hasUnsavedChanges({...projectData, charactersData: saveCharacterData(), currentStep: 3})? setConfirmDialogOpen(true) : setLocation("/")) 
     }
     const saveFormHandler = () => {
       if (projectData) 

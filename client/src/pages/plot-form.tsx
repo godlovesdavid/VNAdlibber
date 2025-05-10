@@ -34,8 +34,7 @@ export default function PlotForm() {
   //save and return buttons
   useEffect(() => {
     const returnHandler = () => {
-      if (projectData) 
-        (hasUnsavedChanges({...projectData, currentStep: 5})?  setConfirmDialogOpen(true) : setLocation("/"))
+        (projectData && hasUnsavedChanges({...projectData, currentStep: 5})?  setConfirmDialogOpen(true) : setLocation("/"))
     }
     const saveHandler = () => {
       if (projectData) 
