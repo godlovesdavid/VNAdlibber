@@ -391,10 +391,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // This handles the case for newly generated acts that haven't been saved to the database yet
       if (req.body.actData) {
         actData = req.body.actData;
+        
+        // Make sure the act number is included in the act data for proper loading
+        actData.act = actNum;
       }
       // Otherwise check if the act exists in the project's generatedActs
       else if (generatedActs[actKey]) {
         actData = generatedActs[actKey];
+        
+        // Make sure the act number is included in the act data for proper loading
+        actData.act = actNum;
       } 
       // If we can't find the act data anywhere, return an error
       else {

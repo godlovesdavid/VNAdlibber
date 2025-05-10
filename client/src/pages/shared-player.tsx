@@ -154,7 +154,7 @@ export default function SharedPlayer() {
     >
       <VnPlayer
         actData={story.actData}
-        actNumber={story.actNumber}
+        actNumber={story.actNumber || parseInt(story.actData?.act || "1")}
         onReturn={handleReturn}
         mode="imported"
         title={story.title}

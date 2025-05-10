@@ -36,7 +36,7 @@ export function ShareStoryDialog({
   const [shareLink, setShareLink] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
-  const { hasUnsavedChanges, saveProject, projectData } = useVnContext();
+  const { hasUnsavedChanges } = useVnContext();
 
   // Function to generate a share link
   const generateShareLink = async () => {
@@ -85,10 +85,6 @@ export function ShareStoryDialog({
       
       // Generate the share link without saving - we handle auto-save already
       console.log('[Share Dialog] Proceeding to generate share link');
-      
-      if (stillHasChanges) {
-        console.warn('[Share Dialog] Warning: Project still reports unsaved changes after saving');
-      }
 
       // Then generate the share link
       console.log('[Share Dialog] Generating share link');
