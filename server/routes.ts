@@ -691,7 +691,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI Generation endpoints
   app.post("/api/generate/concept", async (req, res) => {
     try {
-      const { basicData } = generateConceptSchema.parse(req.body);
+      const { basicData, apiKey } = generateConceptSchema.parse(req.body);
       // Create prompt for the concept generation - directly matching our expected format
       const prompt = `Write a visual novel concept of a ${basicData.tone.replace(/_/g, ' ')} ${basicData.genre.replace(/_/g, ' ')} about ${basicData.theme.replace(/_/g, ' ')} set in ${basicData.setting.replace(/_/g, ' ')}.
         Return in this JSON format:
@@ -705,7 +705,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use Gemini to generate the concept
       const systemPrompt =
         "You're a visual novel brainstormer with wildly creative ideas";
-      const responseContent = await generateWithGemini(prompt, systemPrompt);
+      const responseContent = await generateWithGemini(
+        prompt, 
+        systemPrompt,
+        "JSON",
+        4096,
+        false,
+        apiKey // Use user-provided API key if available
+      );
       
       // Try to parse response
       try {
@@ -932,7 +939,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/generate/plot", async (req, res) => {
     try {
-      const { projectContext } = generatePlotSchema.parse(req.body);
+      const { projectContext, apiKey } = generatePlotSchema.parse(req.body);
 
       // Create prompt for the plot generation - directly matching our expected format
       const prompt = `Given this story context:
@@ -960,7 +967,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate plot using Gemini
       const systemPrompt =
         "You're a visual novel brainstormer with wildly creative ideas";
-      const responseContent = await generateWithGemini(prompt, systemPrompt);
+      const responseContent = await generateWithGemini(
+        prompt, 
+        systemPrompt,
+        "JSON",
+        8192,
+        false,
+        apiKey // Use user-provided API key if available
+      );
 
       // Try to parse response
       try {
