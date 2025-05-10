@@ -441,11 +441,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric chars with hyphens
         .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
       
+      // Include act number in the URL for clarity
+      const actString = `act-${actNum}`;
+      
       res.json({ 
         shareId, 
         storyId: story.id,
         title: storyTitle,
-        url: `/play/${shareId}/${urlSafeTitle}`
+        actNumber: actNum,
+        url: `/play/${shareId}/${actString}/${urlSafeTitle}`
       });
     } catch (error) {
       console.error('Error sharing story:', error);

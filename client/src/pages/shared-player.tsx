@@ -10,6 +10,7 @@ import { NavBar } from '@/components/nav-bar';
 interface SharedPlayerParams {
   shareId: string;
   storyTitle?: string;
+  actString?: string; // Optional act-# string from URL
 }
 
 interface SharedStory {
@@ -22,11 +23,23 @@ interface SharedStory {
 }
 
 export default function SharedPlayer() {
-  const { shareId, storyTitle } = useParams<SharedPlayerParams>();
+  const { shareId, storyTitle, actString } = useParams<SharedPlayerParams>();
   const [loading, setLoading] = useState(true);
   const [story, setStory] = useState<SharedStory | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [urlActNumber, setUrlActNumber] = useState<number | null>(null);
   const { toast } = useToast();
+  
+  // Extract act number from URL if available (format: "act-1", "act-2", etc.)
+  useEffect(() => {
+    if (actString && actString.startsWith('act-')) {
+      const actNum = parseInt(actString.replace('act-', ''));
+      if (!isNaN(actNum) && actNum > 0) {
+        console.log("Found act number in URL:", actNum);
+        setUrlActNumber(actNum);
+      }
+    }
+  }, [actString]);
 
   // Set document title when story loads
   useEffect(() => {
@@ -161,9 +174,28 @@ export default function SharedPlayer() {
       description={getStoryDescription()}
       showShareButtons={true}
     >
+      {/* Debug info for the story data */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="hidden">
+          Debug: Story ID: {story.id}, 
+          Share ID: {story.shareId}, 
+          Act Number: {story.actNumber}
+        </div>
+      )}
+      
       <VnPlayer
+        key={`shared-story-${story.id}-${story.shareId}`} // Add key to force component remount
         actData={story.actData}
-        actNumber={story.actNumber || parseInt(story.actData?.act || "1")}
+        actNumber={
+          // Priority order:
+          // 1. Act number from URL (if available)
+          // 2. Act number from story data
+          // 3. Act number from actData.act
+          // 4. Default to 1
+          urlActNumber || 
+          story.actNumber || 
+          parseInt(story.actData?.act || "1")
+        }
         onReturn={handleReturn}
         mode="imported"
         title={story.title}

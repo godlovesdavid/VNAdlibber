@@ -30,7 +30,9 @@ function Router() {
       <Route path="/create/generate-vn" component={GenerateVnForm} />
       <Route path="/play" component={PlaySelection} />
       <Route path="/player/:actId" component={Player} />
+      {/* Support both URL formats for backward compatibility */}
       <Route path="/play/:shareId/:storyTitle?" component={SharedPlayer} />
+      <Route path="/play/:shareId/:actString/:storyTitle?" component={SharedPlayer} />
       <Route path="/test-player" component={TestPlayer} />
       <Route path="/font-demo" component={FontDemoPage} />
       <Route component={NotFound} />

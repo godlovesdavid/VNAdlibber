@@ -21,6 +21,9 @@ function convertActFormat(actData: any): {
   
   console.log("convertActFormat received data:", JSON.stringify(actData).substring(0, 200) + "...");
   
+  // Reset to debug - dump full data structure
+  console.log("DEBUG: Full act data structure keys:", Object.keys(actData));
+  
   // Handle case where the data is already in the correct format
   if (actData.scenes && Array.isArray(actData.scenes)) {
     console.log("Act data is already in the legacy array format");
@@ -33,34 +36,60 @@ function convertActFormat(actData: any): {
   // Check if it has an explicit act number
   if (actData.act && typeof actData.act === 'number') {
     actNumber = actData.act;
+    console.log("Using explicit act number from data:", actNumber);
   } else if (actData.act && typeof actData.act === 'string') {
     actNumber = parseInt(actData.act) || 1;
+    console.log("Using parsed act number from string:", actNumber);
+  } else if (actData.actNumber && typeof actData.actNumber === 'number') {
+    actNumber = actData.actNumber;
+    console.log("Using actNumber property:", actNumber);
   }
 
   // Check for the new simplified format: {scene1: {...}, scene2: {...}}
   if (Object.keys(actData).some((key) => key.startsWith("scene"))) {
-    console.log("Act data is in the simplified scene map format");
-    sceneMap = actData;
+    console.log("Act data is in the simplified scene map format with scene keys");
+    sceneMap = {};
+    
+    // Extract only the scene objects (ignore other properties like 'act')
+    Object.keys(actData).forEach(key => {
+      if (key.startsWith("scene")) {
+        (sceneMap as any)[key] = actData[key];
+      }
+    });
+    
     // Attempt to extract act number from scene names if available
-    const firstScene = Object.values(actData)[0] as any;
+    const firstScene = Object.values(actData).find(val => 
+      val && typeof val === 'object' && 'dialogue' in val
+    ) as any;
+    
     if (firstScene && firstScene.name && typeof firstScene.name === "string") {
       const match = firstScene.name.match(/Act (\d+)/i);
       if (match && match[1]) {
         actNumber = parseInt(match[1]);
+        console.log("Extracted act number from scene name:", actNumber);
       }
     }
   }
   // Check for nested format: {act1: {scene1: {...}, scene2: {...}}}
   else {
-    console.log("Act data is in the nested format with act wrapper");
+    console.log("Looking for act wrapper format");
     // Find the act key (e.g., "act1")
     const actKey = Object.keys(actData).find((key) => key.startsWith("act"));
     if (actKey) {
       actNumber = parseInt(actKey.replace("act", "")) || 1;
+      console.log("Found act wrapper:", actKey, "with act number:", actNumber);
       sceneMap = actData[actKey] || {};
     } else {
-      console.warn("No scene data found in the expected formats, trying to use actData directly");
+      console.warn("No direct scene data found in the expected formats, attempting fallbacks");
+      
+      // As a fallback, check if this is a story object with nested actData
+      if (actData.actData && typeof actData.actData === 'object') {
+        console.log("Found nested actData, using it instead");
+        return convertActFormat(actData.actData);
+      }
+      
       // As a last resort, try to use the actData directly
+      console.log("Using actData directly as scene map");
       sceneMap = actData;
     }
   }
