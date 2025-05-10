@@ -36,7 +36,7 @@ export function ShareStoryDialog({
   const [shareLink, setShareLink] = useState<string>('');
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
-  const { hasUnsavedChanges, saveProject } = useVnContext();
+  const { hasUnsavedChanges, saveProject, projectData } = useVnContext();
 
   // Function to generate a share link
   const generateShareLink = async () => {
@@ -83,19 +83,8 @@ export function ShareStoryDialog({
       setIsLoading(true);
       console.log('[Share Dialog] Starting saveAndShare process');
       
-      // Save the project first - await to make sure it completes
-      const savedProject = await saveProject();
-      console.log('[Share Dialog] Project saved successfully');
-      
-      // Add a delay to ensure all state updates have been processed
-      // This helps address potential race conditions with React state updates
-      console.log('[Share Dialog] Adding delay before share link generation');
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Verify that changes are actually saved
-      console.log('[Share Dialog] Rechecking for unsaved changes after save');
-      const stillHasChanges = hasUnsavedChanges(savedProject);
-      console.log('[Share Dialog] Project still has unsaved changes?', stillHasChanges);
+      // Generate the share link without saving - we handle auto-save already
+      console.log('[Share Dialog] Proceeding to generate share link');
       
       if (stillHasChanges) {
         console.warn('[Share Dialog] Warning: Project still reports unsaved changes after saving');
