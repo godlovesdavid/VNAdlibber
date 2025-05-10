@@ -37,7 +37,11 @@ export default function SharedPlayer() {
       if (!isNaN(actNum) && actNum > 0) {
         console.log("Found act number in URL:", actNum);
         setUrlActNumber(actNum);
+      } else {
+        console.log("Invalid act number format in URL:", actString);
       }
+    } else {
+      console.log("No act number in URL. Using default from story data.");
     }
   }, [actString]);
 

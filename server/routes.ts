@@ -342,6 +342,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { projectId, actNumber: requestedActNumber, title } = req.body;
       
       console.log(`[SERVER] Share request for project ${projectId}, act ${requestedActNumber}`);
+      console.log(`[SERVER] Request body details:`, JSON.stringify(req.body));
       
       if (!projectId) {
         return res.status(400).json({ error: 'No project ID provided' });
@@ -370,16 +371,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`[SERVER] Project has ${Object.keys(generatedActs).length} generated acts`);
       
       // Determine which act to share
-      let actKey: string;
-      let actNum: number;
+      let actKey: string | undefined;
+      let actNum: number = 1; // Default to act 1 if nothing else is specified
       
-      if (requestedActNumber && requestedActNumber >= 1 && requestedActNumber <= 5) {
-        // Use the requested act number if provided
-        actKey = `act${requestedActNumber}`;
-        actNum = requestedActNumber;
-        console.log(`[SERVER] Using requested act: ${actKey}, act number: ${actNum}`);
-      } else {
-        // Otherwise use the first available act
+      // Check if requestedActNumber is valid
+      if (requestedActNumber !== undefined && requestedActNumber !== null) {
+        let requestedActNum;
+        
+        // Handle different types of act number input
+        if (typeof requestedActNumber === 'string') {
+          requestedActNum = parseInt(requestedActNumber, 10);
+          console.log(`[SERVER] Parsed string act number: ${requestedActNumber} -> ${requestedActNum}`);
+        } else if (typeof requestedActNumber === 'number') {
+          requestedActNum = requestedActNumber;
+          console.log(`[SERVER] Using numeric act number directly: ${requestedActNum}`);
+        } else {
+          console.log(`[SERVER] Unexpected act number type: ${typeof requestedActNumber}`);
+          requestedActNum = null;
+        }
+        
+        // Use the parsed act number if it's valid
+        if (requestedActNum && requestedActNum >= 1 && requestedActNum <= 5) {
+          actKey = `act${requestedActNum}`;
+          actNum = requestedActNum;
+          console.log(`[SERVER] Using requested act: ${actKey}, act number: ${actNum}`);
+        } else {
+          console.log(`[SERVER] Invalid requested act number: ${requestedActNumber}, will use fallback`);
+          // Fall through to using the first available act
+        }
+      }
+      
+      // If no valid act number was provided or parsed, use the first available act
+      if (!actKey) {
         const actKeys = Object.keys(generatedActs);
         
         if (actKeys.length === 0) {
@@ -404,6 +427,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Make sure the act number is included in the act data for proper loading
         actData.act = actNum;
+        
+        console.log(`[SERVER] Using explicitly provided act number: ${actNum}`);
       }
       // Otherwise check if the act exists in the project's generatedActs
       else if (generatedActs[actKey]) {
@@ -412,6 +437,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Make sure the act number is included in the act data for proper loading
         actData.act = actNum;
+        
+        console.log(`[SERVER] Using act number: ${actNum} from key: ${actKey}`);
       } 
       // If we can't find the act data anywhere, return an error
       else {
@@ -425,6 +452,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const storyTitle = title || project.title || `Visual Novel Act ${actNum}`;
       
+      // Log all relevant details before creating the story
+      console.log(`[SERVER] Creating new story with:
+        - Title: ${storyTitle}
+        - Act Number: ${actNum}
+        - ShareID: ${shareId}
+        - ActData has act property: ${actData.act !== undefined}
+        - ActData.act value: ${actData.act}`);
+      
       // Create a new story entry in the database
       const story = await storage.createStory({
         shareId,
@@ -433,7 +468,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         title: storyTitle,
         createdAt: now,
         actData,
-        actNumber: actNum
+        actNumber: actNum  // This should be the proper act number from above
       });
       
       // Return the share ID and related information with URL-safe title
@@ -441,8 +476,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric chars with hyphens
         .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
       
-      // Include act number in the URL for clarity
+      // The act number in the URL should reflect the actual act number we're sharing
       const actString = `act-${actNum}`;
+      
+      console.log(`[SERVER] Returning share URL with act number ${actNum} in the URL as ${actString}`);
       
       res.json({ 
         shareId, 
