@@ -79,6 +79,9 @@ export default function GenerateVnForm() {
     resetPlayerData,
     exportActs,
     goToStep,
+    saveProject,
+    hasUnsavedChanges,
+    setConfirmDialogOpen
   } = useVnContext();
 
   const { generateActData, isGenerating, cancelGeneration } = useVnData();
@@ -91,11 +94,20 @@ export default function GenerateVnForm() {
   const [regenerateConfirmOpen, setRegenerateConfirmOpen] = useState(false);
   const [actToRegenerate, setActToRegenerate] = useState<number | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
-  const { saveProject, hasUnsavedChanges, setConfirmDialogOpen } = useVnContext();
  
+  // Debug log for tracking projectData changes
   useEffect(() => {
-    console.log(JSON.stringify(projectData))
-    }, [projectData]);
+    // Only log when component mounts, not on every projectData change
+    // This prevents infinite loop while still letting you debug if needed
+    const logDebug = () => {
+      if (projectData) {
+        console.log('Current projectData:', projectData.title || 'Untitled Project');
+      }
+    };
+    
+    logDebug();
+    // Intentionally not adding projectData to dependencies to avoid infinite loop
+  }, []);
 
   
   //save and return buttons
@@ -117,13 +129,24 @@ export default function GenerateVnForm() {
         document.removeEventListener("save", saveHandler);
       };
     }
-  }, [playerData, currentGeneratingAct]);
+  }, [currentGeneratingAct, projectData, setLocation, hasUnsavedChanges, setConfirmDialogOpen, saveProject]);
 
-  // autosave playerData to context
+  // autosave playerData to context - only when needed, not on every render
   useEffect(() => {
-      if (playerData) 
-        updatePlayerData(playerData);
-  }, [playerData]);
+    // We don't need to call updatePlayerData immediately on component mount
+    // as it would trigger an unnecessary re-render cycle.
+    // This hook should only be triggered when another part of the code 
+    // updates playerData.
+    
+    // This is handled by the handlePlayerDataChange function instead
+    
+    // Leaving this useEffect in place but commented for reference
+    /*
+    if (playerData) {
+      updatePlayerData(playerData);
+    }
+    */
+  }, []);
 
   // Player data editing state
   const [editablePlayerData, setEditablePlayerData] = useState<PlayerData>({
@@ -132,14 +155,19 @@ export default function GenerateVnForm() {
     skills: {},
   });
 
-  // Keep editable player data in sync with actual player data
+  // Keep editable player data in sync with actual player data,
+  // but only on component mount to avoid unnecessary re-renders
   useEffect(() => {
-    setEditablePlayerData({
-      relationships: { ...playerData.relationships },
-      inventory: { ...playerData.inventory },
-      skills: { ...playerData.skills },
-    });
-  }, [playerData]);
+    // Initialize editable player data once from the current player data
+    if (playerData) {
+      setEditablePlayerData({
+        relationships: { ...playerData.relationships },
+        inventory: { ...playerData.inventory },
+        skills: { ...playerData.skills },
+      });
+    }
+    // Only run on mount to prevent re-render loops
+  }, []);
 
   // Handle reset player data
   const handleResetPlayerData = () => {
