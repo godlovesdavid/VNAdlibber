@@ -1,7 +1,7 @@
 import { useVnContext } from "@/context/vn-context";
 import { Link, useLocation } from "wouter";
 import { SaveProjectButton } from "@/components/save-project-button";
-import { ArrowLeft, Share } from "lucide-react";
+import { ArrowLeft, Share, Settings } from "lucide-react";
 import { ProjectSharingDialog } from "@/components/modals/project-sharing-dialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -75,6 +75,15 @@ export function NavBar() {
                 <SaveProjectButton />
               </>
             )}
+            <Link href="/settings">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                className="rounded-full p-2"
+              >
+                <Settings className="h-5 w-5 text-neutral-500 hover:text-primary" />
+              </Button>
+            </Link>
           </div>
         </div>
       </nav>
