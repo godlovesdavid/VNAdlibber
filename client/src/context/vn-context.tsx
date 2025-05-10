@@ -217,16 +217,20 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
             );
           }
 
-          // We disable auto-navigation to the last step
-          // User will always start at the main menu and must explicitly choose to continue
-          // This ensures a clean starting experience each time
-          // 
-          // Note: We keep the project data loaded in state for the "Continue" button to work,
-          // but we don't auto-navigate to the last step anymore
+          // Determine which step to go to based on project data
+          let currentStep = 1;
+          if (parsedProject.plotData) currentStep = 6;
+          else if (parsedProject.pathsData) currentStep = 5;
+          else if (parsedProject.charactersData) currentStep = 4;
+          else if (parsedProject.conceptData) currentStep = 3;
+          else if (parsedProject.basicData) currentStep = 2;
           
-          console.log("Project data loaded but staying on main menu");
+          // Navigate to the current step based on saved project data
+          console.log("Auto-loading project and navigating to step:", currentStep);
+          goToStep(currentStep);
           
-          // To keep project data without navigating, we don't call setLocation here
+          // Go to the appropriate step based on the project's current state
+          //setLocation(`/create/${determineStepRoute(currentStep)}`);
         } catch (error) {
           console.error(
             "Error auto-loading saved project from localStorage:",

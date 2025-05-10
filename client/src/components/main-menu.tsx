@@ -96,7 +96,7 @@ export function MainMenu() {
           Create New Story
         </Button>
         
-        {hasContinueProject && (
+        {/* {hasContinueProject && (
           <Button 
             onClick={handleContinueProject} 
             className="w-full flex items-center justify-center bg-white border border-green-600 text-green-600 hover:bg-green-50 py-6"
@@ -106,7 +106,7 @@ export function MainMenu() {
             <RotateCcw className="mr-2 h-5 w-5" />
             Continue Recent Project
           </Button>
-        )}
+        )} */}
         
         <Button 
           onClick={handleLoadProject} 

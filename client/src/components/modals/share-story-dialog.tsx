@@ -85,7 +85,7 @@ export function ShareStoryDialog({
       
       // Save the project first - await to make sure it completes
       const savedProject = await saveProject();
-      console.log('[Share Dialog] Project saved with hash:', savedProject.lastSavedHash);
+      console.log('[Share Dialog] Project saved successfully');
       
       // Add a delay to ensure all state updates have been processed
       // This helps address potential race conditions with React state updates
@@ -94,7 +94,7 @@ export function ShareStoryDialog({
       
       // Verify that changes are actually saved
       console.log('[Share Dialog] Rechecking for unsaved changes after save');
-      const stillHasChanges = hasUnsavedChanges();
+      const stillHasChanges = hasUnsavedChanges(savedProject);
       console.log('[Share Dialog] Project still has unsaved changes?', stillHasChanges);
       
       if (stillHasChanges) {
