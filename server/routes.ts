@@ -341,6 +341,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { projectId, actNumber: requestedActNumber, title } = req.body;
       
+      console.log(`[SERVER] Share request for project ${projectId}, act ${requestedActNumber}`);
+      
       if (!projectId) {
         return res.status(400).json({ error: 'No project ID provided' });
       }
@@ -351,6 +353,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!project) {
         return res.status(404).json({ error: 'Project not found' });
       }
+      
+      console.log(`[SERVER] Found project: ${project.title}`);
       
       // Generate a unique share ID
       const shareId = generateShareId(12); // Use longer IDs to reduce collision chance
@@ -363,6 +367,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const typedProject = project as ProjectWithGeneratedActs;
       const generatedActs = typedProject.generatedActs || {};
       
+      console.log(`[SERVER] Project has ${Object.keys(generatedActs).length} generated acts`);
+      
       // Determine which act to share
       let actKey: string;
       let actNum: number;
@@ -371,17 +377,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Use the requested act number if provided
         actKey = `act${requestedActNumber}`;
         actNum = requestedActNumber;
+        console.log(`[SERVER] Using requested act: ${actKey}, act number: ${actNum}`);
       } else {
         // Otherwise use the first available act
         const actKeys = Object.keys(generatedActs);
         
         if (actKeys.length === 0) {
+          console.log(`[SERVER] Error: No generated acts found in project`);
           return res.status(400).json({ error: 'No generated acts found in this project' });
         }
         
         actKey = actKeys[0];
         // Extract the number from the actKey (e.g., "act1" -> 1)
         actNum = parseInt(actKey.replace('act', ''), 10);
+        console.log(`[SERVER] Using first available act: ${actKey}, act number: ${actNum}`);
       }
       
       // Initialize actData variable
@@ -390,6 +399,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If actData was provided directly in the request body, use that
       // This handles the case for newly generated acts that haven't been saved to the database yet
       if (req.body.actData) {
+        console.log(`[SERVER] Using actData from request body`);
         actData = req.body.actData;
         
         // Make sure the act number is included in the act data for proper loading
@@ -397,6 +407,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       // Otherwise check if the act exists in the project's generatedActs
       else if (generatedActs[actKey]) {
+        console.log(`[SERVER] Using actData from generatedActs[${actKey}]`);
         actData = generatedActs[actKey];
         
         // Make sure the act number is included in the act data for proper loading
@@ -404,7 +415,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } 
       // If we can't find the act data anywhere, return an error
       else {
+        console.log(`[SERVER] Error: Act ${actNum} not found in project`);
         return res.status(400).json({ error: `Act ${actNum} not found in this project` });
+      }
+      
+      // Check if actData has scene1, a common structure element
+      if (actData && !actData.scene1 && !actData.scenes) {
+        console.log(`[SERVER] Warning: actData has unusual format, no scene1 or scenes property`);
       }
       const storyTitle = title || project.title || `Visual Novel Act ${actNum}`;
       
@@ -441,15 +458,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { shareId } = req.params;
       
+      console.log(`[SERVER] Fetching shared story with ID: ${shareId}`);
+      
       // Get the story with the matching share ID
       const story = await storage.getStoryByShareId(shareId);
       
       if (!story) {
+        console.log(`[SERVER] Story not found with share ID: ${shareId}`);
         return res.status(404).json({ error: 'Shared story not found' });
+      }
+      
+      console.log(`[SERVER] Found story #${story.id} with title: ${story.title}`);
+      
+      // Validate the actData before sending it to the client
+      if (!story.actData) {
+        console.log(`[SERVER] Warning: Story #${story.id} has no actData`);
+        return res.status(400).json({ error: 'Shared story has missing data' });
       }
       
       // Update the lastAccessed timestamp
       await storage.updateStoryLastAccessed(story.id);
+      
+      // Ensure actNumber is properly set for the client
+      if (!story.actNumber && story.actData && typeof story.actData === 'object') {
+        // TypeScript: We need to check if 'act' exists on the object
+        const actDataAny = story.actData as any;
+        if (actDataAny.act) {
+          story.actNumber = typeof actDataAny.act === 'number' 
+            ? actDataAny.act 
+            : parseInt(actDataAny.act) || 1;
+          console.log(`[SERVER] Setting actNumber from actData: ${story.actNumber}`);
+        }
+      }
+      
+      console.log(`[SERVER] Returning story with actNumber: ${story.actNumber}, actData type: ${typeof story.actData}`);
       
       // Return the story data
       res.json({ story });

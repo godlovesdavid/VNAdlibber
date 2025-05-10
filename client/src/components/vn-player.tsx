@@ -234,8 +234,30 @@ export function VnPlayer({
           ? "New nested format"
           : "Legacy array format",
       );
+      
+      // Debug - log structure of actData and the first scene key
+      try {
+        const actKeys = Object.keys(rawActData);
+        console.log("Act data keys:", actKeys);
+        
+        if (actKeys.length > 0 && actKeys[0].startsWith("scene")) {
+          console.log("First scene key:", actKeys[0]);
+          // Use type assertion to avoid TS error with indexing
+          const firstSceneData = (rawActData as any)[actKeys[0]];
+          console.log("First scene data sample:", JSON.stringify(firstSceneData).substring(0, 100) + "...");
+        }
+        
+        // Always log first scene of the processed actData
+        if (actData && actData.scenes && actData.scenes.length > 0) {
+          console.log("Processed first scene:", JSON.stringify(actData.scenes[0]).substring(0, 100) + "...");
+        } else {
+          console.error("No scenes found in processed actData");
+        }
+      } catch (error) {
+        console.error("Error while debugging act data:", error);
+      }
     }
-  }, [rawActData]);
+  }, [rawActData, actData]);
   const { playerData, updatePlayerData } = useVnContext();
   const { toast } = useToast(); // Initialize toast
 
@@ -431,27 +453,49 @@ export function VnPlayer({
 
   //FIRST SCENE INIT
   useEffect(() => {
-    if (!actData?.scenes?.length ) return;
+    console.log("First scene init effect triggered, checking actData:", 
+      actData ? `Found with ${actData.scenes?.length || 0} scenes` : "No act data");
     
-    ImageGenerator.clearImageCache()
+    // Make sure we have valid scene data
+    if (!actData?.scenes || !Array.isArray(actData.scenes) || actData.scenes.length === 0) {
+      console.error("Cannot initialize VN Player: No scenes found in actData", actData);
+      return;
+    }
     
-    // Set initial scene
-    const firstScene = actData.scenes[0];
-    console.log(
-      `Initializing VN Player (${mode} mode) with first scene:`,
-      firstScene.name,
-    );
-
-    setCurrentScene(firstScene);
-    setCurrentSceneId(firstScene.name);
-    setCurrentDialogueIndex(0);
-    setShowChoices(false);
-    setDialogueLog([]);
-
-    // Start text animation for the first dialogue line
-    if (firstScene.dialogue && firstScene.dialogue.length > 0) {
-      setDisplayedText(""); // Clear any previous text
-      animateText(firstScene.dialogue[0][1]);
+    ImageGenerator.clearImageCache();
+    
+    try {
+      // Set initial scene
+      const firstScene = actData.scenes[0];
+      
+      // Additional validation for the first scene
+      if (!firstScene || typeof firstScene !== 'object') {
+        console.error("First scene is invalid:", firstScene);
+        return;
+      }
+      
+      console.log(
+        `Initializing VN Player (${mode} mode) with first scene:`,
+        firstScene.name,
+      );
+  
+      setCurrentScene(firstScene);
+      setCurrentSceneId(firstScene.name);
+      setCurrentDialogueIndex(0);
+      setShowChoices(false);
+      setDialogueLog([]);
+  
+      // Start text animation for the first dialogue line
+      if (firstScene.dialogue && Array.isArray(firstScene.dialogue) && firstScene.dialogue.length > 0) {
+        setDisplayedText(""); // Clear any previous text
+        const firstDialogue = firstScene.dialogue[0][1] || "";
+        console.log("Starting animation for first dialogue:", firstDialogue.substring(0, 50) + "...");
+        animateText(firstDialogue);
+      } else {
+        console.warn("First scene has no dialogue", firstScene);
+      }
+    } catch (error) {
+      console.error("Error initializing first scene:", error);
     }
   }, [actData, mode, animateText]);
 
