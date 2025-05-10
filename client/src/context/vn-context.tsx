@@ -424,7 +424,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  // Save project to server
+  // Save project to server, by comparing changes
   const saveProject = async (projectData: VnProjectData) => {
     try {
       setSaveLoading(true);
