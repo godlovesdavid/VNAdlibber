@@ -482,27 +482,20 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       // Store the ID in session storage for future saves
       sessionStorage.setItem("current_project_id", savedProject.id.toString());
 
-      // Make sure the saved project has the hash - always use the hash we generated and sent
-      // This ensures client and server stay in sync with hash values
-      if (savedProject.lastSavedHash !== currentDataHash) {
-        console.log(
-          "Warning: Server returned different hash than client generated",
-          {
-            server: savedProject.lastSavedHash,
-            client: currentDataHash,
-          },
-        );
-        // Override the server hash with our client hash since we just saved
-        // This keeps the client's perception of "saved state" accurate
-        savedProject.lastSavedHash = currentDataHash;
+      // We don't need to worry about hash synchronization anymore
+      // Just make sure lastSavedHash exists for backward compatibility
+      if (!savedProject.lastSavedHash) {
+        console.log("Adding placeholder lastSavedHash for backward compatibility");
+        // Generate a timestamp-based placeholder hash for backward compatibility
+        savedProject.lastSavedHash = `save-${Date.now()}`;
       }
 
-      // Generate a hash of the server-returned data to verify true equality
-      const serverDataHash = generateProjectHash(savedProject);
-      console.log("Hash of data returned by server:", serverDataHash);
+      // Store normalized data for equality comparison
+      const serverNormalizedData = normalizeProjectData(savedProject);
+      console.log("Saved normalized server data for comparison");
       console.log(
-        "Hash matches client hash?",
-        serverDataHash === currentDataHash,
+        "Data is equivalent?",
+        areProjectsEqual(savedProject, dataToSave),
       );
 
       // Update React state
@@ -511,14 +504,14 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       // 5. Also update localStorage for consistency
       localStorage.setItem("current_vn_project", JSON.stringify(savedProject));
 
-      // 6. Record hash in session storage for client-side change detection
+      // 6. Record normalized project data in session storage for client-side change detection
       const projectId = savedProject.id
         ? savedProject.id.toString()
         : "new_project";
-      const savedHashKey = `saved_hash_${projectId}`;
-      sessionStorage.setItem(savedHashKey, currentDataHash);
+      const savedProjectKey = `saved_project_${projectId}`;
+      sessionStorage.setItem(savedProjectKey, JSON.stringify(serverNormalizedData));
       console.log(
-        `[saveProject] Saving hash ${currentDataHash} in session storage with key ${savedHashKey}`,
+        `[saveProject] Saving normalized project data in session storage with key ${savedProjectKey}`,
       );
 
       // Also clear the new project time and other tracker values
@@ -574,23 +567,25 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
         `Loaded project ID ${projectId} and stored in sessionStorage`,
       );
 
-      // Generate a hash for loaded project for proper change tracking
-      const loadedHash = generateProjectHash(loadedProject);
+      // Generate normalized project data for comparison
+      const normalizedData = normalizeProjectData(loadedProject);
       console.log(
-        `[loadProject] Generated hash for loaded project: ${loadedHash}`,
+        `[loadProject] Generated normalized data for loaded project for comparison`,
       );
 
-      // Ensure the loaded project has the hash for change detection
-      loadedProject.lastSavedHash = loadedHash;
+      // Ensure the loaded project has a lastSavedHash for backward compatibility
+      if (!loadedProject.lastSavedHash) {
+        loadedProject.lastSavedHash = `load-${Date.now()}`;
+      }
 
       // IMPORTANT: Force localStorage update with the loaded project FIRST
       localStorage.setItem("current_vn_project", JSON.stringify(loadedProject));
 
-      // Store the hash in session storage for our pure client-side change detection
-      const savedHashKey = `saved_hash_${projectId}`;
-      sessionStorage.setItem(savedHashKey, loadedHash);
+      // Store the normalized project in session storage for our direct comparison
+      const savedProjectKey = `saved_project_${projectId}`;
+      sessionStorage.setItem(savedProjectKey, JSON.stringify(normalizedData));
       console.log(
-        `[loadProject] Saving hash ${loadedHash} in session storage with key ${savedHashKey}`,
+        `[loadProject] Saving normalized project data in session storage with key ${savedProjectKey}`,
       );
       // Clear any "fresh project" flags
       sessionStorage.removeItem("vn_fresh_project");

@@ -312,64 +312,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateProject(id: number, projectData: Partial<VnProject>): Promise<VnProject> {
-    // Make sure to update the updatedAt timestamp
-    // Generate server-side hash of project data
-    function generateServerHash(data: any): string {
-      const normalizedData = { ...data };
-      delete normalizedData.id;
-      delete normalizedData.createdAt;
-      delete normalizedData.updatedAt;
-      delete normalizedData.lastSavedHash;
-
-      function stableStringify(obj: any): string {
-        const sortKeys = (input: any, parentKey?: string): any => {
-          if (Array.isArray(input)) {
-            return input.map((item) => sortKeys(item, parentKey));
-          } else if (input !== null && typeof input === "object") {
-            let keys = Object.keys(input);
-
-            // Special logic for characterData
-            if (parentKey === "charactersData") {
-              keys.sort((a, b) => {
-                const roleA = input[a]?.role;
-                const roleB = input[b]?.role;
-
-                // Protagonist comes first
-                if (roleA === "Protagonist" && roleB !== "Protagonist") return -1;
-                if (roleB === "Protagonist" && roleA !== "Protagonist") return 1;
-                return a.localeCompare(b); // fallback alphabetical
-              });
-            } else {
-              keys.sort(); // default alphabetical
-            }
-
-            return keys.reduce((acc: any, key) => {
-              acc[key] = sortKeys(input[key], key);
-              return acc;
-            }, {});
-          }
-          return input; // primitive
-        };
-
-        return JSON.stringify(sortKeys(obj));
-      }
-
-
-      const str = stableStringify(normalizedData).normalize();
-      let hash = 0;
-      for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash;
-      }
-      return hash.toString(16);
-    }
-
-    const serverHash = generateServerHash(projectData);
+    // Set a timestamp for the save operation
+    const timestamp = Date.now().toString(36);
+    
+    // For backward compatibility, use a timestamp-based hash instead of the more complex hash generation
     const dataToUpdate = {
       ...projectData,
       updatedAt: new Date().toISOString(),
-      lastSavedHash: serverHash
+      lastSavedHash: `save-${timestamp}`
     };
 
     console.log(`[STORAGE] Updating project ${id} with hash:`, projectData.lastSavedHash);
