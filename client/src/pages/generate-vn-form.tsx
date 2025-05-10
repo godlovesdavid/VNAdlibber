@@ -412,6 +412,7 @@ export default function GenerateVnForm() {
                     <ShareStoryDialog
                       projectId={projectData.id}
                       projectTitle={projectData.title || `Visual Novel Act ${actNumber}`}
+                      actNumber={actNumber}
                       trigger={
                         <Button
                           variant="outline"

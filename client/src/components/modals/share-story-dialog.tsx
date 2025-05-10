@@ -20,7 +20,7 @@ interface ShareStoryDialogProps {
   projectId: number;
   projectTitle: string;
   // Acts are numbered 1-5
-  actNumber?: number;
+  actNumber: number;
   trigger: React.ReactNode;
 }
 
