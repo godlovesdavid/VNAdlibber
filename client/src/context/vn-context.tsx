@@ -95,52 +95,51 @@ const defaultPlayerData: PlayerData = {
   storyTitle: "", // Empty story title by default
 };
 
-// Function to check if there are unsaved changes using pure hash comparison
+// Function to check if there are unsaved changes using direct JSON comparison
 export function hasUnsavedChanges(projectData: VnProjectData): boolean {
   if (!projectData) {
-    console.log("[Hash Check] No project data, returning false");
+    console.log("[Change Check] No project data, returning false");
     return false;
   }
-  // Get the current hash of the project data
-  const currentHash = generateProjectHash(projectData);
-  console.log("[Hash Check] Generated current hash:", currentHash);
 
   // Check for a new project scenario
   if (!projectData.id) {
     const newProjectFlag = sessionStorage.getItem("vn_fresh_project");
     if (newProjectFlag === "true") {
-      console.log("[Hash Check] Fresh project detected, considering it saved");
+      console.log("[Change Check] Fresh project detected, considering it saved");
       return false;
     }
   }
 
-  // Get the last saved hash from session storage instead of the project object
-  // This way we're comparing against what WE saved, not what the server returned
+  // Get the saved project data from localStorage
   const projectId = projectData.id ? projectData.id.toString() : "new_project";
-  const savedHashKey = `saved_hash_${projectId}`;
-  const savedHash = sessionStorage.getItem(savedHashKey);
-
-  if (!savedHash) {
-    // If we don't have a saved hash in session storage, check the project object
+  const savedProjectKey = `saved_project_${projectId}`;
+  const savedProjectJson = sessionStorage.getItem(savedProjectKey);
+  
+  if (!savedProjectJson) {
+    // If no saved project data in session storage, check lastSavedHash as a proxy
+    // If lastSavedHash exists, we assume it was saved at some point
     if (!projectData.lastSavedHash) {
-      console.log(
-        "[Hash Check] No saved hash found anywhere, considering unsaved",
-      );
+      console.log("[Change Check] No saved project found anywhere, considering unsaved");
       return true;
     }
-    // Use the hash from the project object as fallback
-    console.log("[Hash Check] Using hash from project object as fallback");
-    return currentHash !== projectData.lastSavedHash;
+    console.log("[Change Check] No saved project data to compare, but lastSavedHash exists");
+    return true; // Conservative approach - if we can't compare, assume there are changes
   }
-  // Compare the current hash with the saved hash from session storage
-  const hashesMatch = currentHash === savedHash;
-
-  console.log("[Hash Check] Current hash:", currentHash);
-  console.log("[Hash Check] Session saved hash:", savedHash);
-  console.log("[Hash Check] Hashes match?", hashesMatch);
-
-  // If hashes don't match, the project has unsaved changes
-  return !hashesMatch;
+  
+  try {
+    const savedProject = JSON.parse(savedProjectJson);
+    // Compare current project with saved project using direct JSON comparison
+    const areEqual = areProjectsEqual(projectData, savedProject);
+    
+    console.log("[Change Check] Projects equal?", areEqual);
+    
+    // If projects are not equal, there are unsaved changes
+    return !areEqual;
+  } catch (error) {
+    console.error("[Change Check] Error comparing projects:", error);
+    return true; // Conservative approach - if comparison fails, assume there are changes
+  }
 }
 
 const VnContext = createContext<VnContextType | undefined>(undefined);
@@ -263,11 +262,11 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     // Set a flag to indicate this is a fresh project that needs randomization
     sessionStorage.setItem("vn_fresh_project", "true");
 
-    // Create a hash for the fresh project and save it to session storage
-    const initialHash = generateProjectHash(initialProject);
-    sessionStorage.setItem("saved_hash_new_project", initialHash);
+    // Save the normalized project data for comparison
+    const normalizedData = normalizeProjectData(initialProject);
+    sessionStorage.setItem("saved_project_new_project", JSON.stringify(normalizedData));
     console.log(
-      `[createNewProject] Created initial project hash: ${initialHash}`,
+      `[createNewProject] Saved normalized project data for comparison`,
     );
 
     // Navigate to the first step
@@ -402,7 +401,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       // 1. Always check localStorage first for most up-to-date data
       // This addresses race conditions between form data saves and API requests
       console.log("Loading project data to save");
-      if (!hasUnsavedChanges(projectData )) 
+      if (!hasUnsavedChanges(projectData)) 
       {
         console.log('[saveProject] No changes detected, skipping save operation');
         toast({
@@ -436,11 +435,10 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       // This is more reliable than the dataToSave.id since createNewProject may have cleared the ID from projectData
       const storedProjectId = sessionStorage.getItem("current_project_id");
 
-      // Generate a hash of the essential data only
-      const currentDataHash = generateProjectHash(dataToSave);
+      // Save the normalized project data for comparison
+      const normalizedData = normalizeProjectData(dataToSave);
       console.log(
-        "[saveProject] Generated hash for essential project data:",
-        currentDataHash,
+        "[saveProject] Created normalized data for comparison"
       );
       console.log(
         "[saveProject] Data to save has lastSavedHash:",
