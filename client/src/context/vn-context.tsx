@@ -189,14 +189,6 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     // Only try to load from localStorage if we don't already have project data
     if (!projectData) {
-      // Check if we recently loaded a project explicitly first
-      const recentlyLoadedFlag = sessionStorage.getItem("recently_loaded_project");
-      if (recentlyLoadedFlag === "true") {
-        // Clear the flag and skip auto-loading
-        console.log("Skipping auto-load because a project was recently loaded explicitly");
-        sessionStorage.removeItem("recently_loaded_project");
-        return;
-      }
       
       const savedProject = localStorage.getItem("current_vn_project");
 

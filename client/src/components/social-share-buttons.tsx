@@ -61,7 +61,7 @@ export function SocialShareButtons({ title, url }: SocialShareButtonsProps) {
   };
   
   return (
-    <div className="fixed right-0 top-[52px] left-[7px] z-30 flex flex-col gap-2 p-1.5 bg-transparent rounded-l-md">
+    <div className="fixed right-[7px] top-[52px] z-30 flex flex-col gap-2 p-1.5 bg-transparent rounded-l-md">
       {/* Main Share Button */}
       <button
         onClick={toggleExpand}

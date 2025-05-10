@@ -690,7 +690,18 @@ export function VnPlayer({
   }
 
   // Get current dialogue text (using either the animated display text or the full original text)
-  const rawDialogueContent = currentScene?.dialogue[currentDialogueIndex]?.[1] || "";
+  let rawDialogueContent = "";
+  try {
+    // Check if currentScene.dialogue array exists and has the current index
+    if (currentScene?.dialogue && Array.isArray(currentScene.dialogue) && 
+        currentDialogueIndex >= 0 && currentDialogueIndex < currentScene.dialogue.length &&
+        Array.isArray(currentScene.dialogue[currentDialogueIndex])) {
+      rawDialogueContent = currentScene.dialogue[currentDialogueIndex][1] || "";
+    }
+  } catch (error) {
+    console.error("Error accessing dialogue content:", error);
+  }
+  
   // Handle case where dialogue content is an object instead of a string
   const originalDialogueText = typeof rawDialogueContent === 'string' 
     ? rawDialogueContent 
@@ -837,11 +848,16 @@ export function VnPlayer({
           onClick={handleContentClick}
         >
           {/* Dialogue text */}
-          {currentScene.dialogue.length > 0 &&
+          {currentScene.dialogue && Array.isArray(currentScene.dialogue) && 
+            currentScene.dialogue.length > 0 &&
             currentDialogueIndex < currentScene.dialogue.length && (
               <div className="vn-dialogue">
                 <p className="character-name text-primary-300 font-semibold mb-1 sm:mb-2 text-sm sm:text-base md:text-lg">
-                  {currentScene.dialogue[currentDialogueIndex][0]}
+                  {currentScene.dialogue && 
+                   Array.isArray(currentScene.dialogue) && 
+                   currentDialogueIndex < currentScene.dialogue.length && 
+                   Array.isArray(currentScene.dialogue[currentDialogueIndex]) ? 
+                   currentScene.dialogue[currentDialogueIndex][0] : "Character"}
                 </p>
                 <p className="text-white text-sm sm:text-base md:text-lg whitespace-pre-line font-dialogue">
                   {typeof dialogueText === 'string' ? dialogueText : JSON.stringify(dialogueText)}
@@ -851,7 +867,7 @@ export function VnPlayer({
 
           {/* Choices */}
           {showChoices &&
-            currentScene.choices &&
+            currentScene && currentScene.choices &&
             Array.isArray(currentScene.choices) &&
             currentScene.choices.length > 0 && (
               <div
