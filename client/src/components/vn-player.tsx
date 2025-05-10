@@ -890,8 +890,8 @@ export function VnPlayer({
                         index === 1 ? "animation-delay-100" :
                         index === 2 ? "animation-delay-200" :
                         "animation-delay-300",
-                        // Base style for all buttons
-                        "bg-neutral-800 text-white border-neutral-600",
+                        // Base style for all buttons - changed from neutral-800 to black
+                        "bg-black text-white border-neutral-800",
                         // Add hover effect only when not showing condition colors
                         !hasCondition &&
                           "hover:bg-primary/70 hover:border-primary",

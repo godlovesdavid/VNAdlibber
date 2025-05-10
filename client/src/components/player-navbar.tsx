@@ -68,9 +68,9 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog, titl
     // When VN player components update their text speed, sync with our UI
     const handlePlayerTextSpeedChange = (e: CustomEvent) => {
       const speedValue = e.detail;
-      if (speedValue === 1) {
+      if (speedValue === 2) {
         setActiveTextSpeed('slow');
-      } else if (speedValue === 5) {
+      } else if (speedValue === 7) {
         setActiveTextSpeed('normal');
       } else if (speedValue === 10) {
         setActiveTextSpeed('fast');
@@ -270,8 +270,8 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog, titl
                       variant={activeTextSpeed === 'slow' ? 'default' : 'outline'} 
                       size="sm"
                       onClick={() => {
-                        // Dispatch event to set text speed
-                        window.dispatchEvent(new CustomEvent('vnSetTextSpeed', { detail: 1 }));
+                        // Dispatch event to set text speed (increased from 1 to 2)
+                        window.dispatchEvent(new CustomEvent('vnSetTextSpeed', { detail: 2 }));
                         // Update state to track active button
                         setActiveTextSpeed('slow');
                       }}
@@ -282,8 +282,8 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog, titl
                       variant={activeTextSpeed === 'normal' ? 'default' : 'outline'} 
                       size="sm"
                       onClick={() => {
-                        // Dispatch event to set text speed
-                        window.dispatchEvent(new CustomEvent('vnSetTextSpeed', { detail: 5 }));
+                        // Dispatch event to set text speed (increased from 5 to 7)
+                        window.dispatchEvent(new CustomEvent('vnSetTextSpeed', { detail: 7 }));
                         // Update state to track active button
                         setActiveTextSpeed('normal');
                       }}
