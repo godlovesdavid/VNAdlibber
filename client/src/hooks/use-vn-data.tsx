@@ -81,6 +81,9 @@ export const useVnData = () => {
 
         console.log("Generating single character with data:", partialCharacter);
 
+        // Get the user's API key from localStorage if available
+        const userApiKey = localStorage.getItem("user_gemini_key");
+        
         // Use our simplified character endpoint
         const response = await apiRequest(
           "POST",
@@ -91,6 +94,8 @@ export const useVnData = () => {
               basics: vnContext.projectData.basicData,
               concept: vnContext.projectData.conceptData,
             },
+            // Include the user's API key if available
+            apiKey: userApiKey || undefined,
           },
           controller.signal,
         );
@@ -226,6 +231,9 @@ export const useVnData = () => {
           charactersData: vnContext.projectData.charactersData,
         };
 
+        // Get the user's API key from localStorage if available
+        const userApiKey = localStorage.getItem("user_gemini_key");
+        
         const generationResponse = await apiRequest(
           "POST",
           "/api/generate/path",
@@ -236,6 +244,8 @@ export const useVnData = () => {
               concept: vnContext.projectData.conceptData,
               characters: vnContext.projectData.charactersData,
             },
+            // Include the user's API key if available
+            apiKey: userApiKey || undefined,
           },
           controller.signal,
         );
@@ -354,16 +364,23 @@ export const useVnData = () => {
       const controller = new AbortController();
       setAbortController(controller);
 
+      // Get the user's API key from localStorage if available
+      const userApiKey = localStorage.getItem("user_gemini_key");
+      
       const generationResponse = await apiRequest(
         "POST",
         "/api/generate/plot",
-        { projectContext: {
-          // Use property names that match what the server expects
-          basicData: vnContext.projectData.basicData,
-          conceptData: vnContext.projectData.conceptData,
-          charactersData: vnContext.projectData.charactersData,
-          pathsData: vnContext.projectData.pathsData,
-        } },
+        { 
+          projectContext: {
+            // Use property names that match what the server expects
+            basicData: vnContext.projectData.basicData,
+            conceptData: vnContext.projectData.conceptData,
+            charactersData: vnContext.projectData.charactersData,
+            pathsData: vnContext.projectData.pathsData,
+          },
+          // Include the user's API key if available
+          apiKey: userApiKey || undefined,
+        },
         controller.signal,
       );
 
@@ -496,6 +513,9 @@ export const useVnData = () => {
           playerData: vnContext.playerData,
         };
 
+        // Get the user's API key from localStorage if available
+        const userApiKey = localStorage.getItem("user_gemini_key");
+        
         const generationResponse = await apiRequest(
           "POST",
           "/api/generate/act",
@@ -510,6 +530,8 @@ export const useVnData = () => {
                 pathsData: vnContext.projectData.pathsData,
                 plotData: vnContext.projectData.plotData,
               },
+            // Include the user's API key if available
+            apiKey: userApiKey || undefined,
           },
           controller.signal,
         );

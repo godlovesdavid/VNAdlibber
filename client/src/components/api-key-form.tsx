@@ -136,6 +136,16 @@ export function ApiKeyForm() {
                 </AlertDescription>
               </Alert>
               
+              <Alert className="mt-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Why do I need my own API key?</AlertTitle>
+                <AlertDescription>
+                  To make this app available to everyone while controlling costs, we ask users to provide 
+                  their own Gemini API key. Google offers generous free credits for new API users, so you can 
+                  create multiple stories without any cost.
+                </AlertDescription>
+              </Alert>
+              
               <div className="space-y-2">
                 <Label htmlFor="gemini-key">Gemini API Key</Label>
                 <div className="flex gap-2">
