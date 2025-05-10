@@ -258,7 +258,7 @@ export function VnPlayer({
       const totalLength = text.length;
 
       // Determine speed in milliseconds per character
-      const charDelay = textSpeed === "slow" ? 50 : 30; // slow = 50ms (faster than before), medium = 30ms
+      const charDelay = textSpeed === "slow" ? 40 : 20; // slow = 40ms, medium = 20ms (both faster than before)
       let lastTimeStamp = 0;
 
       const animate = (timestamp: number) => {
@@ -638,10 +638,10 @@ export function VnPlayer({
         `Text speed change event received: ${speedValue} in ${mode} mode`,
       );
 
-      // Update text speed state
-      if (speedValue === 1) {
+      // Update text speed state (updated from 1→2 and 5→7)
+      if (speedValue === 2) {
         setTextSpeed("slow");
-      } else if (speedValue === 5) {
+      } else if (speedValue === 7) {
         setTextSpeed("medium");
       } else if (speedValue === 10) {
         setTextSpeed("fast");
