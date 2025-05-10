@@ -270,8 +270,8 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog, titl
                       variant={activeTextSpeed === 'slow' ? 'default' : 'outline'} 
                       size="sm"
                       onClick={() => {
-                        // Dispatch event to set text speed (increased from 1 to 2)
-                        window.dispatchEvent(new CustomEvent('vnSetTextSpeed', { detail: 2 }));
+                        // Dispatch event to set text speed (back to original value)
+                        window.dispatchEvent(new CustomEvent('vnSetTextSpeed', { detail: 1 }));
                         // Update state to track active button
                         setActiveTextSpeed('slow');
                       }}
