@@ -773,7 +773,7 @@ export default function CharactersForm() {
                 )}
               </Button>
               
-              {/* Center the Add Character button */}
+              {/* Add Character button */}
               <div className="flex justify-center flex-grow">
                 <Button
                   onClick={addCharacter}
@@ -784,16 +784,6 @@ export default function CharactersForm() {
                   <Plus className="mr-1 h-4 w-4" /> Add Character
                 </Button>
               </div>
-              
-              {/* Reset button on the right */}
-              <Button
-                variant="outline"
-                className="border-red-300 text-red-600 hover:bg-red-50"
-                onClick={handleResetForm}
-                disabled={isGenerating}
-              >
-                Reset
-              </Button>
             </div>
 
             <div className="flex justify-between items-center pt-4">
@@ -832,7 +822,19 @@ export default function CharactersForm() {
                   </div>
                 )}
               </div>
-              <div className="flex space-x-3">
+              <div className="flex items-center space-x-3">
+                <Button onClick={handleGenerateAllCharacters} variant="secondary" disabled={isGenerating || characters.length === 0}>
+                  <Wand2 className="mr-1 h-4 w-4" />
+                  {generatingCharacterIndex === -1 && isGenerating ? "Generating All..." : "Generate All"}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-red-300 text-red-600 hover:bg-red-50"
+                  onClick={handleResetForm}
+                  disabled={isGenerating}
+                >
+                  Reset
+                </Button>
                 <Button onClick={handleNext} disabled={isValidating || isGenerating}>
                   {isValidating ? (
                     <>
