@@ -574,15 +574,15 @@ export default function CharactersForm() {
                       onChange={(e) =>
                         updateCharacter(index, "appearance", e.target.value)
                       }
-                      rows={2}
+                      rows={6}
                       placeholder="Physical description - important for character visualization"
                     />
                   </div>
                 </div>
                 
                 {/* Right column - Character portrait */}
-                <div className="flex flex-col items-center justify-center bg-gray-50 rounded-md p-3">
-                  <div className="relative w-full" style={{ aspectRatio: '2/3' }}>
+                <div className="flex flex-col items-center justify-center bg-gray-50 rounded-md">
+                  <div className="relative w-full" style={{ aspectRatio: '2/2.666' }}>
                     {characterPortraits[index] ? (
                       <img 
                         src={characterPortraits[index]} 
@@ -624,10 +624,10 @@ export default function CharactersForm() {
                   <Button
                     onClick={() => handleGeneratePortrait(index)}
                     variant="outline"
-                    className="mt-3 w-full"
+                    className="w-full"
                     disabled={generatingPortraitIndex !== null}
                   >
-                    <ImageIcon className="mr-1 h-4 w-4" />
+                    <ImageIcon className="h-4 w-4" />
                     Generate Portrait
                   </Button>
                 </div>
@@ -726,7 +726,7 @@ export default function CharactersForm() {
                     </>
                   ) : (
                     <>
-                      <Wand2 className="mr-1 h-4 w-4" /> Generate Details
+                      <Wand2 className="mr-1 h-4 w-4" /> Generate
                     </>
                   )}
                 </Button>
@@ -818,7 +818,7 @@ export default function CharactersForm() {
                       Generating All...
                     </>
                   ) : (
-                    "Generate All Characters"
+                    "Generate All"
                   )} 
                   </Button>
                 <Button
