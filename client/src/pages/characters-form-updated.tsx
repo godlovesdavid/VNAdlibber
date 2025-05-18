@@ -324,7 +324,7 @@ export default function CharactersForm() {
     // Log for debugging
     console.log('Saving characters data to context in helper:', charactersObj);
     
-    return  charactersObj ;
+    return charactersObj;
   };
 
   // Go back to previous step
@@ -349,7 +349,7 @@ export default function CharactersForm() {
     }
     
     // Save data using our helper function
-    const  charactersObj  = saveCharacterData();
+    const charactersObj = saveCharacterData();
     
     if (!projectData) {
       toast({
@@ -423,52 +423,6 @@ export default function CharactersForm() {
       setIsValidating(false);
     }
   };
-  
-  // Setup autosave
-  // useSimpleAutosave(
-  //   characters, 
-  //   (data) => {
-  //     // Skip saving if no characters
-  //     if (!data || data.length === 0) return;
-      
-  //     // Show autosaving indicator
-  //     setIsAutosaving(true);
-      
-  //     // Transform to object format for storage
-  //     const charactersObj: Record<string, Character> = {};
-      
-  //     data.forEach((char, idx) => {
-  //       // Always include the character regardless of name being present
-  //       // This ensures empty characters are preserved during autosave
-        
-  //       // Extract name but don't store it in the object
-  //       const { name, ...characterWithoutName } = char;
-        
-  //       // Remove any numeric keys that might be causing unintended nesting
-  //       const cleanCharacter = Object.entries(characterWithoutName)
-  //         .filter(([key]) => isNaN(Number(key)))
-  //         .reduce((obj, [key, value]) => {
-  //           obj[key] = value;
-  //           return obj;
-  //         }, {} as Record<string, any>) as Character;
-          
-  //       // Use character index as key if name is empty
-  //       const characterKey = name ? name : `untitled-character-${idx}`;
-  //       charactersObj[characterKey] = cleanCharacter;
-  //     });
-      
-  //     // Save to context
-  //     setCharactersData(charactersObj);
-      
-  //     // Log for debugging
-  //     console.log('Saving characters data to context:', charactersObj);
-      
-  //     // Clear autosaving indicator after a short delay
-  //     setTimeout(() => setIsAutosaving(false), 300);
-  //   },
-  //   500, 
-  //   "CharactersForm" // Log prefix
-  // );
 
   // Load existing data if available
   useEffect(() => {
@@ -542,171 +496,194 @@ export default function CharactersForm() {
                       placeholder="Character name"
                     />
                   </div>
-                
-                <div className="form-group">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Role
-                  </label>
-                  {index === 0 ? (
+                  
+                  <div className="form-group">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Role
+                    </label>
+                    {index === 0 ? (
+                      <Input
+                        placeholder="Protagonist"
+                        value="Protagonist"
+                        disabled
+                        className="bg-gray-100 text-gray-500"
+                      />
+                    ) : (
+                      <Input
+                        value={character.role}
+                        placeholder="e.g. antagonist, rival, mentor"
+                        onChange={(e) =>
+                          updateCharacter(index, "role", e.target.value)
+                        }
+                      />
+                    )}
+                  </div>
+
+                  <div className="form-group">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Occupation
+                    </label>
                     <Input
-                      placeholder="Protagonist"
-                      value="Protagonist"
-                      disabled
-                      className="bg-gray-100 text-gray-500"
-                    />
-                  ) : (
-                    <Input
-                      value={character.role}
-                      placeholder="e.g. antagonist, rival, mentor, sidekick, childhood friend, mother, hidden ally"
+                      value={character.occupation}
                       onChange={(e) =>
-                        updateCharacter(index, "role", e.target.value)
+                        updateCharacter(index, "occupation", e.target.value)
                       }
+                      placeholder="Character's job or role"
                     />
-                  )}
+                  </div>
+
+                  <div className="form-group grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Gender
+                      </label>
+                      <Input
+                        value={character.gender}
+                        onChange={(e) =>
+                          updateCharacter(index, "gender", e.target.value)
+                        }
+                        placeholder="Gender"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Age
+                      </label>
+                      <Input
+                        value={character.age}
+                        onChange={(e) =>
+                          updateCharacter(index, "age", e.target.value)
+                        }
+                        placeholder="Age"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Right column - Character portrait */}
+                <div className="flex flex-col items-center justify-center bg-gray-50 rounded-md p-3">
+                  <div className="relative w-full" style={{ aspectRatio: '2/3' }}>
+                    {characterPortraits[index] ? (
+                      <img 
+                        src={characterPortraits[index]} 
+                        alt={`Portrait of ${character.name || 'character'}`}
+                        className="w-full h-full object-cover rounded-md shadow-md"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded-md">
+                        <Image className="h-16 w-16 text-gray-400" />
+                      </div>
+                    )}
+                    
+                    {generatingPortraitIndex === index && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-md">
+                        <svg
+                          className="animate-spin h-10 w-10 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <Button
+                    onClick={() => handleGeneratePortrait(index)}
+                    variant="outline"
+                    className="mt-3 w-full"
+                    disabled={generatingPortraitIndex !== null}
+                  >
+                    <Wand2 className="mr-1 h-4 w-4" />
+                    Generate Portrait
+                  </Button>
                 </div>
 
-                <div>
-                  <label
-                    htmlFor={`occupation-${index}`}
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Occupation
-                  </label>
-                  <Input
-                    id={`occupation-${index}`}
-                    value={character.occupation}
-                    onChange={(e) =>
-                      updateCharacter(index, "occupation", e.target.value)
-                    }
-                    placeholder="Character occupation"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor={`gender-${index}`}
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Gender
-                  </label>
-                  <Input
-                    id={`gender-${index}`}
-                    value={character.gender}
-                    onChange={(e) =>
-                      updateCharacter(index, "gender", e.target.value)
-                    }
-                    placeholder="Character gender"
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor={`age-${index}`}
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Age
-                  </label>
-                  <Input
-                    id={`age-${index}`}
-                    value={character.age}
-                    onChange={(e) =>
-                      updateCharacter(index, "age", e.target.value)
-                    }
-                    placeholder="Character age"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label
-                    htmlFor={`appearance-${index}`}
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
+                {/* Full width fields */}
+                <div className="form-group md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Appearance
                   </label>
                   <Textarea
-                    id={`appearance-${index}`}
                     value={character.appearance}
                     onChange={(e) =>
                       updateCharacter(index, "appearance", e.target.value)
                     }
                     rows={2}
-                    placeholder="Describe the character's physical appearance"
+                    placeholder="Physical description - important for character visualization"
                   />
                 </div>
 
-                <div className="md:col-span-2">
-                  <label
-                    htmlFor={`personality-${index}`}
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
+                <div className="form-group md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Personality
                   </label>
                   <Textarea
-                    id={`personality-${index}`}
                     value={character.personality}
                     onChange={(e) =>
                       updateCharacter(index, "personality", e.target.value)
                     }
                     rows={2}
-                    placeholder="Describe the character's personality traits, quirks, etc."
+                    placeholder="Personality traits, strengths, weaknesses, quirks"
                   />
                 </div>
 
-                <div className="md:col-span-2">
-                  <label
-                    htmlFor={`goals-${index}`}
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Goals & Motivations
+                <div className="form-group md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Goals and Motivation
                   </label>
                   <Textarea
-                    id={`goals-${index}`}
                     value={character.goals}
                     onChange={(e) =>
                       updateCharacter(index, "goals", e.target.value)
                     }
                     rows={2}
-                    placeholder="What does the character want? What drives them?"
+                    placeholder="What drives this character? What do they want?"
                   />
                 </div>
 
-                <div className="md:col-span-2">
-                  <label
-                    htmlFor={`relationshipPotential-${index}`}
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
+                <div className="form-group md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Relationship Potential
                   </label>
                   <Textarea
-                    id={`relationshipPotential-${index}`}
                     value={character.relationshipPotential}
                     onChange={(e) =>
                       updateCharacter(
                         index,
                         "relationshipPotential",
-                        e.target.value,
+                        e.target.value
                       )
                     }
                     rows={2}
-                    placeholder="How might this character interact with or relate to others?"
+                    placeholder="How might this character interact with others? Any potential for romantic involvement?"
                   />
                 </div>
 
-                <div className="md:col-span-2">
-                  <label
-                    htmlFor={`conflict-${index}`}
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Internal/External Conflicts
+                <div className="form-group md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Conflict
                   </label>
                   <Textarea
-                    id={`conflict-${index}`}
                     value={character.conflict}
                     onChange={(e) =>
                       updateCharacter(index, "conflict", e.target.value)
                     }
                     rows={2}
-                    placeholder="What struggles does this character face?"
+                    placeholder="Internal struggles and external conflicts"
                   />
                 </div>
               </CardContent>
@@ -715,12 +692,13 @@ export default function CharactersForm() {
                   onClick={() => handleGenerateCharacter(index)}
                   variant="outline"
                   className="flex items-center text-primary border-primary hover:bg-primary/10"
-                  disabled={isGenerating}
+                  disabled={generatingCharacterIndex !== null}
                 >
+                  <Wand2 className="mr-1 h-4 w-4" />
                   {generatingCharacterIndex === index && isGenerating ? (
                     <>
                       <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary"
+                        className="animate-spin -ml-1 mr-2 h-4 w-4"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -753,19 +731,11 @@ export default function CharactersForm() {
 
           <div className="pt-6 flex flex-col space-y-4">
             <div className="flex justify-between gap-4">
-              <Button
-                onClick={addCharacter}
-                variant="secondary"
-                className="flex items-center"
-                disabled={characters.length >= 5}
-              >
-                <Plus className="mr-1 h-4 w-4" /> Add Character
-              </Button>
-
+              {/* Move Generate All Characters to the left of Reset */}
               <Button
                 onClick={handleGenerateAllCharacters}
                 variant="secondary"
-                className="flex items-center text-primary border-primary hover:bg-primary/10 ml-auto"
+                className="flex items-center text-primary border-primary hover:bg-primary/10"
                 disabled={isGenerating || characters.length === 0}
               >
                 <Wand2 className="mr-1 h-4 w-4" />
@@ -791,27 +761,50 @@ export default function CharactersForm() {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       ></path>
                     </svg>
-                    Generating...
+                    Generating All...
                   </>
                 ) : (
-                  <>Generate All Characters</>
+                  "Generate All Characters"
                 )}
               </Button>
-            </div>
-            <div className="flex justify-between">
-              <div className="flex items-center">
-                <Button 
-                  variant="outline" 
-                  onClick={handleBack}
-                  title={projectData?.conceptData ? `Back to: ${projectData.conceptData.title || 'Concept'}` : 'Back'}
+              
+              {/* Center the Add Character button */}
+              <div className="flex justify-center">
+                <Button
+                  onClick={addCharacter}
+                  variant="secondary"
+                  className="flex items-center"
+                  disabled={characters.length >= 5}
                 >
-                  Back
+                  <Plus className="mr-1 h-4 w-4" /> Add Character
                 </Button>
-                {/* Autosave indicator */}
+              </div>
+              
+              {/* Move Reset button to the right */}
+              <Button
+                variant="outline"
+                className="border-red-300 text-red-600 hover:bg-red-50"
+                onClick={handleResetForm}
+                disabled={isGenerating}
+              >
+                Reset
+              </Button>
+            </div>
+
+            <div className="flex justify-between items-center pt-4">
+              <Button
+                variant="outline"
+                onClick={handleBack}
+                disabled={isGenerating || isValidating}
+              >
+                Back
+              </Button>
+              
+              <div className="flex items-center">
                 {isAutosaving && (
-                  <div className="ml-3 flex items-center text-xs text-gray-500">
+                  <div className="flex items-center text-sm text-gray-500 mr-3">
                     <svg
-                      className="animate-spin mr-1 h-3 w-3 text-gray-500"
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-gray-500"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
@@ -835,14 +828,6 @@ export default function CharactersForm() {
                 )}
               </div>
               <div className="flex space-x-3">
-                <Button
-                  variant="outline"
-                  className="border-red-300 text-red-600 hover:bg-red-50"
-                  onClick={handleResetForm}
-                  disabled={isGenerating}
-                >
-                  Reset
-                </Button>
                 <Button onClick={handleNext} disabled={isValidating || isGenerating}>
                   {isValidating ? (
                     <>
@@ -869,24 +854,11 @@ export default function CharactersForm() {
                       Validating...
                     </>
                   ) : (
-                    "Next: Paths"
+                    "Next"
                   )}
                 </Button>
               </div>
             </div>
-
-            {isGenerating && generatingCharacterIndex !== null && (
-              <div className="pt-3 flex justify-end">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-red-600 border-red-300 hover:bg-red-50"
-                  onClick={cancelGeneration}
-                >
-                  Cancel Generation
-                </Button>
-              </div>
-            )}
           </div>
         </div>
       </div>
