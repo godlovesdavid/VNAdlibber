@@ -14,7 +14,7 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { Wand2, Trash, Plus } from "lucide-react";
+import { Wand2, Trash, Plus, Image } from "lucide-react";
 import { Character } from "@/types/vn";
 import { useToast } from "@/hooks/use-toast";
 import { useSimpleAutosave } from "@/lib/autosave";
@@ -58,6 +58,12 @@ export default function CharactersForm() {
   
   // Track which character is being generated
   const [generatingCharacterIndex, setGeneratingCharacterIndex] = useState<number | null>(null);
+  
+  // Track portrait generation for each character
+  const [generatingPortraitIndex, setGeneratingPortraitIndex] = useState<number | null>(null);
+  
+  // Store character portraits
+  const [characterPortraits, setCharacterPortraits] = useState<Record<number, string>>({});
   
   // Autosave indicator state
   const [isAutosaving, setIsAutosaving] = useState(false);
