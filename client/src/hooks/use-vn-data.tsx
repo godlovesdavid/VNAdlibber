@@ -20,56 +20,6 @@ export const useVnData = () => {
   // For batch operations we'll use a separate controller
   const [batchMode, setBatchMode] = useState(false);
   const vnContext = useVnContext();
-  
-  // Helper function to check if an error is related to API key issues
-  const checkForApiKeyError = (errorMessage: string) => {
-    // Check for common API key related error messages
-    const apiKeyErrorPatterns = [
-      "api key",
-      "apikey",
-      "authentication",
-      "auth",
-      "unauthorized",
-      "401",
-      "403",
-      "invalid key",
-      "key not valid",
-      "credential"
-    ];
-    
-    const lowerCaseMsg = errorMessage.toLowerCase();
-    const isApiKeyError = apiKeyErrorPatterns.some(pattern => 
-      lowerCaseMsg.includes(pattern.toLowerCase())
-    );
-    
-    if (isApiKeyError) {
-      // Show a helpful message directing the user to the settings page
-      toast({
-        title: "API Key Required",
-        description: (
-          <div>
-            <p>This request requires a valid Gemini API key.</p>
-            <p className="mt-2">
-              <a 
-                href="/settings" 
-                className="font-medium underline cursor-pointer"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = '/settings';
-                }}
-              >
-                Go to Settings to add your API key
-              </a>
-            </p>
-          </div>
-        ),
-        variant: "destructive",
-        duration: 10000,
-      });
-      return true;
-    }
-    return false;
-  };
 
   // Generate concept using AI
   const generateConceptData = useCallback(async () => {
@@ -131,9 +81,6 @@ export const useVnData = () => {
 
         console.log("Generating single character with data:", partialCharacter);
 
-        // Get the user's API key from localStorage if available
-        const userApiKey = localStorage.getItem("user_gemini_key");
-        
         // Use our simplified character endpoint
         const response = await apiRequest(
           "POST",
@@ -144,8 +91,6 @@ export const useVnData = () => {
               basics: vnContext.projectData.basicData,
               concept: vnContext.projectData.conceptData,
             },
-            // Include the user's API key if available
-            apiKey: userApiKey || undefined,
           },
           controller.signal,
         );
@@ -240,13 +185,6 @@ export const useVnData = () => {
           } catch (parseError) {
             console.error("Failed to parse error data:", parseError);
           }
-          
-          // Check if this is an API key related error
-          const isApiKeyIssue = checkForApiKeyError(errorMsg);
-          if (isApiKeyIssue) {
-            // Already showed a specialized message, so return early
-            return null;
-          }
 
           toast({
             title: title,
@@ -288,9 +226,6 @@ export const useVnData = () => {
           charactersData: vnContext.projectData.charactersData,
         };
 
-        // Get the user's API key from localStorage if available
-        const userApiKey = localStorage.getItem("user_gemini_key");
-        
         const generationResponse = await apiRequest(
           "POST",
           "/api/generate/path",
@@ -301,8 +236,6 @@ export const useVnData = () => {
               concept: vnContext.projectData.conceptData,
               characters: vnContext.projectData.charactersData,
             },
-            // Include the user's API key if available
-            apiKey: userApiKey || undefined,
           },
           controller.signal,
         );
@@ -388,13 +321,6 @@ export const useVnData = () => {
           } catch (parseError) {
             console.error("Failed to parse error response:", parseError);
           }
-          
-          // Check if this is an API key related error
-          const isApiKeyIssue = checkForApiKeyError(errorMsg);
-          if (isApiKeyIssue) {
-            // Already showed a specialized message, so return early
-            return null;
-          }
 
           toast({
             title: title,
@@ -428,23 +354,16 @@ export const useVnData = () => {
       const controller = new AbortController();
       setAbortController(controller);
 
-      // Get the user's API key from localStorage if available
-      const userApiKey = localStorage.getItem("user_gemini_key");
-      
       const generationResponse = await apiRequest(
         "POST",
         "/api/generate/plot",
-        { 
-          projectContext: {
-            // Use property names that match what the server expects
-            basicData: vnContext.projectData.basicData,
-            conceptData: vnContext.projectData.conceptData,
-            charactersData: vnContext.projectData.charactersData,
-            pathsData: vnContext.projectData.pathsData,
-          },
-          // Include the user's API key if available
-          apiKey: userApiKey || undefined,
-        },
+        { projectContext: {
+          // Use property names that match what the server expects
+          basicData: vnContext.projectData.basicData,
+          conceptData: vnContext.projectData.conceptData,
+          charactersData: vnContext.projectData.charactersData,
+          pathsData: vnContext.projectData.pathsData,
+        } },
         controller.signal,
       );
 
@@ -516,13 +435,6 @@ export const useVnData = () => {
             console.error("Failed to extract error details from:", error);
             errorMsg = "Unknown error during plot generation. See console for details.";
           }
-          
-          // Check if this is an API key related error
-          const isApiKeyIssue = checkForApiKeyError(errorMsg);
-          if (isApiKeyIssue) {
-            // Already showed a specialized message, so return early
-            return null;
-          }
         } catch (parseError) {
           console.error("Failed to parse error data:", parseError);
           errorMsg = "Error parsing error details. See console logs.";
@@ -584,9 +496,6 @@ export const useVnData = () => {
           playerData: vnContext.playerData,
         };
 
-        // Get the user's API key from localStorage if available
-        const userApiKey = localStorage.getItem("user_gemini_key");
-        
         const generationResponse = await apiRequest(
           "POST",
           "/api/generate/act",
@@ -601,8 +510,6 @@ export const useVnData = () => {
                 pathsData: vnContext.projectData.pathsData,
                 plotData: vnContext.projectData.plotData,
               },
-            // Include the user's API key if available
-            apiKey: userApiKey || undefined,
           },
           controller.signal,
         );
@@ -665,13 +572,6 @@ export const useVnData = () => {
             if (!errorMsg) {
               console.error("Failed to extract error details from:", error);
               errorMsg = `Unknown error during Act ${actNumber} generation. See console for details.`;
-            }
-            
-            // Check if this is an API key related error
-            const isApiKeyIssue = checkForApiKeyError(errorMsg);
-            if (isApiKeyIssue) {
-              // Already showed a specialized message, so return early
-              return null;
             }
           } catch (parseError) {
             console.error("Failed to parse error data:", parseError);
@@ -1036,8 +936,6 @@ export const useVnData = () => {
     [vnContext.projectData, toast],
   );
 
-
-  
   // Cancel ongoing generation
   const cancelGeneration = useCallback(() => {
     toast({

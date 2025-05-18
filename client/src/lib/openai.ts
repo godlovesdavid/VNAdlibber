@@ -9,16 +9,10 @@ export async function generateConcept(
   params: { theme: string; tone: string; genre: string; setting?: string },
   signal?: AbortSignal,
 ): Promise<GenerationResult<any>> {
-  // Get the user's API key from localStorage if available
-  const userApiKey = localStorage.getItem("user_gemini_key");
-  
   const response = await apiRequest(
     "POST",
     "/api/generate/concept",
-    { 
-      basicData: params,
-      apiKey: userApiKey || undefined, 
-    },
+    { basicData: params },
     signal,
   );
   const data = await response.json();

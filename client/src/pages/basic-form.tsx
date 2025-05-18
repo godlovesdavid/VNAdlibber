@@ -33,7 +33,7 @@ const genres = [
   "mystery",
   "romance",
   "sci_fi",
-  "action_adventure",
+  "adventure",
   "slice_of_life",
   "thriller",
   "comedy",
@@ -51,22 +51,12 @@ const themes = [
   "technology_vs_humanity",
   "sacrifice",
   "trust_and_betrayal",
-  "friendship_and_loyalty",
-  "loss_and_grief",
-  "courage_and_fear",
-  "deception_vs_truth",
-  "survival",
-  "redemption",
-  "destiny_vs_free_will",
-  "family_and_heritage",
-  "power_and_corruption",
-  "hope_and_despair",
-  "choices_and_consequences",
 ];
 
 const settings = [
   "cyberpunk_world",
   "steampunk_world",
+  "noir_setting",
   "modern_day",
   "school",
   "history",
@@ -119,7 +109,7 @@ export default function BasicForm() {
 
   //save and return buttons
   useEffect(() => {
-    const returnHandler = () => {
+    const returnButtonHandler = () => {
       if (projectData) 
       {
         setBasicData({
@@ -140,7 +130,7 @@ export default function BasicForm() {
         setLocation("/")
       }
     }
-    const saveHandler = () => {
+    const saveFormHandler = () => {
       if (projectData )
         saveProject({...projectData, basicData: {
                       theme,
@@ -149,12 +139,12 @@ export default function BasicForm() {
                       setting,
                     }, currentStep: 1});
     }
-    document.addEventListener("return", returnHandler);
-    document.addEventListener("save", saveHandler);
+    document.addEventListener("return", returnButtonHandler);
+    document.addEventListener("save", saveFormHandler);
 
     return () => {
-      document.removeEventListener("return", returnHandler);
-      document.removeEventListener("save", saveHandler);
+      document.removeEventListener("return", returnButtonHandler);
+      document.removeEventListener("save", saveFormHandler);
     };
   }, [theme, tone, genre, setting]);
 
@@ -355,7 +345,7 @@ export default function BasicForm() {
                         <SelectItem value="mystery">mystery</SelectItem>
                         <SelectItem value="romance">romance</SelectItem>
                         <SelectItem value="sci_fi">sci-fi</SelectItem>
-                        <SelectItem value="action_adventure">action/adventure</SelectItem>
+                        <SelectItem value="adventure">adventure</SelectItem>
                         <SelectItem value="slice_of_life">
                           slice of life
                         </SelectItem>
@@ -377,25 +367,24 @@ export default function BasicForm() {
                       </SelectTrigger>
                       <SelectContent className="min-w-[200px]">
                         <SelectItem value="forgiveness">forgiveness</SelectItem>
-                        <SelectItem value="freedom_vs_control">freedom vs control</SelectItem>
+                        <SelectItem value="freedom_vs_control">
+                          freedom vs control
+                        </SelectItem>
                         <SelectItem value="growth">growth</SelectItem>
                         <SelectItem value="identity">identity</SelectItem>
-                        <SelectItem value="love_vs_duty">love vs duty</SelectItem>
-                        <SelectItem value="revenge_and_justice">revenge & justice</SelectItem>
-                        <SelectItem value="technology_vs_humanity">tech vs humanity</SelectItem>
+                        <SelectItem value="love_vs_duty">
+                          love vs duty
+                        </SelectItem>
+                        <SelectItem value="revenge_and_justice">
+                          revenge & justice
+                        </SelectItem>
+                        <SelectItem value="technology_vs_humanity">
+                          tech vs humanity
+                        </SelectItem>
                         <SelectItem value="sacrifice">sacrifice</SelectItem>
-                        <SelectItem value="trust_and_betrayal">trust & betrayal</SelectItem>
-                        <SelectItem value="friendship_and_loyalty">friendship & loyalty</SelectItem>
-                        <SelectItem value="loss_and_grief">loss & grief</SelectItem>
-                        <SelectItem value="courage_and_fear">courage & fear</SelectItem>
-                        <SelectItem value="deception_vs_truth">deception vs truth</SelectItem>
-                        <SelectItem value="survival">survival</SelectItem>
-                        <SelectItem value="redemption">redemption</SelectItem>
-                        <SelectItem value="destiny_vs_free_will">destiny vs free will</SelectItem>
-                        <SelectItem value="family_and_heritage">family & heritage</SelectItem>
-                        <SelectItem value="power_and_corruption">power & corruption</SelectItem>
-                        <SelectItem value="hope_and_despair">hope & despair</SelectItem>
-                        <SelectItem value="choices_and_consequences">choices & consequences</SelectItem>
+                        <SelectItem value="trust_and_betrayal">
+                          trust & betrayal
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -414,6 +403,9 @@ export default function BasicForm() {
                         </SelectItem>
                         <SelectItem value="steampunk_world">
                           steampunk world
+                        </SelectItem>
+                        <SelectItem value="noir_setting">
+                          noir setting
                         </SelectItem>
                         <SelectItem value="modern_day">modern day</SelectItem>
                         <SelectItem value="school">school</SelectItem>

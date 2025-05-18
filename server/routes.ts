@@ -23,15 +23,11 @@ async function generateWithGemini(
   responseFormat = "JSON",
   maxOutputTokens = 4096, // Reduced from 8192 to optimize throughput and capacity
   isPro = false,
-  userProvidedApiKey: string | null = null, // Optional user-provided API key
 ) {
   try {
-    // Use the user-provided API key if available, otherwise fall back to the server's API key
-    const apiKey = userProvidedApiKey || GEMINI_API_KEY;
-    
     const headers = {
       "Content-Type": "application/json",
-      "x-goog-api-key": apiKey,
+      "x-goog-api-key": GEMINI_API_KEY,
     };
 
     // Add strict JSON formatting instructions
@@ -134,19 +130,16 @@ const generateConceptSchema = z.object({
     genre: z.string(),
     setting: z.string(),
   }),
-  apiKey: z.string().optional(), // Optional user-provided API key
 });
 
 const generatePlotSchema = z.object({
   projectContext: z.any(),
-  apiKey: z.string().optional(), // Optional user-provided API key
 });
 
 const generateActSchema = z.object({
   actNumber: z.number(),
   scenesCount: z.number(),
   projectContext: z.any(),
-  apiKey: z.string().optional(), // Optional user-provided API key
 });
 
 
@@ -177,62 +170,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Apply rate limiters to AI generation endpoints
   app.use(["/api/generate/concept", "/api/generate/plot", "/api/generate/path", "/api/generate/character", "/api/generate/act"], aiGenerationLimiter);
   app.use("/api/generate/image", imageLimiter);
-  
-  // Endpoint to validate a Gemini API key
-  app.post("/api/validate-key", async (req, res) => {
-    try {
-      const { key } = req.body;
-      
-      if (!key) {
-        return res.status(400).json({ error: "API key is required" });
-      }
-      
-      // Use a simple test prompt to validate the key
-      try {
-        // We'll use the generateWithGemini function with a simple prompt
-        const result = await generateWithGemini(
-          "Test prompt to validate API key functionality.",
-          "You are a helpful assistant. Respond with 'API key is valid' to validate the key.",
-          "TEXT",
-          50, // Small output for faster validation
-          false, // Use non-pro endpoint
-          key // Use the provided API key
-        );
-        
-        return res.json({ 
-          valid: true, 
-          message: "API key is valid and working correctly." 
-        });
-      } catch (apiError: any) {
-        console.log("API validation error:", apiError.message);
-        
-        // Check if the error is related to authentication
-        if (apiError.message && (
-            apiError.message.includes("API key") || 
-            apiError.message.includes("authentication") ||
-            apiError.message.includes("key not valid") ||
-            apiError.message.includes("Invalid key") ||
-            apiError.message.includes("Unauthorized") ||
-            apiError.message.includes("403")
-          )) {
-          return res.status(401).json({ 
-            valid: false, 
-            message: "Invalid API key. Please check your key and try again."
-          });
-        }
-        
-        // For other API errors, the key might still be valid
-        return res.status(500).json({ 
-          error: "Could not validate the API key. The key might be valid, but encountered an error during testing."
-        });
-      }
-    } catch (error) {
-      console.error("Server error validating API key:", error);
-      return res.status(500).json({ 
-        error: "Failed to validate API key due to a server error."
-      });
-    }
-  });
 
   // Project CRUD operations
   // OpenAI endpoint has been removed in favor of RunPod
@@ -691,7 +628,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI Generation endpoints
   app.post("/api/generate/concept", async (req, res) => {
     try {
-      const { basicData, apiKey } = generateConceptSchema.parse(req.body);
+      const { basicData } = generateConceptSchema.parse(req.body);
       // Create prompt for the concept generation - directly matching our expected format
       const prompt = `Write a visual novel concept of a ${basicData.tone.replace(/_/g, ' ')} ${basicData.genre.replace(/_/g, ' ')} about ${basicData.theme.replace(/_/g, ' ')} set in ${basicData.setting.replace(/_/g, ' ')}.
         Return in this JSON format:
@@ -705,14 +642,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use Gemini to generate the concept
       const systemPrompt =
         "You're a visual novel brainstormer with wildly creative ideas";
-      const responseContent = await generateWithGemini(
-        prompt, 
-        systemPrompt,
-        "JSON",
-        4096,
-        false,
-        apiKey // Use user-provided API key if available
-      );
+      const responseContent = await generateWithGemini(prompt, systemPrompt);
       
       // Try to parse response
       try {
@@ -761,7 +691,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Character generation endpoint
   app.post("/api/generate/character", async (req, res) => {
     try {
-      const { characterTemplates, projectContext, apiKey } = req.body;
+      const { characterTemplates, projectContext } = req.body;
 
       // Create indices array based on the number of templates
       const indices = Array.from(
@@ -801,14 +731,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate characters using Gemini
       const systemPrompt =
         "You're a visual novel brainstormer with wildly creative ideas";
-      const responseContent = await generateWithGemini(
-        prompt, 
-        systemPrompt,
-        "JSON", 
-        8192,
-        false,
-        apiKey // Use user-provided API key if available
-      );
+      const responseContent = await generateWithGemini(prompt, systemPrompt);
 
       console.log("Raw response from Gemini:", responseContent);
 
@@ -854,7 +777,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Path generation endpoint - renamed from paths to path
   app.post("/api/generate/path", async (req, res) => {
     try {
-      const { pathTemplates, projectContext, apiKey } = req.body;
+      const { pathTemplates, projectContext } = req.body;
 
       // Create indices array based on the number of templates
       const indices = Array.from({ length: pathTemplates.length }, (_, i) => i);
@@ -889,14 +812,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate paths using Gemini
       const systemPrompt =
         "You're a visual novel brainstormer with wildly creative ideas";
-      const responseContent = await generateWithGemini(
-        prompt, 
-        systemPrompt, 
-        "JSON", 
-        8192,
-        false,
-        apiKey // Use user-provided API key if available
-      );
+      const responseContent = await generateWithGemini(prompt, systemPrompt);
 
       // Try to parse response
       try {
@@ -939,7 +855,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/generate/plot", async (req, res) => {
     try {
-      const { projectContext, apiKey } = generatePlotSchema.parse(req.body);
+      const { projectContext } = generatePlotSchema.parse(req.body);
 
       // Create prompt for the plot generation - directly matching our expected format
       const prompt = `Given this story context:
@@ -967,14 +883,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate plot using Gemini
       const systemPrompt =
         "You're a visual novel brainstormer with wildly creative ideas";
-      const responseContent = await generateWithGemini(
-        prompt, 
-        systemPrompt,
-        "JSON",
-        8192,
-        false,
-        apiKey // Use user-provided API key if available
-      );
+      const responseContent = await generateWithGemini(prompt, systemPrompt);
 
       // Try to parse response
       try {
@@ -1016,7 +925,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/generate/act", async (req, res) => {
     try {
-      const { actNumber, scenesCount, projectContext, apiKey } =
+      const { actNumber, scenesCount, projectContext } =
         generateActSchema.parse(req.body);
 
       // Create prompt for the act generation - simplified {scene1: {...}} format
@@ -1083,8 +992,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         systemPrompt,
         "JSON",
         65536,
-        false, // Use non-pro endpoint
-        apiKey // User-provided API key or undefined for server key
+        // true,
       );
 
       // Try to parse response
