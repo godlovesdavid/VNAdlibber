@@ -7,6 +7,8 @@ import { NavBar } from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { MinimalInput } from "@/components/ui/minimal-input";
+import { MinimalTextarea } from "@/components/ui/minimal-textarea";
 import {
   Card,
   CardContent,
@@ -486,36 +488,30 @@ export default function CharactersForm() {
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                 {/* Left column - Short fields */}
                 <div className="space-y-4">
-                  <div>
-                    <label
-                      htmlFor={`name-${index}`}
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Name
-                    </label>
-                    <Input
+                  <div className="mb-2">
+                    <MinimalInput
                       id={`name-${index}`}
+                      label="Name"
                       value={character.name}
                       onChange={(e) =>
                         updateCharacter(index, "name", e.target.value)
                       }
-                      placeholder="Character name"
+                      placeholder="Enter character name"
                     />
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Role
-                    </label>
+                  <div className="mb-2">
                     {index === 0 ? (
-                      <Input
+                      <MinimalInput
+                        label="Role"
                         placeholder="Protagonist"
                         value="Protagonist"
                         disabled
-                        className="bg-gray-100 text-gray-500"
+                        className="bg-gray-50 text-gray-500"
                       />
                     ) : (
-                      <Input
+                      <MinimalInput
+                        label="Role"
                         value={character.role}
                         placeholder="e.g. antagonist, rival, mentor"
                         onChange={(e) =>
@@ -525,11 +521,9 @@ export default function CharactersForm() {
                     )}
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Occupation
-                    </label>
-                    <Input
+                  <div className="mb-2">
+                    <MinimalInput
+                      label="Occupation"
                       value={character.occupation}
                       onChange={(e) =>
                         updateCharacter(index, "occupation", e.target.value)
@@ -538,12 +532,10 @@ export default function CharactersForm() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-2 mb-2">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Gender
-                      </label>
-                      <Input
+                      <MinimalInput
+                        label="Gender"
                         value={character.gender}
                         onChange={(e) =>
                           updateCharacter(index, "gender", e.target.value)
@@ -552,10 +544,8 @@ export default function CharactersForm() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Age
-                      </label>
-                      <Input
+                      <MinimalInput
+                        label="Age"
                         value={character.age}
                         onChange={(e) =>
                           updateCharacter(index, "age", e.target.value)
