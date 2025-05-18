@@ -570,7 +570,7 @@ export default function CharactersForm() {
                 
                 {/* Right column - Character portrait */}
                 <div className="flex flex-col items-center justify-center bg-gray-50 rounded-md">
-                  <div className="relative w-full" style={{ aspectRatio: '2/2.666' }}>
+                  <div className="relative w-full" style={{ aspectRatio: '1/1.1' }}>
                     {characterPortraits[index] ? (
                       <img 
                         src={characterPortraits[index]} 
@@ -646,19 +646,25 @@ export default function CharactersForm() {
                 </div>
 
                 <div className="md:col-span-2 mb-3">
-                  <MinimalTextarea
-                    label="Relationship Potential"
-                    value={character.relationshipPotential}
-                    onChange={(e) =>
-                      updateCharacter(
-                        index,
-                        "relationshipPotential",
-                        e.target.value
-                      )
-                    }
-                    rows={2}
-                    placeholder="How might this character interact with others? Any potential for romantic involvement?"
-                  />
+                  {index === 0 ? (<MinimalTextarea
+                                   label="Relationship Potential"
+                                   value="N/A"
+                                   rows={2}
+                                    disabled
+                                 />) : (
+                    <MinimalTextarea
+                      label="Relationship Potential"
+                      value={character.relationshipPotential}
+                      onChange={(e) =>
+                        updateCharacter(
+                          index,
+                          "relationshipPotential",
+                          e.target.value
+                        )
+                      }
+                      rows={2}
+                      placeholder="Friend or foe? Romanceable?"
+                    />)}
                 </div>
 
                 <div className="md:col-span-2 mb-3">
@@ -706,7 +712,7 @@ export default function CharactersForm() {
                     </>
                   ) : (
                     <>
-                      <Wand2 className="mr-1 h-4 w-4" /> Generate
+                      <Wand2 className="mr-1 h-4 w-4" /> Generate!
                     </>
                   )}
                 </Button>
