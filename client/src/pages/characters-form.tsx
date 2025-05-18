@@ -564,6 +564,20 @@ export default function CharactersForm() {
                       />
                     </div>
                   </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Appearance
+                    </label>
+                    <Textarea
+                      value={character.appearance}
+                      onChange={(e) =>
+                        updateCharacter(index, "appearance", e.target.value)
+                      }
+                      rows={2}
+                      placeholder="Physical description - important for character visualization"
+                    />
+                  </div>
                 </div>
                 
                 {/* Right column - Character portrait */}
@@ -619,20 +633,6 @@ export default function CharactersForm() {
                 </div>
 
                 {/* Full width fields */}
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Appearance
-                  </label>
-                  <Textarea
-                    value={character.appearance}
-                    onChange={(e) =>
-                      updateCharacter(index, "appearance", e.target.value)
-                    }
-                    rows={2}
-                    placeholder="Physical description - important for character visualization"
-                  />
-                </div>
-
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Personality
