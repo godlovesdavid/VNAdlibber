@@ -270,21 +270,16 @@ export default function ConceptForm() {
 
             {/* Premise */}
             <div className="form-group">
-              <label
-                htmlFor="premise"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Premise
-              </label>
               <p className="text-xs text-gray-500 mb-2">
                 Brief description of your story's setting and central conflict
               </p>
-              <Textarea
+              <MinimalTextarea
                 id="premise"
+                label="Premise"
                 rows={4}
                 placeholder="e.g. In a city where memories can be traded like currency, a young archivist discovers a forbidden memory that reveals a conspiracy at the heart of society. As they navigate a web of deception, they must choose between exposing the truth or protecting those they love."
                 value={premise}
-                /* onChange={(e) => handleFieldChange('premise', e.target.value)} */
+                onChange={(e) => setPremise(e.target.value)}
               />
             </div>
 
