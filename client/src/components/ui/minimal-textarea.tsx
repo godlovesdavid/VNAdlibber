@@ -11,7 +11,7 @@ const MinimalTextarea = React.forwardRef<HTMLTextAreaElement, MinimalTextareaPro
     return (
       <div className="relative w-full">
         {label && (
-          <label className="absolute left-2 top-1 text-xs font-medium text-gray-500 z-10">
+          <label className="absolute left-2 top-1 text-xs font-medium text-black z-10">
             {label}
           </label>
         )}

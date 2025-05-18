@@ -7,6 +7,8 @@ import { NavBar } from "@/components/nav-bar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { MinimalInput } from "@/components/ui/minimal-input";
+import { MinimalTextarea } from "@/components/ui/minimal-textarea";
 import { Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { validateFormContent } from "@/lib/validation";
@@ -240,39 +242,29 @@ export default function ConceptForm() {
           <div className="space-y-6">
             {/* Title */}
             <div className="form-group">
-              <label
-                htmlFor="title"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Title
-              </label>
               <p className="text-xs text-gray-500 mb-2">
                 Create a memorable title for your visual novel
               </p>
-              <Input
+              <MinimalInput
                 id="title"
+                label="Title"
                 placeholder="e.g. Chronicles of the Hidden City"
                 value={title}
-                /* onChange={(e) => handleFieldChange('title', e.target.value)} */
+                onChange={(e) => setTitle(e.target.value)}
               />
             </div>
 
             {/* Tagline */}
             <div className="form-group">
-              <label
-                htmlFor="tagline"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Tagline
-              </label>
               <p className="text-xs text-gray-500 mb-2">
                 A single sentence that captures the essence of your story
               </p>
-              <Input
+              <MinimalInput
                 id="tagline"
+                label="Tagline"
                 placeholder="e.g. When secrets become weapons, who can you trust?"
                 value={tagline}
-                /* onChange={(e) => handleFieldChange('tagline', e.target.value)} */
+                onChange={(e) => setTagline(e.target.value)}
               />
             </div>
 
