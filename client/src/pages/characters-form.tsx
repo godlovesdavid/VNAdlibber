@@ -234,6 +234,53 @@ export default function CharactersForm() {
       // Construct a portrait prompt based on character details
       const prompt = `Generate a 2:3 portrait of ${character.name}, a ${character.age}-year-old ${character.gender} ${character.occupation}. ${character.appearance}`;
       
+      // In a real implementation, you would call your image generation API here
+      // For example:
+      // const response = await apiRequest("POST", "/api/generate/portrait", { prompt });
+      // const portraitUrl = await response.json();
+      
+      // For now, use a placeholder
+      const mockPortraitUrl = 'https://via.placeholder.com/600x900?text=Character+Portrait';
+      setCharacterPortraits(prev => ({
+        ...prev,
+        [index]: mockPortraitUrl
+      }));
+      
+      toast({
+        title: "Portrait Generated",
+        description: "Character portrait has been generated successfully.",
+      });
+    } catch (error) {
+      console.error("Error generating portrait:", error);
+      toast({
+        title: "Generation Error",
+        description: "Failed to generate character portrait. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setGeneratingPortraitIndex(null);
+    }
+  };
+  
+  // Generate character portrait using AI
+  const handleGeneratePortrait = async (index: number) => {
+    // Need at least basic character details to generate a portrait
+    const character = characters[index];
+    if (!character.name || !character.appearance) {
+      toast({
+        title: "Missing Details",
+        description: "Please provide at least a name and appearance description before generating a portrait.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setGeneratingPortraitIndex(index);
+    
+    try {
+      // Construct a portrait prompt based on character details
+      const prompt = `Generate a 2:3 portrait of ${character.name}, a ${character.age}-year-old ${character.gender} ${character.occupation}. ${character.appearance}`;
+      
       // This is a placeholder for the actual API call
       // In a real implementation, you would call your image generation API here
       // const response = await apiRequest("POST", "/api/generate/portrait", { prompt });
