@@ -14,12 +14,11 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { Wand2, Trash, Plus, Image } from "lucide-react";
+import { Wand2, Trash, Plus, ImageIcon } from "lucide-react";
 import { Character } from "@/types/vn";
 import { useToast } from "@/hooks/use-toast";
 import { useSimpleAutosave } from "@/lib/autosave";
 import { apiRequest } from "@/lib/queryClient";
-import { json } from "express";
 
 export default function CharactersForm() {
   const [location, setLocation] = useLocation();
@@ -129,9 +128,6 @@ export default function CharactersForm() {
     // Reset to a single empty character form
     setCharacters([defaultCharacter]);
     
-    // Save empty data to context
-    // setCharactersData({});
-    
     // Show toast notification
     toast({
       title: "Form Reset",
@@ -140,15 +136,55 @@ export default function CharactersForm() {
     });
   };
 
+  // Helper function to save character data
+  const saveCharacterData = (justReturnObj: boolean = false) => {
+    // Transform array to object format
+    const charactersObj: Record<string, Character> = {};
+
+    characters.forEach((char) => {
+      if (!char.name) return; // Skip characters without a name
+      
+      // Extract name but don't store it in the object
+      const { name, ...characterWithoutName } = char;
+        
+      // Remove any numeric keys that might be causing unintended nesting
+      const cleanCharacter = Object.entries(characterWithoutName)
+        .filter(([key]) => isNaN(Number(key)))
+        .reduce((obj, [key, value]) => {
+          obj[key] = value;
+          return obj;
+        }, {} as Record<string, any>) as Character;
+          
+      charactersObj[name] = cleanCharacter;
+    });
+
+    // Set the characters data
+    if (!justReturnObj) {
+      setCharactersData(charactersObj);
+    }
+    
+    // Log for debugging
+    console.log('Saving characters data to context in helper:', charactersObj);
+    
+    return charactersObj;
+  };
+
   //save and return buttons
   useEffect(() => {
     const returnButtonHandler = () => {
-        (projectData && hasUnsavedChanges({...projectData, charactersData: saveCharacterData(), currentStep: 3})? setConfirmDialogOpen(true) : setLocation("/")) 
-    }
+      if (projectData && hasUnsavedChanges({...projectData, charactersData: saveCharacterData(true), currentStep: 3})) {
+        setConfirmDialogOpen(true);
+      } else {
+        setLocation("/");
+      }
+    };
+    
     const saveFormHandler = () => {
-      if (projectData) 
+      if (projectData) {
         saveProject({...projectData, charactersData: saveCharacterData(true), currentStep: 3});
-    }
+      }
+    };
+    
     document.addEventListener("return", returnButtonHandler);
     document.addEventListener("save", saveFormHandler);
 
@@ -156,8 +192,7 @@ export default function CharactersForm() {
       document.removeEventListener("return", returnButtonHandler);
       document.removeEventListener("save", saveFormHandler);
     };
-  }, [characters]);
-
+  }, [characters, projectData, saveProject, hasUnsavedChanges, setConfirmDialogOpen, setLocation]);
   
   // Update character field with name uniqueness check
   const updateCharacter = (
@@ -232,29 +267,30 @@ export default function CharactersForm() {
     
     try {
       // Construct a portrait prompt based on character details
-      const prompt = `Generate a 2:3 portrait of ${character.name}, a ${character.age}-year-old ${character.gender} ${character.occupation}. ${character.appearance}`;
+      const prompt = `Generate a 2:3 portrait of ${character.name}, a ${character.age ? character.age + '-year-old ' : ''}${character.gender} ${character.occupation}. ${character.appearance}`;
       
-      // This is a placeholder for the actual API call
-      // In a real implementation, you would call your image generation API here
-      // const response = await apiRequest("POST", "/api/generate/portrait", { prompt });
-      // const portraitUrl = await response.json();
+      // Call the server API to generate a portrait
+      const response = await apiRequest("POST", "/api/generate/portrait", { prompt });
+      const portraitData = await response.json();
       
-      // For now, just update state with a placeholder
-      const mockPortraitUrl = 'https://via.placeholder.com/600x900?text=Character+Portrait';
-      setCharacterPortraits(prev => ({
-        ...prev,
-        [index]: mockPortraitUrl
-      }));
-      
-      toast({
-        title: "Portrait Generated",
-        description: "Character portrait has been generated successfully.",
-      });
+      if (portraitData && portraitData.imageUrl) {
+        setCharacterPortraits(prev => ({
+          ...prev,
+          [index]: portraitData.imageUrl
+        }));
+        
+        toast({
+          title: "Portrait Generated",
+          description: "Character portrait has been generated successfully."
+        });
+      } else {
+        throw new Error("Failed to generate portrait");
+      }
     } catch (error) {
       console.error("Error generating portrait:", error);
       toast({
         title: "Generation Error",
-        description: "Failed to generate character portrait. Please try again.",
+        description: "Failed to generate character portrait. Please check your API configuration.",
         variant: "destructive"
       });
     } finally {
@@ -297,39 +333,9 @@ export default function CharactersForm() {
     }
   };
 
-  // Helper function to save character data
-  const saveCharacterData = (justReturnObj: Boolean = false) => {
-    // Transform array to object format
-    const charactersObj: Record<string, Character> = {};
-
-    characters.forEach((char) => {
-      // Extract name but don't store it in the object
-      const { name, ...characterWithoutName } = char;
-        
-      // Remove any numeric keys that might be causing unintended nesting
-      const cleanCharacter = Object.entries(characterWithoutName)
-        .filter(([key]) => isNaN(Number(key)))
-        .reduce((obj, [key, value]) => {
-          obj[key] = value;
-          return obj;
-        }, {} as Record<string, any>) as Character;
-          
-      charactersObj[name] = cleanCharacter;
-    });
-
-    // Set the characters data
-    if (!justReturnObj)
-      setCharactersData(charactersObj);
-    
-    // Log for debugging
-    console.log('Saving characters data to context in helper:', charactersObj);
-    
-    return charactersObj;
-  };
-
   // Go back to previous step
   const handleBack = () => {
-    saveCharacterData()
+    saveCharacterData();
     // Navigate to previous step
     goToStep(2);
   };
@@ -497,7 +503,7 @@ export default function CharactersForm() {
                     />
                   </div>
                   
-                  <div className="form-group">
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Role
                     </label>
@@ -519,7 +525,7 @@ export default function CharactersForm() {
                     )}
                   </div>
 
-                  <div className="form-group">
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Occupation
                     </label>
@@ -532,7 +538,7 @@ export default function CharactersForm() {
                     />
                   </div>
 
-                  <div className="form-group grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Gender
@@ -571,7 +577,7 @@ export default function CharactersForm() {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded-md">
-                        <Image className="h-16 w-16 text-gray-400" />
+                        <ImageIcon className="h-16 w-16 text-gray-400" />
                       </div>
                     )}
                     
@@ -607,13 +613,13 @@ export default function CharactersForm() {
                     className="mt-3 w-full"
                     disabled={generatingPortraitIndex !== null}
                   >
-                    <Wand2 className="mr-1 h-4 w-4" />
+                    <ImageIcon className="mr-1 h-4 w-4" />
                     Generate Portrait
                   </Button>
                 </div>
 
                 {/* Full width fields */}
-                <div className="form-group md:col-span-2">
+                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Appearance
                   </label>
@@ -627,7 +633,7 @@ export default function CharactersForm() {
                   />
                 </div>
 
-                <div className="form-group md:col-span-2">
+                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Personality
                   </label>
@@ -641,7 +647,7 @@ export default function CharactersForm() {
                   />
                 </div>
 
-                <div className="form-group md:col-span-2">
+                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Goals and Motivation
                   </label>
@@ -655,7 +661,7 @@ export default function CharactersForm() {
                   />
                 </div>
 
-                <div className="form-group md:col-span-2">
+                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Relationship Potential
                   </label>
@@ -673,9 +679,9 @@ export default function CharactersForm() {
                   />
                 </div>
 
-                <div className="form-group md:col-span-2">
+                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Conflict
+                    Conflicts
                   </label>
                   <Textarea
                     value={character.conflict}
@@ -694,7 +700,6 @@ export default function CharactersForm() {
                   className="flex items-center text-primary border-primary hover:bg-primary/10"
                   disabled={generatingCharacterIndex !== null}
                 >
-                  <Wand2 className="mr-1 h-4 w-4" />
                   {generatingCharacterIndex === index && isGenerating ? (
                     <>
                       <svg
@@ -721,7 +726,7 @@ export default function CharactersForm() {
                     </>
                   ) : (
                     <>
-                      <Wand2 className="mr-1 h-4 w-4" /> Generate
+                      <Wand2 className="mr-1 h-4 w-4" /> Generate Details
                     </>
                   )}
                 </Button>
@@ -731,7 +736,7 @@ export default function CharactersForm() {
 
           <div className="pt-6 flex flex-col space-y-4">
             <div className="flex justify-between gap-4">
-              {/* Move Generate All Characters to the left of Reset */}
+              {/* Generate All Characters button on the left */}
               <Button
                 onClick={handleGenerateAllCharacters}
                 variant="secondary"
@@ -769,7 +774,7 @@ export default function CharactersForm() {
               </Button>
               
               {/* Center the Add Character button */}
-              <div className="flex justify-center">
+              <div className="flex justify-center flex-grow">
                 <Button
                   onClick={addCharacter}
                   variant="secondary"
@@ -780,7 +785,7 @@ export default function CharactersForm() {
                 </Button>
               </div>
               
-              {/* Move Reset button to the right */}
+              {/* Reset button on the right */}
               <Button
                 variant="outline"
                 className="border-red-300 text-red-600 hover:bg-red-50"
