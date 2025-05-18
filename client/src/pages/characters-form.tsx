@@ -473,16 +473,55 @@ export default function CharactersForm() {
                   <CardTitle>
                     {index === 0 ? "Protagonist" : `Character ${index + 1}`}
                   </CardTitle>
-                  {index > 0 && (
+                  <div className="flex items-center gap-2">
                     <Button
                       size="sm"
-                      variant="ghost"
-                      className="text-red-500 hover:bg-red-50"
-                      onClick={() => removeCharacter(index)}
+                      variant="outline"
+                      className="flex items-center text-primary border-primary hover:bg-primary/10"
+                      onClick={() => handleGenerateCharacter(index)}
+                      disabled={generatingCharacterIndex !== null}
                     >
-                      <Trash className="h-4 w-4" />
+                      {generatingCharacterIndex === index && isGenerating ? (
+                        <>
+                          <svg
+                            className="animate-spin -ml-1 mr-1 h-4 w-4"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Wand2 className="mr-1 h-4 w-4" /> Generate
+                        </>
+                      )}
                     </Button>
-                  )}
+                    {index > 0 && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-red-500 hover:bg-red-50"
+                        onClick={() => removeCharacter(index)}
+                      >
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
@@ -679,44 +718,7 @@ export default function CharactersForm() {
                   />
                 </div>
               </CardContent>
-              <CardFooter>
-                <Button
-                  onClick={() => handleGenerateCharacter(index)}
-                  variant="outline"
-                  className="flex items-center text-primary border-primary hover:bg-primary/10"
-                  disabled={generatingCharacterIndex !== null}
-                >
-                  {generatingCharacterIndex === index && isGenerating ? (
-                    <>
-                      <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Wand2 className="mr-1 h-4 w-4" /> Generate!
-                    </>
-                  )}
-                </Button>
-              </CardFooter>
+              {/* Card footer removed since Generate button was moved to header */}
             </Card>
           ))}
 

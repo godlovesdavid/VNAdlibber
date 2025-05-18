@@ -11,7 +11,7 @@ const MinimalInput = React.forwardRef<HTMLInputElement, MinimalInputProps>(
     return (
       <div className="relative w-full">
         {label && (
-          <label className="absolute left-2 top-1 text-xs font-medium text-black">
+          <label className="absolute left-2 top-1 text-xs font-medium text-gray-800">
             {label}
           </label>
         )}
