@@ -538,32 +538,83 @@ export default function CharactersForm() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Gender
-                      </label>
-                      <Input
-                        value={character.gender}
-                        onChange={(e) =>
-                          updateCharacter(index, "gender", e.target.value)
-                        }
-                        placeholder="Gender"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Age
-                      </label>
-                      <Input
-                        value={character.age}
-                        onChange={(e) =>
-                          updateCharacter(index, "age", e.target.value)
-                        }
-                        placeholder="Age"
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Gender
+                    </label>
+                    <Input
+                      value={character.gender}
+                      onChange={(e) =>
+                        updateCharacter(index, "gender", e.target.value)
+                      }
+                      placeholder="Gender"
+                    />
                   </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Age
+                    </label>
+                    <Input
+                      value={character.age}
+                      onChange={(e) =>
+                        updateCharacter(index, "age", e.target.value)
+                      }
+                      placeholder="Age"
+                    />
+                  </div>
+                </div>
+
+                {/* Right column - Character portrait */}
+                <div className="flex flex-col items-center justify-start space-y-4">
+                  <div className="relative w-full" style={{ aspectRatio: '2/3' }}>
+                    {characterPortraits[index] ? (
+                      <img 
+                        src={characterPortraits[index]} 
+                        alt={`Portrait of ${character.name || 'character'}`}
+                        className="w-full h-full object-cover rounded-md shadow-md"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded-md">
+                        <ImageIcon className="h-16 w-16 text-gray-400" />
+                      </div>
+                    )}
+                    
+                    {generatingPortraitIndex === index && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-md">
+                        <svg
+                          className="animate-spin h-10 w-10 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <Button
+                    onClick={() => handleGeneratePortrait(index)}
+                    variant="outline"
+                    className="w-full"
+                    disabled={generatingPortraitIndex !== null}
+                  >
+                    <ImageIcon className="mr-1 h-4 w-4" />
+                    Generate Portrait
+                  </Button>
                 </div>
                 
                 {/* Right column - Character portrait */}
