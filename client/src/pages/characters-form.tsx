@@ -556,15 +556,13 @@ export default function CharactersForm() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Appearance
-                    </label>
-                    <Textarea
+                    <MinimalTextarea
+                      label="Appearance"
                       value={character.appearance}
                       onChange={(e) =>
                         updateCharacter(index, "appearance", e.target.value)
                       }
-                      rows={6}
+                      rows={4}
                       placeholder="Physical description - important for character visualization"
                     />
                   </div>
@@ -623,11 +621,9 @@ export default function CharactersForm() {
                 </div>
 
                 {/* Full width fields */}
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Personality
-                  </label>
-                  <Textarea
+                <div className="md:col-span-2 mb-3">
+                  <MinimalTextarea
+                    label="Personality"
                     value={character.personality}
                     onChange={(e) =>
                       updateCharacter(index, "personality", e.target.value)
@@ -637,11 +633,9 @@ export default function CharactersForm() {
                   />
                 </div>
 
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Goals and Motivation
-                  </label>
-                  <Textarea
+                <div className="md:col-span-2 mb-3">
+                  <MinimalTextarea
+                    label="Goals and Motivation"
                     value={character.goals}
                     onChange={(e) =>
                       updateCharacter(index, "goals", e.target.value)
@@ -651,11 +645,9 @@ export default function CharactersForm() {
                   />
                 </div>
 
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Relationship Potential
-                  </label>
-                  <Textarea
+                <div className="md:col-span-2 mb-3">
+                  <MinimalTextarea
+                    label="Relationship Potential"
                     value={character.relationshipPotential}
                     onChange={(e) =>
                       updateCharacter(
@@ -669,11 +661,9 @@ export default function CharactersForm() {
                   />
                 </div>
 
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Conflicts
-                  </label>
-                  <Textarea
+                <div className="md:col-span-2 mb-3">
+                  <MinimalTextarea
+                    label="Conflicts"
                     value={character.conflict}
                     onChange={(e) =>
                       updateCharacter(index, "conflict", e.target.value)
