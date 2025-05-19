@@ -121,25 +121,24 @@ export function TranslationManager() {
   return (
     <Card className="w-full max-w-3xl mx-auto">
       <CardHeader>
-        <CardTitle>Translation Manager</CardTitle>
+        <CardTitle>{t('translation.manager.header')}</CardTitle>
         <CardDescription>
-          Manage translations and automatically translate your content
+          {t('translation.manager.description')}
         </CardDescription>
       </CardHeader>
       
       <CardContent>
         <Tabs defaultValue="bulk" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="bulk">Bulk Translation</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
+            <TabsTrigger value="bulk">{t('translation.manager.bulkTranslateTitle')}</TabsTrigger>
+            <TabsTrigger value="settings">{t('translation.manager.settings')}</TabsTrigger>
           </TabsList>
           
           <TabsContent value="bulk" className="space-y-6 py-4">
             <div>
               <div className="mb-4">
                 <p className="text-sm text-gray-700 mb-2">
-                  This tool helps you translate your application to different languages using DeepL's translation API.
-                  Click the button below to translate all missing content for all supported languages.
+                  {t('translation.manager.bulkTranslateDescription')}
                 </p>
                 
                 <p className="text-sm text-gray-700">
@@ -161,22 +160,22 @@ export function TranslationManager() {
                 {translating ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Translating all languages...
+                    {t('translation.manager.translating')}
                   </>
                 ) : (
-                  <>Translate All Languages</>
+                  <>{t('translation.manager.translateAll')}</>
                 )}
               </Button>
               
               {isInitialized ? (
                 <div className="flex items-center text-sm text-green-600 mt-2">
                   <CheckCircle className="mr-2 h-4 w-4" />
-                  DeepL translation service is ready to use
+                  {t('translation.manager.serviceReady')}
                 </div>
               ) : (
                 <div className="flex items-center text-sm text-amber-600 mt-2">
                   <AlertCircle className="mr-2 h-4 w-4" />
-                  DeepL API not available. Please check your server configuration.
+                  {t('translation.manager.serviceUnavailable')}
                 </div>
               )}
             </div>
@@ -184,7 +183,7 @@ export function TranslationManager() {
             {/* Translation log */}
             {translationLog.length > 0 && (
               <div>
-                <h3 className="text-sm font-medium mb-1">Translation Log</h3>
+                <h3 className="text-sm font-medium mb-1">{t('translation.manager.translationLog')}</h3>
                 <div className="bg-gray-100 p-3 rounded-md h-48 overflow-y-auto text-sm">
                   {translationLog.map((log, index) => (
                     <div key={index} className="py-1">
@@ -200,9 +199,9 @@ export function TranslationManager() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-medium">Auto-translate Content</h4>
+                  <h4 className="font-medium">{t('translation.manager.autoTranslate')}</h4>
                   <p className="text-sm text-muted-foreground">
-                    Automatically translate your text when changing languages
+                    {t('translation.manager.autoTranslateDescription')}
                   </p>
                 </div>
                 <Switch 
@@ -218,9 +217,9 @@ export function TranslationManager() {
               <Separator />
               
               <div className="space-y-2">
-                <h4 className="font-medium">Source Language</h4>
+                <h4 className="font-medium">{t('translation.manager.sourceLanguage')}</h4>
                 <p className="text-sm text-muted-foreground mb-2">
-                  The original language your content is written in
+                  {t('translation.manager.sourceLanguageDescription')}
                 </p>
                 
                 <Select 
@@ -232,7 +231,7 @@ export function TranslationManager() {
                   disabled={!localAutoTranslate}
                 >
                   <SelectTrigger className="w-full max-w-xs">
-                    <SelectValue placeholder="Select a source language" />
+                    <SelectValue placeholder={t('settings.language')} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="en">English</SelectItem>
