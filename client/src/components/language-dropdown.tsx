@@ -39,9 +39,8 @@ export function LanguageDropdown() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="w-fit h-8 gap-1 px-2">
-          <span className="text-lg">{currentLanguage.flag}</span>
-          <span className="hidden sm:inline">{currentLanguage.name}</span>
-          <Globe className="h-4 w-4 ml-1" />
+          <span className="text-sm mr-1">{currentLanguage.flag}</span>
+          <span className="font-medium">{currentLanguage.code.toUpperCase()}</span>
         </Button>
       </DropdownMenuTrigger>
       
@@ -78,8 +77,9 @@ export function MobileLanguageDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="w-8 h-8 p-0">
-          <span className="text-lg">{currentLanguage.flag}</span>
+        <Button variant="ghost" size="sm" className="w-fit h-8 p-1">
+          <span className="text-sm mr-1">{currentLanguage.flag}</span>
+          <span className="font-medium text-xs">{currentLanguage.code.toUpperCase()}</span>
         </Button>
       </DropdownMenuTrigger>
       
