@@ -64,8 +64,11 @@ export function NavBar() {
             </h1>
           </div>
           <div className="flex items-center space-x-3">
-            <div className="language-selector">
-              <LanguageButton />
+            <div className="hidden md:block">
+              <LanguageDropdown />
+            </div>
+            <div className="md:hidden">
+              <MobileLanguageDropdown />
             </div>
             {/* Only show these buttons when not on player pages */}
             {!isPlayerPage() && (
