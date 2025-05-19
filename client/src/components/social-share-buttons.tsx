@@ -2,6 +2,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Share2 } from 'lucide-react';
+import { useTranslation } from 'i18next';
 
 interface SocialShareButtonsProps {
   title: string;
@@ -11,11 +12,12 @@ interface SocialShareButtonsProps {
 export function SocialShareButtons({ title, url }: SocialShareButtonsProps) {
   const { toast } = useToast();
   const [isExpanded, setIsExpanded] = useState(false);
-  
+  const { t } = useTranslation();
+
   // Get the current URL if none provided
   const shareUrl = url || window.location.href;
   const shareText = `Check out this visual novel: ${title}`;
-  
+
   const handleShare = (platform: 'twitter' | 'facebook' | 'email' | 'copy') => {
     switch (platform) {
       case 'twitter':
@@ -55,11 +57,11 @@ export function SocialShareButtons({ title, url }: SocialShareButtonsProps) {
         break;
     }
   };
-  
+
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
   };
-  
+
   return (
     <div className="fixed right-[7px] top-[52px] z-30 flex flex-col gap-2 p-1.5 bg-transparent rounded-l-md">
       {/* Main Share Button */}

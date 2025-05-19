@@ -19,14 +19,14 @@ export function ShareButton({
   size = 'sm',
   className = '',
 }: ShareButtonProps) {
-  const { toast } = useToast();
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  
+
   // Get the current URL if none provided
   const shareUrl = url || window.location.href;
   const shareText = t('shareButton.shareText', 'Check out this visual novel: {{title}}', { title });
-  
+
   const handleShare = (platform: 'twitter' | 'facebook' | 'email' | 'copy') => {
     switch (platform) {
       case 'twitter':
@@ -63,21 +63,21 @@ export function ShareButton({
           });
         break;
     }
-    
+
     // Close dropdown after action
     setIsDropdownOpen(false);
   };
-  
+
   // Toggle dropdown
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
-  
+
   // Close dropdown when clicking outside
   const handleClickOutside = () => {
     if (isDropdownOpen) {
       setIsDropdownOpen(false);
     }
   };
-  
+
   return (
     <div className="relative inline-block text-left">
       <Button
@@ -89,7 +89,7 @@ export function ShareButton({
         <Share2 className="h-4 w-4" />
         Share
       </Button>
-      
+
       {isDropdownOpen && (
         <>
           {/* Invisible overlay to detect clicks outside */}
@@ -97,7 +97,7 @@ export function ShareButton({
             className="fixed inset-0 z-40" 
             onClick={handleClickOutside}
           />
-          
+
           {/* Dropdown menu */}
           <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-50">
             <div className="p-2 space-y-1">

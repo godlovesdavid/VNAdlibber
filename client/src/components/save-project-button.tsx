@@ -2,6 +2,7 @@ import { useVnContext } from "@/context/vn-context";
 import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
 export function SaveProjectButton() {
+  const { t } = useTranslation();
   const { saveLoading } = useVnContext();
 
   const handleSave = async () => {
