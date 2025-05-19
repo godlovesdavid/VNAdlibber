@@ -151,19 +151,19 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog, titl
                 variant="ghost" 
                 size="icon" 
                 className="text-white hover:text-primary-300 h-6 w-6 sm:h-8 sm:w-8" 
-                title="Edit Data"
+                title={t('playerNavbar.editData', 'Edit Data')}
               >
                 <Database className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-[400px] sm:w-[540px]">
               <SheetHeader>
-                <SheetTitle>Edit Player Data</SheetTitle>
+                <SheetTitle>{t('playerNavbar.editPlayerData', 'Edit Player Data')}</SheetTitle>
               </SheetHeader>
               <div className="mt-4 space-y-6 max-h-[calc(100vh-120px)] overflow-y-auto">
                 {/* Relationships */}
                 <div className="space-y-3">
-                  <h3 className="font-medium text-lg">Relationships</h3>
+                  <h3 className="font-medium text-lg">{t('playerNavbar.relationships', 'Relationships')}</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {Object.entries(editableData.relationships).map(([key, value]) => (
                       <div key={key} className="flex items-center">
@@ -181,7 +181,7 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog, titl
                 
                 {/* Inventory */}
                 <div className="space-y-3">
-                  <h3 className="font-medium text-lg">Inventory</h3>
+                  <h3 className="font-medium text-lg">{t('playerNavbar.inventory', 'Inventory')}</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {Object.entries(editableData.inventory).map(([key, value]) => (
                       <div key={key} className="flex items-center">
@@ -199,7 +199,7 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog, titl
                 
                 {/* Skills */}
                 <div className="space-y-3">
-                  <h3 className="font-medium text-lg">Skills</h3>
+                  <h3 className="font-medium text-lg">{t('playerNavbar.skills', 'Skills')}</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {Object.entries(editableData.skills).map(([key, value]) => (
                       <div key={key} className="flex items-center">
@@ -220,12 +220,12 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog, titl
                     variant="destructive" 
                     onClick={handleReset}
                   >
-                    Reset All Values
+                    {t('playerNavbar.resetAllValues', 'Reset All Values')}
                   </Button>
                   <Button 
                     onClick={saveChanges}
                   >
-                    Save Changes
+                    {t('playerNavbar.saveChanges', 'Save Changes')}
                   </Button>
                 </div>
               </div>
@@ -243,7 +243,7 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog, titl
             variant="ghost" 
             size="icon" 
             className="text-white hover:text-primary-300 h-6 w-6 sm:h-8 sm:w-8" 
-            title="Return to Generator"
+            title={t('playerNavbar.returnToGenerator', 'Return to Generator')}
             onClick={onReturn}
           >
             <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -255,14 +255,14 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog, titl
                 variant="ghost" 
                 size="icon" 
                 className="text-white hover:text-primary-300 h-6 w-6 sm:h-8 sm:w-8" 
-                title="Options"
+                title={t('playerNavbar.options', 'Options')}
               >
                 <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">
               <SheetHeader>
-                <SheetTitle>Options</SheetTitle>
+                <SheetTitle>{t('playerNavbar.options', 'Options')}</SheetTitle>
               </SheetHeader>
               <div className="mt-6 space-y-6">
                 <div className="space-y-2">
