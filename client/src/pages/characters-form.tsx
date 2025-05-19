@@ -75,7 +75,7 @@ export default function CharactersForm() {
   // Function to add a new character card
   const addCharacter = () => {
     if (characters.length >= 5) {
-      alert("You can only create up to 5 characters.");
+      alert(t('characterForm.maxCharactersReached', 'You can only create up to 5 characters.'));
       return;
     }
 
@@ -99,7 +99,7 @@ export default function CharactersForm() {
   // Remove a character
   const removeCharacter = (index: number) => {
     if (characters.length <= 1) {
-      alert("You must have at least one character.");
+      alert(t('characterForm.minCharactersRequired', 'You must have at least one character.'));
       return;
     }
 
@@ -111,7 +111,7 @@ export default function CharactersForm() {
   // Reset all characters with confirmation
   const handleResetForm = () => {
     // Ask for confirmation before clearing
-    if (!window.confirm("Are you sure?")) {
+    if (!window.confirm(t('common.confirm', 'Are you sure?'))) {
       return; // User canceled the reset
     }
     
@@ -134,8 +134,8 @@ export default function CharactersForm() {
     
     // Show toast notification
     toast({
-      title: "Form Reset",
-      description: "Characters form has been reset.",
+      title: t('characterForm.formReset', 'Form Reset'),
+      description: t('characterForm.formResetDesc', 'Characters form has been reset.'),
       variant: "default"
     });
   };
@@ -213,8 +213,8 @@ export default function CharactersForm() {
       
       if (nameExists) {
         toast({
-          title: "Duplicate Name",
-          description: "Each character must have a unique name. Please choose a different name.",
+          title: t('characterForm.duplicateName', 'Duplicate Name'),
+          description: t('characterForm.duplicateNameDesc', 'Each character must have a unique name. Please choose a different name.'),
           variant: "destructive"
         });
         return; // Don't update if duplicate
