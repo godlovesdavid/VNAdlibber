@@ -68,8 +68,35 @@ const flagStyles: Record<string, React.CSSProperties> = {
 export function FlagSelector() {
   const { i18n } = useTranslation();
   
-  const changeLanguage = (langCode: string) => {
-    i18n.changeLanguage(langCode);
+  const changeLanguage = async (langCode: string) => {
+    // Change language in i18next
+    await i18n.changeLanguage(langCode);
+    
+    // Auto-translate form fields if setting is enabled
+    const autoTranslate = localStorage.getItem('vn-auto-translate') === 'true';
+    const sourceLanguage = localStorage.getItem('vn-auto-translate-source') || 'en';
+    
+    if (autoTranslate && langCode !== sourceLanguage) {
+      try {
+        // Find all text inputs and textareas (excluding those with data-no-translate attribute)
+        const textInputs = document.querySelectorAll('input[type="text"]:not([data-no-translate])');
+        const textareas = document.querySelectorAll('textarea:not([data-no-translate])');
+        
+        // Import translation function dynamically
+        const { translateInputField } = await import('@/utils/translation-api');
+        
+        // Translate each input field
+        const allInputs = [...Array.from(textInputs), ...Array.from(textareas)] as HTMLInputElement[];
+        
+        for (const input of allInputs) {
+          if (input.value && input.value.trim() !== '') {
+            await translateInputField(input, langCode);
+          }
+        }
+      } catch (error) {
+        console.error('Error auto-translating fields:', error);
+      }
+    }
   };
   
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
