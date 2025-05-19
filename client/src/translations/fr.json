@@ -81,7 +81,8 @@
     "previous": "Précédent",
     "continue": "Continuer",
     "backToHome": "Retour à l'accueil",
-    "backToMainMenu": "Retour au menu principal"
+    "backToMainMenu": "Retour au menu principal",
+    "saveProject": "Sauvegarder le projet"
   },
   "settings": {
     "language": "Langue",
@@ -280,5 +281,78 @@
   "translationSettings": {
     "title": "Paramètres de traduction",
     "description": "Gérer les traductions pour votre application de roman visuel. Connectez-vous avec DeepL pour traduire automatiquement les clés manquantes dans vos fichiers de langue."
+  },
+  "creationProgress": {
+    "tooltips": {
+      "basicNotSet": "Les informations de base ne sont pas définies",
+      "conceptNotSet": "Concept non défini",
+      "charactersNotSet": "Caractères non définis",
+      "pathsNotSet": "Chemins non définis",
+      "plotNotSet": "Le tracé n'est pas défini",
+      "notSet": "Non défini",
+      "noActsGenerated": "Aucun acte généré pour l'instant"
+    },
+    "stepNotAvailable": "Cette étape n'est pas encore disponible",
+    "steps": {
+      "basic": "Principes de base",
+      "concept": "Concept",
+      "characters": "Personnages",
+      "paths": "Chemins",
+      "plot": "Tracé",
+      "generate": "Générer !"
+    }
+  },
+  "mainMenu": {
+    "noRecentProject": "Aucun projet récent n'a été trouvé pour continuer",
+    "title": "Roman visuel Ad Lib",
+    "subtitle": "Créez votre propre VN avec l'IA !",
+    "createNewStory": "Créer une nouvelle histoire",
+    "loadSavedProject": "Charger un projet sauvegardé",
+    "playStory": "Jouer l'histoire",
+    "shareStories": "Histoires à partager",
+    "translationManager": "Responsable de la traduction"
+  },
+  "navbar": {
+    "backToMainMenu": "Retour au menu principal",
+    "confirmReturn": "Retour au menu principal ?",
+    "unsavedChangesWarning": "Toute modification non enregistrée sur ce formulaire sera perdue. Êtes-vous sûr de vouloir revenir au menu principal ?"
+  },
+  "playerNavbar": {
+    "confirmReset": "Êtes-vous sûr de vouloir réinitialiser toutes les valeurs des joueurs ?",
+    "restartAct": "Loi sur le redémarrage",
+    "showLog": "Afficher le journal",
+    "dialogueLog": "Journal de bord",
+    "editData": "Modifier les données",
+    "editPlayerData": "Modifier les données du joueur",
+    "relationships": "Les relations",
+    "inventory": "Inventaire",
+    "skills": "Compétences",
+    "resetAllValues": "Réinitialiser toutes les valeurs",
+    "saveChanges": "Enregistrer les modifications",
+    "returnToGenerator": "Retour au générateur",
+    "options": "Options",
+    "textSpeed": "Vitesse du texte",
+    "slow": "Lenteur",
+    "normal": "Normal",
+    "fast": "Rapide",
+    "imageGeneration": "Génération d'images",
+    "off": "Arrêt",
+    "on": "Sur",
+    "audio": "Audio",
+    "comingSoon": "Prochainement"
+  },
+  "share": {
+    "copyLink": "Copier le lien",
+    "twitter": "Twitter / X",
+    "facebook": "Facebook",
+    "email": "Courriel",
+    "linkCopied": "Lien copié",
+    "linkCopiedDesc": "Lien de partage copié dans le presse-papiers",
+    "copyFailed": "Échec de la copie",
+    "copyFailedDesc": "Impossible de copier le lien dans le presse-papiers"
+  },
+  "fontDemo": {
+    "title": "Démonstration de police",
+    "description": "Cette page présente les différents styles et graisses de polices disponibles dans l'application."
   }
 }

@@ -81,7 +81,8 @@
     "previous": "Anterior",
     "continue": "Continuar",
     "backToHome": "Voltar ao início",
-    "backToMainMenu": "Voltar ao menu principal"
+    "backToMainMenu": "Voltar ao menu principal",
+    "saveProject": "Guardar projeto"
   },
   "settings": {
     "language": "Idioma",
@@ -280,5 +281,78 @@
   "translationSettings": {
     "title": "Definições de tradução",
     "description": "Gerir traduções para a sua aplicação de romance visual. Ligue-se a DeepL para traduzir automaticamente as chaves em falta nos seus ficheiros de idiomas."
+  },
+  "creationProgress": {
+    "tooltips": {
+      "basicNotSet": "Informações básicas não definidas",
+      "conceptNotSet": "Conceito não definido",
+      "charactersNotSet": "Caracteres não definidos",
+      "pathsNotSet": "Caminhos não definidos",
+      "plotNotSet": "Traçado não definido",
+      "notSet": "Não definido",
+      "noActsGenerated": "Ainda não foram gerados actos"
+    },
+    "stepNotAvailable": "Este passo ainda não está disponível",
+    "steps": {
+      "basic": "Fundamentos",
+      "concept": "Conceito",
+      "characters": "Personagens",
+      "paths": "Caminhos",
+      "plot": "Lote",
+      "generate": "Gerar!"
+    }
+  },
+  "mainMenu": {
+    "noRecentProject": "Não foi encontrado nenhum projeto recente para continuar",
+    "title": "Visual Novel Ad Lib",
+    "subtitle": "Sonhe o seu próprio VN com IA!",
+    "createNewStory": "Criar nova história",
+    "loadSavedProject": "Carregar projeto guardado",
+    "playStory": "Reproduzir história",
+    "shareStories": "Partilhar histórias",
+    "translationManager": "Gestor de traduções"
+  },
+  "navbar": {
+    "backToMainMenu": "Voltar ao menu principal",
+    "confirmReturn": "Regressar ao menu principal?",
+    "unsavedChangesWarning": "Quaisquer alterações não guardadas neste formulário perder-se-ão. Tem a certeza de que pretende regressar ao menu principal?"
+  },
+  "playerNavbar": {
+    "confirmReset": "Tens a certeza de que queres repor todos os valores dos jogadores?",
+    "restartAct": "Lei do reinício",
+    "showLog": "Mostrar registo",
+    "dialogueLog": "Registo do diálogo",
+    "editData": "Editar dados",
+    "editPlayerData": "Editar dados do jogador",
+    "relationships": "Relações",
+    "inventory": "Inventário",
+    "skills": "Competências",
+    "resetAllValues": "Repor todos os valores",
+    "saveChanges": "Guardar alterações",
+    "returnToGenerator": "Regressar ao Gerador",
+    "options": "Opções",
+    "textSpeed": "Velocidade do texto",
+    "slow": "Lento",
+    "normal": "Normal",
+    "fast": "Rápido",
+    "imageGeneration": "Geração de imagens",
+    "off": "Desligado",
+    "on": "Em",
+    "audio": "Áudio",
+    "comingSoon": "Em breve"
+  },
+  "share": {
+    "copyLink": "Copiar ligação",
+    "twitter": "Twitter / X",
+    "facebook": "Facebook",
+    "email": "Correio eletrónico",
+    "linkCopied": "Ligação copiada",
+    "linkCopiedDesc": "Partilhar ligação copiada para a área de transferência",
+    "copyFailed": "Falha na cópia",
+    "copyFailedDesc": "Não foi possível copiar a ligação para a área de transferência"
+  },
+  "fontDemo": {
+    "title": "Demonstração de fontes",
+    "description": "Esta página demonstra vários estilos e pesos de letra disponíveis na aplicação."
   }
 }

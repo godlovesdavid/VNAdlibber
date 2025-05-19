@@ -101,7 +101,8 @@
     "previous": "",
     "continue": "",
     "backToHome": "",
-    "backToMainMenu": ""
+    "backToMainMenu": "",
+    "saveProject": "مشروع الحفظ"
   },
   "settings": {
     "language": "",
@@ -280,5 +281,78 @@
   "translationSettings": {
     "title": "إعدادات الترجمة",
     "description": "إدارة الترجمات لتطبيق روايتك المرئية. تواصل مع DeepL لترجمة المفاتيح المفقودة تلقائيًا في ملفات اللغة الخاصة بك."
+  },
+  "creationProgress": {
+    "tooltips": {
+      "basicNotSet": "لم يتم تعيين المعلومات الأساسية",
+      "conceptNotSet": "لم يتم تعيين المفهوم",
+      "charactersNotSet": "لم يتم تعيين الشخصيات",
+      "pathsNotSet": "المسارات غير محددة",
+      "plotNotSet": "لم يتم تعيين المؤامرة",
+      "notSet": "غير محدد",
+      "noActsGenerated": "لم يتم إنشاء أي أعمال حتى الآن"
+    },
+    "stepNotAvailable": "هذه الخطوة غير متاحة بعد",
+    "steps": {
+      "basic": "الأساسيات",
+      "concept": "المفهوم",
+      "characters": "الشخصيات",
+      "paths": "المسارات",
+      "plot": "قطعة الأرض",
+      "generate": "توليد!"
+    }
+  },
+  "mainMenu": {
+    "noRecentProject": "لم يتم العثور على أي مشروع حديث للاستمرار",
+    "title": "الرواية المرئية الإعلانية",
+    "subtitle": "احلم بـ VN الخاص بك مع الذكاء الاصطناعي!",
+    "createNewStory": "إنشاء قصة جديدة",
+    "loadSavedProject": "تحميل المشروع المحفوظ",
+    "playStory": "قصة اللعب",
+    "shareStories": "مشاركة القصص",
+    "translationManager": "مدير الترجمة"
+  },
+  "navbar": {
+    "backToMainMenu": "العودة إلى القائمة الرئيسية",
+    "confirmReturn": "العودة إلى القائمة الرئيسية؟",
+    "unsavedChangesWarning": "ستفقد أي تغييرات غير محفوظة في هذا النموذج. هل أنت متأكد من أنك تريد العودة إلى القائمة الرئيسية؟"
+  },
+  "playerNavbar": {
+    "confirmReset": "هل أنت متأكد من أنك تريد إعادة تعيين جميع قيم اللاعب؟",
+    "restartAct": "قانون إعادة التشغيل",
+    "showLog": "إظهار السجل",
+    "dialogueLog": "سجل الحوار",
+    "editData": "تحرير البيانات",
+    "editPlayerData": "تحرير بيانات اللاعب",
+    "relationships": "العلاقات",
+    "inventory": "المخزون",
+    "skills": "المهارات",
+    "resetAllValues": "إعادة تعيين جميع القيم",
+    "saveChanges": "حفظ التغييرات",
+    "returnToGenerator": "العودة إلى المولد",
+    "options": "الخيارات",
+    "textSpeed": "سرعة النص",
+    "slow": "بطيء",
+    "normal": "عادي",
+    "fast": "سريع",
+    "imageGeneration": "توليد الصور",
+    "off": "إيقاف التشغيل",
+    "on": "على",
+    "audio": "الصوت",
+    "comingSoon": "قريباً"
+  },
+  "share": {
+    "copyLink": "نسخ الرابط",
+    "twitter": "تويتر / X",
+    "facebook": "فيسبوك",
+    "email": "البريد الإلكتروني",
+    "linkCopied": "تم نسخ الرابط",
+    "linkCopiedDesc": "نسخ رابط المشاركة إلى الحافظة",
+    "copyFailed": "فشل النسخ",
+    "copyFailedDesc": "تعذر نسخ الرابط إلى الحافظة"
+  },
+  "fontDemo": {
+    "title": "عرض توضيحي للخط",
+    "description": "توضح هذه الصفحة مختلف أنماط الخطوط والأوزان المتوفرة في التطبيق."
   }
 }

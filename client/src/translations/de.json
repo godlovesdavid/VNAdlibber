@@ -81,7 +81,8 @@
     "previous": "Vorherige",
     "continue": "Weiter",
     "backToHome": "Zurück zu Home",
-    "backToMainMenu": "Zurück zum Hauptmenü"
+    "backToMainMenu": "Zurück zum Hauptmenü",
+    "saveProject": "Projekt speichern"
   },
   "settings": {
     "language": "Sprache",
@@ -280,5 +281,78 @@
   "translationSettings": {
     "title": "Einstellungen für die Übersetzung",
     "description": "Verwalten Sie Übersetzungen für Ihre Visual Novel Anwendung. Verbinden Sie sich mit DeepL, um fehlende Schlüssel in Ihren Sprachdateien automatisch zu übersetzen."
+  },
+  "creationProgress": {
+    "tooltips": {
+      "basicNotSet": "Grundlegende Informationen nicht eingestellt",
+      "conceptNotSet": "Konzept nicht festgelegt",
+      "charactersNotSet": "Zeichen nicht gesetzt",
+      "pathsNotSet": "Pfade nicht gesetzt",
+      "plotNotSet": "Plot nicht gesetzt",
+      "notSet": "Nicht festgelegt",
+      "noActsGenerated": "Noch keine Akte erstellt"
+    },
+    "stepNotAvailable": "Dieser Schritt ist noch nicht verfügbar",
+    "steps": {
+      "basic": "Grundlagen",
+      "concept": "Konzept",
+      "characters": "Zeichen",
+      "paths": "Pfade",
+      "plot": "Grundstücke",
+      "generate": "Erzeugen!"
+    }
+  },
+  "mainMenu": {
+    "noRecentProject": "Kein aktuelles Projekt zur Fortsetzung gefunden",
+    "title": "Visual Novel Ad Lib",
+    "subtitle": "Erfinden Sie Ihre eigene VN mit AI!",
+    "createNewStory": "Neue Geschichte erstellen",
+    "loadSavedProject": "Gespeichertes Projekt laden",
+    "playStory": "Geschichte spielen",
+    "shareStories": "Geschichten teilen",
+    "translationManager": "Übersetzungsmanager"
+  },
+  "navbar": {
+    "backToMainMenu": "Zurück zum Hauptmenü",
+    "confirmReturn": "Zurück zum Hauptmenü?",
+    "unsavedChangesWarning": "Alle nicht gespeicherten Änderungen in diesem Formular gehen verloren. Sind Sie sicher, dass Sie zum Hauptmenü zurückkehren möchten?"
+  },
+  "playerNavbar": {
+    "confirmReset": "Sind Sie sicher, dass Sie alle Spielerwerte zurücksetzen wollen?",
+    "restartAct": "Neustart-Gesetz",
+    "showLog": "Logbuch anzeigen",
+    "dialogueLog": "Logbuch des Dialogs",
+    "editData": "Daten bearbeiten",
+    "editPlayerData": "Spielerdaten bearbeiten",
+    "relationships": "Beziehungen",
+    "inventory": "Bestandsaufnahme",
+    "skills": "Fertigkeiten",
+    "resetAllValues": "Alle Werte zurücksetzen",
+    "saveChanges": "Änderungen speichern",
+    "returnToGenerator": "Zurück zum Generator",
+    "options": "Optionen",
+    "textSpeed": "Textgeschwindigkeit",
+    "slow": "Langsam",
+    "normal": "Normal",
+    "fast": "Schnell",
+    "imageGeneration": "Bilderzeugung",
+    "off": "Aus",
+    "on": "Auf",
+    "audio": "Audio",
+    "comingSoon": "Demnächst verfügbar"
+  },
+  "share": {
+    "copyLink": "Link kopieren",
+    "twitter": "Twitter / X",
+    "facebook": "Facebook",
+    "email": "E-Mail",
+    "linkCopied": "Link Kopiert",
+    "linkCopiedDesc": "Freigabelink in die Zwischenablage kopiert",
+    "copyFailed": "Kopie fehlgeschlagen",
+    "copyFailedDesc": "Der Link konnte nicht in die Zwischenablage kopiert werden"
+  },
+  "fontDemo": {
+    "title": "Schriftart-Demo",
+    "description": "Auf dieser Seite werden verschiedene Schriftarten und -schnitte vorgestellt, die in der Anwendung verfügbar sind."
   }
 }

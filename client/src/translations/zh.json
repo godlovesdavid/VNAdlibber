@@ -81,7 +81,8 @@
     "previous": "上一页",
     "continue": "继续",
     "backToHome": "返回首页",
-    "backToMainMenu": "返回主菜单"
+    "backToMainMenu": "返回主菜单",
+    "saveProject": "保存项目"
   },
   "settings": {
     "language": "语言",
@@ -280,5 +281,78 @@
   "translationSettings": {
     "title": "翻译设置",
     "description": "管理视觉小说应用程序的翻译。与 DeepL 连接，自动翻译语言文件中缺失的关键字。"
+  },
+  "creationProgress": {
+    "tooltips": {
+      "basicNotSet": "未设置基本信息",
+      "conceptNotSet": "概念未设定",
+      "charactersNotSet": "未设置字符",
+      "pathsNotSet": "未设置路径",
+      "plotNotSet": "未设置绘图",
+      "notSet": "未设置",
+      "noActsGenerated": "尚未产生任何行为"
+    },
+    "stepNotAvailable": "此步骤尚不可用",
+    "steps": {
+      "basic": "基础知识",
+      "concept": "概念",
+      "characters": "人物",
+      "paths": "路径",
+      "plot": "情节",
+      "generate": "生成！"
+    }
+  },
+  "mainMenu": {
+    "noRecentProject": "最近未找到可继续实施的项目",
+    "title": "视觉小说广告",
+    "subtitle": "用人工智能创建您自己的虚拟网络！",
+    "createNewStory": "创建新故事",
+    "loadSavedProject": "加载保存的项目",
+    "playStory": "播放故事",
+    "shareStories": "分享故事",
+    "translationManager": "翻译经理"
+  },
+  "navbar": {
+    "backToMainMenu": "返回主菜单",
+    "confirmReturn": "返回主菜单？",
+    "unsavedChangesWarning": "此表格上任何未保存的更改都将丢失。您确定要返回主菜单吗？"
+  },
+  "playerNavbar": {
+    "confirmReset": "您确定要重置所有玩家的值吗？",
+    "restartAct": "重新启动法",
+    "showLog": "显示日志",
+    "dialogueLog": "对话日志",
+    "editData": "编辑数据",
+    "editPlayerData": "编辑球员数据",
+    "relationships": "关系",
+    "inventory": "库存",
+    "skills": "技能",
+    "resetAllValues": "重置所有值",
+    "saveChanges": "保存更改",
+    "returnToGenerator": "返回发电机",
+    "options": "选项",
+    "textSpeed": "文本速度",
+    "slow": "慢",
+    "normal": "正常",
+    "fast": "快速",
+    "imageGeneration": "图像生成",
+    "off": "关闭",
+    "on": "关于",
+    "audio": "音频",
+    "comingSoon": "即将推出"
+  },
+  "share": {
+    "copyLink": "复制链接",
+    "twitter": "Twitter / X",
+    "facebook": "在 Facebook 上",
+    "email": "电子邮件",
+    "linkCopied": "链接已复制",
+    "linkCopiedDesc": "复制到剪贴板的共享链接",
+    "copyFailed": "复制失败",
+    "copyFailedDesc": "无法将链接复制到剪贴板"
+  },
+  "fontDemo": {
+    "title": "字体演示",
+    "description": "本页展示了应用程序中可用的各种字体样式和重量。"
   }
 }

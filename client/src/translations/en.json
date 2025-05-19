@@ -101,7 +101,8 @@
     "previous": "Previous",
     "continue": "Continue",
     "backToHome": "Back to Home",
-    "backToMainMenu": "Back to Main Menu"
+    "backToMainMenu": "Back to Main Menu",
+    "saveProject": "Save Project"
   },
   "settings": {
     "language": "Language",
@@ -280,5 +281,78 @@
   "translationSettings": {
     "title": "Translation Settings",
     "description": "Manage translations for your visual novel application. Connect with DeepL to automatically translate missing keys in your language files."
+  },
+  "creationProgress": {
+    "tooltips": {
+      "basicNotSet": "Basic information not set",
+      "conceptNotSet": "Concept not set",
+      "charactersNotSet": "Characters not set",
+      "pathsNotSet": "Paths not set",
+      "plotNotSet": "Plot not set",
+      "notSet": "Not set",
+      "noActsGenerated": "No acts generated yet"
+    },
+    "stepNotAvailable": "This step is not yet available",
+    "steps": {
+      "basic": "Basics",
+      "concept": "Concept",
+      "characters": "Characters",
+      "paths": "Paths",
+      "plot": "Plot",
+      "generate": "Generate!"
+    }
+  },
+  "mainMenu": {
+    "noRecentProject": "No recent project found to continue",
+    "title": "Visual Novel Ad Lib",
+    "subtitle": "Dream up your very own VN with AI!",
+    "createNewStory": "Create New Story",
+    "loadSavedProject": "Load Saved Project",
+    "playStory": "Play Story",
+    "shareStories": "Share Stories",
+    "translationManager": "Translation Manager"
+  },
+  "navbar": {
+    "backToMainMenu": "Back to main menu",
+    "confirmReturn": "Return to Main Menu?",
+    "unsavedChangesWarning": "Any unsaved changes on this form will be lost. Are you sure you want to return to the main menu?"
+  },
+  "playerNavbar": {
+    "confirmReset": "Are you sure you want to reset all player values?",
+    "restartAct": "Restart Act",
+    "showLog": "Show Log",
+    "dialogueLog": "Dialogue Log",
+    "editData": "Edit Data",
+    "editPlayerData": "Edit Player Data",
+    "relationships": "Relationships",
+    "inventory": "Inventory",
+    "skills": "Skills",
+    "resetAllValues": "Reset All Values",
+    "saveChanges": "Save Changes",
+    "returnToGenerator": "Return to Generator",
+    "options": "Options",
+    "textSpeed": "Text Speed",
+    "slow": "Slow",
+    "normal": "Normal",
+    "fast": "Fast",
+    "imageGeneration": "Image Generation",
+    "off": "Off",
+    "on": "On",
+    "audio": "Audio",
+    "comingSoon": "Coming soon"
+  },
+  "share": {
+    "copyLink": "Copy Link",
+    "twitter": "Twitter / X",
+    "facebook": "Facebook",
+    "email": "Email",
+    "linkCopied": "Link Copied",
+    "linkCopiedDesc": "Share link copied to clipboard",
+    "copyFailed": "Copy Failed",
+    "copyFailedDesc": "Could not copy the link to clipboard"
+  },
+  "fontDemo": {
+    "title": "Font Demo",
+    "description": "This page demonstrates various font styles and weights available in the application."
   }
 }

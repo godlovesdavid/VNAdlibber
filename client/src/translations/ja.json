@@ -81,7 +81,8 @@
     "previous": "前へ",
     "continue": "続ける",
     "backToHome": "ホームへ戻る",
-    "backToMainMenu": "メインメニューに戻る"
+    "backToMainMenu": "メインメニューに戻る",
+    "saveProject": "保存プロジェクト"
   },
   "settings": {
     "language": "言語",
@@ -280,5 +281,78 @@
   "translationSettings": {
     "title": "翻訳設定",
     "description": "ビジュアルノベルアプリケーションの翻訳を管理します。DeepLと接続することで、言語ファイルに欠落しているキーを自動的に翻訳します。"
+  },
+  "creationProgress": {
+    "tooltips": {
+      "basicNotSet": "基本情報が設定されていない",
+      "conceptNotSet": "コンセプトが設定されていない",
+      "charactersNotSet": "文字が設定されていない",
+      "pathsNotSet": "パスが設定されていない",
+      "plotNotSet": "プロットが設定されていない",
+      "notSet": "未設定",
+      "noActsGenerated": "アクトはまだ生成されていない"
+    },
+    "stepNotAvailable": "このステップはまだ利用できない",
+    "steps": {
+      "basic": "基本",
+      "concept": "コンセプト",
+      "characters": "登場人物",
+      "paths": "パス",
+      "plot": "プロット",
+      "generate": "生成する！"
+    }
+  },
+  "mainMenu": {
+    "noRecentProject": "継続する最近のプロジェクトが見つからない",
+    "title": "ビジュアルノベル・アドリブ",
+    "subtitle": "AIであなただけのVNを夢見る！",
+    "createNewStory": "新しいストーリーを作る",
+    "loadSavedProject": "保存したプロジェクトをロードする",
+    "playStory": "プレイストーリー",
+    "shareStories": "ストーリーを共有する",
+    "translationManager": "翻訳マネージャー"
+  },
+  "navbar": {
+    "backToMainMenu": "メインメニューに戻る",
+    "confirmReturn": "メインメニューに戻る",
+    "unsavedChangesWarning": "このフォームの未保存の変更は失われます。本当にメインメニューに戻りますか？"
+  },
+  "playerNavbar": {
+    "confirmReset": "本当に全選手の値をリセットしたいのですか？",
+    "restartAct": "リスタート法",
+    "showLog": "ログを表示",
+    "dialogueLog": "対話ログ",
+    "editData": "データ編集",
+    "editPlayerData": "選手データの編集",
+    "relationships": "人間関係",
+    "inventory": "インベントリー",
+    "skills": "スキル",
+    "resetAllValues": "すべての値をリセット",
+    "saveChanges": "変更を保存する",
+    "returnToGenerator": "ジェネレーターに戻る",
+    "options": "オプション",
+    "textSpeed": "テキストスピード",
+    "slow": "遅い",
+    "normal": "ノーマル",
+    "fast": "速い",
+    "imageGeneration": "画像生成",
+    "off": "オフ",
+    "on": "オン",
+    "audio": "オーディオ",
+    "comingSoon": "近日公開"
+  },
+  "share": {
+    "copyLink": "コピーリンク",
+    "twitter": "ツイッター / X",
+    "facebook": "フェイスブック",
+    "email": "電子メール",
+    "linkCopied": "リンクコピー",
+    "linkCopiedDesc": "クリップボードにコピーされた共有リンク",
+    "copyFailed": "コピー失敗",
+    "copyFailedDesc": "リンクをクリップボードにコピーできませんでした"
+  },
+  "fontDemo": {
+    "title": "フォントデモ",
+    "description": "このページでは、アプリケーションで利用可能なさまざまなフォントスタイルとウェイトを紹介します。"
   }
 }
