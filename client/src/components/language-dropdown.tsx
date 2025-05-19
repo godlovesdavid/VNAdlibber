@@ -38,13 +38,12 @@ export function LanguageDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="w-fit h-8 gap-1 px-2">
-          <span className="text-sm mr-1.5">{currentLanguage.flag}</span>
-          <span className="font-medium text-xs">{currentLanguage.code.toUpperCase()}</span>
+        <Button variant="ghost" size="sm" className="px-3 font-medium">
+          {currentLanguage.code.toUpperCase()}
         </Button>
       </DropdownMenuTrigger>
       
-      <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuContent align="end" className="w-40">
         {languages.map((language) => (
           <DropdownMenuItem
             key={language.code}
@@ -53,11 +52,10 @@ export function LanguageDropdown() {
             }`}
             onClick={() => changeLanguage(language.code)}
           >
-            <span className="text-sm mr-1">{language.flag}</span>
+            <span className="w-8 text-left text-xs font-medium">{language.code.toUpperCase()}</span>
             <span className="flex-1">{language.nativeName}</span>
-            <span className="text-xs text-muted-foreground font-medium">{language.code.toUpperCase()}</span>
             {language.code === i18n.language && (
-              <Check className="h-4 w-4 text-primary ml-1" />
+              <Check className="h-4 w-4 text-primary" />
             )}
           </DropdownMenuItem>
         ))}
@@ -78,9 +76,8 @@ export function MobileLanguageDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="w-fit h-8 p-1">
-          <span className="text-sm mr-1">{currentLanguage.flag}</span>
-          <span className="font-medium text-xs">{currentLanguage.code.toUpperCase()}</span>
+        <Button variant="ghost" size="sm" className="px-2 font-medium h-8">
+          {currentLanguage.code.toUpperCase()}
         </Button>
       </DropdownMenuTrigger>
       
@@ -93,11 +90,10 @@ export function MobileLanguageDropdown() {
             }`}
             onClick={() => changeLanguage(language.code)}
           >
-            <span className="text-sm mr-1">{language.flag}</span>
+            <span className="w-8 text-left text-xs font-medium">{language.code.toUpperCase()}</span>
             <span className="flex-1">{language.nativeName}</span>
-            <span className="text-xs text-muted-foreground font-medium">{language.code.toUpperCase()}</span>
             {language.code === i18n.language && (
-              <Check className="h-4 w-4 text-primary ml-1" />
+              <Check className="h-4 w-4 text-primary" />
             )}
           </DropdownMenuItem>
         ))}
