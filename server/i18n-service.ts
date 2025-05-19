@@ -160,14 +160,11 @@ export async function handleAutoTranslate(req: Request, res: Response) {
     const textsToTranslate = Object.values(missingTranslations);
     
     // Translate the missing texts using our imported function
-    // Special case for Arabic to handle DeepL limitations
-    const targetLanguage = language === 'ar' ? 'ar' : language;
-    const sourceLanguage = language === 'ar' ? 'en-US' : 'en';
-    
+    // Simply use the imported translateTextsInternal which now handles Arabic properly
     const translatedTexts = await translateTextsInternal(
       textsToTranslate,
-      targetLanguage,
-      sourceLanguage
+      language,
+      'en'
     );
     
     // Create a flat object with original keys and translated values
