@@ -1,0 +1,68 @@
+{
+  "appName": "Visual Novel Creator",
+  "nav": {
+    "home": "Home",
+    "create": "Create",
+    "library": "Library",
+    "settings": "Settings"
+  },
+  "characterForm": {
+    "title": "Step 3: Characters",
+    "description": "Create the characters who will bring your story to life. The first character will be the protagonist.",
+    "protagonist": "Protagonist",
+    "character": "Character",
+    "name": "Name",
+    "role": "Role",
+    "occupation": "Occupation",
+    "gender": "Gender",
+    "age": "Age",
+    "appearance": "Appearance",
+    "personality": "Personality",
+    "goals": "Goals and Motivation",
+    "relationshipPotential": "Relationship Potential",
+    "conflicts": "Conflicts",
+    "generate": "Generate",
+    "generateAll": "Generate All Characters",
+    "generatePortrait": "Generate Portrait",
+    "addCharacter": "Add Character",
+    "reset": "Reset",
+    "back": "Back",
+    "next": "Next"
+  },
+  "conceptForm": {
+    "title": "Step 2: Concept",
+    "description": "Define the core concept of your visual novel with a compelling title, tagline, and premise.",
+    "title": "Title",
+    "titleHelp": "Create a memorable title for your visual novel",
+    "tagline": "Tagline",
+    "taglineHelp": "A single sentence that captures the essence of your story",
+    "premise": "Premise",
+    "premiseHelp": "Brief description of your story's setting and central conflict",
+    "generate": "Generate",
+    "reset": "Reset",
+    "back": "Back",
+    "next": "Next"
+  },
+  "common": {
+    "generating": "Generating...",
+    "saving": "Saving...",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "play": "Play"
+  },
+  "settings": {
+    "language": "Language",
+    "theme": "Theme",
+    "apiKeys": "API Keys",
+    "account": "Account",
+    "save": "Save Settings"
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "appName": "ビジュアルノベルクリエイター",
+  "nav": {
+    "home": "ホーム",
+    "create": "作成",
+    "library": "ライブラリ",
+    "settings": "設定"
+  },
+  "characterForm": {
+    "title": "ステップ 3: キャラクター",
+    "description": "あなたの物語に命を吹き込むキャラクターを作成しましょう。最初のキャラクターが主人公になります。",
+    "protagonist": "主人公",
+    "character": "キャラクター",
+    "name": "名前",
+    "role": "役割",
+    "occupation": "職業",
+    "gender": "性別",
+    "age": "年齢",
+    "appearance": "外見",
+    "personality": "性格",
+    "goals": "目標と動機",
+    "relationshipPotential": "関係性",
+    "conflicts": "葛藤",
+    "generate": "生成",
+    "generateAll": "全キャラクター生成",
+    "generatePortrait": "ポートレート生成",
+    "addCharacter": "キャラクター追加",
+    "reset": "リセット",
+    "back": "戻る",
+    "next": "次へ"
+  },
+  "conceptForm": {
+    "title": "ステップ 2: コンセプト",
+    "description": "魅力的なタイトル、タグライン、前提を使用してビジュアルノベルのコアコンセプトを定義します。",
+    "title": "タイトル",
+    "titleHelp": "ビジュアルノベルの印象的なタイトルを作成する",
+    "tagline": "タグライン",
+    "taglineHelp": "あなたの物語の本質を捉えた一文",
+    "premise": "前提",
+    "premiseHelp": "あなたの物語の設定と中心的な対立の簡単な説明",
+    "generate": "生成",
+    "reset": "リセット",
+    "back": "戻る",
+    "next": "次へ"
+  },
+  "common": {
+    "generating": "生成中...",
+    "saving": "保存中...",
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功",
+    "warning": "警告",
+    "confirm": "確認",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "delete": "削除",
+    "edit": "編集",
+    "view": "表示",
+    "play": "プレイ"
+  },
+  "settings": {
+    "language": "言語",
+    "theme": "テーマ",
+    "apiKeys": "APIキー",
+    "account": "アカウント",
+    "save": "設定を保存"
+  }
+}

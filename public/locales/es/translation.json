@@ -1,0 +1,68 @@
+{
+  "appName": "Creador de Novelas Visuales",
+  "nav": {
+    "home": "Inicio",
+    "create": "Crear",
+    "library": "Biblioteca",
+    "settings": "Configuración"
+  },
+  "characterForm": {
+    "title": "Paso 3: Personajes",
+    "description": "Crea los personajes que darán vida a tu historia. El primer personaje será el protagonista.",
+    "protagonist": "Protagonista",
+    "character": "Personaje",
+    "name": "Nombre",
+    "role": "Rol",
+    "occupation": "Ocupación",
+    "gender": "Género",
+    "age": "Edad",
+    "appearance": "Apariencia",
+    "personality": "Personalidad",
+    "goals": "Objetivos y Motivación",
+    "relationshipPotential": "Potencial de Relación",
+    "conflicts": "Conflictos",
+    "generate": "Generar",
+    "generateAll": "Generar Todos los Personajes",
+    "generatePortrait": "Generar Retrato",
+    "addCharacter": "Añadir Personaje",
+    "reset": "Reiniciar",
+    "back": "Atrás",
+    "next": "Siguiente"
+  },
+  "conceptForm": {
+    "title": "Paso 2: Concepto",
+    "description": "Define el concepto central de tu novela visual con un título atractivo, eslogan y premisa.",
+    "title": "Título",
+    "titleHelp": "Crea un título memorable para tu novela visual",
+    "tagline": "Eslogan",
+    "taglineHelp": "Una frase que captura la esencia de tu historia",
+    "premise": "Premisa",
+    "premiseHelp": "Breve descripción del escenario y conflicto central de tu historia",
+    "generate": "Generar",
+    "reset": "Reiniciar",
+    "back": "Atrás",
+    "next": "Siguiente"
+  },
+  "common": {
+    "generating": "Generando...",
+    "saving": "Guardando...",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "warning": "Advertencia",
+    "confirm": "Confirmar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "view": "Ver",
+    "play": "Jugar"
+  },
+  "settings": {
+    "language": "Idioma",
+    "theme": "Tema",
+    "apiKeys": "Claves API",
+    "account": "Cuenta",
+    "save": "Guardar Configuración"
+  }
+}
