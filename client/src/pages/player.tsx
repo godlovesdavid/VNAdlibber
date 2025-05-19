@@ -156,12 +156,12 @@ export default function Player() {
       return (
         <div className="flex items-center justify-center py-16 flex-grow">
           <div className="text-center">
-            <p className="text-lg text-white">No act data found</p>
+            <p className="text-lg text-white">{t('player.noActData', 'No act data found')}</p>
             <button 
               className="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
               onClick={handleReturn}
             >
-              Return
+              {t('player.return', 'Return')}
             </button>
           </div>
         </div>
