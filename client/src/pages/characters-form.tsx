@@ -21,6 +21,7 @@ import { Character } from "@/types/vn";
 import { useToast } from "@/hooks/use-toast";
 import { useSimpleAutosave } from "@/lib/autosave";
 import { apiRequest } from "@/lib/queryClient";
+import { useTranslation } from "react-i18next";
 
 export default function CharactersForm() {
   const [location, setLocation] = useLocation();
@@ -32,6 +33,7 @@ export default function CharactersForm() {
     cancelGeneration,
   } = useVnData();
   const { toast } = useToast();
+  const { t } = useTranslation();
   
   // Track validation state
   const [isValidating, setIsValidating] = useState(false);
@@ -263,8 +265,8 @@ export default function CharactersForm() {
     const character = characters[index];
     if (!character.name || !character.appearance) {
       toast({
-        title: "Missing Details",
-        description: "Please provide at least a name and appearance description before generating a portrait.",
+        title: t('common.error'),
+        description: t('characterForm.missingDetailsPortrait', 'Please provide at least a name and appearance description before generating a portrait.'),
         variant: "destructive"
       });
       return;
@@ -287,8 +289,8 @@ export default function CharactersForm() {
         }));
         
         toast({
-          title: "Portrait Generated",
-          description: "Character portrait has been generated successfully."
+          title: t('characterForm.portraitGenerated', 'Portrait Generated'),
+          description: t('characterForm.portraitGeneratedDesc', 'Character portrait has been generated successfully.')
         });
       } else {
         throw new Error("Failed to generate portrait");
@@ -296,8 +298,8 @@ export default function CharactersForm() {
     } catch (error) {
       console.error("Error generating portrait:", error);
       toast({
-        title: "Generation Error",
-        description: "Failed to generate character portrait. Please check your API configuration.",
+        title: t('errorMessages.generationFailed'),
+        description: t('characterForm.portraitGenerationError', 'Failed to generate character portrait. Please check your API configuration.'),
         variant: "destructive"
       });
     } finally {
