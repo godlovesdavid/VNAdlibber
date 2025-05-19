@@ -4,6 +4,7 @@ import { VnPlayer } from '@/components/vn-player';
 import { Button } from '@/components/ui/button';
 import { testSceneData } from '@/test-scene-data';
 import { PlayerLayout } from '@/components/player-layout';
+import { useTranslation } from "react-i18next";
 
 export default function TestPlayer() {
   const [showPlayer, setShowPlayer] = React.useState(false);
