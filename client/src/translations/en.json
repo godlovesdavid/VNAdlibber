@@ -76,7 +76,9 @@
     "back": "Back",
     "next": "Next",
     "previous": "Previous",
-    "continue": "Continue"
+    "continue": "Continue",
+    "backToHome": "Back to Home",
+    "backToMainMenu": "Back to Main Menu"
   },
   "settings": {
     "language": "Language",
@@ -118,7 +120,9 @@
     "off": "Off",
     "slow": "Slow",
     "medium": "Medium",
-    "fast": "Fast"
+    "fast": "Fast",
+    "loadingAct": "Loading Act {{actNumber}}...",
+    "errorLoadingAct": "Error Loading Act"
   },
   "errorMessages": {
     "translationFailed": "Translation failed",
@@ -132,5 +136,32 @@
     "generationComplete": "Generation complete",
     "saved": "Successfully saved",
     "loaded": "Successfully loaded"
+  },
+  "testPlayer": {
+    "title": "VN Player Test Page",
+    "description": "Test the VN player with sample scene data in the new format",
+    "layoutTitle": "Test VN Player",
+    "layoutDescription": "Test the visual novel player with sample scene data",
+    "startButton": "Start Test Player",
+    "infoTitle": "Test Data Information",
+    "infoDesc": "This test page uses sample scene data in the new simplified format:",
+    "formatNote": "The player should automatically convert this to the expected format."
+  },
+  "playSelection": {
+    "title": "Play Story",
+    "subtitle": "Select a visual novel to play or import a JSON file.",
+    "importButton": "Import Story File",
+    "defaultImportTitle": "Imported Story",
+    "storyImported": "Story Imported",
+    "importSuccess": "Successfully imported {{filename}}",
+    "importFailed": "Import Failed",
+    "invalidFormat": "The file format is not valid. Please upload a valid story JSON file. Error details: {{error}}",
+    "storyRemoved": "Story Removed",
+    "storyRemovedDesc": "The imported story has been removed.",
+    "playButton": "Play",
+    "actLabel": "Act {{number}}",
+    "actImportedLabel": "Act {{number}} • Imported",
+    "fromCurrentProject": "From Current Project",
+    "emptyStateMessage": "Import a story file to play or generate acts from the Create Story menu"
   }
 }

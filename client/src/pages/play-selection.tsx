@@ -307,7 +307,7 @@ export default function PlaySelection() {
                     {new Date(story.createdAt).toLocaleDateString()}
                   </span>
                   <Button size="sm" onClick={() => handlePlayStory(story.id)}>
-                    <Play className="mr-1 h-3 w-3" /> Play
+                    <Play className="mr-1 h-3 w-3" /> {t('playSelection.playButton', 'Play')}
                   </Button>
                 </CardFooter>
               </Card>
@@ -333,8 +333,7 @@ export default function PlaySelection() {
                       />
                     </svg>
                     <p className="text-neutral-500">
-                      Import a story file to play or generate acts from the
-                      Create Story menu
+                      {t('playSelection.emptyStateMessage', 'Import a story file to play or generate acts from the Create Story menu')}
                     </p>
                   </div>
                 </Card>
@@ -347,7 +346,7 @@ export default function PlaySelection() {
               onClick={handleBackToMenu}
               className="flex items-center"
             >
-              <ArrowLeft className="mr-1 h-4 w-4" /> Back to Main Menu
+              <ArrowLeft className="mr-1 h-4 w-4" /> {t('common.backToMainMenu', 'Back to Main Menu')}
             </Button>
           </div>
         </div>
