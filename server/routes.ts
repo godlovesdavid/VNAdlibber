@@ -6,7 +6,7 @@ import { insertVnStorySchema } from "@shared/schema";
 import { generateSceneBackgroundImage } from "./image-generator";
 import { jsonrepair } from "jsonrepair";
 import rateLimit from "express-rate-limit";
-import { handleAutoTranslate } from "./i18n-service";
+import { handleAutoTranslate, handleClearTranslations } from "./i18n-service";
 import { translateTexts } from "./translation-service";
 
 // Use Google's Gemini API instead of OpenAI for text generation
@@ -1197,6 +1197,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Clear translations endpoint
+  app.post('/api/translate/clear/:language', async (req, res) => {
+    try {
+      // Handle the clear translations request
+      return handleClearTranslations(req, res);
+    } catch (error) {
+      console.error('Error in clear translations endpoint:', error);
+      return res.status(500).json({
+        error: error instanceof Error ? error.message : 'Unknown translation error'
+      });
+    }
+  });
+
   // Translation status endpoint
   app.get('/api/translate/status', (req, res) => {
     const isApiKeyConfigured = !!process.env.DEEPL_API_KEY;
