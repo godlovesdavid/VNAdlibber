@@ -192,28 +192,6 @@
     "fromCurrentProject": "From Current Project",
     "emptyStateMessage": "Import a story file to play or generate acts from the Create Story menu"
   },
-  "ins": "",
-  "@/utils/translation-api": "",
-  "input": "",
-  "Invalid project file format": "",
-  "Error importing project": {
-    " Please check the file format": {
-      "": ""
-    }
-  },
-  "return": "",
-  "vnSetTextSpeed": "",
-  "vnToggleImageGeneration": "",
-  "save": "",
-  "POST": "",
-  "GET": "",
-  "DELETE": "",
-  "a": "",
-  ":": "",
-  "UserCancelledGeneration": "",
-  "script": "",
-  "content-type": "",
-  "language-changed": "",
   "tones": {
     "humorous": "",
     "dark": "",
@@ -307,8 +285,5 @@
   "translationSettings": {
     "title": "",
     "description": ""
-  },
-  "": {
-    "": ""
   }
 }

@@ -168,10 +168,11 @@ export async function handleClearTranslations(req: Request, res: Response) {
 export async function handleScanForMissingKeys(req: Request, res: Response) {
   try {
     // Define search patterns for translation keys with improved accuracy
-    // Look for proper t function call patterns with quotes
-    const tFunctionPattern = /t\(['"]([a-zA-Z0-9_.]+)['"]\)/g;
-    const tContextPattern = /\{\s*t\(['"]([a-zA-Z0-9_.]+)['"]\)/g;
-    const tComponentPattern = /<[^>]*t\(['"]([a-zA-Z0-9_.]+)['"]\)/g;
+    // These patterns specifically look for i18next-style translation keys
+    // in t() function calls with proper namespacing
+    const tFunctionPattern = /t\(['"]([a-zA-Z0-9_]+\.[a-zA-Z0-9_.-]+)['"]\)/g;
+    const tContextPattern = /\{\s*t\(['"]([a-zA-Z0-9_]+\.[a-zA-Z0-9_.-]+)['"]\)/g;
+    const tComponentPattern = /<[^>]*t\(['"]([a-zA-Z0-9_]+\.[a-zA-Z0-9_.-]+)['"]\)/g;
     
     // Helper function to validate if a key is a proper translation key format
     const isValidTranslationKey = (key: string): boolean => {
@@ -373,8 +374,18 @@ export async function handleAutoTranslate(req: Request, res: Response) {
       });
     }
     
-    // Prepare for translation
-    const textsToTranslate = Object.values(missingTranslations);
+    // Prepare for translation - filter out any empty values
+    const textsToTranslate = Object.values(missingTranslations)
+      .filter(text => typeof text === 'string' && text.trim() !== '');
+    
+    // If no valid texts to translate, return success
+    if (textsToTranslate.length === 0) {
+      return res.json({
+        success: true,
+        message: `No valid texts to translate for ${language}.`,
+        translatedCount: 0
+      });
+    }
     
     // Translate the missing texts using our imported function
     // Simply use the imported translateTextsInternal which now handles Arabic properly
@@ -386,8 +397,16 @@ export async function handleAutoTranslate(req: Request, res: Response) {
     
     // Create a flat object with original keys and translated values
     const translatedObj: Record<string, string> = {};
-    for (let i = 0; i < missingKeys.length && i < translatedTexts.length; i++) {
-      translatedObj[missingKeys[i]] = String(translatedTexts[i] || '');
+    
+    // Filter out keys with empty values before translation to match our filtered texts
+    const validMissingKeys = missingKeys.filter(key => {
+      const value = missingTranslations[key];
+      return typeof value === 'string' && value.trim() !== '';
+    });
+    
+    // Now map the valid keys to their translations
+    for (let i = 0; i < validMissingKeys.length && i < translatedTexts.length; i++) {
+      translatedObj[validMissingKeys[i]] = String(translatedTexts[i] || '');
     }
     
     // Unflatten to restore nested structure
