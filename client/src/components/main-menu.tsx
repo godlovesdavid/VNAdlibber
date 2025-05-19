@@ -7,6 +7,7 @@ import { ProjectSharingDialog } from "@/components/modals/project-sharing-dialog
 import { useToast } from "@/hooks/use-toast";
 import { Pencil, FolderOpen, Play, Share2, Beaker, RotateCcw, Settings, Languages } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { FlagSelector } from "@/components/flag-selector";
 import logoImage from "@assets/image_1746248981035.png";
 
 export function MainMenu() {
@@ -93,7 +94,10 @@ export function MainMenu() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-neutral-50 px-4 py-8">
-      <div className="w-full max-w-md mx-auto text-center mb-12">
+      <div className="w-full max-w-md mx-auto text-center mb-12 relative">
+        <div className="absolute right-0 top-0">
+          <FlagSelector />
+        </div>
         <h1 className="text-4xl text-primary font-bold mb-2">{t('mainMenu.title', 'Visual Novel Ad Lib')}</h1>
         <p className="text-muted-foreground">{t('mainMenu.subtitle', 'Dream up your very own VN with AI!')}</p>
       </div>
