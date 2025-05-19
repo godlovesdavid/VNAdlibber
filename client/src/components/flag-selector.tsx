@@ -144,7 +144,7 @@ export function FlagSelector() {
         </Button>
       </DropdownMenuTrigger>
       
-      <DropdownMenuContent align="end" className="w-24">
+      <DropdownMenuContent align="end" className="w-12">
         {languages.map((language) => (
           <LangOption key={language.code} language={language} />
         ))}
