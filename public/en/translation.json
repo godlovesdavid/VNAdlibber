@@ -8,7 +8,7 @@
   },
   "characterForm": {
     "title": "Step 3: Characters",
-    "description": "Create the characters who will bring your story to life. The first character will be the protagonist.",
+    "description": "Create the characters that will bring your story to life. The first character will be the protagonist.",
     "protagonist": "Protagonist",
     "character": "Character",
     "name": "Name",
@@ -18,7 +18,7 @@
     "age": "Age",
     "appearance": "Appearance",
     "personality": "Personality",
-    "goals": "Goals and Motivation",
+    "goals": "Goals & Motivation",
     "relationshipPotential": "Relationship Potential",
     "conflicts": "Conflicts",
     "generate": "Generate",
@@ -31,11 +31,11 @@
   },
   "conceptForm": {
     "title": "Step 2: Concept",
-    "description": "Define the core concept of your visual novel with a compelling title, tagline, and premise.",
+    "description": "Define the central concept of your visual novel with a catchy title, tagline, and premise.",
     "title": "Title",
     "titleHelp": "Create a memorable title for your visual novel",
     "tagline": "Tagline",
-    "taglineHelp": "A single sentence that captures the essence of your story",
+    "taglineHelp": "A phrase that captures the essence of your story",
     "premise": "Premise",
     "premiseHelp": "Brief description of your story's setting and central conflict",
     "generate": "Generate",
@@ -56,7 +56,8 @@
     "delete": "Delete",
     "edit": "Edit",
     "view": "View",
-    "play": "Play"
+    "play": "Play",
+    "untitled": "Untitled"
   },
   "settings": {
     "language": "Language",

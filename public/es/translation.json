@@ -56,7 +56,8 @@
     "delete": "Eliminar",
     "edit": "Editar",
     "view": "Ver",
-    "play": "Jugar"
+    "play": "Jugar",
+    "untitled": "Sin título"
   },
   "settings": {
     "language": "Idioma",

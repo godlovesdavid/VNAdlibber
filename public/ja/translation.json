@@ -1,5 +1,5 @@
 {
-  "appName": "ビジュアルノベルクリエイター",
+  "appName": "ビジュアルノベルクリエーター",
   "nav": {
     "home": "ホーム",
     "create": "作成",
@@ -7,8 +7,8 @@
     "settings": "設定"
   },
   "characterForm": {
-    "title": "ステップ 3: キャラクター",
-    "description": "あなたの物語に命を吹き込むキャラクターを作成しましょう。最初のキャラクターが主人公になります。",
+    "title": "ステップ3：キャラクター",
+    "description": "あなたのストーリーに命を吹き込むキャラクターを作成しましょう。最初のキャラクターは主人公となります。",
     "protagonist": "主人公",
     "character": "キャラクター",
     "name": "名前",
@@ -19,25 +19,25 @@
     "appearance": "外見",
     "personality": "性格",
     "goals": "目標と動機",
-    "relationshipPotential": "関係性",
+    "relationshipPotential": "関係性の可能性",
     "conflicts": "葛藤",
     "generate": "生成",
-    "generateAll": "全キャラクター生成",
-    "generatePortrait": "ポートレート生成",
-    "addCharacter": "キャラクター追加",
+    "generateAll": "すべてのキャラクターを生成",
+    "generatePortrait": "ポートレートを生成",
+    "addCharacter": "キャラクターを追加",
     "reset": "リセット",
     "back": "戻る",
     "next": "次へ"
   },
   "conceptForm": {
-    "title": "ステップ 2: コンセプト",
-    "description": "魅力的なタイトル、タグライン、前提を使用してビジュアルノベルのコアコンセプトを定義します。",
+    "title": "ステップ2：コンセプト",
+    "description": "魅力的なタイトル、タグライン、前提で視覚小説の中心概念を定義します。",
     "title": "タイトル",
-    "titleHelp": "ビジュアルノベルの印象的なタイトルを作成する",
+    "titleHelp": "あなたのビジュアルノベルの記憶に残るタイトルを作成してください",
     "tagline": "タグライン",
-    "taglineHelp": "あなたの物語の本質を捉えた一文",
+    "taglineHelp": "あなたのストーリーの本質を捉えるフレーズ",
     "premise": "前提",
-    "premiseHelp": "あなたの物語の設定と中心的な対立の簡単な説明",
+    "premiseHelp": "あなたのストーリーの設定と中心的な葛藤の簡単な説明",
     "generate": "生成",
     "reset": "リセット",
     "back": "戻る",
@@ -56,7 +56,8 @@
     "delete": "削除",
     "edit": "編集",
     "view": "表示",
-    "play": "プレイ"
+    "play": "プレイ",
+    "untitled": "無題"
   },
   "settings": {
     "language": "言語",

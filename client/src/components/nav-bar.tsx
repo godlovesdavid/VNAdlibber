@@ -15,6 +15,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
+import { CompactLanguageSwitcher } from "@/components/language-switcher";
+import { useTranslation } from "react-i18next";
 
 export function NavBar() {
   const [location, setLocation] = useLocation();
@@ -43,6 +45,8 @@ export function NavBar() {
     return location.includes("/play/") || location.includes("/shared/");
   };
 
+  const { t } = useTranslation();
+  
   return (
     <>
       <nav className="bg-white shadow-sm px-4 py-3 fixed top-0 left-0 w-full z-10">
@@ -56,10 +60,11 @@ export function NavBar() {
               <ArrowLeft className="h-5 w-5" />
             </button>
             <h1 className="text-lg font-semibold text-primary">
-              {projectData?.title ? projectData.title : "Untitled"}
+              {projectData?.title ? projectData.title : t('common.untitled')}
             </h1>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
+            <CompactLanguageSwitcher />
             {/* Only show these buttons when not on player pages */}
             {!isPlayerPage() && (
               <>
