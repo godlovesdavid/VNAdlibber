@@ -79,3 +79,47 @@ export async function translateInputField(
     console.error('Error translating input field:', error);
   }
 }
+
+/**
+ * Checks if DeepL API is configured and available
+ * @returns Promise resolving to boolean indicating if translation is available
+ */
+export async function isTranslationAvailable(): Promise<boolean> {
+  try {
+    const response = await fetch('/api/translate/status');
+    if (!response.ok) return false;
+    const data = await response.json();
+    return data.available === true;
+  } catch (error) {
+    console.error('Error checking translation availability:', error);
+    return false;
+  }
+}
+
+/**
+ * Automatically translates missing keys for a specific language
+ * @param targetLang The language code to generate translations for
+ * @returns Promise with the updated translations object
+ */
+export async function autoTranslateLanguage(
+  targetLang: 'es' | 'ja' | 'zh' | 'fr' | 'de' | 'pt' | 'ar'
+): Promise<Record<string, any>> {
+  try {
+    const response = await fetch(`/api/translate/auto/${targetLang}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Auto-translation failed with status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.translations || {};
+  } catch (error) {
+    console.error('Auto-translation API error:', error);
+    throw error; // Re-throw to allow caller to handle the error
+  }
+}
