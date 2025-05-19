@@ -406,7 +406,6 @@ export async function handleAutoTranslate(req: Request, res: Response) {
     const textsToTranslate = Object.values(missingTranslations);
     
     // Translate the missing texts using our imported function
-    // Simply use the imported translateTextsInternal which now handles Arabic properly
     const translatedTexts = await translateTextsInternal(
       textsToTranslate,
       language,

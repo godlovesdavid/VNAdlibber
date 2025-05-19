@@ -94,11 +94,8 @@ export function FlagSelector() {
         for (const input of allInputs) {
           if (input.value && input.value.trim() !== '') {
             try {
-              // Special handling for Arabic - use English as source language
-              const effectiveSourceLang = (langCode === 'ar') ? 'en' : sourceLanguage;
-              
               // Translate the field value
-              const translatedValue = await translateText(input.value, langCode, effectiveSourceLang);
+              const translatedValue = await translateText(input.value, langCode, sourceLanguage);
               
               // Update the input value
               input.value = translatedValue;
@@ -126,7 +123,7 @@ export function FlagSelector() {
     return (
       <DropdownMenuItem
         key={language.code}
-        className={`flex items-center px-1.5 py-1 ${isSelected ? 'bg-muted' : ''} gap-1`}
+        className={`flex  ${isSelected ? 'bg-muted' : ''} gap-1`}
         onClick={() => changeLanguage(language.code)}
       >
         <div style={{...flagContainerStyle, ...(flagStyles[language.countryCode] || {})}}></div>
@@ -144,7 +141,12 @@ export function FlagSelector() {
         </Button>
       </DropdownMenuTrigger>
       
-      <DropdownMenuContent align="end" className="w-12">
+      <DropdownMenuContent align="end" className="p-0"
+        style={{
+          width: '60px',
+          minWidth: '60px',
+          maxWidth: '60px',
+        }}>
         {languages.map((language) => (
           <LangOption key={language.code} language={language} />
         ))}
