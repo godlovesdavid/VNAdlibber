@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FlagSelectorNew } from "@/components/flag-selector-new";
+import { FlagSelector } from "@/components/flag-selector";
 
 export function NavBar() {
   const [location, setLocation] = useLocation();
@@ -64,7 +64,7 @@ export function NavBar() {
             </h1>
           </div>
           <div className="flex items-center space-x-3">
-            <FlagSelectorNew />
+            <FlagSelector />
             {/* Only show these buttons when not on player pages */}
             {!isPlayerPage() && (
               <>

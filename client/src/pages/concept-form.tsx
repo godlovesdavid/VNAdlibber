@@ -25,8 +25,7 @@ export default function ConceptForm() {
   // Form state
   const [title, setTitle] = useState("");
   const [tagline, setTagline] = useState("");
-  const [premise, setPremise] = useState(""
-                                        );
+  const [premise, setPremise] = useState("");
   const [autosaving, setAutosaving] = useState(false);
   
   // Create form data object for autosave

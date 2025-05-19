@@ -7,7 +7,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { translateAllFields } from '@/utils/language-util';
 
 interface Language {
   code: string;
@@ -69,26 +68,58 @@ const flagStyles: Record<string, React.CSSProperties> = {
 export function FlagSelector() {
   const { i18n } = useTranslation();
   
-  // Handle language change
-  const handleLanguageChange = async (langCode: string) => {
+  const changeLanguage = async (langCode: string) => {
+    // Change language in i18next
+    await i18n.changeLanguage(langCode);
+    
+    // Special handling for form translations - ensure this happens on all pages
     try {
-      // First change the language in i18next
-      await i18n.changeLanguage(langCode);
+      // Auto-translate form fields if setting is enabled
+      const autoTranslate = localStorage.getItem('vn-auto-translate') === 'true';
+      const sourceLanguage = localStorage.getItem('vn-auto-translate-source') || 'en';
       
-      // Then apply translations to all form fields
-      await translateAllFields(langCode);
-      
-      // Log for debugging
-      console.log(`Language changed to: ${langCode}`);
+      if (autoTranslate && langCode !== sourceLanguage) {
+        console.log(`Translating form fields to ${langCode}...`);
+        
+        // Find all text inputs and textareas (excluding those with data-no-translate attribute)
+        const textInputs = document.querySelectorAll('input[type="text"]:not([data-no-translate])');
+        const textareas = document.querySelectorAll('textarea:not([data-no-translate])');
+        
+        // Import translation function dynamically to avoid circular dependencies
+        const { translateText } = await import('@/utils/translation-api');
+        
+        // Translate each input field
+        const allInputs = [...Array.from(textInputs), ...Array.from(textareas)] as HTMLInputElement[];
+        
+        for (const input of allInputs) {
+          if (input.value && input.value.trim() !== '') {
+            try {
+              // Special handling for Arabic - use English as source language
+              const effectiveSourceLang = (langCode === 'ar') ? 'en' : sourceLanguage;
+              
+              // Translate the field value
+              const translatedValue = await translateText(input.value, langCode, effectiveSourceLang);
+              
+              // Update the input value
+              input.value = translatedValue;
+              
+              // Dispatch input event to trigger React state updates
+              const event = new Event('input', { bubbles: true });
+              input.dispatchEvent(event);
+            } catch (fieldError) {
+              console.error(`Error translating field to ${langCode}:`, fieldError);
+            }
+          }
+        }
+      }
     } catch (error) {
-      console.error('Error changing language:', error);
+      console.error('Error in language change handler:', error);
     }
   };
   
-  // Find the current active language
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
   
-  // Render a language option
+  // Language selector item with flag and country code
   const LangOption = ({ language }: { language: Language }) => {
     const isSelected = language.code === i18n.language;
     
@@ -96,7 +127,7 @@ export function FlagSelector() {
       <DropdownMenuItem
         key={language.code}
         className={`flex items-center p-2 ${isSelected ? 'bg-muted' : ''}`}
-        onClick={() => handleLanguageChange(language.code)}
+        onClick={() => changeLanguage(language.code)}
       >
         <div style={{...flagContainerStyle, ...(flagStyles[language.countryCode] || {})}}></div>
         <span className="font-medium">{language.countryCode}</span>
@@ -104,7 +135,6 @@ export function FlagSelector() {
     );
   };
   
-  // Render the dropdown menu
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
