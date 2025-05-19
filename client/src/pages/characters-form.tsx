@@ -706,44 +706,44 @@ export default function CharactersForm() {
                     disabled={generatingPortraitIndex !== null}
                   >
                     <ImageIcon className="h-4 w-4" />
-                    Generate Portrait
+                    {t('charactersForm.generatePortrait', 'Generate Portrait')}
                   </Button>
                 </div>
 
                 {/* Full width fields */}
                 <div className="md:col-span-2 mb-3">
                   <MinimalTextarea
-                    label="Personality"
+                    label={t('charactersForm.personality', 'Personality')}
                     value={character.personality}
                     onChange={(e) =>
                       updateCharacter(index, "personality", e.target.value)
                     }
                     rows={2}
-                    placeholder="Personality traits, strengths, weaknesses, quirks"
+                    placeholder={t('charactersForm.personalityPlaceholder', 'Personality traits, strengths, weaknesses, quirks')}
                   />
                 </div>
 
                 <div className="md:col-span-2 mb-3">
                   <MinimalTextarea
-                    label="Goals and Motivation"
+                    label={t('charactersForm.goals', 'Goals and Motivation')}
                     value={character.goals}
                     onChange={(e) =>
                       updateCharacter(index, "goals", e.target.value)
                     }
                     rows={2}
-                    placeholder="What drives this character? What do they want?"
+                    placeholder={t('charactersForm.goalsPlaceholder', 'What drives this character? What do they want?')}
                   />
                 </div>
 
                 <div className="md:col-span-2 mb-3">
                   {index === 0 ? (<MinimalTextarea
-                                   label="Relationship Potential"
-                                   value="N/A"
+                                   label={t('charactersForm.relationshipPotential', 'Relationship Potential')}
+                                   value={t('charactersForm.notApplicable', 'N/A')}
                                    rows={2}
                                     disabled
                                  />) : (
                     <MinimalTextarea
-                      label="Relationship Potential"
+                      label={t('charactersForm.relationshipPotential', 'Relationship Potential')}
                       value={character.relationshipPotential}
                       onChange={(e) =>
                         updateCharacter(
@@ -759,13 +759,13 @@ export default function CharactersForm() {
 
                 <div className="md:col-span-2 mb-3">
                   <MinimalTextarea
-                    label="Conflicts"
+                    label={t('charactersForm.conflicts', 'Conflicts')}
                     value={character.conflict}
                     onChange={(e) =>
                       updateCharacter(index, "conflict", e.target.value)
                     }
                     rows={2}
-                    placeholder="Internal struggles and external conflicts"
+                    placeholder={t('charactersForm.conflictsPlaceholder', 'Internal struggles and external conflicts')}
                   />
                 </div>
               </CardContent>
@@ -783,7 +783,7 @@ export default function CharactersForm() {
                   className="flex items-center"
                   disabled={characters.length >= 5}
                 >
-                  <Plus className="mr-1 h-4 w-4" /> Add Character
+                  <Plus className="mr-1 h-4 w-4" /> {t('charactersForm.addCharacter', 'Add Character')}
                 </Button>
               </div>
             </div>
@@ -794,7 +794,7 @@ export default function CharactersForm() {
                 onClick={handleBack}
                 disabled={isGenerating || isValidating}
               >
-                Back
+                {t('common.back', 'Back')}
               </Button>
               
               <div className="flex items-center">
