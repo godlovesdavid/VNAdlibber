@@ -228,7 +228,12 @@ export default function CharactersForm() {
   };
 
   // Generate character details using AI
-  const handleGenerateCharacter = async (index: number) => {
+  const handleGenerateCharacter = async (index: number, e?: React.MouseEvent) => {
+    // Prevent default form submission if this was triggered by a form
+    if (e) {
+      e.preventDefault();
+    }
+    
     setGeneratingCharacterIndex(index);
 
     try {
@@ -301,7 +306,12 @@ export default function CharactersForm() {
   };
 
   // Generate all characters and their portraits
-  const handleGenerateAllCharacters = async () => {
+  const handleGenerateAllCharacters = async (e?: React.MouseEvent) => {
+    // Prevent default form submission if this was triggered by a form
+    if (e) {
+      e.preventDefault();
+    }
+    
     // Only generate for existing characters
     if (characters.length === 0) 
       return;

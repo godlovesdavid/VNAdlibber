@@ -182,7 +182,12 @@ export default function ConceptForm() {
   };
 
   // Generate concept using AI
-  const handleGenerateConcept = async () => {
+  const handleGenerateConcept = async (e?: React.MouseEvent) => {
+    // Prevent default form submission if this was triggered by a form
+    if (e) {
+      e.preventDefault();
+    }
+    
     const generatedConcept = await generateConceptData();
 
     if (generatedConcept) {
