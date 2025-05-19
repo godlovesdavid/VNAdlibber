@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useTranslationContext } from '@/context/translation-context';
+
 
 export function TranslationManager() {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -23,7 +23,16 @@ export function TranslationManager() {
   const [translationLog, setTranslationLog] = useState<string[]>([]);
   const { toast } = useToast();
   const { t } = useTranslation();
-  const { autoTranslate, setAutoTranslate, sourceLanguage, setSourceLanguage } = useTranslationContext();
+  // Initialize local state for when context is not available
+  const [localAutoTranslate, setLocalAutoTranslate] = useState<boolean>(() => {
+    const saved = localStorage.getItem('vn-auto-translate');
+    return saved === 'true';
+  });
+  
+  const [localSourceLanguage, setLocalSourceLanguage] = useState<string>(() => {
+    const saved = localStorage.getItem('vn-auto-translate-source');
+    return saved || 'en';
+  });
 
   // Supported languages for translation
   const supportedLanguages = [
@@ -197,8 +206,11 @@ export function TranslationManager() {
                   </p>
                 </div>
                 <Switch 
-                  checked={autoTranslate} 
-                  onCheckedChange={setAutoTranslate} 
+                  checked={localAutoTranslate} 
+                  onCheckedChange={(checked) => {
+                    setLocalAutoTranslate(checked);
+                    localStorage.setItem('vn-auto-translate', checked.toString());
+                  }}
                   aria-label="Auto-translate toggle"
                 />
               </div>
@@ -212,9 +224,12 @@ export function TranslationManager() {
                 </p>
                 
                 <Select 
-                  value={sourceLanguage} 
-                  onValueChange={setSourceLanguage}
-                  disabled={!autoTranslate}
+                  value={localSourceLanguage} 
+                  onValueChange={(value) => {
+                    setLocalSourceLanguage(value);
+                    localStorage.setItem('vn-auto-translate-source', value);
+                  }}
+                  disabled={!localAutoTranslate}
                 >
                   <SelectTrigger className="w-full max-w-xs">
                     <SelectValue placeholder="Select a source language" />

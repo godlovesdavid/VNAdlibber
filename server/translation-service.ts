@@ -114,7 +114,8 @@ function mapToDeeplLangCode(langCode: string): string {
     'ru': 'RU',      // Russian
     'ja': 'JA',      // Japanese
     'zh': 'ZH',      // Chinese
+    'ar': 'EN-US',   // Arabic is not supported by DeepL as source, default to English
   };
   
-  return langMap[code] || code.toUpperCase();
+  return langMap[code] || 'EN-US'; // Default to English for unsupported languages
 }
