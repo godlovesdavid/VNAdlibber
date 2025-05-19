@@ -1,3 +1,4 @@
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   DropdownMenu,
@@ -35,11 +36,16 @@ export function LanguageMenu() {
   
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
   
+  // Render the flag as HTML to ensure emoji display correctly
+  const renderFlag = (flag: string) => (
+    <span dangerouslySetInnerHTML={{ __html: flag }} className="mr-1.5" />
+  );
+  
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="px-2 h-8 flex items-center gap-1.5">
-          <span>{currentLanguage.flag}</span>
+          {renderFlag(currentLanguage.flag)}
           <span className="font-medium">{currentLanguage.code.toUpperCase()}</span>
         </Button>
       </DropdownMenuTrigger>
@@ -54,7 +60,7 @@ export function LanguageMenu() {
             onClick={() => changeLanguage(language.code)}
           >
             <div className="flex items-center gap-1.5 min-w-[60px]">
-              <span>{language.flag}</span>
+              {renderFlag(language.flag)}
               <span className="text-xs font-medium">{language.code.toUpperCase()}</span>
             </div>
             <span className="flex-1">{language.nativeName}</span>
