@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
 
 interface ShareButtonProps {
   title: string;
@@ -19,11 +20,12 @@ export function ShareButton({
   className = '',
 }: ShareButtonProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   
   // Get the current URL if none provided
   const shareUrl = url || window.location.href;
-  const shareText = `Check out this visual novel: ${title}`;
+  const shareText = t('shareButton.shareText', 'Check out this visual novel: {{title}}', { title });
   
   const handleShare = (platform: 'twitter' | 'facebook' | 'email' | 'copy') => {
     switch (platform) {
