@@ -400,8 +400,8 @@ export default function CharactersForm() {
     
     if (incompleteCharacters.length > 0) {
       toast({
-        title: "Missing Character Names",
-        description: "Please provide a name for each character before proceeding.",
+        title: t('characterForm.missingNames', 'Missing Character Names'),
+        description: t('characterForm.missingNamesDesc', 'Please provide a name for each character before proceeding.'),
         variant: "destructive"
       });
       return;
@@ -412,8 +412,8 @@ export default function CharactersForm() {
     
     if (!projectData) {
       toast({
-        title: "Error",
-        description: "Project data is missing",
+        title: t('common.error'),
+        description: t('characterForm.projectDataMissing', 'Project data is missing'),
         variant: "destructive"
       });
       return;
@@ -441,8 +441,8 @@ export default function CharactersForm() {
         
         if (validationResult.valid) {
           toast({
-            title: "Validation Passed",
-            description: validationResult.message || "Characters validated successfully."
+            title: t('characterForm.validationPassed', 'Validation Passed'),
+            description: validationResult.message || t('characterForm.validationPassedDesc', 'Characters validated successfully.')
           });
           
           // Navigate to the next step
@@ -450,8 +450,8 @@ export default function CharactersForm() {
         } else {
           // Show the specific validation error from the server
           toast({
-            title: "Character Validation Failed",
-            description: validationResult.issues || validationResult.message || "Your characters don't align with the story.",
+            title: t('characterForm.validationFailed', 'Character Validation Failed'),
+            description: validationResult.issues || validationResult.message || t('characterForm.validationFailedDesc', 'Your characters don\'t align with the story.'),
             variant: "destructive",
             // Set longer duration for validation errors
             duration: 120000,
@@ -462,10 +462,10 @@ export default function CharactersForm() {
         
         // Extract the specific message from the error object
         const errorMessage = error.data?.message || 
-                            "Please check your character data and try again.";
+                            t('characterForm.checkDataTryAgain', 'Please check your character data and try again.');
         
         toast({
-          title: "Character Validation Error",
+          title: t('characterForm.validationError', 'Character Validation Error'),
           description: errorMessage,
           variant: "destructive",
           duration: 120000,
