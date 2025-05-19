@@ -29,11 +29,11 @@ const languages: Language[] = [
 // CSS styles for flags container
 const flagContainerStyle: React.CSSProperties = {
   border: '1px solid #e2e8f0',
-  borderRadius: '4px',
+  borderRadius: '3px',
   overflow: 'hidden',
-  width: '30px',
-  height: '20px',
-  marginRight: '8px',
+  width: '20px',
+  height: '14px',
+  marginRight: '2px',
   display: 'inline-block'
 };
 
@@ -61,7 +61,7 @@ const flagStyles: Record<string, React.CSSProperties> = {
     background: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><rect width="3" height="2" fill="%23009c3b"/><path d="M0.15,1 1.5,1.8 2.85,1 1.5,0.2z" fill="%23ffdf00"/></svg>\') no-repeat center/cover',
   },
   AR: {
-    background: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><rect width="3" height="2" fill="%23fff"/></svg>\') no-repeat center/cover',
+    background: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><rect width="3" height="2" fill="%23006C35"/><path d="M1.5,0.8 C1.2,0.8 1,1 1,1.2 C1,1.4 1.2,1.6 1.5,1.6 C1.8,1.6 2,1.4 2,1.2 C2,1 1.8,0.8 1.5,0.8 z" fill="%23fff"/><path d="M1.8,0.5 C1.7,0.55 1.6,0.6 1.5,0.6 C1.4,0.6 1.3,0.55 1.2,0.5 L1.4,0.7 L1.5,0.4 L1.6,0.7 z" fill="%23fff"/></svg>\') no-repeat center/cover',
   }
 };
 
@@ -93,13 +93,13 @@ export function FlagSelector() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="flex items-center gap-1 px-2">
+        <Button variant="ghost" size="sm" className="flex items-center gap-0.5 px-1 py-1">
           <div style={{...flagContainerStyle, ...(flagStyles[currentLanguage.countryCode] || {})}}></div>
-          <span className="font-medium">{currentLanguage.countryCode}</span>
+          <span className="font-medium text-sm">{currentLanguage.countryCode}</span>
         </Button>
       </DropdownMenuTrigger>
       
-      <DropdownMenuContent align="end" className="w-36">
+      <DropdownMenuContent align="end" className="w-24">
         {languages.map((language) => (
           <LangOption key={language.code} language={language} />
         ))}
