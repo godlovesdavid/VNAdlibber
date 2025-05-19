@@ -16,15 +16,26 @@ interface Language {
   nativeName: string;
 }
 
+const countries = {
+  en: 'US',
+  es: 'ES',
+  ja: 'JP',
+  zh: 'CN',
+  fr: 'FR',
+  de: 'DE',
+  pt: 'PT',
+  ar: 'SA'
+};
+
 const languages: Language[] = [
-  { code: 'en', name: 'English', flag: '🇺🇸', nativeName: 'English' },
-  { code: 'es', name: 'Spanish', flag: '🇪🇸', nativeName: 'Español' },
-  { code: 'ja', name: 'Japanese', flag: '🇯🇵', nativeName: '日本語' },
-  { code: 'zh', name: 'Chinese', flag: '🇨🇳', nativeName: '中文' },
-  { code: 'fr', name: 'French', flag: '🇫🇷', nativeName: 'Français' },
-  { code: 'de', name: 'German', flag: '🇩🇪', nativeName: 'Deutsch' },
-  { code: 'pt', name: 'Portuguese', flag: '🇵🇹', nativeName: 'Português' },
-  { code: 'ar', name: 'Arabic', flag: '🇸🇦', nativeName: 'العربية' }
+  { code: 'en', name: 'English', flag: countries.en, nativeName: 'English' },
+  { code: 'es', name: 'Spanish', flag: countries.es, nativeName: 'Español' },
+  { code: 'ja', name: 'Japanese', flag: countries.ja, nativeName: '日本語' },
+  { code: 'zh', name: 'Chinese', flag: countries.zh, nativeName: '中文' },
+  { code: 'fr', name: 'French', flag: countries.fr, nativeName: 'Français' },
+  { code: 'de', name: 'German', flag: countries.de, nativeName: 'Deutsch' },
+  { code: 'pt', name: 'Portuguese', flag: countries.pt, nativeName: 'Português' },
+  { code: 'ar', name: 'Arabic', flag: countries.ar, nativeName: 'العربية' }
 ];
 
 export function LanguageMenu() {
@@ -36,9 +47,9 @@ export function LanguageMenu() {
   
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
   
-  // Render the flag as HTML to ensure emoji display correctly
-  const renderFlag = (flag: string) => (
-    <span dangerouslySetInnerHTML={{ __html: flag }} className="mr-1.5" />
+  // Display the country code as a flag indicator
+  const renderFlag = (countryCode: string) => (
+    <span className="text-xs font-medium text-muted-foreground w-6 inline-block">{countryCode}</span>
   );
   
   return (
@@ -59,7 +70,7 @@ export function LanguageMenu() {
             }`}
             onClick={() => changeLanguage(language.code)}
           >
-            <div className="flex items-center gap-1.5 min-w-[60px]">
+            <div className="flex items-center min-w-[60px]">
               {renderFlag(language.flag)}
               <span className="text-xs font-medium">{language.code.toUpperCase()}</span>
             </div>
