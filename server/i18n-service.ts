@@ -167,10 +167,30 @@ export async function handleClearTranslations(req: Request, res: Response) {
 // Find missing translation keys in the codebase and add them to the English translation file
 export async function handleScanForMissingKeys(req: Request, res: Response) {
   try {
-    // Define search patterns for translation keys
-    const tFunctionPattern = /t\(['"]([^'"]+)['"]/g;
-    const tContextPattern = /\{\s*t\(['"]([^'"]+)['"]/g;
-    const tComponentPattern = /<[^>]*t\(['"]([^'"]+)['"]/g;
+    // Define search patterns for translation keys with improved accuracy
+    // Look for proper t function call patterns with quotes
+    const tFunctionPattern = /t\(['"]([a-zA-Z0-9_.]+)['"]\)/g;
+    const tContextPattern = /\{\s*t\(['"]([a-zA-Z0-9_.]+)['"]\)/g;
+    const tComponentPattern = /<[^>]*t\(['"]([a-zA-Z0-9_.]+)['"]\)/g;
+    
+    // Helper function to validate if a key is a proper translation key format
+    const isValidTranslationKey = (key: string): boolean => {
+      // Must have at least one dot to indicate namespacing
+      if (!key.includes('.')) return false;
+      
+      // Must be properly structured (namespace.key format)
+      if (!/^[a-zA-Z0-9]+\.[a-zA-Z0-9._]+$/.test(key)) return false;
+      
+      // Exclude common false positives
+      const invalidKeyPrefixes = [
+        'ins.', 'return.', 'input.', 'GET.', 'POST.', 'DELETE.',
+        'script.', 'content-type.', 'a.', ':.', 'vnSet', 'vnToggle'
+      ];
+      
+      if (invalidKeyPrefixes.some(prefix => key.startsWith(prefix))) return false;
+      
+      return true;
+    };
     
     // Define client source directory to scan
     const CLIENT_SRC_DIR = path.join(process.cwd(), 'client', 'src');
@@ -208,7 +228,10 @@ export async function handleScanForMissingKeys(req: Request, res: Response) {
           
           // Find t('key') pattern
           while ((match = tFunctionPattern.exec(content)) !== null) {
-            if (match[1]) keys.add(match[1]);
+            const key = match[1];
+            if (key && key.includes('.') && isValidTranslationKey(key)) {
+              keys.add(key);
+            }
           }
           
           // Reset regex lastIndex
@@ -216,7 +239,10 @@ export async function handleScanForMissingKeys(req: Request, res: Response) {
           
           // Find { t('key') pattern
           while ((match = tContextPattern.exec(content)) !== null) {
-            if (match[1]) keys.add(match[1]);
+            const key = match[1];
+            if (key && key.includes('.') && isValidTranslationKey(key)) {
+              keys.add(key);
+            }
           }
           
           // Reset regex lastIndex
@@ -224,7 +250,10 @@ export async function handleScanForMissingKeys(req: Request, res: Response) {
           
           // Find JSX component with t('key') pattern
           while ((match = tComponentPattern.exec(content)) !== null) {
-            if (match[1]) keys.add(match[1]);
+            const key = match[1];
+            if (key && key.includes('.') && isValidTranslationKey(key)) {
+              keys.add(key);
+            }
           }
           
           // Reset regex lastIndex
@@ -239,9 +268,11 @@ export async function handleScanForMissingKeys(req: Request, res: Response) {
     const allKeys = await scanDirectory(CLIENT_SRC_DIR);
     console.log(`Found ${allKeys.size} potential translation keys in codebase`);
     
-    // Filter out keys that already exist in translations
+    // Filter out keys that already exist in translations and ensure they are valid keys
     const flatKeys = flattenObject(enTranslations);
-    const missingKeys = Array.from(allKeys).filter(key => !flatKeys[key]);
+    const missingKeys = Array.from(allKeys)
+      .filter(key => !flatKeys[key])
+      .filter(key => isValidTranslationKey(key));
     
     // If no missing keys, return success
     if (missingKeys.length === 0) {

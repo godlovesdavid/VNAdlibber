@@ -19,7 +19,12 @@
     "settingHelp": "The world or environment where your story takes place",
     "randomize": "Randomize Options",
     "reset": "Reset",
-    "next": "Next"
+    "next": "Next",
+    "validationError": "",
+    "createYourStory": "",
+    "sentenceStart": "",
+    "about": "",
+    "setIn": ""
   },
   "characterForm": {
     "title": "Step 3: Characters",
@@ -42,12 +47,30 @@
     "addCharacter": "Add Character",
     "reset": "Reset",
     "back": "Back",
-    "next": "Next"
+    "next": "Next",
+    "maxCharactersReached": "",
+    "minCharactersRequired": "",
+    "formReset": "",
+    "formResetDesc": "",
+    "duplicateName": "",
+    "duplicateNameDesc": "",
+    "missingDetailsPortrait": "",
+    "portraitGenerated": "",
+    "portraitGeneratedDesc": "",
+    "portraitGenerationError": "",
+    "missingNames": "",
+    "missingNamesDesc": "",
+    "projectDataMissing": "",
+    "validationPassed": "",
+    "validationPassedDesc": "",
+    "validationFailed": "",
+    "validationFailedDesc": "",
+    "checkDataTryAgain": "",
+    "validationError": ""
   },
   "conceptForm": {
-    "title": "Step 2: Concept",
-    "description": "Define the central concept of your visual novel with a catchy title, tagline, and premise.",
     "title": "Title",
+    "description": "Define the central concept of your visual novel with a catchy title, tagline, and premise.",
     "titleHelp": "Create a memorable title for your visual novel",
     "tagline": "Tagline",
     "taglineHelp": "A phrase that captures the essence of your story",
@@ -104,7 +127,11 @@
       "autoTranslate": "Auto-translate form fields",
       "autoTranslateDescription": "Automatically translate form fields when changing languages",
       "sourceLanguage": "Source language",
-      "sourceLanguageDescription": "Original language of your content before translation"
+      "sourceLanguageDescription": "Original language of your content before translation",
+      "confirmClear": "",
+      "scanning": "",
+      "scanMissingKeys": "",
+      "clearAllTranslations": ""
     }
   },
   "player": {
@@ -122,7 +149,8 @@
     "medium": "Medium",
     "fast": "Fast",
     "loadingAct": "Loading Act {{actNumber}}...",
-    "errorLoadingAct": "Error Loading Act"
+    "errorLoadingAct": "Error Loading Act",
+    "noActData": ""
   },
   "errorMessages": {
     "translationFailed": "Translation failed",
@@ -163,5 +191,124 @@
     "actImportedLabel": "Act {{number}} • Imported",
     "fromCurrentProject": "From Current Project",
     "emptyStateMessage": "Import a story file to play or generate acts from the Create Story menu"
+  },
+  "ins": "",
+  "@/utils/translation-api": "",
+  "input": "",
+  "Invalid project file format": "",
+  "Error importing project": {
+    " Please check the file format": {
+      "": ""
+    }
+  },
+  "return": "",
+  "vnSetTextSpeed": "",
+  "vnToggleImageGeneration": "",
+  "save": "",
+  "POST": "",
+  "GET": "",
+  "DELETE": "",
+  "a": "",
+  ":": "",
+  "UserCancelledGeneration": "",
+  "script": "",
+  "content-type": "",
+  "language-changed": "",
+  "tones": {
+    "humorous": "",
+    "dark": "",
+    "gritty": "",
+    "lighthearted": "",
+    "melancholic": "",
+    "romantic": "",
+    "satirical": "",
+    "suspenseful": "",
+    "tragicomic": "",
+    "uplifting": "",
+    "whimsical": ""
+  },
+  "genres": {
+    "mystery": "",
+    "romance": "",
+    "sci_fi": "",
+    "adventure": "",
+    "slice_of_life": "",
+    "thriller": "",
+    "comedy": "",
+    "horror": "",
+    "drama": ""
+  },
+  "themes": {
+    "forgiveness": "",
+    "freedom_vs_control": "",
+    "growth": "",
+    "identity": "",
+    "love_vs_duty": "",
+    "revenge_and_justice": "",
+    "technology_vs_humanity": "",
+    "sacrifice": "",
+    "trust_and_betrayal": ""
+  },
+  "charactersForm": {
+    "name": "",
+    "enterName": "",
+    "role": "",
+    "protagonist": "",
+    "rolePlaceholder": "",
+    "occupation": "",
+    "occupationPlaceholder": "",
+    "gender": "",
+    "genderPlaceholder": "",
+    "age": "",
+    "agePlaceholder": "",
+    "generatePortrait": "",
+    "personality": "",
+    "personalityPlaceholder": "",
+    "goals": "",
+    "goalsPlaceholder": "",
+    "relationshipPotential": "",
+    "notApplicable": "",
+    "conflicts": "",
+    "conflictsPlaceholder": "",
+    "addCharacter": ""
+  },
+  "errors": {
+    "pageNotFound": "",
+    "routerError": ""
+  },
+  "pathsForm": {
+    "formReset": "",
+    "formResetDesc": "",
+    "maxPathsReached": "",
+    "minPathsRequired": "",
+    "duplicateTitle": "",
+    "duplicateTitleDesc": "",
+    "missingNames": "",
+    "missingNamesDesc": "",
+    "projectDataMissing": "",
+    "validationPassed": "",
+    "validationPassedDesc": "",
+    "validationFailed": "",
+    "validationFailedDesc": "",
+    "validationError": "",
+    "unexpectedError": "",
+    "title": "",
+    "description": ""
+  },
+  "plotForm": {
+    "generationError": "",
+    "unexpectedFormat": ""
+  },
+  "act1": "",
+  "act2": "",
+  "act3": "",
+  "act4": "",
+  "act5": "",
+  "translationSettings": {
+    "title": "",
+    "description": ""
+  },
+  "": {
+    "": ""
   }
 }
