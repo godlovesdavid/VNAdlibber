@@ -5,13 +5,15 @@ import { Button } from "@/components/ui/button";
 import { LoadProjectDialog } from "@/components/modals/load-project-dialog";
 import { ProjectSharingDialog } from "@/components/modals/project-sharing-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Pencil, FolderOpen, Play, Share2, Beaker, RotateCcw } from "lucide-react";
+import { Pencil, FolderOpen, Play, Share2, Beaker, RotateCcw, Settings, Languages } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import logoImage from "@assets/image_1746248981035.png";
 
 export function MainMenu() {
   const [, setLocation] = useLocation();
   const { createNewProject, projectData, loadFromLocalStorage } = useVnContext();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [showLoadDialog, setShowLoadDialog] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [hasContinueProject, setHasContinueProject] = useState(false);
@@ -78,6 +80,11 @@ export function MainMenu() {
   const handleTestPlayer = () => {
     setLocation("/test-player");
   };
+  
+  // Handle navigation to translation settings
+  const handleTranslationSettings = () => {
+    setLocation("/settings/translations");
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-neutral-50 px-4 py-8">
@@ -136,6 +143,16 @@ export function MainMenu() {
         >
           <Share2 className="mr-2 h-5 w-5" />
           Share Stories
+        </Button>
+        
+        <Button 
+          onClick={handleTranslationSettings} 
+          className="w-full flex items-center justify-center bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-100 py-6"
+          variant="outline"
+          size="lg"
+        >
+          <Languages className="mr-2 h-5 w-5" />
+          Translation Settings
         </Button>
 
         {/* <Button 
