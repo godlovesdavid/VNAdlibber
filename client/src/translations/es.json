@@ -162,5 +162,18 @@
     "actImportedLabel": "Ley {{número}} - Importado",
     "fromCurrentProject": "Del proyecto actual",
     "emptyStateMessage": "Importar un archivo de historia para reproducir o generar actos desde el menú Crear historia"
+  },
+  "tones": {
+    "humorous": "humorístico",
+    "dark": "oscuro",
+    "gritty": "arenoso",
+    "lighthearted": "desenfadado",
+    "melancholic": "melancólico",
+    "romantic": "romántico",
+    "satirical": "satírico",
+    "suspenseful": "suspense",
+    "tragicomic": "tragicómico",
+    "uplifting": "edificante",
+    "whimsical": "caprichoso"
   }
 }

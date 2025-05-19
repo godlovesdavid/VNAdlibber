@@ -162,5 +162,18 @@
     "actImportedLabel": "行为 {{ 数量｝- 进口",
     "fromCurrentProject": "来自当前项目",
     "emptyStateMessage": "从 \"创建故事 \"菜单导入故事文件进行播放或生成行为"
+  },
+  "tones": {
+    "humorous": "幽默",
+    "dark": "暗处",
+    "gritty": "砾石",
+    "lighthearted": "想得开",
+    "melancholic": "沧凉",
+    "romantic": "浪漫",
+    "satirical": "讽刺",
+    "suspenseful": "悬疑",
+    "tragicomic": "悲喜剧",
+    "uplifting": "昂扬",
+    "whimsical": "诙"
   }
 }

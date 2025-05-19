@@ -193,17 +193,17 @@
     "emptyStateMessage": "Import a story file to play or generate acts from the Create Story menu"
   },
   "tones": {
-    "humorous": "",
-    "dark": "",
-    "gritty": "",
-    "lighthearted": "",
-    "melancholic": "",
-    "romantic": "",
-    "satirical": "",
-    "suspenseful": "",
-    "tragicomic": "",
-    "uplifting": "",
-    "whimsical": ""
+    "humorous": "humorous",
+    "dark": "dark",
+    "gritty": "gritty",
+    "lighthearted": "lighthearted",
+    "melancholic": "melancholic",
+    "romantic": "romantic",
+    "satirical": "satirical",
+    "suspenseful": "suspenseful",
+    "tragicomic": "tragicomic",
+    "uplifting": "uplifting",
+    "whimsical": "whimsical"
   },
   "genres": {
     "mystery": "",

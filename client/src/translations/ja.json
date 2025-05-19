@@ -162,5 +162,18 @@
     "actImportedLabel": "アクト{{番号}}- 輸入",
     "fromCurrentProject": "現在のプロジェクトより",
     "emptyStateMessage": "ストーリーファイルをインポートして、「ストーリーを作成」メニューから演技を再生または生成する。"
+  },
+  "tones": {
+    "humorous": "ユーモラス",
+    "dark": "暗い",
+    "gritty": "ざらざら",
+    "lighthearted": "快活",
+    "melancholic": "メランコリック",
+    "romantic": "ロマンチック",
+    "satirical": "サティリカル",
+    "suspenseful": "サスペンスフル",
+    "tragicomic": "悲喜劇的",
+    "uplifting": "高揚",
+    "whimsical": "物好き"
   }
 }

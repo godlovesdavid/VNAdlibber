@@ -162,5 +162,18 @@
     "actImportedLabel": "Akt {{Nummer}} - Eingeführt",
     "fromCurrentProject": "Vom aktuellen Projekt",
     "emptyStateMessage": "Importieren Sie eine Story-Datei, um sie abzuspielen oder über das Menü \"Story erstellen\" Akte zu erstellen."
+  },
+  "tones": {
+    "humorous": "witzig",
+    "dark": "dunkel",
+    "gritty": "düster",
+    "lighthearted": "Unbeschwert",
+    "melancholic": "melancholisch",
+    "romantic": "romantisch",
+    "satirical": "satirisch",
+    "suspenseful": "Spannend",
+    "tragicomic": "tragikomisch",
+    "uplifting": "aufbauend",
+    "whimsical": "launisch"
   }
 }
