@@ -63,7 +63,12 @@ export function TranslationManager() {
   }, []);
 
   // Run translation for all languages
-  const handleTranslateAll = async () => {
+  const handleTranslateAll = async (e?: React.MouseEvent) => {
+    // Prevent default form submission if this was triggered by a form
+    if (e) {
+      e.preventDefault();
+    }
+    
     if (!isInitialized) {
       toast({
         title: t('common.error'),
