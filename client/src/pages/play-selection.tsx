@@ -19,7 +19,7 @@ export default function PlaySelection() {
     Array<{
       id: string;
       title: string;
-      actNumber: number;
+      actNumber: number; // We ensure this is always a number in our code
       createdAt: string;
       actData: GeneratedAct;
     }>
@@ -59,8 +59,8 @@ export default function PlaySelection() {
     localStorage.setItem("imported_stories", JSON.stringify(updatedStories));
 
     toast({
-      title: "Story Removed",
-      description: "The imported story has been removed.",
+      title: t('playSelection.storyRemoved', 'Story Removed'),
+      description: t('playSelection.storyRemovedDesc', 'The imported story has been removed.'),
     });
   };
 
@@ -108,8 +108,8 @@ export default function PlaySelection() {
         );
 
         toast({
-          title: "Story Imported",
-          description: `Successfully imported ${file.name}`,
+          title: t('playSelection.storyImported', 'Story Imported'),
+          description: t('playSelection.importSuccess', 'Successfully imported {{filename}}', { filename: file.name }),
         });
 
         // Reset the file input
@@ -118,10 +118,9 @@ export default function PlaySelection() {
         }
       } catch (error) {
         toast({
-          title: "Import Failed",
-          description:
-            "The file format is not valid. Please upload a valid story JSON file.  Error details: " +
-            error,
+          title: t('playSelection.importFailed', 'Import Failed'),
+          description: t('playSelection.invalidFormat', 'The file format is not valid. Please upload a valid story JSON file. Error details: {{error}}', 
+            { error: error }),
           variant: "destructive",
         });
       }
@@ -203,10 +202,10 @@ export default function PlaySelection() {
       <div className="pt-16">
         <div className="max-w-4xl mx-auto p-6">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-            Play Story
+            {t('playSelection.title', 'Play Story')}
           </h2>
           <p className="text-gray-600 mb-6">
-            Select a visual novel to play or import a JSON file.
+            {t('playSelection.subtitle', 'Select a visual novel to play or import a JSON file.')}
           </p>
 
           <div className="mb-6">
@@ -215,7 +214,7 @@ export default function PlaySelection() {
               className="border-primary text-primary hover:bg-primary/10 flex items-center"
               onClick={handleImportStory}
             >
-              <Upload className="mr-2 h-4 w-4" /> Import Story File
+              <Upload className="mr-2 h-4 w-4" /> {t('playSelection.importButton', 'Import Story File')}
             </Button>
             <input
               type="file"
@@ -251,15 +250,15 @@ export default function PlaySelection() {
                 <CardContent className="p-4">
                   <h3 className="font-semibold text-lg mb-1">{act.title}</h3>
                   <p className="text-sm text-neutral-500 mb-3">
-                    Act {act.actNumber}
+                    {t('playSelection.actLabel', 'Act {{number}}', { number: act.actNumber })}
                   </p>
                 </CardContent>
                 <CardFooter className="px-4 py-3 bg-gray-50 flex justify-between">
                   <span className="text-xs text-neutral-400">
-                    From Current Project
+                    {t('playSelection.fromCurrentProject', 'From Current Project')}
                   </span>
                   <Button size="sm" onClick={() => handlePlayStory(act.id)}>
-                    <Play className="mr-1 h-3 w-3" /> Play
+                    <Play className="mr-1 h-3 w-3" /> {t('playSelection.playButton', 'Play')}
                   </Button>
                 </CardFooter>
               </Card>
@@ -300,7 +299,7 @@ export default function PlaySelection() {
                 <CardContent className="p-4">
                   <h3 className="font-semibold text-lg mb-1">{story.title}</h3>
                   <p className="text-sm text-neutral-500 mb-3">
-                    Act {story.actNumber} • Imported
+                    {t('playSelection.actImportedLabel', 'Act {{number}} • Imported', { number: story.actNumber })}
                   </p>
                 </CardContent>
                 <CardFooter className="px-4 py-3 bg-gray-50 flex justify-between">
