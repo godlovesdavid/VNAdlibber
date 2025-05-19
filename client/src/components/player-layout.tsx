@@ -22,7 +22,7 @@ export function PlayerLayout({
   return (
     <div className="flex flex-col min-h-screen bg-black overflow-hidden">
       <Helmet>
-        <title>{title} | VN Adlibber</title>
+        <title>{title} | VN Ad Lib</title>
         <meta name="description" content={description} />
         
         {/* Open Graph / Facebook */}
