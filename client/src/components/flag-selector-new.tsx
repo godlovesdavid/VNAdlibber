@@ -66,7 +66,7 @@ const flagStyles: Record<string, React.CSSProperties> = {
   }
 };
 
-export function FlagSelector() {
+export function FlagSelectorNew() {
   const { i18n } = useTranslation();
   
   // Handle language change
@@ -88,22 +88,6 @@ export function FlagSelector() {
   // Find the current active language
   const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
   
-  // Render a language option
-  const LangOption = ({ language }: { language: Language }) => {
-    const isSelected = language.code === i18n.language;
-    
-    return (
-      <DropdownMenuItem
-        key={language.code}
-        className={`flex items-center p-2 ${isSelected ? 'bg-muted' : ''}`}
-        onClick={() => handleLanguageChange(language.code)}
-      >
-        <div style={{...flagContainerStyle, ...(flagStyles[language.countryCode] || {})}}></div>
-        <span className="font-medium">{language.countryCode}</span>
-      </DropdownMenuItem>
-    );
-  };
-  
   // Render the dropdown menu
   return (
     <DropdownMenu>
@@ -116,7 +100,14 @@ export function FlagSelector() {
       
       <DropdownMenuContent align="end" className="w-24">
         {languages.map((language) => (
-          <LangOption key={language.code} language={language} />
+          <DropdownMenuItem
+            key={language.code}
+            className={`flex items-center p-2 ${language.code === i18n.language ? 'bg-muted' : ''}`}
+            onClick={() => handleLanguageChange(language.code)}
+          >
+            <div style={{...flagContainerStyle, ...(flagStyles[language.countryCode] || {})}}></div>
+            <span className="font-medium">{language.countryCode}</span>
+          </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
