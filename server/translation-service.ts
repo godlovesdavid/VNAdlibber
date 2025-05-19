@@ -26,7 +26,20 @@ export async function translateTextsInternal(
       throw new Error('Invalid input: targetLang is required');
     }
     
-    // Map to DeepL language codes
+    // Special handling for Arabic as target language with DeepL
+    if (targetLang.toLowerCase() === 'ar') {
+      // For Arabic, always use 'EN-US' as source to avoid errors
+      const results = await translator.translateText(
+        texts,
+        'EN-US' as deepl.SourceLanguageCode,
+        'AR' as deepl.TargetLanguageCode
+      );
+      
+      // Extract translated text from results
+      return results.map(result => result.text);
+    }
+    
+    // For other languages, use the normal mapping
     const mappedTargetLang = mapToDeeplLangCode(targetLang);
     const mappedSourceLang = sourceLang ? mapToDeeplLangCode(sourceLang) : null;
     
@@ -118,7 +131,7 @@ function mapToDeeplLangCode(langCode: string): string {
   
   // Special case for Arabic which is not supported by DeepL as source language
   if (code === 'ar') {
-    return 'EN'; // Use English as source when Arabic is specified
+    return 'EN-US'; // Use English as source when Arabic is specified
   }
   
   return langMap[code] || 'EN-US'; // Default to English for unsupported languages
