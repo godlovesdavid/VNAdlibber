@@ -26,6 +26,7 @@ import { Route , VnProjectData} from "@/types/vn";
 import { useToast } from "@/hooks/use-toast";
 import { useSimpleAutosave } from "@/lib/autosave";
 import { apiRequest } from "@/lib/queryClient";
+import { useTranslation } from "react-i18next";
 
 // Extended interface for form use that includes a title property
 interface RouteForm extends Route {
@@ -61,6 +62,7 @@ export default function PathsForm() {
   const [isValidating, setIsValidating] = useState(false);
   const [isAutosaving, setIsAutosaving] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   // Setup autosave with the improved hook
   // useSimpleAutosave(
@@ -119,7 +121,7 @@ export default function PathsForm() {
   // Reset all characters with confirmation
   const handleResetForm = () => {
     // Ask for confirmation before clearing
-    if (!window.confirm("Are you sure?")) {
+    if (!window.confirm(t('common.confirm', 'Are you sure?'))) {
       return; // User canceled the reset
     }
 
@@ -140,8 +142,8 @@ export default function PathsForm() {
 
     // Show toast notification
     toast({
-      title: "Form Reset",
-      description: "Form reset.",
+      title: t('pathsForm.formReset', 'Form Reset'),
+      description: t('pathsForm.formResetDesc', 'Form reset.'),
       variant: "default"
     });
   };
@@ -149,7 +151,7 @@ export default function PathsForm() {
   // Add a new path card
   const addPath = () => {
     if (routes.length >= 3) {
-      alert("You can only create up to 3 paths.");
+      alert(t('pathsForm.maxPathsReached', 'You can only create up to 3 paths.'));
       return;
     }
 
@@ -171,7 +173,7 @@ export default function PathsForm() {
   // Remove a path
   const removePath = (index: number) => {
     if (routes.length <= 1) {
-      alert("You must have at least one path.");
+      alert(t('pathsForm.minPathsRequired', 'You must have at least one path.'));
       return;
     }
 
@@ -191,8 +193,8 @@ export default function PathsForm() {
       
       if (titleExists) {
         toast({
-          title: "Duplicate Title",
-          description: "Each path must have a unique title. Please choose a different name.",
+          title: t('pathsForm.duplicateTitle', 'Duplicate Title'),
+          description: t('pathsForm.duplicateTitleDesc', 'Each path must have a unique title. Please choose a different name.'),
           variant: "destructive"
         });
         return; // Don't update if duplicate
@@ -343,8 +345,8 @@ export default function PathsForm() {
     
     if (incompleteRoutes.length > 0) {
       toast({
-        title: "Missing Path Names",
-        description: "Please provide a title for each path before proceeding.",
+        title: t('pathsForm.missingNames', 'Missing Path Names'),
+        description: t('pathsForm.missingNamesDesc', 'Please provide a title for each path before proceeding.'),
         variant: "destructive"
       });
       return;
