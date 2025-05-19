@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
+import { useTranslation } from "react-i18next";
 
 interface PlayerNavbarProps {
   actNumber: number;
@@ -21,6 +22,7 @@ interface PlayerNavbarProps {
 
 export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog, title }: PlayerNavbarProps) {
   const { playerData, updatePlayerData, resetPlayerData } = useVnContext();
+  const { t } = useTranslation();
   const [showLog, setShowLog] = useState(false);
   const [showDataEditor, setShowDataEditor] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
@@ -52,7 +54,7 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog, titl
   };
   
   const handleReset = () => {
-    if (window.confirm('Are you sure you want to reset all player values?')) {
+    if (window.confirm(t('playerNavbar.confirmReset', 'Are you sure you want to reset all player values?'))) {
       resetPlayerData();
       setEditableData({
         relationships: {},
@@ -111,7 +113,7 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog, titl
             variant="ghost" 
             size="icon" 
             className="text-white hover:text-primary-300 h-6 w-6 sm:h-8 sm:w-8" 
-            title="Restart Act"
+            title={t('playerNavbar.restartAct', 'Restart Act')}
             onClick={onRestart}
           >
             <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -123,14 +125,14 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog, titl
                 variant="ghost" 
                 size="icon" 
                 className="text-white hover:text-primary-300 h-6 w-6 sm:h-8 sm:w-8" 
-                title="Show Log"
+                title={t('playerNavbar.showLog', 'Show Log')}
               >
                 <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-[400px] sm:w-[540px]">
               <SheetHeader>
-                <SheetTitle>Dialogue Log</SheetTitle>
+                <SheetTitle>{t('playerNavbar.dialogueLog', 'Dialogue Log')}</SheetTitle>
               </SheetHeader>
               <div className="mt-4 space-y-4 max-h-[calc(100vh-120px)] overflow-y-auto">
                 {dialogueLog.map((entry, index) => (
