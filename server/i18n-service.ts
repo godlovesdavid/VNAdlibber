@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { Request, Response } from 'express';
-import { translateTexts } from './translation-service';
+import { translateTextsInternal } from './translation-service';
 
 // Paths to translation files
 const TRANSLATION_DIR = path.join(process.cwd(), 'client', 'src', 'translations');
@@ -159,8 +159,7 @@ export async function handleAutoTranslate(req: Request, res: Response) {
     // Prepare for translation
     const textsToTranslate = Object.values(missingTranslations);
     
-    // Translate the missing texts - use internal function to get direct array back
-    const { translateTextsInternal } = require('./translation-service');
+    // Translate the missing texts using our imported function
     const translatedTexts = await translateTextsInternal(
       textsToTranslate,
       language,

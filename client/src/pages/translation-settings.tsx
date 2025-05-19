@@ -7,7 +7,7 @@ export default function TranslationSettingsPage() {
   const [location, setLocation] = useLocation();
   const { t } = useTranslation();
 
-  //save and return buttons
+  //return button
   useEffect(() => {
     const returnButtonHandler = () => {
         setLocation("/")

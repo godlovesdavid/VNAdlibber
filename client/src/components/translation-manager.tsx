@@ -5,6 +5,17 @@ import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { isTranslationAvailable } from '@/utils/translation-api';
 import { useTranslation } from 'react-i18next';
+import { Switch } from '@/components/ui/switch';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue 
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useTranslationContext } from '@/context/translation-context';
 
 export function TranslationManager() {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -12,6 +23,7 @@ export function TranslationManager() {
   const [translationLog, setTranslationLog] = useState<string[]>([]);
   const { toast } = useToast();
   const { t } = useTranslation();
+  const { autoTranslate, setAutoTranslate, sourceLanguage, setSourceLanguage } = useTranslationContext();
 
   // Supported languages for translation
   const supportedLanguages = [
@@ -102,72 +114,126 @@ export function TranslationManager() {
       <CardHeader>
         <CardTitle>Translation Manager</CardTitle>
         <CardDescription>
-          Automatically translate your content to all supported languages
+          Manage translations and automatically translate your content
         </CardDescription>
       </CardHeader>
       
       <CardContent>
-        <div className="space-y-6 py-2">
-          <div>
-            <div className="mb-4">
-              <p className="text-sm text-gray-700 mb-2">
-                This tool helps you translate your application to different languages using DeepL's translation API.
-                Click the button below to translate all missing content for all supported languages.
-              </p>
-              
-              <p className="text-sm text-gray-700">
-                When you click the translate button, it will:
-              </p>
-              <ol className="list-decimal pl-5 text-sm text-gray-700 space-y-1 mt-1">
-                <li>Find all untranslated keys in each language</li>
-                <li>Use DeepL to translate them from English</li>
-                <li>Automatically update the translation files on the server</li>
-                <li>Make the new translations available immediately</li>
-              </ol>
-            </div>
-
-            <Button 
-              onClick={handleTranslateAll} 
-              disabled={translating || !isInitialized}
-              className="w-full h-12"
-            >
-              {translating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Translating all languages...
-                </>
-              ) : (
-                <>Translate All Languages</>
-              )}
-            </Button>
-            
-            {isInitialized ? (
-              <div className="flex items-center text-sm text-green-600 mt-2">
-                <CheckCircle className="mr-2 h-4 w-4" />
-                DeepL translation service is ready to use
+        <Tabs defaultValue="bulk" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="bulk">Bulk Translation</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="bulk" className="space-y-6 py-4">
+            <div>
+              <div className="mb-4">
+                <p className="text-sm text-gray-700 mb-2">
+                  This tool helps you translate your application to different languages using DeepL's translation API.
+                  Click the button below to translate all missing content for all supported languages.
+                </p>
+                
+                <p className="text-sm text-gray-700">
+                  When you click the translate button, it will:
+                </p>
+                <ol className="list-decimal pl-5 text-sm text-gray-700 space-y-1 mt-1">
+                  <li>Find all untranslated keys in each language</li>
+                  <li>Use DeepL to translate them from English</li>
+                  <li>Automatically update the translation files on the server</li>
+                  <li>Make the new translations available immediately</li>
+                </ol>
               </div>
-            ) : (
-              <div className="flex items-center text-sm text-amber-600 mt-2">
-                <AlertCircle className="mr-2 h-4 w-4" />
-                DeepL API not available. Please check your server configuration.
+
+              <Button 
+                onClick={handleTranslateAll} 
+                disabled={translating || !isInitialized}
+                className="w-full h-12"
+              >
+                {translating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Translating all languages...
+                  </>
+                ) : (
+                  <>Translate All Languages</>
+                )}
+              </Button>
+              
+              {isInitialized ? (
+                <div className="flex items-center text-sm text-green-600 mt-2">
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  DeepL translation service is ready to use
+                </div>
+              ) : (
+                <div className="flex items-center text-sm text-amber-600 mt-2">
+                  <AlertCircle className="mr-2 h-4 w-4" />
+                  DeepL API not available. Please check your server configuration.
+                </div>
+              )}
+            </div>
+            
+            {/* Translation log */}
+            {translationLog.length > 0 && (
+              <div>
+                <h3 className="text-sm font-medium mb-1">Translation Log</h3>
+                <div className="bg-gray-100 p-3 rounded-md h-48 overflow-y-auto text-sm">
+                  {translationLog.map((log, index) => (
+                    <div key={index} className="py-1">
+                      {log}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
-          </div>
+          </TabsContent>
           
-          {/* Translation log */}
-          {translationLog.length > 0 && (
-            <div>
-              <h3 className="text-sm font-medium mb-1">Translation Log</h3>
-              <div className="bg-gray-100 p-3 rounded-md h-48 overflow-y-auto text-sm">
-                {translationLog.map((log, index) => (
-                  <div key={index} className="py-1">
-                    {log}
-                  </div>
-                ))}
+          <TabsContent value="settings" className="space-y-6 py-4">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium">Auto-translate Content</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Automatically translate your text when changing languages
+                  </p>
+                </div>
+                <Switch 
+                  checked={autoTranslate} 
+                  onCheckedChange={setAutoTranslate} 
+                  aria-label="Auto-translate toggle"
+                />
+              </div>
+              
+              <Separator />
+              
+              <div className="space-y-2">
+                <h4 className="font-medium">Source Language</h4>
+                <p className="text-sm text-muted-foreground mb-2">
+                  The original language your content is written in
+                </p>
+                
+                <Select 
+                  value={sourceLanguage} 
+                  onValueChange={setSourceLanguage}
+                  disabled={!autoTranslate}
+                >
+                  <SelectTrigger className="w-full max-w-xs">
+                    <SelectValue placeholder="Select a source language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="es">Español</SelectItem>
+                    <SelectItem value="fr">Français</SelectItem>
+                    <SelectItem value="de">Deutsch</SelectItem>
+                    <SelectItem value="ja">日本語</SelectItem>
+                    <SelectItem value="zh">中文</SelectItem>
+                    <SelectItem value="pt">Português</SelectItem>
+                    <SelectItem value="ar">العربية</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-          )}
-        </div>
+          </TabsContent>
+        </Tabs>
       </CardContent>
       
       <CardFooter className="border-t pt-4 flex justify-between">

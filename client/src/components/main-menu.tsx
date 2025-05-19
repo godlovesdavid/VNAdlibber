@@ -151,23 +151,13 @@ export function MainMenu() {
         </Button>
         
         <Button 
-          onClick={handleTranslationSettings} 
-          className="w-full flex items-center justify-center bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-100 py-6"
-          variant="outline"
-          size="lg"
-        >
-          <Languages className="mr-2 h-5 w-5" />
-          Translation Settings
-        </Button>
-        
-        <Button 
           onClick={handleTranslationManager} 
           className="w-full flex items-center justify-center bg-white border border-indigo-500 text-indigo-600 hover:bg-indigo-50 py-6"
           variant="outline"
           size="lg"
         >
           <Languages className="mr-2 h-5 w-5" />
-          Translate All Languages
+          Translation Manager
         </Button>
 
         {/* <Button 
