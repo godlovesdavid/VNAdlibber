@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 export function TranslationManager() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [translating, setTranslating] = useState(false);
+  const [scanning, setScanning] = useState(false);
   const [translationLog, setTranslationLog] = useState<string[]>([]);
   const { toast } = useToast();
   const { t } = useTranslation();
@@ -117,6 +118,73 @@ export function TranslationManager() {
       });
     } finally {
       setTranslating(false);
+    }
+  };
+
+  // Handle scanning for missing translation keys
+  const handleScanForMissingKeys = async (e?: React.MouseEvent) => {
+    // Prevent default form submission if triggered by a form
+    if (e) {
+      e.preventDefault();
+    }
+    
+    setScanning(true);
+    setTranslationLog(prev => [...prev, 'Starting to scan codebase for missing translation keys...']);
+    
+    try {
+      // Call scan endpoint
+      const response = await fetch('/api/translate/scan', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-No-Refresh': 'true'
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Scanning for missing keys failed: ${errorData.error || response.statusText}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.keysAdded > 0) {
+        setTranslationLog(prev => [...prev, `✓ Found and added ${data.keysAdded} missing translation keys to English translations file.`]);
+        
+        // List the new keys that were found
+        if (data.newKeys && data.newKeys.length > 0) {
+          setTranslationLog(prev => [...prev, 'New keys found:']);
+          data.newKeys.forEach((key: string) => {
+            setTranslationLog(prev => [...prev, `  - ${key}`]);
+          });
+        }
+        
+        toast({
+          title: 'Missing Keys Found',
+          description: `Found and added ${data.keysAdded} missing translation keys.`,
+        });
+      } else {
+        setTranslationLog(prev => [...prev, '✓ No missing translation keys found in codebase.']);
+        
+        toast({
+          title: 'No Missing Keys',
+          description: 'No missing translation keys were found in the codebase.',
+        });
+      }
+      
+      setTranslationLog(prev => [...prev, `✓ Total translation keys: ${data.totalKeys}`]);
+      
+    } catch (error) {
+      console.error('Scanning for missing keys error:', error);
+      setTranslationLog(prev => [...prev, `Error: ${error instanceof Error ? error.message : String(error)}`]);
+      
+      toast({
+        title: t('common.error'),
+        description: 'An error occurred while scanning for missing translation keys',
+        variant: 'destructive',
+      });
+    } finally {
+      setScanning(false);
     }
   };
 
@@ -225,7 +293,7 @@ export function TranslationManager() {
               <div className="flex flex-col gap-3">
                 <Button 
                   onClick={handleTranslateAll} 
-                  disabled={translating || !isInitialized}
+                  disabled={translating || scanning || !isInitialized}
                   className="w-full h-12"
                 >
                   {translating ? (
@@ -238,14 +306,32 @@ export function TranslationManager() {
                   )}
                 </Button>
                 
-                <Button 
-                  onClick={handleClearAllTranslations} 
-                  disabled={translating}
-                  variant="destructive"
-                  className="w-full"
-                >
-                  {t('translation.manager.clearAllTranslations', 'Clear All Translations')}
-                </Button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <Button 
+                    onClick={handleScanForMissingKeys}
+                    disabled={scanning || translating}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    {scanning ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {t('translation.manager.scanning', 'Scanning...')}
+                      </>
+                    ) : (
+                      <>{t('translation.manager.scanMissingKeys', 'Scan for Missing Keys')}</>
+                    )}
+                  </Button>
+                  
+                  <Button 
+                    onClick={handleClearAllTranslations} 
+                    disabled={translating || scanning}
+                    variant="destructive"
+                    className="w-full"
+                  >
+                    {t('translation.manager.clearAllTranslations', 'Clear All Translations')}
+                  </Button>
+                </div>
               </div>
               
               {isInitialized ? (

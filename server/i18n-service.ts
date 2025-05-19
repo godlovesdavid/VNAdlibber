@@ -164,6 +164,137 @@ export async function handleClearTranslations(req: Request, res: Response) {
   }
 }
 
+// Find missing translation keys in the codebase and add them to the English translation file
+export async function handleScanForMissingKeys(req: Request, res: Response) {
+  try {
+    // Define search patterns for translation keys
+    const tFunctionPattern = /t\(['"]([^'"]+)['"]/g;
+    const tContextPattern = /\{\s*t\(['"]([^'"]+)['"]/g;
+    const tComponentPattern = /<[^>]*t\(['"]([^'"]+)['"]/g;
+    
+    // Define client source directory to scan
+    const CLIENT_SRC_DIR = path.join(process.cwd(), 'client', 'src');
+    
+    // Read English translation file
+    let enTranslations = readJsonFile(EN_TRANSLATION_PATH);
+    const originalFlatTranslations = flattenObject(enTranslations);
+    const keysCount = Object.keys(originalFlatTranslations).length;
+    
+    // Function to scan files in a directory recursively
+    const scanDirectory = async (dir: string): Promise<Set<string>> => {
+      const keys = new Set<string>();
+      
+      // Read all files in the directory
+      const files = fs.readdirSync(dir);
+      
+      for (const file of files) {
+        const fullPath = path.join(dir, file);
+        const stats = fs.statSync(fullPath);
+        
+        if (stats.isDirectory()) {
+          // Recursively scan subdirectories
+          const subDirKeys = await scanDirectory(fullPath);
+          subDirKeys.forEach(key => keys.add(key));
+        } else if (stats.isFile() && 
+                  (fullPath.endsWith('.tsx') || 
+                   fullPath.endsWith('.ts') || 
+                   fullPath.endsWith('.jsx') || 
+                   fullPath.endsWith('.js'))) {
+          // Read file content
+          const content = fs.readFileSync(fullPath, 'utf8');
+          
+          // Extract translation keys using regex patterns
+          let match;
+          
+          // Find t('key') pattern
+          while ((match = tFunctionPattern.exec(content)) !== null) {
+            if (match[1]) keys.add(match[1]);
+          }
+          
+          // Reset regex lastIndex
+          tFunctionPattern.lastIndex = 0;
+          
+          // Find { t('key') pattern
+          while ((match = tContextPattern.exec(content)) !== null) {
+            if (match[1]) keys.add(match[1]);
+          }
+          
+          // Reset regex lastIndex
+          tContextPattern.lastIndex = 0;
+          
+          // Find JSX component with t('key') pattern
+          while ((match = tComponentPattern.exec(content)) !== null) {
+            if (match[1]) keys.add(match[1]);
+          }
+          
+          // Reset regex lastIndex
+          tComponentPattern.lastIndex = 0;
+        }
+      }
+      
+      return keys;
+    };
+    
+    // Scan client source directory for translation keys
+    const allKeys = await scanDirectory(CLIENT_SRC_DIR);
+    console.log(`Found ${allKeys.size} potential translation keys in codebase`);
+    
+    // Filter out keys that already exist in translations
+    const flatKeys = flattenObject(enTranslations);
+    const missingKeys = Array.from(allKeys).filter(key => !flatKeys[key]);
+    
+    // If no missing keys, return success
+    if (missingKeys.length === 0) {
+      return res.json({
+        success: true,
+        message: 'No missing translation keys found.',
+        keysAdded: 0,
+        totalKeys: keysCount
+      });
+    }
+    
+    // Add missing keys to translations object with empty values
+    const updatedTranslations = { ...enTranslations };
+    
+    for (const key of missingKeys) {
+      // Split key by dot notation to create nested structure
+      const keyParts = key.split('.');
+      let current = updatedTranslations;
+      
+      // Create or navigate to nested objects
+      for (let i = 0; i < keyParts.length - 1; i++) {
+        const part = keyParts[i];
+        if (!current[part]) {
+          current[part] = {};
+        }
+        current = current[part];
+      }
+      
+      // Set value for the last key part (empty string)
+      const lastPart = keyParts[keyParts.length - 1];
+      current[lastPart] = '';
+    }
+    
+    // Write updated translations back to file
+    writeJsonFile(EN_TRANSLATION_PATH, updatedTranslations);
+    
+    // Return success response
+    return res.json({
+      success: true,
+      message: `Added ${missingKeys.length} missing translation keys to English translations.`,
+      keysAdded: missingKeys.length,
+      newKeys: missingKeys,
+      totalKeys: keysCount + missingKeys.length
+    });
+    
+  } catch (error) {
+    console.error('Scan for missing keys error:', error);
+    return res.status(500).json({
+      error: error instanceof Error ? error.message : 'Unknown error scanning for missing translation keys'
+    });
+  }
+}
+
 export async function handleAutoTranslate(req: Request, res: Response) {
   try {
     const { language } = req.params;

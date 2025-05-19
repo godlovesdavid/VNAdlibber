@@ -6,7 +6,7 @@ import { insertVnStorySchema } from "@shared/schema";
 import { generateSceneBackgroundImage } from "./image-generator";
 import { jsonrepair } from "jsonrepair";
 import rateLimit from "express-rate-limit";
-import { handleAutoTranslate, handleClearTranslations } from "./i18n-service";
+import { handleAutoTranslate, handleClearTranslations, handleScanForMissingKeys } from "./i18n-service";
 import { translateTexts } from "./translation-service";
 
 // Use Google's Gemini API instead of OpenAI for text generation
@@ -1197,6 +1197,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Scan for missing translation keys endpoint
+  app.get('/api/translate/scan', async (req, res) => {
+    try {
+      // Handle the scan for missing keys request
+      return handleScanForMissingKeys(req, res);
+    } catch (error) {
+      console.error('Error in scan for missing keys endpoint:', error);
+      return res.status(500).json({
+        error: error instanceof Error ? error.message : 'Unknown translation error'
+      });
+    }
+  });
+
   // Clear translations endpoint
   app.post('/api/translate/clear/:language', async (req, res) => {
     try {
