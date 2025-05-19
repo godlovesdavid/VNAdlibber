@@ -13,12 +13,14 @@ import { Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { validateFormContent } from "@/lib/validation";
 import { useSimpleAutosave } from "@/lib/autosave";
+import { useTranslation } from "react-i18next";
 
 export default function ConceptForm() {
   const [location, setLocation] = useLocation();
   const { projectData, setConceptData, goToStep, saveProject, hasUnsavedChanges, setConfirmDialogOpen } = useVnContext();
   const { generateConceptData, isGenerating, cancelGeneration } = useVnData();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   // Form state
   const [title, setTitle] = useState("");
@@ -232,22 +234,21 @@ export default function ConceptForm() {
       <div className="pt-16">
         <div className="creation-container max-w-4xl mx-auto p-6">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-            Step 2: Concept
+            {t('conceptForm.title')}
           </h2>
           <p className="text-gray-600 mb-6">
-            Define the core concept of your visual novel with a compelling
-            title, tagline, and premise.
+            {t('conceptForm.description')}
           </p>
 
           <div className="space-y-6">
             {/* Title */}
             <div className="form-group">
               <p className="text-xs text-gray-500 mb-2">
-                Create a memorable title for your visual novel
+                {t('conceptForm.titleHelp')}
               </p>
               <MinimalInput
                 id="title"
-                label="Title"
+                label={t('conceptForm.title')}
                 placeholder="e.g. Chronicles of the Hidden City"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -257,11 +258,11 @@ export default function ConceptForm() {
             {/* Tagline */}
             <div className="form-group">
               <p className="text-xs text-gray-500 mb-2">
-                A single sentence that captures the essence of your story
+                {t('conceptForm.taglineHelp')}
               </p>
               <MinimalInput
                 id="tagline"
-                label="Tagline"
+                label={t('conceptForm.tagline')}
                 placeholder="e.g. When secrets become weapons, who can you trust?"
                 value={tagline}
                 onChange={(e) => setTagline(e.target.value)}
@@ -271,11 +272,11 @@ export default function ConceptForm() {
             {/* Premise */}
             <div className="form-group">
               <p className="text-xs text-gray-500 mb-2">
-                Brief description of your story's setting and central conflict
+                {t('conceptForm.premiseHelp')}
               </p>
               <MinimalTextarea
                 id="premise"
-                label="Premise"
+                label={t('conceptForm.premise')}
                 rows={4}
                 placeholder="e.g. In a city where memories can be traded like currency, a young archivist discovers a forbidden memory that reveals a conspiracy at the heart of society. As they navigate a web of deception, they must choose between exposing the truth or protecting those they love."
                 value={premise}
@@ -286,7 +287,7 @@ export default function ConceptForm() {
             <div className="pt-6 flex justify-between">
               <div className="flex items-center">
                 <Button variant="outline" onClick={handleBack}>
-                  Back
+                  {t('conceptForm.back')}
                 </Button>
                 {/* Autosave indicator */}
                 {autosaving && (
@@ -311,7 +312,7 @@ export default function ConceptForm() {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       ></path>
                     </svg>
-                    Autosaving...
+                    {t('common.saving')}
                   </div>
                 )}
               </div>
@@ -322,7 +323,7 @@ export default function ConceptForm() {
                   onClick={handleResetForm}
                   disabled={isGenerating}
                 >
-                  Reset
+                  {t('conceptForm.reset')}
                 </Button>
                 <Button
                   variant="outline"
@@ -352,16 +353,16 @@ export default function ConceptForm() {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      Generating...
+                      {t('common.generating')}
                     </>
                   ) : (
                     <>
                       <Wand2 className="mr-2 h-4 w-4" />
-                      Generate
+                      {t('conceptForm.generate')}
                     </>
                   )}
                 </Button>
-                <Button onClick={handleNext}>Next: Characters</Button>
+                <Button onClick={handleNext}>{t('conceptForm.next')}: {t('characterForm.title').split(':')[0]}</Button>
               </div>
             </div>
 
@@ -373,7 +374,7 @@ export default function ConceptForm() {
                   className="text-red-600 border-red-300 hover:bg-red-50"
                   onClick={cancelGeneration}
                 >
-                  Cancel Generation
+                  {t('common.cancel')}
                 </Button>
               </div>
             )}
