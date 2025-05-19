@@ -15,7 +15,6 @@ import GenerateVnForm from "@/pages/generate-vn-form";
 import PlaySelection from "@/pages/play-selection";
 import Player from "@/pages/player";
 import TestPlayer from "@/pages/test-player";
-import { FontDemoPage } from "@/pages/font-demo-page";
 import SharedPlayer from "@/pages/shared-player";
 import TranslationSettingsPage from "@/pages/translation-settings";
 import TranslationManagerPage from "@/pages/translation-manager-page";
@@ -36,7 +35,6 @@ function Router() {
       <Route path="/play/:shareId/:storyTitle?" component={SharedPlayer} />
       <Route path="/play/:shareId/:actString/:storyTitle?" component={SharedPlayer} />
       <Route path="/test-player" component={TestPlayer} />
-      <Route path="/font-demo" component={FontDemoPage} />
       <Route path="/settings/translations" component={TranslationSettingsPage} />
       <Route path="/tools/translation-manager" component={TranslationManagerPage} />
       <Route component={NotFound} />

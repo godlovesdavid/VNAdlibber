@@ -2,7 +2,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Share2 } from 'lucide-react';
-import { useTranslation } from 'i18next';
+import { useTranslation } from "react-i18next";
 
 interface SocialShareButtonsProps {
   title: string;
