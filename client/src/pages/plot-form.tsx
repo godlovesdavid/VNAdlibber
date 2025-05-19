@@ -9,12 +9,14 @@ import { Wand2, ChevronDown, ChevronUp, CheckCircle } from "lucide-react";
 import { PlotAct , VnProjectData} from "@/types/vn";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { useTranslation } from "react-i18next";
 
 export default function PlotForm() {
   const [, setLocation] = useLocation();
   const { projectData, setPlotData, goToStep, saveProject, hasUnsavedChanges, setConfirmDialogOpen  } = useVnContext();
   const { generatePlotData, isGenerating, cancelGeneration } = useVnData();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [isValidating, setIsValidating] = useState(false);
 
   // Plot state - using object-based storage pattern
@@ -100,8 +102,8 @@ export default function PlotForm() {
       // Handle case where server might return data without the expected structure
       console.error("Unexpected plot data format:", generatedPlot);
       toast({
-        title: "Generation Error",
-        description: "The plot data format was unexpected. Please try again.",
+        title: t('plotForm.generationError', 'Generation Error'),
+        description: t('plotForm.unexpectedFormat', 'The plot data format was unexpected. Please try again.'),
         variant: "destructive",
       });
     }
