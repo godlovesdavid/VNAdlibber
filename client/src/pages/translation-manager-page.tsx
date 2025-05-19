@@ -1,11 +1,25 @@
 import { NavBar } from '@/components/nav-bar';
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { TranslationManager } from '@/components/translation-manager';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet';
 
 export default function TranslationManagerPage() {
   const { t } = useTranslation();
-  
+  const [location, setLocation] = useLocation();
+
+  //return button
+  useEffect(() => {
+    const returnButtonHandler = () => {
+        setLocation("/")
+    }
+    document.addEventListener("return", returnButtonHandler);
+    return () => {
+      document.removeEventListener("return", returnButtonHandler);
+    };
+  }, []);
+
   return (
     <>
       <Helmet>
