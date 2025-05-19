@@ -64,7 +64,7 @@ export function NavBar() {
             </h1>
           </div>
           <div className="flex items-center space-x-3">
-            <FlagLanguageSelector />
+            <FlagSelector />
             {/* Only show these buttons when not on player pages */}
             {!isPlayerPage() && (
               <>
