@@ -7,6 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useTranslation } from "react-i18next";
 
 interface CreationProgressProps {
   currentStep: number;
@@ -14,6 +15,7 @@ interface CreationProgressProps {
 
 export function CreationProgress({ currentStep }: CreationProgressProps) {
   const { goToStep, projectData } = useVnContext();
+  const { t } = useTranslation();
   
   const maxStep = projectData?.currentStep || 1;
   
@@ -30,46 +32,69 @@ export function CreationProgress({ currentStep }: CreationProgressProps) {
     
     switch(step) {
       case 1: // Basic
-        if (!projectData.basicData) return "Basic information not set";
-        return `Theme: ${projectData.basicData.theme}
-                Tone: ${projectData.basicData.tone}
-                Genre: ${projectData.basicData.genre}`;
+        if (!projectData.basicData) return t('creationProgress.tooltips.basicNotSet', 'Basic information not set');
+        return t('creationProgress.tooltips.basicInfo', 'Theme: {{theme}}\nTone: {{tone}}\nGenre: {{genre}}', {
+          theme: projectData.basicData.theme,
+          tone: projectData.basicData.tone,
+          genre: projectData.basicData.genre
+        });
       
       case 2: // Concept
-        if (!projectData.conceptData) return "Concept not set";
-        return `Title: ${projectData.conceptData.title}
-                Tagline: ${projectData.conceptData.tagline}
-                Premise: ${projectData.conceptData.premise?.substring(0, 100)}${projectData.conceptData.premise?.length > 100 ? '...' : ''}`;
+        if (!projectData.conceptData) return t('creationProgress.tooltips.conceptNotSet', 'Concept not set');
+        return t('creationProgress.tooltips.conceptInfo', 'Title: {{title}}\nTagline: {{tagline}}\nPremise: {{premise}}', {
+          title: projectData.conceptData.title,
+          tagline: projectData.conceptData.tagline,
+          premise: projectData.conceptData.premise?.substring(0, 100) + (projectData.conceptData.premise?.length > 100 ? '...' : '')
+        });
       
       case 3: // Characters
         if (!projectData.charactersData || Object.keys(projectData.charactersData).length === 0) 
-          return "Characters not set";
-        return `Characters: ${Object.keys(projectData.charactersData).join(", ")}${projectData?.protagonist ? `\nProtagonist: ${projectData.protagonist}` : ''}`; 
+          return t('creationProgress.tooltips.charactersNotSet', 'Characters not set');
+          
+        const protagonistInfo = projectData?.protagonist ? 
+          t('creationProgress.tooltips.protagonist', '\nProtagonist: {{name}}', { name: projectData.protagonist }) : '';
+          
+        return t('creationProgress.tooltips.charactersInfo', 'Characters: {{characters}}{{protagonist}}', {
+          characters: Object.keys(projectData.charactersData).join(", "),
+          protagonist: protagonistInfo
+        });
       
       case 4: // Paths
         if (!projectData.pathsData || Object.keys(projectData.pathsData).length === 0) 
-          return "Paths not set";
-        return `Paths: ${Object.keys(projectData.pathsData).join(", ")}`; 
+          return t('creationProgress.tooltips.pathsNotSet', 'Paths not set');
+        return t('creationProgress.tooltips.pathsInfo', 'Paths: {{paths}}', {
+          paths: Object.keys(projectData.pathsData).join(", ")
+        });
       
       case 5: // Plot
         if (!projectData.plotData || Object.keys(projectData.plotData).length === 0) 
-          return "Plot not set";
+          return t('creationProgress.tooltips.plotNotSet', 'Plot not set');
         const acts = [];
         for (let i = 1; i <= 5; i++) {
           const actKey = `act${i}`;
           const act = projectData.plotData[actKey as keyof typeof projectData.plotData];
           if (act && typeof act === 'object' && 'title' in act) {
-            acts.push(`Act ${i}: ${act.title || 'Not set'}`);
+            acts.push(t('creationProgress.tooltips.act', 'Act {{number}}: {{title}}', {
+              number: i,
+              title: act.title || t('creationProgress.tooltips.notSet', 'Not set')
+            }));
           } else {
-            acts.push(`Act ${i}: Not set`);
+            acts.push(t('creationProgress.tooltips.act', 'Act {{number}}: {{title}}', {
+              number: i,
+              title: t('creationProgress.tooltips.notSet', 'Not set')
+            }));
           }
         }
-        return `Plot structure: \n${acts.join('\n')}`;
+        return t('creationProgress.tooltips.plotStructure', 'Plot structure: \n{{acts}}', {
+          acts: acts.join('\n')
+        });
       
       case 6: // Generate
         if (!projectData.generatedActs || Object.keys(projectData.generatedActs).length === 0) 
-          return "No acts generated yet";
-        return `Generated acts: ${Object.keys(projectData.generatedActs).length}/5 complete`;
+          return t('creationProgress.tooltips.noActsGenerated', 'No acts generated yet');
+        return t('creationProgress.tooltips.generatedActs', 'Generated acts: {{count}}/5 complete', {
+          count: Object.keys(projectData.generatedActs).length
+        });
       
       default:
         return "";
@@ -103,7 +128,7 @@ export function CreationProgress({ currentStep }: CreationProgressProps) {
                     <TooltipContent className="max-w-xs whitespace-pre-line text-xs sm:text-sm">
                       {step <= maxStep 
                         ? getTooltipContent(step) 
-                        : "This step is not yet available"}
+                        : t('creationProgress.stepNotAvailable', 'This step is not yet available')}
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -120,12 +145,12 @@ export function CreationProgress({ currentStep }: CreationProgressProps) {
               
               {/* Step label directly below each circle */}
               <div className="text-[8px] sm:text-[8px] md:text-xs text-neutral-500 mt-1 text-center w-full max-w-[45px] sm:max-w-[70px] truncate">
-                {step === 1 && "Basics"}
-                {step === 2 && "Concept"}
-                {step === 3 && "Characters"}
-                {step === 4 && "Paths"}
-                {step === 5 && "Plot"}
-                {step === 6 && "Generate!"}
+                {step === 1 && t('creationProgress.steps.basic', 'Basics')}
+                {step === 2 && t('creationProgress.steps.concept', 'Concept')}
+                {step === 3 && t('creationProgress.steps.characters', 'Characters')}
+                {step === 4 && t('creationProgress.steps.paths', 'Paths')}
+                {step === 5 && t('creationProgress.steps.plot', 'Plot')}
+                {step === 6 && t('creationProgress.steps.generate', 'Generate!')}
               </div>
             </div>
           ))}

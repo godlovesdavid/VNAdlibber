@@ -55,7 +55,7 @@ export function NavBar() {
             <button
               className="text-neutral-500 hover:text-primary transition-colors"
               onClick={handleReturnButton}
-              aria-label="Back to main menu"
+              aria-label={t('navbar.backToMainMenu', 'Back to main menu')}
             >
               <ArrowLeft className="h-5 w-5" />
             </button>
@@ -87,16 +87,17 @@ export function NavBar() {
       <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Return to Main Menu?</AlertDialogTitle>
+            <AlertDialogTitle>{t('navbar.confirmReturn', 'Return to Main Menu?')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Any unsaved changes on this form will be lost. Are you sure you
-              want to return to the main menu?
+              {t('navbar.unsavedChangesWarning', 'Any unsaved changes on this form will be lost. Are you sure you want to return to the main menu?')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-primary text-primary-foreground hover:bg-primary/90">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="bg-primary text-primary-foreground hover:bg-primary/90">
+              {t('common.cancel', 'Cancel')}
+            </AlertDialogCancel>
             <AlertDialogAction onClick={confirmGoToMainMenu} className="bg-secondary text-secondary-foreground hover:bg-secondary/90">
-              Continue
+              {t('common.continue', 'Continue')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
