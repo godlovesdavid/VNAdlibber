@@ -1,0 +1,69 @@
+{
+  "appName": "Créateur de Roman Visuel",
+  "nav": {
+    "home": "Accueil",
+    "create": "Créer",
+    "library": "Bibliothèque",
+    "settings": "Paramètres"
+  },
+  "characterForm": {
+    "title": "Étape 3 : Personnages",
+    "description": "Créez les personnages qui donneront vie à votre histoire. Le premier personnage sera le protagoniste.",
+    "protagonist": "Protagoniste",
+    "character": "Personnage",
+    "name": "Nom",
+    "role": "Rôle",
+    "occupation": "Profession",
+    "gender": "Genre",
+    "age": "Âge",
+    "appearance": "Apparence",
+    "personality": "Personnalité",
+    "goals": "Objectifs et Motivation",
+    "relationshipPotential": "Potentiel de Relation",
+    "conflicts": "Conflits",
+    "generate": "Générer",
+    "generateAll": "Générer Tous les Personnages",
+    "generatePortrait": "Générer Portrait",
+    "addCharacter": "Ajouter Personnage",
+    "reset": "Réinitialiser",
+    "back": "Retour",
+    "next": "Suivant"
+  },
+  "conceptForm": {
+    "title": "Étape 2 : Concept",
+    "description": "Définissez le concept central de votre roman visuel avec un titre accrocheur, un slogan et une prémisse.",
+    "title": "Titre",
+    "titleHelp": "Créez un titre mémorable pour votre roman visuel",
+    "tagline": "Slogan",
+    "taglineHelp": "Une phrase qui capture l'essence de votre histoire",
+    "premise": "Prémisse",
+    "premiseHelp": "Brève description du cadre et du conflit central de votre histoire",
+    "generate": "Générer",
+    "reset": "Réinitialiser",
+    "back": "Retour",
+    "next": "Suivant"
+  },
+  "common": {
+    "generating": "Génération...",
+    "saving": "Sauvegarde...",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "warning": "Avertissement",
+    "confirm": "Confirmer",
+    "cancel": "Annuler",
+    "save": "Sauvegarder",
+    "delete": "Supprimer",
+    "edit": "Éditer",
+    "view": "Voir",
+    "play": "Jouer",
+    "untitled": "Sans titre"
+  },
+  "settings": {
+    "language": "Langue",
+    "theme": "Thème",
+    "apiKeys": "Clés API",
+    "account": "Compte",
+    "save": "Sauvegarder les Paramètres"
+  }
+}

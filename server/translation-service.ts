@@ -10,21 +10,20 @@ interface TranslationRequest {
   sourceLang?: string;
 }
 
-export async function translateTexts(req: Request, res: Response) {
+// Version that can be called programmatically without using request/response objects
+export async function translateTextsInternal(
+  texts: string[],
+  targetLang: string,
+  sourceLang?: string
+): Promise<string[]> {
   try {
-    const { texts, targetLang, sourceLang } = req.body as TranslationRequest;
-    
     // Validate input data
     if (!texts || !Array.isArray(texts) || texts.length === 0) {
-      return res.status(400).json({ 
-        error: 'Invalid input: texts should be a non-empty array' 
-      });
+      throw new Error('Invalid input: texts should be a non-empty array');
     }
     
     if (!targetLang) {
-      return res.status(400).json({ 
-        error: 'Invalid input: targetLang is required' 
-      });
+      throw new Error('Invalid input: targetLang is required');
     }
     
     // Map to DeepL language codes
@@ -39,10 +38,55 @@ export async function translateTexts(req: Request, res: Response) {
     );
     
     // Extract translated text from results
-    const translatedTexts = results.map(result => result.text);
+    return results.map(result => result.text);
+  } catch (error) {
+    console.error('DeepL translation error:', error);
+    throw error;
+  }
+}
+
+// API endpoint version that uses request/response
+export async function translateTexts(req: Request, res: Response, directInput?: TranslationRequest) {
+  try {
+    // Use either direct input or request body
+    const data = directInput || req.body as TranslationRequest;
+    const { texts, targetLang, sourceLang } = data;
     
-    // Return translated texts
-    return res.json({ translatedTexts });
+    // If direct input is provided, just do the translation and return the results
+    if (directInput) {
+      try {
+        const results = await translateTextsInternal(texts, targetLang, sourceLang);
+        return results;
+      } catch (error) {
+        throw error;
+      }
+    }
+    
+    // Request validation for API endpoint use
+    if (!texts || !Array.isArray(texts) || texts.length === 0) {
+      return res.status(400).json({ 
+        error: 'Invalid input: texts should be a non-empty array' 
+      });
+    }
+    
+    if (!targetLang) {
+      return res.status(400).json({ 
+        error: 'Invalid input: targetLang is required' 
+      });
+    }
+    
+    // Translate texts using the internal function
+    try {
+      const translatedTexts = await translateTextsInternal(texts, targetLang, sourceLang);
+      
+      // Return translated texts
+      return res.json({ translatedTexts });
+    } catch (error) {
+      console.error('Translation error in endpoint:', error);
+      return res.status(500).json({ 
+        error: error instanceof Error ? error.message : 'Unknown translation error' 
+      });
+    }
   } catch (error) {
     console.error('DeepL translation error:', error);
     return res.status(500).json({ 

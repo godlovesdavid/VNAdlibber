@@ -15,8 +15,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useState } from "react";
-import { CompactLanguageSwitcher } from "@/components/language-switcher";
 import { useTranslation } from "react-i18next";
+import { LanguageDropdown, MobileLanguageDropdown } from "@/components/language-dropdown";
 
 export function NavBar() {
   const [location, setLocation] = useLocation();
@@ -64,7 +64,12 @@ export function NavBar() {
             </h1>
           </div>
           <div className="flex items-center space-x-3">
-            <CompactLanguageSwitcher />
+            <div className="hidden md:block">
+              <LanguageDropdown />
+            </div>
+            <div className="md:hidden">
+              <MobileLanguageDropdown />
+            </div>
             {/* Only show these buttons when not on player pages */}
             {!isPlayerPage() && (
               <>
