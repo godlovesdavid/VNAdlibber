@@ -168,10 +168,11 @@ export async function handleClearTranslations(req: Request, res: Response) {
 export async function handleScanForMissingKeys(req: Request, res: Response) {
   try {
     // Define search patterns for translation keys with improved accuracy
-    // Look for proper t function call patterns with quotes
-    const tFunctionPattern = /t\(['"]([a-zA-Z0-9_.]+)['"]\)/g;
-    const tContextPattern = /\{\s*t\(['"]([a-zA-Z0-9_.]+)['"]\)/g;
-    const tComponentPattern = /<[^>]*t\(['"]([a-zA-Z0-9_.]+)['"]\)/g;
+    // Look for proper t function call patterns with quotes and capture fallback text
+    // Improved regex to better capture fallback text with various whitespace patterns
+    const tFunctionPattern = /t\(['"]([a-zA-Z0-9_.]+)['"]\s*(?:,\s*['"]([^'"]*)['"])?\)/g;
+    const tContextPattern = /\{\s*t\(['"]([a-zA-Z0-9_.]+)['"]\s*(?:,\s*['"]([^'"]*)['"])?\)/g;
+    const tComponentPattern = /<[^>]*t\(['"]([a-zA-Z0-9_.]+)['"]\s*(?:,\s*['"]([^'"]*)['"])?\)/g;
     
     // Helper function to validate if a key is a proper translation key format
     const isValidTranslationKey = (key: string): boolean => {
@@ -201,8 +202,9 @@ export async function handleScanForMissingKeys(req: Request, res: Response) {
     const keysCount = Object.keys(originalFlatTranslations).length;
     
     // Function to scan files in a directory recursively
-    const scanDirectory = async (dir: string): Promise<Set<string>> => {
-      const keys = new Set<string>();
+    // Return a map of keys to their fallback values
+    const scanDirectory = async (dir: string): Promise<Map<string, string>> => {
+      const keysMap = new Map<string, string>();
       
       // Read all files in the directory
       const files = fs.readdirSync(dir);
@@ -213,8 +215,10 @@ export async function handleScanForMissingKeys(req: Request, res: Response) {
         
         if (stats.isDirectory()) {
           // Recursively scan subdirectories
-          const subDirKeys = await scanDirectory(fullPath);
-          subDirKeys.forEach(key => keys.add(key));
+          const subDirKeysMap = await scanDirectory(fullPath);
+          subDirKeysMap.forEach((fallback, key) => {
+            keysMap.set(key, fallback);
+          });
         } else if (stats.isFile() && 
                   (fullPath.endsWith('.tsx') || 
                    fullPath.endsWith('.ts') || 
@@ -229,8 +233,13 @@ export async function handleScanForMissingKeys(req: Request, res: Response) {
           // Find t('key') pattern
           while ((match = tFunctionPattern.exec(content)) !== null) {
             const key = match[1];
+            const fallback = match[2] || ''; // Get the fallback text or empty string
+            
             if (key && key.includes('.') && isValidTranslationKey(key)) {
-              keys.add(key);
+              // If we already have a fallback for this key, only replace it if the current one is empty
+              if (!keysMap.has(key) || (keysMap.get(key) === '' && fallback !== '')) {
+                keysMap.set(key, fallback);
+              }
             }
           }
           
@@ -240,8 +249,12 @@ export async function handleScanForMissingKeys(req: Request, res: Response) {
           // Find { t('key') pattern
           while ((match = tContextPattern.exec(content)) !== null) {
             const key = match[1];
+            const fallback = match[2] || ''; // Get the fallback text or empty string
+            
             if (key && key.includes('.') && isValidTranslationKey(key)) {
-              keys.add(key);
+              if (!keysMap.has(key) || (keysMap.get(key) === '' && fallback !== '')) {
+                keysMap.set(key, fallback);
+              }
             }
           }
           
@@ -251,8 +264,12 @@ export async function handleScanForMissingKeys(req: Request, res: Response) {
           // Find JSX component with t('key') pattern
           while ((match = tComponentPattern.exec(content)) !== null) {
             const key = match[1];
+            const fallback = match[2] || ''; // Get the fallback text or empty string
+            
             if (key && key.includes('.') && isValidTranslationKey(key)) {
-              keys.add(key);
+              if (!keysMap.has(key) || (keysMap.get(key) === '' && fallback !== '')) {
+                keysMap.set(key, fallback);
+              }
             }
           }
           
@@ -261,18 +278,27 @@ export async function handleScanForMissingKeys(req: Request, res: Response) {
         }
       }
       
-      return keys;
+      return keysMap;
     };
     
     // Scan client source directory for translation keys
-    const allKeys = await scanDirectory(CLIENT_SRC_DIR);
-    console.log(`Found ${allKeys.size} potential translation keys in codebase`);
+    const allKeysMap = await scanDirectory(CLIENT_SRC_DIR);
+    console.log(`Found ${allKeysMap.size} potential translation keys in codebase`);
     
     // Filter out keys that already exist in translations and ensure they are valid keys
     const flatKeys = flattenObject(enTranslations);
-    const missingKeys = Array.from(allKeys)
-      .filter(key => !flatKeys[key])
-      .filter(key => isValidTranslationKey(key));
+    const missingKeysMap = new Map<string, string>();
+    
+    // Filter out existing keys and invalid keys, keeping only the missing valid ones
+    // Using forEach to avoid TypeScript iteration issues with Maps
+    allKeysMap.forEach((fallback, key) => {
+      if (!flatKeys[key] && isValidTranslationKey(key)) {
+        missingKeysMap.set(key, fallback);
+      }
+    });
+    
+    // Convert to array for easier processing
+    const missingKeys = Array.from(missingKeysMap.keys());
     
     // If no missing keys, return success
     if (missingKeys.length === 0) {
@@ -284,10 +310,13 @@ export async function handleScanForMissingKeys(req: Request, res: Response) {
       });
     }
     
-    // Add missing keys to translations object with empty values
+    // Add missing keys to translations object with their fallback values if available
     const updatedTranslations = { ...enTranslations };
     
     for (const key of missingKeys) {
+      // Get the fallback value for this key (or empty string if none)
+      const fallbackValue = missingKeysMap.get(key) || '';
+      
       // Split key by dot notation to create nested structure
       const keyParts = key.split('.');
       let current = updatedTranslations;
@@ -301,9 +330,9 @@ export async function handleScanForMissingKeys(req: Request, res: Response) {
         current = current[part];
       }
       
-      // Set value for the last key part (empty string)
+      // Set value for the last key part (use fallback value if available, otherwise empty string)
       const lastPart = keyParts[keyParts.length - 1];
-      current[lastPart] = '';
+      current[lastPart] = fallbackValue;
     }
     
     // Write updated translations back to file
