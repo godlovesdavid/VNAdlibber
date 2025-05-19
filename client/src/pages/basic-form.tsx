@@ -319,19 +319,19 @@ export default function BasicForm() {
                         <SelectValue placeholder="tone" />
                       </SelectTrigger>
                       <SelectContent className="min-w-[180px]">
-                        <SelectItem value="humorous">humorous</SelectItem>
-                        <SelectItem value="dark">dark</SelectItem>
-                        <SelectItem value="gritty">gritty</SelectItem>
+                        <SelectItem value="humorous">{t('tones.humorous', 'humorous')}</SelectItem>
+                        <SelectItem value="dark">{t('tones.dark', 'dark')}</SelectItem>
+                        <SelectItem value="gritty">{t('tones.gritty', 'gritty')}</SelectItem>
                         <SelectItem value="lighthearted">
-                          lighthearted
+                          {t('tones.lighthearted', 'lighthearted')}
                         </SelectItem>
-                        <SelectItem value="melancholic">melancholic</SelectItem>
-                        <SelectItem value="romantic">romantic</SelectItem>
-                        <SelectItem value="satirical">satirical</SelectItem>
-                        <SelectItem value="suspenseful">suspenseful</SelectItem>
-                        <SelectItem value="tragicomic">tragicomic</SelectItem>
-                        <SelectItem value="uplifting">uplifting</SelectItem>
-                        <SelectItem value="whimsical">whimsical</SelectItem>
+                        <SelectItem value="melancholic">{t('tones.melancholic', 'melancholic')}</SelectItem>
+                        <SelectItem value="romantic">{t('tones.romantic', 'romantic')}</SelectItem>
+                        <SelectItem value="satirical">{t('tones.satirical', 'satirical')}</SelectItem>
+                        <SelectItem value="suspenseful">{t('tones.suspenseful', 'suspenseful')}</SelectItem>
+                        <SelectItem value="tragicomic">{t('tones.tragicomic', 'tragicomic')}</SelectItem>
+                        <SelectItem value="uplifting">{t('tones.uplifting', 'uplifting')}</SelectItem>
+                        <SelectItem value="whimsical">{t('tones.whimsical', 'whimsical')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -343,17 +343,17 @@ export default function BasicForm() {
                         <SelectValue placeholder="genre" />
                       </SelectTrigger>
                       <SelectContent className="min-w-[180px]">
-                        <SelectItem value="mystery">mystery</SelectItem>
-                        <SelectItem value="romance">romance</SelectItem>
-                        <SelectItem value="sci_fi">sci-fi</SelectItem>
-                        <SelectItem value="adventure">adventure</SelectItem>
+                        <SelectItem value="mystery">{t('genres.mystery', 'mystery')}</SelectItem>
+                        <SelectItem value="romance">{t('genres.romance', 'romance')}</SelectItem>
+                        <SelectItem value="sci_fi">{t('genres.sci_fi', 'sci-fi')}</SelectItem>
+                        <SelectItem value="adventure">{t('genres.adventure', 'adventure')}</SelectItem>
                         <SelectItem value="slice_of_life">
-                          slice of life
+                          {t('genres.slice_of_life', 'slice of life')}
                         </SelectItem>
-                        <SelectItem value="thriller">thriller</SelectItem>
-                        <SelectItem value="comedy">comedy</SelectItem>
-                        <SelectItem value="horror">horror</SelectItem>
-                        <SelectItem value="drama">drama</SelectItem>
+                        <SelectItem value="thriller">{t('genres.thriller', 'thriller')}</SelectItem>
+                        <SelectItem value="comedy">{t('genres.comedy', 'comedy')}</SelectItem>
+                        <SelectItem value="horror">{t('genres.horror', 'horror')}</SelectItem>
+                        <SelectItem value="drama">{t('genres.drama', 'drama')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -367,24 +367,24 @@ export default function BasicForm() {
                         <SelectValue placeholder="theme" />
                       </SelectTrigger>
                       <SelectContent className="min-w-[200px]">
-                        <SelectItem value="forgiveness">forgiveness</SelectItem>
+                        <SelectItem value="forgiveness">{t('themes.forgiveness', 'forgiveness')}</SelectItem>
                         <SelectItem value="freedom_vs_control">
-                          freedom vs control
+                          {t('themes.freedom_vs_control', 'freedom vs control')}
                         </SelectItem>
-                        <SelectItem value="growth">growth</SelectItem>
-                        <SelectItem value="identity">identity</SelectItem>
+                        <SelectItem value="growth">{t('themes.growth', 'growth')}</SelectItem>
+                        <SelectItem value="identity">{t('themes.identity', 'identity')}</SelectItem>
                         <SelectItem value="love_vs_duty">
-                          love vs duty
+                          {t('themes.love_vs_duty', 'love vs duty')}
                         </SelectItem>
                         <SelectItem value="revenge_and_justice">
-                          revenge & justice
+                          {t('themes.revenge_and_justice', 'revenge & justice')}
                         </SelectItem>
                         <SelectItem value="technology_vs_humanity">
-                          tech vs humanity
+                          {t('themes.technology_vs_humanity', 'tech vs humanity')}
                         </SelectItem>
-                        <SelectItem value="sacrifice">sacrifice</SelectItem>
+                        <SelectItem value="sacrifice">{t('themes.sacrifice', 'sacrifice')}</SelectItem>
                         <SelectItem value="trust_and_betrayal">
-                          trust & betrayal
+                          {t('themes.trust_and_betrayal', 'trust & betrayal')}
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -400,31 +400,31 @@ export default function BasicForm() {
                       </SelectTrigger>
                       <SelectContent className="min-w-[200px]">
                         <SelectItem value="cyberpunk_world">
-                          cyberpunk world
+                          {t('settings.cyberpunk_world', 'cyberpunk world')}
                         </SelectItem>
                         <SelectItem value="steampunk_world">
-                          steampunk world
+                          {t('settings.steampunk_world', 'steampunk world')}
                         </SelectItem>
                         <SelectItem value="noir_setting">
-                          noir setting
+                          {t('settings.noir_setting', 'noir setting')}
                         </SelectItem>
-                        <SelectItem value="modern_day">modern day</SelectItem>
-                        <SelectItem value="school">school</SelectItem>
-                        <SelectItem value="history">history</SelectItem>
-                        <SelectItem value="mythology">mythology</SelectItem>
-                        <SelectItem value="space">space</SelectItem>
-                        <SelectItem value="dystopia">dystopia</SelectItem>
-                        <SelectItem value="utopia">utopia</SelectItem>
-                        <SelectItem value="urban_city">urban city</SelectItem>
+                        <SelectItem value="modern_day">{t('settings.modern_day', 'modern day')}</SelectItem>
+                        <SelectItem value="school">{t('settings.school', 'school')}</SelectItem>
+                        <SelectItem value="history">{t('settings.history', 'history')}</SelectItem>
+                        <SelectItem value="mythology">{t('settings.mythology', 'mythology')}</SelectItem>
+                        <SelectItem value="space">{t('settings.space', 'space')}</SelectItem>
+                        <SelectItem value="dystopia">{t('settings.dystopia', 'dystopia')}</SelectItem>
+                        <SelectItem value="utopia">{t('settings.utopia', 'utopia')}</SelectItem>
+                        <SelectItem value="urban_city">{t('settings.urban_city', 'urban city')}</SelectItem>
                         <SelectItem value="haunted_place">
-                          a haunted place
+                          {t('settings.haunted_place', 'a haunted place')}
                         </SelectItem>
-                        <SelectItem value="countryside">countryside</SelectItem>
+                        <SelectItem value="countryside">{t('settings.countryside', 'countryside')}</SelectItem>
                         <SelectItem value="post_apocalypse">
-                          post-apocalypse
+                          {t('settings.post_apocalypse', 'post-apocalypse')}
                         </SelectItem>
                         <SelectItem value="virtual_reality">
-                          virtual reality
+                          {t('settings.virtual_reality', 'virtual reality')}
                         </SelectItem>
                       </SelectContent>
                     </Select>
