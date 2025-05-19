@@ -138,17 +138,18 @@ export async function handleAutoTranslate(req: Request, res: Response) {
     // Prepare for translation
     const textsToTranslate = Object.values(missingTranslations);
     
-    // Translate the missing texts
-    const translatedTexts = await translateTexts(req, res, {
-      texts: textsToTranslate,
-      targetLang: language,
-      sourceLang: 'en'
-    });
+    // Translate the missing texts - use internal function to get direct array back
+    const { translateTextsInternal } = require('./translation-service');
+    const translatedTexts = await translateTextsInternal(
+      textsToTranslate,
+      language,
+      'en'
+    );
     
     // Create a flat object with original keys and translated values
     const translatedObj: Record<string, string> = {};
-    for (let i = 0; i < missingKeys.length; i++) {
-      translatedObj[missingKeys[i]] = translatedTexts[i];
+    for (let i = 0; i < missingKeys.length && i < translatedTexts.length; i++) {
+      translatedObj[missingKeys[i]] = String(translatedTexts[i] || '');
     }
     
     // Unflatten to restore nested structure
