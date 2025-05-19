@@ -85,6 +85,11 @@ export function MainMenu() {
   const handleTranslationSettings = () => {
     setLocation("/settings/translations");
   };
+  
+  // Handle navigation to translation manager
+  const handleTranslationManager = () => {
+    setLocation("/tools/translation-manager");
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-neutral-50 px-4 py-8">
@@ -153,6 +158,16 @@ export function MainMenu() {
         >
           <Languages className="mr-2 h-5 w-5" />
           Translation Settings
+        </Button>
+        
+        <Button 
+          onClick={handleTranslationManager} 
+          className="w-full flex items-center justify-center bg-white border border-indigo-500 text-indigo-600 hover:bg-indigo-50 py-6"
+          variant="outline"
+          size="lg"
+        >
+          <Languages className="mr-2 h-5 w-5" />
+          Translate All Languages
         </Button>
 
         {/* <Button 
