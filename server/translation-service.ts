@@ -26,31 +26,15 @@ export async function translateTextsInternal(
       throw new Error('Invalid input: targetLang is required');
     }
     
-    // Special handling for Arabic as target language with DeepL
-    if (targetLang.toLowerCase() === 'ar') {
-      // For Arabic, always use 'EN-US' as source to avoid errors
-      const results = await translator.translateText(
-        texts,
-        'EN-US' as deepl.SourceLanguageCode,
-        'AR' as deepl.TargetLanguageCode
-      );
-      
-      // Extract translated text from results
-      return results.map(result => result.text);
-    }
-    
     // For other languages, use the normal mapping but handle source language carefully
     const mappedTargetLang = mapToDeeplLangCode(targetLang);
     
-    // Default to English as source if not specified
-    // This is important because DeepL has strict requirements for source language codes
-    const safeSourceLang = sourceLang || 'en';
     
     // Always use EN-US as source to avoid DeepL errors
     // Translate texts
     const results = await translator.translateText(
       texts,
-      'EN-US' as deepl.SourceLanguageCode,
+      'en' as deepl.SourceLanguageCode,
       mappedTargetLang as deepl.TargetLanguageCode
     );
     

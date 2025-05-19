@@ -30,9 +30,8 @@
     "next": "次へ"
   },
   "conceptForm": {
-    "title": "ステップ2：コンセプト",
-    "description": "魅力的なタイトル、タグライン、前提で視覚小説の中心概念を定義します。",
     "title": "タイトル",
+    "description": "魅力的なタイトル、タグライン、前提で視覚小説の中心概念を定義します。",
     "titleHelp": "あなたのビジュアルノベルの記憶に残るタイトルを作成してください",
     "tagline": "タグライン",
     "taglineHelp": "あなたのストーリーの本質を捉えるフレーズ",
@@ -57,7 +56,11 @@
     "edit": "編集",
     "view": "表示",
     "play": "プレイ",
-    "untitled": "無題"
+    "untitled": "無題",
+    "back": "バック",
+    "next": "次のページ",
+    "previous": "前へ",
+    "continue": "続ける"
   },
   "settings": {
     "language": "言語",
@@ -65,5 +68,68 @@
     "apiKeys": "APIキー",
     "account": "アカウント",
     "save": "設定を保存"
+  },
+  "basicForm": {
+    "title": "ステップ1：基本情報",
+    "description": "ビジュアル・ノベルの基本要素を選びます。",
+    "theme": "テーマ",
+    "themeHelp": "物語の中心となるテーマや対立",
+    "tone": "トーン",
+    "toneHelp": "ストーリーの感情的な感触",
+    "genre": "ジャンル",
+    "genreHelp": "ストーリーのスタイルまたはカテゴリー",
+    "setting": "セッティング",
+    "settingHelp": "物語の舞台となる世界や環境",
+    "randomize": "オプションのランダム化",
+    "reset": "リセット",
+    "next": "次のページ"
+  },
+  "translation": {
+    "manager": {
+      "title": "翻訳マネージャー",
+      "header": "翻訳マネージャー",
+      "description": "このツールを使って、ビジュアルノベルのコンテンツを自動的に多言語に翻訳しましょう。",
+      "bulkTranslateTitle": "一括翻訳",
+      "bulkTranslateDescription": "サポートされているすべての言語の翻訳を1回の操作で生成します。",
+      "translateAll": "すべての言語を翻訳する",
+      "translating": "あらゆる言語の翻訳...",
+      "serviceReady": "DeepL翻訳サービスはすぐにご利用いただけます",
+      "serviceUnavailable": "DeepL API が使用できません。サーバ構成を確認してください。",
+      "translationLog": "翻訳ログ",
+      "settings": "翻訳設定",
+      "settingsDescription": "アプリケーション全体でどのように翻訳が処理されるかを設定します。",
+      "autoTranslate": "フォームフィールドの自動翻訳",
+      "autoTranslateDescription": "言語変更時にフォームフィールドを自動的に翻訳",
+      "sourceLanguage": "出典言語",
+      "sourceLanguageDescription": "翻訳前のコンテンツの原語"
+    }
+  },
+  "player": {
+    "continue": "続ける",
+    "restart": "リスタート",
+    "return": "メニューに戻る",
+    "act": "行為",
+    "dialogueLog": "対話ログ",
+    "settings": "設定",
+    "textSpeed": "テキストスピード",
+    "imageGeneration": "画像生成",
+    "on": "オン",
+    "off": "オフ",
+    "slow": "遅い",
+    "medium": "ミディアム",
+    "fast": "速い"
+  },
+  "errorMessages": {
+    "translationFailed": "翻訳に失敗",
+    "generationFailed": "世代交代に失敗",
+    "connectionError": "接続エラー",
+    "saveFailed": "保存に失敗",
+    "loadFailed": "ロードに失敗"
+  },
+  "success": {
+    "translationComplete": "翻訳完了",
+    "generationComplete": "世代完了",
+    "saved": "保存に成功",
+    "loaded": "ロードに成功"
   }
 }

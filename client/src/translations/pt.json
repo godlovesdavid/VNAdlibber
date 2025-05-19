@@ -30,9 +30,8 @@
     "next": "Próximo"
   },
   "conceptForm": {
-    "title": "Passo 2: Conceito",
-    "description": "Defina o conceito central do seu romance visual com um título marcante, slogan e premissa.",
     "title": "Título",
+    "description": "Defina o conceito central do seu romance visual com um título marcante, slogan e premissa.",
     "titleHelp": "Crie um título memorável para o seu romance visual",
     "tagline": "Slogan",
     "taglineHelp": "Uma frase que captura a essência da sua história",
@@ -57,7 +56,11 @@
     "edit": "Editar",
     "view": "Visualizar",
     "play": "Jogar",
-    "untitled": "Sem título"
+    "untitled": "Sem título",
+    "back": "Voltar",
+    "next": "Seguinte",
+    "previous": "Anterior",
+    "continue": "Continuar"
   },
   "settings": {
     "language": "Idioma",
@@ -65,5 +68,68 @@
     "apiKeys": "Chaves de API",
     "account": "Conta",
     "save": "Salvar Configurações"
+  },
+  "basicForm": {
+    "title": "Etapa 1: Informações básicas",
+    "description": "Selecione os elementos básicos para o seu romance visual.",
+    "theme": "Tema",
+    "themeHelp": "O tema ou conflito central da sua história",
+    "tone": "Tom",
+    "toneHelp": "O sentimento emocional da sua história",
+    "genre": "Género",
+    "genreHelp": "O estilo ou a categoria da sua história",
+    "setting": "Definição",
+    "settingHelp": "O mundo ou o ambiente em que a sua história se desenrola",
+    "randomize": "Opções de aleatoriedade",
+    "reset": "Reiniciar",
+    "next": "Seguinte"
+  },
+  "translation": {
+    "manager": {
+      "title": "Gestor de traduções",
+      "header": "Gestor de traduções",
+      "description": "Utilize esta ferramenta para traduzir automaticamente o conteúdo da sua novela visual para várias línguas.",
+      "bulkTranslateTitle": "Tradução em massa",
+      "bulkTranslateDescription": "Gerar traduções para todas as línguas suportadas numa única operação.",
+      "translateAll": "Traduzir todas as línguas",
+      "translating": "Traduzir todas as línguas...",
+      "serviceReady": "O serviço de tradução DeepL está pronto a ser utilizado",
+      "serviceUnavailable": "DeepL API não disponível. Verifique a configuração do seu servidor.",
+      "translationLog": "Registo de tradução",
+      "settings": "Definições de tradução",
+      "settingsDescription": "Configurar a forma como as traduções são tratadas em toda a aplicação.",
+      "autoTranslate": "Tradução automática de campos de formulário",
+      "autoTranslateDescription": "Traduzir automaticamente os campos do formulário ao mudar de idioma",
+      "sourceLanguage": "Língua de partida",
+      "sourceLanguageDescription": "Língua original do seu conteúdo antes da tradução"
+    }
+  },
+  "player": {
+    "continue": "Continuar",
+    "restart": "Reiniciar",
+    "return": "Voltar ao menu",
+    "act": "Ato",
+    "dialogueLog": "Registo do diálogo",
+    "settings": "Definições",
+    "textSpeed": "Velocidade do texto",
+    "imageGeneration": "Geração de imagens",
+    "on": "Em",
+    "off": "Desligado",
+    "slow": "Lento",
+    "medium": "Médio",
+    "fast": "Rápido"
+  },
+  "errorMessages": {
+    "translationFailed": "A tradução falhou",
+    "generationFailed": "Geração falhada",
+    "connectionError": "Erro de ligação",
+    "saveFailed": "Falha ao guardar",
+    "loadFailed": "Falha no carregamento"
+  },
+  "success": {
+    "translationComplete": "Tradução completa",
+    "generationComplete": "Geração completa",
+    "saved": "Guardado com sucesso",
+    "loaded": "Carregado com sucesso"
   }
 }

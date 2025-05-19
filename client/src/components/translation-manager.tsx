@@ -80,7 +80,7 @@ export function TranslationManager() {
       // Process each language
       for (const language of supportedLanguages) {
         setTranslationLog(prev => [...prev, `Processing ${language.name} (${language.code})...`]);
-        
+        console.log(`/api/translate/auto/${language.code}`)
         // Call auto-translation endpoint for this language
         const response = await fetch(`/api/translate/auto/${language.code}`);
         

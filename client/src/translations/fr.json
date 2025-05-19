@@ -30,9 +30,8 @@
     "next": "Suivant"
   },
   "conceptForm": {
-    "title": "Étape 2 : Concept",
-    "description": "Définissez le concept central de votre roman visuel avec un titre accrocheur, un slogan et une prémisse.",
     "title": "Titre",
+    "description": "Définissez le concept central de votre roman visuel avec un titre accrocheur, un slogan et une prémisse.",
     "titleHelp": "Créez un titre mémorable pour votre roman visuel",
     "tagline": "Slogan",
     "taglineHelp": "Une phrase qui capture l'essence de votre histoire",
@@ -57,7 +56,11 @@
     "edit": "Éditer",
     "view": "Voir",
     "play": "Jouer",
-    "untitled": "Sans titre"
+    "untitled": "Sans titre",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "continue": "Continuer"
   },
   "settings": {
     "language": "Langue",
@@ -65,5 +68,68 @@
     "apiKeys": "Clés API",
     "account": "Compte",
     "save": "Sauvegarder les Paramètres"
+  },
+  "basicForm": {
+    "title": "Étape 1 : Informations de base",
+    "description": "Sélectionnez les éléments de base de votre roman visuel.",
+    "theme": "Thème",
+    "themeHelp": "Le thème central ou le conflit de votre histoire",
+    "tone": "Tonalité",
+    "toneHelp": "L'aspect émotionnel de votre histoire",
+    "genre": "Genre",
+    "genreHelp": "Le style ou la catégorie de votre histoire",
+    "setting": "Paramètres",
+    "settingHelp": "Le monde ou l'environnement dans lequel se déroule votre histoire",
+    "randomize": "Options de randomisation",
+    "reset": "Remise à zéro",
+    "next": "Suivant"
+  },
+  "translation": {
+    "manager": {
+      "title": "Responsable de la traduction",
+      "header": "Responsable de la traduction",
+      "description": "Utilisez cet outil pour traduire automatiquement le contenu de vos romans visuels en plusieurs langues.",
+      "bulkTranslateTitle": "Traduction en bloc",
+      "bulkTranslateDescription": "Générer des traductions pour toutes les langues prises en charge en une seule opération.",
+      "translateAll": "Traduire toutes les langues",
+      "translating": "Traduire toutes les langues...",
+      "serviceReady": "Le service de traduction DeepL est prêt à l'emploi",
+      "serviceUnavailable": "DeepL API non disponible. Veuillez vérifier la configuration de votre serveur.",
+      "translationLog": "Journal de traduction",
+      "settings": "Paramètres de traduction",
+      "settingsDescription": "Configurer la manière dont les traductions sont gérées dans l'application.",
+      "autoTranslate": "Traduire automatiquement les champs du formulaire",
+      "autoTranslateDescription": "Traduire automatiquement les champs du formulaire en cas de changement de langue",
+      "sourceLanguage": "Langue source",
+      "sourceLanguageDescription": "Langue originale de votre contenu avant traduction"
+    }
+  },
+  "player": {
+    "continue": "Continuer",
+    "restart": "Redémarrage",
+    "return": "Retour au menu",
+    "act": "Agir",
+    "dialogueLog": "Journal de bord",
+    "settings": "Paramètres",
+    "textSpeed": "Vitesse du texte",
+    "imageGeneration": "Génération d'images",
+    "on": "Sur",
+    "off": "Arrêt",
+    "slow": "Lenteur",
+    "medium": "Moyen",
+    "fast": "Rapide"
+  },
+  "errorMessages": {
+    "translationFailed": "Échec de la traduction",
+    "generationFailed": "La génération a échoué",
+    "connectionError": "Erreur de connexion",
+    "saveFailed": "Échec de la sauvegarde",
+    "loadFailed": "Échec du chargement"
+  },
+  "success": {
+    "translationComplete": "Traduction terminée",
+    "generationComplete": "Génération complète",
+    "saved": "Sauvegarde réussie",
+    "loaded": "Chargé avec succès"
   }
 }

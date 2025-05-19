@@ -30,9 +30,8 @@
     "next": "下一步"
   },
   "conceptForm": {
-    "title": "步骤2：概念",
-    "description": "用引人注目的标题、标语和前提来定义您的视觉小说的核心概念。",
     "title": "标题",
+    "description": "用引人注目的标题、标语和前提来定义您的视觉小说的核心概念。",
     "titleHelp": "为您的视觉小说创建一个令人难忘的标题",
     "tagline": "标语",
     "taglineHelp": "一个捕捉您故事本质的短语",
@@ -57,7 +56,11 @@
     "edit": "编辑",
     "view": "查看",
     "play": "播放",
-    "untitled": "无标题"
+    "untitled": "无标题",
+    "back": "返回",
+    "next": "下一页",
+    "previous": "上一页",
+    "continue": "继续"
   },
   "settings": {
     "language": "语言",
@@ -65,5 +68,68 @@
     "apiKeys": "API密钥",
     "account": "账户",
     "save": "保存设置"
+  },
+  "basicForm": {
+    "title": "步骤 1：基本信息",
+    "description": "选择视觉小说的基本元素。",
+    "theme": "主题",
+    "themeHelp": "故事的中心主题或冲突",
+    "tone": "音调",
+    "toneHelp": "故事的情感",
+    "genre": "类型",
+    "genreHelp": "故事的风格或类别",
+    "setting": "设置",
+    "settingHelp": "故事发生的世界或环境",
+    "randomize": "随机化选项",
+    "reset": "重置",
+    "next": "下一页"
+  },
+  "translation": {
+    "manager": {
+      "title": "翻译经理",
+      "header": "翻译经理",
+      "description": "使用该工具可将视觉小说内容自动翻译成多种语言。",
+      "bulkTranslateTitle": "批量翻译",
+      "bulkTranslateDescription": "一次操作即可生成所有支持语言的译文。",
+      "translateAll": "翻译所有语言",
+      "translating": "翻译所有语言...",
+      "serviceReady": "DeepL 翻译服务随时可用",
+      "serviceUnavailable": "DeepL API 不可用。请检查服务器配置。",
+      "translationLog": "翻译日志",
+      "settings": "翻译设置",
+      "settingsDescription": "配置如何在整个应用程序中处理翻译。",
+      "autoTranslate": "自动翻译表单字段",
+      "autoTranslateDescription": "更改语言时自动翻译表单字段",
+      "sourceLanguage": "来源语言",
+      "sourceLanguageDescription": "翻译前内容的原始语言"
+    }
+  },
+  "player": {
+    "continue": "继续",
+    "restart": "重新启动",
+    "return": "返回菜单",
+    "act": "法案",
+    "dialogueLog": "对话日志",
+    "settings": "设置",
+    "textSpeed": "文本速度",
+    "imageGeneration": "图像生成",
+    "on": "关于",
+    "off": "关闭",
+    "slow": "慢",
+    "medium": "中型",
+    "fast": "快速"
+  },
+  "errorMessages": {
+    "translationFailed": "翻译失败",
+    "generationFailed": "生成失败",
+    "connectionError": "连接错误",
+    "saveFailed": "保存失败",
+    "loadFailed": "加载失败"
+  },
+  "success": {
+    "translationComplete": "翻译完毕",
+    "generationComplete": "一代完成",
+    "saved": "成功保存",
+    "loaded": "成功加载"
   }
 }

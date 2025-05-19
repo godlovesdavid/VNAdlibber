@@ -1,1 +1,135 @@
-{}
+{
+  "appName": "Visual Novel Creator",
+  "nav": {
+    "home": "Home",
+    "create": "Create",
+    "library": "Library",
+    "settings": "Settings"
+  },
+  "basicForm": {
+    "title": "Step 1: Basic Information",
+    "description": "Select the basic elements for your visual novel.",
+    "theme": "Theme",
+    "themeHelp": "The central theme or conflict in your story",
+    "tone": "Tone",
+    "toneHelp": "The emotional feel of your story",
+    "genre": "Genre",
+    "genreHelp": "The style or category of your story",
+    "setting": "Setting",
+    "settingHelp": "The world or environment where your story takes place",
+    "randomize": "Randomize Options",
+    "reset": "Reset",
+    "next": "Next"
+  },
+  "characterForm": {
+    "title": "Step 3: Characters",
+    "description": "Create the characters that will bring your story to life. The first character will be the protagonist.",
+    "protagonist": "Protagonist",
+    "character": "Character",
+    "name": "Name",
+    "role": "Role",
+    "occupation": "Occupation",
+    "gender": "Gender",
+    "age": "Age",
+    "appearance": "Appearance",
+    "personality": "Personality",
+    "goals": "Goals & Motivation",
+    "relationshipPotential": "Relationship Potential",
+    "conflicts": "Conflicts",
+    "generate": "Generate",
+    "generateAll": "Generate All Characters",
+    "generatePortrait": "Generate Portrait",
+    "addCharacter": "Add Character",
+    "reset": "Reset",
+    "back": "Back",
+    "next": "Next"
+  },
+  "conceptForm": {
+    "title": "Title",
+    "description": "Define the central concept of your visual novel with a catchy title, tagline, and premise.",
+    "titleHelp": "Create a memorable title for your visual novel",
+    "tagline": "Tagline",
+    "taglineHelp": "A phrase that captures the essence of your story",
+    "premise": "Premise",
+    "premiseHelp": "Brief description of your story's setting and central conflict",
+    "generate": "Generate",
+    "reset": "Reset",
+    "back": "Back",
+    "next": "Next"
+  },
+  "common": {
+    "generating": "Generating...",
+    "saving": "Saving...",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "play": "Play",
+    "untitled": "Untitled",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "continue": "Continue"
+  },
+  "settings": {
+    "language": "Language",
+    "theme": "Theme",
+    "apiKeys": "API Keys",
+    "account": "Account",
+    "save": "Save Settings"
+  },
+  "translation": {
+    "manager": {
+      "title": "Translation Manager",
+      "header": "Translation Manager",
+      "description": "Use this tool to automatically translate your visual novel content into multiple languages.",
+      "bulkTranslateTitle": "Bulk Translation",
+      "bulkTranslateDescription": "Generate translations for all supported languages in a single operation.",
+      "translateAll": "Translate All Languages",
+      "translating": "Translating all languages...",
+      "serviceReady": "DeepL translation service is ready to use",
+      "serviceUnavailable": "DeepL API not available. Please check your server configuration.",
+      "translationLog": "Translation Log",
+      "settings": "Translation Settings",
+      "settingsDescription": "Configure how translations are handled throughout the application.",
+      "autoTranslate": "Auto-translate form fields",
+      "autoTranslateDescription": "Automatically translate form fields when changing languages",
+      "sourceLanguage": "Source language",
+      "sourceLanguageDescription": "Original language of your content before translation"
+    }
+  },
+  "player": {
+    "continue": "Continue",
+    "restart": "Restart",
+    "return": "Return to Menu",
+    "act": "Act",
+    "dialogueLog": "Dialogue Log",
+    "settings": "Settings",
+    "textSpeed": "Text Speed",
+    "imageGeneration": "Image Generation",
+    "on": "On",
+    "off": "Off",
+    "slow": "Slow",
+    "medium": "Medium",
+    "fast": "Fast"
+  },
+  "errorMessages": {
+    "translationFailed": "Translation failed",
+    "generationFailed": "Generation failed",
+    "connectionError": "Connection error",
+    "saveFailed": "Failed to save",
+    "loadFailed": "Failed to load"
+  },
+  "success": {
+    "translationComplete": "Translation complete",
+    "generationComplete": "Generation complete",
+    "saved": "Successfully saved",
+    "loaded": "Successfully loaded"
+  }
+}
