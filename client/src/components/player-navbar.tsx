@@ -266,7 +266,7 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog, titl
               </SheetHeader>
               <div className="mt-6 space-y-6">
                 <div className="space-y-2">
-                  <h3 className="text-sm font-medium">Text Speed</h3>
+                  <h3 className="text-sm font-medium">{t('playerNavbar.textSpeed', 'Text Speed')}</h3>
                   <div className="grid grid-cols-3 gap-2">
                     <Button 
                       variant={activeTextSpeed === 'slow' ? 'default' : 'outline'} 
@@ -278,7 +278,7 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog, titl
                         setActiveTextSpeed('slow');
                       }}
                     >
-                      Slow
+                      {t('playerNavbar.slow', 'Slow')}
                     </Button>
                     <Button 
                       variant={activeTextSpeed === 'normal' ? 'default' : 'outline'} 
@@ -290,7 +290,7 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog, titl
                         setActiveTextSpeed('normal');
                       }}
                     >
-                      Normal
+                      {t('playerNavbar.normal', 'Normal')}
                     </Button>
                     <Button 
                       variant={activeTextSpeed === 'fast' ? 'default' : 'outline'} 
@@ -302,13 +302,13 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog, titl
                         setActiveTextSpeed('fast');
                       }}
                     >
-                      Fast
+                      {t('playerNavbar.fast', 'Fast')}
                     </Button>
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <h3 className="text-sm font-medium">Image Generation</h3>
+                  <h3 className="text-sm font-medium">{t('playerNavbar.imageGeneration', 'Image Generation')}</h3>
                   <div className="grid grid-cols-2 gap-2">
                     <Button 
                       variant={!imageGenerationEnabled ? 'default' : 'outline'} 
@@ -320,7 +320,7 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog, titl
                         setImageGenerationEnabled(false);
                       }}
                     >
-                      Off
+                      {t('playerNavbar.off', 'Off')}
                     </Button>
                     <Button 
                       variant={imageGenerationEnabled ? 'default' : 'outline'} 
@@ -332,18 +332,18 @@ export function PlayerNavbar({ actNumber, onRestart, onReturn, dialogueLog, titl
                         setImageGenerationEnabled(true);
                       }}
                     >
-                      On
+                      {t('playerNavbar.on', 'On')}
                     </Button>
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <h3 className="text-sm font-medium">Audio</h3>
+                  <h3 className="text-sm font-medium">{t('playerNavbar.audio', 'Audio')}</h3>
                   <div className="grid grid-cols-2 gap-2">
-                    <Button variant="outline" size="sm">Off</Button>
-                    <Button variant="outline" size="sm" disabled>On</Button>
+                    <Button variant="outline" size="sm">{t('playerNavbar.off', 'Off')}</Button>
+                    <Button variant="outline" size="sm" disabled>{t('playerNavbar.on', 'On')}</Button>
                   </div>
-                  <p className="text-xs text-muted-foreground">Coming soon</p>
+                  <p className="text-xs text-muted-foreground">{t('playerNavbar.comingSoon', 'Coming soon')}</p>
                 </div>
               </div>
             </SheetContent>
