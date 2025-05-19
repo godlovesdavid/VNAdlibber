@@ -8,6 +8,11 @@ const TRANSLATION_DIR = path.join(process.cwd(), 'client', 'src', 'translations'
 const EN_TRANSLATION_PATH = path.join(TRANSLATION_DIR, 'en.json');
 const ES_TRANSLATION_PATH = path.join(TRANSLATION_DIR, 'es.json');
 const JA_TRANSLATION_PATH = path.join(TRANSLATION_DIR, 'ja.json');
+const ZH_TRANSLATION_PATH = path.join(TRANSLATION_DIR, 'zh.json');
+const FR_TRANSLATION_PATH = path.join(TRANSLATION_DIR, 'fr.json');
+const DE_TRANSLATION_PATH = path.join(TRANSLATION_DIR, 'de.json');
+const PT_TRANSLATION_PATH = path.join(TRANSLATION_DIR, 'pt.json');
+const AR_TRANSLATION_PATH = path.join(TRANSLATION_DIR, 'ar.json');
 
 // Helper functions
 const readJsonFile = (filePath: string): any => {
@@ -109,14 +114,30 @@ export async function handleAutoTranslate(req: Request, res: Response) {
     const { language } = req.params;
     
     // Validate language parameter
-    if (language !== 'es' && language !== 'ja') {
+    const supportedLanguages = ['es', 'ja', 'zh', 'fr', 'de', 'pt', 'ar'];
+    if (!supportedLanguages.includes(language)) {
       return res.status(400).json({
-        error: 'Invalid language. Supported languages are "es" and "ja".'
+        error: `Invalid language. Supported languages are: ${supportedLanguages.join(', ')}`
       });
     }
     
     // Determine file paths
-    const targetPath = language === 'es' ? ES_TRANSLATION_PATH : JA_TRANSLATION_PATH;
+    let targetPath;
+    switch (language) {
+      case 'es': targetPath = ES_TRANSLATION_PATH; break;
+      case 'ja': targetPath = JA_TRANSLATION_PATH; break;
+      case 'zh': targetPath = ZH_TRANSLATION_PATH; break;
+      case 'fr': targetPath = FR_TRANSLATION_PATH; break;
+      case 'de': targetPath = DE_TRANSLATION_PATH; break;
+      case 'pt': targetPath = PT_TRANSLATION_PATH; break;
+      case 'ar': targetPath = AR_TRANSLATION_PATH; break;
+      default: targetPath = ES_TRANSLATION_PATH; // Fallback (should never happen)
+    }
+    
+    // Create the language file if it doesn't exist
+    if (!fs.existsSync(targetPath)) {
+      fs.writeFileSync(targetPath, '{}', 'utf8');
+    }
     
     // Read translation files
     const baseTranslations = readJsonFile(EN_TRANSLATION_PATH);
