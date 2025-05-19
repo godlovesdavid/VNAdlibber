@@ -59,8 +59,8 @@ export function MainMenu() {
       }
     } else {
       toast({
-        title: "Error",
-        description: "No recent project found to continue",
+        title: t('common.error', 'Error'),
+        description: t('mainMenu.noRecentProject', 'No recent project found to continue'),
         variant: "destructive",
       });
     }
@@ -94,8 +94,8 @@ export function MainMenu() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-neutral-50 px-4 py-8">
       <div className="w-full max-w-md mx-auto text-center mb-12">
-        <h1 className="text-4xl text-primary font-bold mb-2">Visual Novel Ad Lib</h1>
-        <p className="text-muted-foreground">Dream up your very own VN with AI!</p>
+        <h1 className="text-4xl text-primary font-bold mb-2">{t('mainMenu.title', 'Visual Novel Ad Lib')}</h1>
+        <p className="text-muted-foreground">{t('mainMenu.subtitle', 'Dream up your very own VN with AI!')}</p>
       </div>
       
       <div className="w-full max-w-xs space-y-3">
@@ -105,7 +105,7 @@ export function MainMenu() {
           size="lg"
         >
           <Pencil className="mr-2 h-5 w-5" />
-          Create New Story
+          {t('mainMenu.createNewStory', 'Create New Story')}
         </Button>
         
         {/* {hasContinueProject && (
@@ -127,7 +127,7 @@ export function MainMenu() {
           size="lg"
         >
           <FolderOpen className="mr-2 h-5 w-5" />
-          Load Saved Project
+          {t('mainMenu.loadSavedProject', 'Load Saved Project')}
         </Button>
         
         <Button 
@@ -137,7 +137,7 @@ export function MainMenu() {
           size="lg"
         >
           <Play className="mr-2 h-5 w-5" />
-          Play Story
+          {t('mainMenu.playStory', 'Play Story')}
         </Button>
         
         <Button 
@@ -147,7 +147,7 @@ export function MainMenu() {
           size="lg"
         >
           <Share2 className="mr-2 h-5 w-5" />
-          Share Stories
+          {t('mainMenu.shareStories', 'Share Stories')}
         </Button>
         
         <Button 
@@ -157,7 +157,7 @@ export function MainMenu() {
           size="lg"
         >
           <Languages className="mr-2 h-5 w-5" />
-          Translation Manager
+          {t('mainMenu.translationManager', 'Translation Manager')}
         </Button>
 
         {/* <Button 

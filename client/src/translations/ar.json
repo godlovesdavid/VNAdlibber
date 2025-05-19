@@ -19,7 +19,12 @@
     "settingHelp": "",
     "randomize": "",
     "reset": "",
-    "next": ""
+    "next": "",
+    "validationError": "يرجى تحديد الخيارات لجميع الحقول قبل المتابعة.",
+    "createYourStory": "ابتكر قصتك",
+    "sentenceStart": "اكتب لي",
+    "about": "حول",
+    "setIn": "مجموعة في"
   },
   "characterForm": {
     "title": "",
@@ -42,7 +47,26 @@
     "addCharacter": "",
     "reset": "",
     "back": "",
-    "next": ""
+    "next": "",
+    "maxCharactersReached": "يمكنك إنشاء ما يصل إلى 5 أحرف فقط.",
+    "minCharactersRequired": "يجب أن يكون لديك شخصية واحدة على الأقل.",
+    "formReset": "إعادة تعيين النموذج",
+    "formResetDesc": "تمت إعادة تعيين نموذج الشخصيات.",
+    "duplicateName": "اسم مكرر",
+    "duplicateNameDesc": "يجب أن يكون لكل شخصية اسم فريد. يُرجى اختيار اسم مختلف.",
+    "missingDetailsPortrait": "يرجى تقديم اسم ووصف للمظهر على الأقل قبل إنشاء صورة شخصية.",
+    "portraitGenerated": "صورة تم إنشاؤها",
+    "portraitGeneratedDesc": "تم إنشاء صورة الشخصية بنجاح.",
+    "portraitGenerationError": "فشل في إنشاء صورة شخصية. يرجى التحقق من تكوين API الخاص بك.",
+    "missingNames": "أسماء الشخصيات المفقودة",
+    "missingNamesDesc": "يُرجى تقديم اسم لكل شخصية قبل المتابعة.",
+    "projectDataMissing": "بيانات المشروع مفقودة",
+    "validationPassed": "نجحت عملية التحقق من الصحة",
+    "validationPassedDesc": "تم التحقق من صحة الأحرف بنجاح.",
+    "validationFailed": "فشل التحقق من صحة الشخصية",
+    "validationFailedDesc": "فشل التحقق من صحة الشخصية",
+    "checkDataTryAgain": "يرجى التحقق من بيانات شخصيتك والمحاولة مرة أخرى.",
+    "validationError": "خطأ في التحقق من صحة الأحرف"
   },
   "conceptForm": {
     "title": "",
@@ -103,7 +127,11 @@
       "autoTranslate": "",
       "autoTranslateDescription": "",
       "sourceLanguage": "",
-      "sourceLanguageDescription": ""
+      "sourceLanguageDescription": "",
+      "confirmClear": "هل أنت متأكد من رغبتك في مسح جميع الترجمات؟ سيؤدي ذلك إلى إزالة جميع النصوص المترجمة باستثناء اللغة الإنجليزية ولا يمكن التراجع عنها.",
+      "scanning": "المسح الضوئي...",
+      "scanMissingKeys": "البحث عن المفاتيح المفقودة",
+      "clearAllTranslations": "مسح جميع الترجمات"
     }
   },
   "player": {
@@ -121,7 +149,8 @@
     "medium": "",
     "fast": "",
     "loadingAct": "",
-    "errorLoadingAct": ""
+    "errorLoadingAct": "",
+    "noActData": "لم يتم العثور على بيانات الفعل"
   },
   "errorMessages": {
     "translationFailed": "",
@@ -162,5 +191,94 @@
     "actImportedLabel": "",
     "fromCurrentProject": "",
     "emptyStateMessage": ""
+  },
+  "tones": {
+    "humorous": "فكاهي",
+    "dark": "الظلام",
+    "gritty": "شجاع",
+    "lighthearted": "خفيف القلب",
+    "melancholic": "كئيب",
+    "romantic": "رومانسية",
+    "satirical": "ساخر",
+    "suspenseful": "تشويقية",
+    "tragicomic": "تراجيكومي",
+    "uplifting": "الارتقاء",
+    "whimsical": "غريب الأطوار"
+  },
+  "genres": {
+    "mystery": "الغموض",
+    "romance": "الرومانسية",
+    "sci_fi": "الخيال العلمي",
+    "adventure": "المغامرة",
+    "slice_of_life": "شريحة من الحياة",
+    "thriller": "الإثارة",
+    "comedy": "كوميديا",
+    "horror": "الرعب",
+    "drama": "الدراما"
+  },
+  "themes": {
+    "forgiveness": "المسامحة",
+    "freedom_vs_control": "الحرية مقابل السيطرة",
+    "growth": "النمو",
+    "identity": "الهوية",
+    "love_vs_duty": "الحب مقابل الواجب",
+    "revenge_and_justice": "الانتقام والعدالة",
+    "technology_vs_humanity": "التكنولوجيا ضد الإنسانية",
+    "sacrifice": "التضحية",
+    "trust_and_betrayal": "الثقة والخيانة"
+  },
+  "charactersForm": {
+    "name": "الاسم",
+    "enterName": "أدخل اسم الشخصية",
+    "role": "الدور",
+    "protagonist": "بطل الرواية",
+    "rolePlaceholder": "على سبيل المثال الخصم، الخصم، المنافس، المرشد",
+    "occupation": "المهنة",
+    "occupationPlaceholder": "المهنة",
+    "gender": "الجنس",
+    "genderPlaceholder": "الجنس",
+    "age": "العمر",
+    "agePlaceholder": "العمر",
+    "generatePortrait": "إنشاء صورة شخصية",
+    "personality": "الشخصية",
+    "personalityPlaceholder": "السمات الشخصية ونقاط القوة والضعف والمراوغات",
+    "goals": "الأهداف والتحفيز",
+    "goalsPlaceholder": "ما الذي يدفع هذه الشخصية؟ ما الذي يريدونه؟",
+    "relationshipPotential": "إمكانات العلاقة",
+    "notApplicable": "غير متاح",
+    "conflicts": "التعارضات",
+    "conflictsPlaceholder": "الصراعات الداخلية والصراعات الخارجية",
+    "addCharacter": "إضافة شخصية"
+  },
+  "pathsForm": {
+    "formReset": "إعادة تعيين النموذج",
+    "formResetDesc": "إعادة تعيين النموذج.",
+    "maxPathsReached": "يمكنك إنشاء ما يصل إلى 3 مسارات فقط.",
+    "minPathsRequired": "يجب أن يكون لديك مسار واحد على الأقل.",
+    "duplicateTitle": "عنوان مكرر",
+    "duplicateTitleDesc": "يجب أن يكون لكل مسار عنوان فريد. يرجى اختيار اسم مختلف.",
+    "missingNames": "أسماء المسارات المفقودة",
+    "missingNamesDesc": "يرجى تقديم عنوان لكل مسار قبل المتابعة.",
+    "projectDataMissing": "بيانات المشروع مفقودة",
+    "validationPassed": "نجحت عملية التحقق من الصحة",
+    "validationPassedDesc": "تم التحقق من صحة المسارات بنجاح.",
+    "validationFailed": "فشل التحقق من صحة المسار",
+    "validationFailedDesc": "فشل التحقق من صحة المسار",
+    "validationError": "خطأ في التحقق من صحة المسار",
+    "unexpectedError": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.",
+    "title": "الخطوة 4: مسارات القصة",
+    "description": "حدد المسارات والنهايات المختلفة التي يمكن أن تسلكها قصتك. يمكنك إنشاء ما يصل إلى 3 مسارات مختلفة."
+  },
+  "plotForm": {
+    "generationError": "خطأ في التوليد",
+    "unexpectedFormat": "كان تنسيق بيانات الرسم البياني غير متوقع. يرجى المحاولة مرة أخرى."
+  },
+  "errors": {
+    "pageNotFound": "الصفحة غير موجود",
+    "routerError": "خطأ الموجه"
+  },
+  "translationSettings": {
+    "title": "إعدادات الترجمة",
+    "description": "إدارة الترجمات لتطبيق روايتك المرئية. تواصل مع DeepL لترجمة المفاتيح المفقودة تلقائيًا في ملفات اللغة الخاصة بك."
   }
 }

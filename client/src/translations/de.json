@@ -27,7 +27,26 @@
     "addCharacter": "Charakter hinzufügen",
     "reset": "Zurücksetzen",
     "back": "Zurück",
-    "next": "Weiter"
+    "next": "Weiter",
+    "maxCharactersReached": "Sie können nur bis zu 5 Zeichen erstellen.",
+    "minCharactersRequired": "Sie müssen mindestens ein Zeichen haben.",
+    "formReset": "Formular zurücksetzen",
+    "formResetDesc": "Das Zeichenformular wurde zurückgesetzt.",
+    "duplicateName": "Name duplizieren",
+    "duplicateNameDesc": "Jede Figur muss einen eigenen Namen haben. Bitte wählen Sie einen anderen Namen.",
+    "missingDetailsPortrait": "Bitte geben Sie mindestens einen Namen und eine Beschreibung des Aussehens an, bevor Sie ein Porträt erstellen.",
+    "portraitGenerated": "Generiertes Porträt",
+    "portraitGeneratedDesc": "Das Charakterporträt wurde erfolgreich erstellt.",
+    "portraitGenerationError": "Das Charakterporträt konnte nicht erstellt werden. Bitte überprüfen Sie Ihre API-Konfiguration.",
+    "missingNames": "Fehlende Zeichennamen",
+    "missingNamesDesc": "Bitte geben Sie einen Namen für jede Figur an, bevor Sie fortfahren.",
+    "projectDataMissing": "Es fehlen Projektdaten",
+    "validationPassed": "Validierung bestanden",
+    "validationPassedDesc": "Die Zeichen wurden erfolgreich validiert.",
+    "validationFailed": "Zeichenüberprüfung fehlgeschlagen",
+    "validationFailedDesc": "Zeichenüberprüfung fehlgeschlagen",
+    "checkDataTryAgain": "Bitte überprüfen Sie Ihre Charakterdaten und versuchen Sie es erneut.",
+    "validationError": "Fehler bei der Zeichenüberprüfung"
   },
   "conceptForm": {
     "title": "Titel",
@@ -84,7 +103,12 @@
     "settingHelp": "Die Welt oder Umgebung, in der Ihre Geschichte spielt",
     "randomize": "Optionen zufällig auswählen",
     "reset": "Zurücksetzen",
-    "next": "Weiter"
+    "next": "Weiter",
+    "validationError": "Bitte wählen Sie Optionen für alle Felder aus, bevor Sie fortfahren.",
+    "createYourStory": "Erstellen Sie Ihre Geschichte",
+    "sentenceStart": "Schreiben Sie mir eine",
+    "about": "über",
+    "setIn": "sich einstellen"
   },
   "translation": {
     "manager": {
@@ -103,7 +127,11 @@
       "autoTranslate": "Formularfelder automatisch übersetzen",
       "autoTranslateDescription": "Automatische Übersetzung von Formularfeldern beim Sprachwechsel",
       "sourceLanguage": "Sprache der Quelle",
-      "sourceLanguageDescription": "Originalsprache Ihres Inhalts vor der Übersetzung"
+      "sourceLanguageDescription": "Originalsprache Ihres Inhalts vor der Übersetzung",
+      "confirmClear": "Sind Sie sicher, dass Sie alle Übersetzungen löschen wollen? Dadurch wird der gesamte übersetzte Text mit Ausnahme von Englisch entfernt und kann nicht rückgängig gemacht werden.",
+      "scanning": "Scannen...",
+      "scanMissingKeys": "Nach fehlenden Schlüsseln suchen",
+      "clearAllTranslations": "Alle Übersetzungen löschen"
     }
   },
   "player": {
@@ -121,7 +149,8 @@
     "medium": "Mittel",
     "fast": "Schnell",
     "loadingAct": "Lade Akt {{AktNummer}}...",
-    "errorLoadingAct": "Fehler Loading Act"
+    "errorLoadingAct": "Fehler Loading Act",
+    "noActData": "Keine Gesetzesdaten gefunden"
   },
   "errorMessages": {
     "translationFailed": "Übersetzung fehlgeschlagen",
@@ -162,5 +191,94 @@
     "actImportedLabel": "Akt {{Nummer}} - Eingeführt",
     "fromCurrentProject": "Vom aktuellen Projekt",
     "emptyStateMessage": "Importieren Sie eine Story-Datei, um sie abzuspielen oder über das Menü \"Story erstellen\" Akte zu erstellen."
+  },
+  "tones": {
+    "humorous": "witzig",
+    "dark": "dunkel",
+    "gritty": "düster",
+    "lighthearted": "Unbeschwert",
+    "melancholic": "melancholisch",
+    "romantic": "romantisch",
+    "satirical": "satirisch",
+    "suspenseful": "Spannend",
+    "tragicomic": "tragikomisch",
+    "uplifting": "aufbauend",
+    "whimsical": "launisch"
+  },
+  "genres": {
+    "mystery": "Geheimnis",
+    "romance": "Romanze",
+    "sci_fi": "sci-fi",
+    "adventure": "Abenteuer",
+    "slice_of_life": "Momentaufnahme des Lebens",
+    "thriller": "Thriller",
+    "comedy": "Komödie",
+    "horror": "Horror",
+    "drama": "Drama"
+  },
+  "themes": {
+    "forgiveness": "Vergebung",
+    "freedom_vs_control": "Freiheit vs. Kontrolle",
+    "growth": "Wachstum",
+    "identity": "Identität",
+    "love_vs_duty": "Liebe vs. Pflicht",
+    "revenge_and_justice": "Rache und Gerechtigkeit",
+    "technology_vs_humanity": "Technik gegen Menschlichkeit",
+    "sacrifice": "opfern",
+    "trust_and_betrayal": "Vertrauen und Verrat"
+  },
+  "charactersForm": {
+    "name": "Name",
+    "enterName": "Zeichenname eingeben",
+    "role": "Rolle",
+    "protagonist": "Protagonist",
+    "rolePlaceholder": "z. B. Antagonist, Rivale, Mentor",
+    "occupation": "Beruf",
+    "occupationPlaceholder": "Beruf",
+    "gender": "Geschlecht",
+    "genderPlaceholder": "Geschlecht",
+    "age": "Alter",
+    "agePlaceholder": "Alter",
+    "generatePortrait": "Porträt generieren",
+    "personality": "Persönlichkeit",
+    "personalityPlaceholder": "Persönlichkeitsmerkmale, Stärken, Schwächen, Macken",
+    "goals": "Ziele und Motivation",
+    "goalsPlaceholder": "Was treibt diese Person an? Was will sie?",
+    "relationshipPotential": "Beziehungspotenzial",
+    "notApplicable": "K.A.",
+    "conflicts": "Konflikte",
+    "conflictsPlaceholder": "Innere Kämpfe und äußere Konflikte",
+    "addCharacter": "Zeichen hinzufügen"
+  },
+  "pathsForm": {
+    "formReset": "Formular zurücksetzen",
+    "formResetDesc": "Formular zurücksetzen.",
+    "maxPathsReached": "Sie können nur bis zu 3 Pfade erstellen.",
+    "minPathsRequired": "Sie müssen mindestens einen Pfad haben.",
+    "duplicateTitle": "Titel duplizieren",
+    "duplicateTitleDesc": "Jeder Pfad muss einen eindeutigen Titel haben. Bitte wählen Sie einen anderen Namen.",
+    "missingNames": "Fehlende Pfadnamen",
+    "missingNamesDesc": "Bitte geben Sie einen Titel für jeden Pfad an, bevor Sie fortfahren.",
+    "projectDataMissing": "Es fehlen Projektdaten",
+    "validationPassed": "Validierung bestanden",
+    "validationPassedDesc": "Die Pfade wurden erfolgreich validiert.",
+    "validationFailed": "Pfadvalidierung fehlgeschlagen",
+    "validationFailedDesc": "Pfadvalidierung fehlgeschlagen",
+    "validationError": "Fehler bei der Pfadvalidierung",
+    "unexpectedError": "Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+    "title": "Schritt 4: Erzählpfade",
+    "description": "Definieren Sie die verschiedenen Wege und Enden, die Ihre Geschichte nehmen kann. Sie können bis zu 3 verschiedene Pfade erstellen."
+  },
+  "plotForm": {
+    "generationError": "Erzeugungsfehler",
+    "unexpectedFormat": "Das Format der Plotdaten war unerwartet. Bitte versuchen Sie es erneut."
+  },
+  "errors": {
+    "pageNotFound": "pageNotFound",
+    "routerError": "routerError"
+  },
+  "translationSettings": {
+    "title": "Einstellungen für die Übersetzung",
+    "description": "Verwalten Sie Übersetzungen für Ihre Visual Novel Anwendung. Verbinden Sie sich mit DeepL, um fehlende Schlüssel in Ihren Sprachdateien automatisch zu übersetzen."
   }
 }

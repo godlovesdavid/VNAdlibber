@@ -27,7 +27,26 @@
     "addCharacter": "Adicionar Personagem",
     "reset": "Redefinir",
     "back": "Voltar",
-    "next": "Próximo"
+    "next": "Próximo",
+    "maxCharactersReached": "Só é possível criar até 5 caracteres.",
+    "minCharactersRequired": "É necessário ter pelo menos uma personagem.",
+    "formReset": "Redefinição de formulário",
+    "formResetDesc": "O formulário de caracteres foi reiniciado.",
+    "duplicateName": "Nome duplicado",
+    "duplicateNameDesc": "Cada personagem deve ter um nome único. Por favor, escolha um nome diferente.",
+    "missingDetailsPortrait": "Forneça pelo menos um nome e uma descrição da aparência antes de gerar um retrato.",
+    "portraitGenerated": "Retrato gerado",
+    "portraitGeneratedDesc": "O retrato de carácter foi gerado com sucesso.",
+    "portraitGenerationError": "Falha ao gerar o retrato do personagem. Verifique a configuração da sua API.",
+    "missingNames": "Nomes de personagens em falta",
+    "missingNamesDesc": "Antes de prosseguir, indique um nome para cada personagem.",
+    "projectDataMissing": "Faltam dados do projeto",
+    "validationPassed": "Validação aprovada",
+    "validationPassedDesc": "Os caracteres foram validados com sucesso.",
+    "validationFailed": "Falha na validação de caracteres",
+    "validationFailedDesc": "Falha na validação de caracteres",
+    "checkDataTryAgain": "Verifique os dados do seu personagem e tente novamente.",
+    "validationError": "Erro de validação de caracteres"
   },
   "conceptForm": {
     "title": "Título",
@@ -84,7 +103,12 @@
     "settingHelp": "O mundo ou o ambiente em que a sua história se desenrola",
     "randomize": "Opções de aleatoriedade",
     "reset": "Reiniciar",
-    "next": "Seguinte"
+    "next": "Seguinte",
+    "validationError": "Selecione as opções para todos os campos antes de prosseguir.",
+    "createYourStory": "Criar a sua história",
+    "sentenceStart": "Escreva-me um",
+    "about": "sobre",
+    "setIn": "definido em"
   },
   "translation": {
     "manager": {
@@ -103,7 +127,11 @@
       "autoTranslate": "Tradução automática de campos de formulário",
       "autoTranslateDescription": "Traduzir automaticamente os campos do formulário ao mudar de idioma",
       "sourceLanguage": "Língua de partida",
-      "sourceLanguageDescription": "Língua original do seu conteúdo antes da tradução"
+      "sourceLanguageDescription": "Língua original do seu conteúdo antes da tradução",
+      "confirmClear": "Tem a certeza de que pretende apagar todas as traduções? Isto irá remover todo o texto traduzido, exceto o inglês, e não pode ser anulado.",
+      "scanning": "Digitalização...",
+      "scanMissingKeys": "Procura de chaves em falta",
+      "clearAllTranslations": "Limpar todas as traduções"
     }
   },
   "player": {
@@ -121,7 +149,8 @@
     "medium": "Médio",
     "fast": "Rápido",
     "loadingAct": "A carregar o ato {{actNumber}}...",
-    "errorLoadingAct": "Erro ao carregar o ato"
+    "errorLoadingAct": "Erro ao carregar o ato",
+    "noActData": "Não foram encontrados dados de actos"
   },
   "errorMessages": {
     "translationFailed": "A tradução falhou",
@@ -162,5 +191,94 @@
     "actImportedLabel": "Ato {{número}} - Importado",
     "fromCurrentProject": "Do projeto atual",
     "emptyStateMessage": "Importar um ficheiro de história para reproduzir ou gerar actos a partir do menu Criar história"
+  },
+  "tones": {
+    "humorous": "humorístico",
+    "dark": "escuro",
+    "gritty": "corajoso",
+    "lighthearted": "alegre",
+    "melancholic": "melancólico",
+    "romantic": "romântico",
+    "satirical": "satírico",
+    "suspenseful": "cheio de suspense",
+    "tragicomic": "tragicómico",
+    "uplifting": "edificante",
+    "whimsical": "extravagante"
+  },
+  "genres": {
+    "mystery": "mistério",
+    "romance": "romance",
+    "sci_fi": "ficção científica",
+    "adventure": "aventura",
+    "slice_of_life": "fatia de vida",
+    "thriller": "thriller",
+    "comedy": "comédia",
+    "horror": "horror",
+    "drama": "drama"
+  },
+  "themes": {
+    "forgiveness": "perdão",
+    "freedom_vs_control": "liberdade vs controlo",
+    "growth": "crescimento",
+    "identity": "identidade",
+    "love_vs_duty": "amor vs dever",
+    "revenge_and_justice": "vingança e justiça",
+    "technology_vs_humanity": "tecnologia vs humanidade",
+    "sacrifice": "sacrifício",
+    "trust_and_betrayal": "confiança e traição"
+  },
+  "charactersForm": {
+    "name": "Nome",
+    "enterName": "Introduzir o nome do carácter",
+    "role": "Papel",
+    "protagonist": "Protagonista",
+    "rolePlaceholder": "Por exemplo, antagonista, rival, mentor",
+    "occupation": "Ocupação",
+    "occupationPlaceholder": "Ocupação",
+    "gender": "Género",
+    "genderPlaceholder": "Género",
+    "age": "Idade",
+    "agePlaceholder": "Idade",
+    "generatePortrait": "Gerar retrato",
+    "personality": "Personalidade",
+    "personalityPlaceholder": "Traços de personalidade, pontos fortes, pontos fracos, peculiaridades",
+    "goals": "Objectivos e motivação",
+    "goalsPlaceholder": "O que é que move esta personagem? O que é que ela quer?",
+    "relationshipPotential": "Potencial de relacionamento",
+    "notApplicable": "N/A",
+    "conflicts": "Conflitos",
+    "conflictsPlaceholder": "Lutas internas e conflitos externos",
+    "addCharacter": "Adicionar carácter"
+  },
+  "pathsForm": {
+    "formReset": "Redefinição de formulário",
+    "formResetDesc": "Reposição do formulário.",
+    "maxPathsReached": "Só é possível criar até 3 trajectos.",
+    "minPathsRequired": "É necessário ter pelo menos uma via.",
+    "duplicateTitle": "Título duplicado",
+    "duplicateTitleDesc": "Cada percurso deve ter um título único. Por favor, escolha um nome diferente.",
+    "missingNames": "Nomes de caminhos em falta",
+    "missingNamesDesc": "Antes de prosseguir, indique um título para cada caminho.",
+    "projectDataMissing": "Faltam dados do projeto",
+    "validationPassed": "Validação aprovada",
+    "validationPassedDesc": "Caminhos validados com sucesso.",
+    "validationFailed": "Falha na validação do caminho",
+    "validationFailedDesc": "Falha na validação do caminho",
+    "validationError": "Erro de validação de trajetória",
+    "unexpectedError": "Ocorreu um erro inesperado. Por favor, tente novamente.",
+    "title": "Passo 4: Percursos da história",
+    "description": "Define os diferentes caminhos e finais que a tua história pode tomar. Podes criar até 3 caminhos distintos."
+  },
+  "plotForm": {
+    "generationError": "Erro de geração",
+    "unexpectedFormat": "O formato dos dados do gráfico era inesperado. Por favor, tente novamente."
+  },
+  "errors": {
+    "pageNotFound": "pageNotFound",
+    "routerError": "routerError"
+  },
+  "translationSettings": {
+    "title": "Definições de tradução",
+    "description": "Gerir traduções para a sua aplicação de romance visual. Ligue-se a DeepL para traduzir automaticamente as chaves em falta nos seus ficheiros de idiomas."
   }
 }

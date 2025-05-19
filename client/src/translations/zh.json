@@ -27,7 +27,26 @@
     "addCharacter": "添加角色",
     "reset": "重置",
     "back": "返回",
-    "next": "下一步"
+    "next": "下一步",
+    "maxCharactersReached": "您最多只能创建 5 个字符。",
+    "minCharactersRequired": "您必须至少有一个角色。",
+    "formReset": "表格重置",
+    "formResetDesc": "字符表已重置。",
+    "duplicateName": "重复名称",
+    "duplicateNameDesc": "每个角色都必须有一个独特的名字。请选择不同的名字。",
+    "missingDetailsPortrait": "生成肖像前，请至少提供姓名和外貌描述。",
+    "portraitGenerated": "生成肖像",
+    "portraitGeneratedDesc": "人物肖像已成功生成。",
+    "portraitGenerationError": "生成人物肖像失败。请检查您的 API 配置。",
+    "missingNames": "缺失的角色名称",
+    "missingNamesDesc": "请在开始之前为每个角色起一个名字。",
+    "projectDataMissing": "项目数据丢失",
+    "validationPassed": "通过验证",
+    "validationPassedDesc": "字符验证成功。",
+    "validationFailed": "字符验证失败",
+    "validationFailedDesc": "字符验证失败",
+    "checkDataTryAgain": "请检查您的角色数据并重试。",
+    "validationError": "字符验证错误"
   },
   "conceptForm": {
     "title": "标题",
@@ -84,7 +103,12 @@
     "settingHelp": "故事发生的世界或环境",
     "randomize": "随机化选项",
     "reset": "重置",
-    "next": "下一页"
+    "next": "下一页",
+    "validationError": "请在继续之前选择所有字段的选项。",
+    "createYourStory": "创作你的故事",
+    "sentenceStart": "给我写信",
+    "about": "关于",
+    "setIn": "镶嵌在"
   },
   "translation": {
     "manager": {
@@ -103,7 +127,11 @@
       "autoTranslate": "自动翻译表单字段",
       "autoTranslateDescription": "更改语言时自动翻译表单字段",
       "sourceLanguage": "来源语言",
-      "sourceLanguageDescription": "翻译前内容的原始语言"
+      "sourceLanguageDescription": "翻译前内容的原始语言",
+      "confirmClear": "您确定要清除所有翻译？这将删除除英文以外的所有翻译文本，并且无法撤销。",
+      "scanning": "扫描...",
+      "scanMissingKeys": "扫描丢失的密钥",
+      "clearAllTranslations": "清除所有翻译"
     }
   },
   "player": {
@@ -121,7 +149,8 @@
     "medium": "中型",
     "fast": "快速",
     "loadingAct": "加载法案 {{actNumber}}...",
-    "errorLoadingAct": "错误加载法"
+    "errorLoadingAct": "错误加载法",
+    "noActData": "未找到行为数据"
   },
   "errorMessages": {
     "translationFailed": "翻译失败",
@@ -162,5 +191,94 @@
     "actImportedLabel": "行为 {{ 数量｝- 进口",
     "fromCurrentProject": "来自当前项目",
     "emptyStateMessage": "从 \"创建故事 \"菜单导入故事文件进行播放或生成行为"
+  },
+  "tones": {
+    "humorous": "幽默",
+    "dark": "暗处",
+    "gritty": "砾石",
+    "lighthearted": "想得开",
+    "melancholic": "沧凉",
+    "romantic": "浪漫",
+    "satirical": "讽刺",
+    "suspenseful": "悬疑",
+    "tragicomic": "悲喜剧",
+    "uplifting": "昂扬",
+    "whimsical": "诙"
+  },
+  "genres": {
+    "mystery": "神秘莫测",
+    "romance": "浪漫",
+    "sci_fi": "科幻",
+    "adventure": "历险",
+    "slice_of_life": "生活片断",
+    "thriller": "惊悚",
+    "comedy": "喜剧片",
+    "horror": "恐惧",
+    "drama": "剧"
+  },
+  "themes": {
+    "forgiveness": "饶恕",
+    "freedom_vs_control": "自由与控制",
+    "growth": "增长",
+    "identity": "身份",
+    "love_vs_duty": "爱与责任",
+    "revenge_and_justice": "复仇与正义",
+    "technology_vs_humanity": "科技与人性",
+    "sacrifice": "牺牲",
+    "trust_and_betrayal": "信任与背叛"
+  },
+  "charactersForm": {
+    "name": "名称",
+    "enterName": "输入字符名称",
+    "role": "角色",
+    "protagonist": "主角",
+    "rolePlaceholder": "例如：对手、对手、导师",
+    "occupation": "职业",
+    "occupationPlaceholder": "职业",
+    "gender": "性别",
+    "genderPlaceholder": "性别",
+    "age": "年龄",
+    "agePlaceholder": "年龄",
+    "generatePortrait": "生成肖像",
+    "personality": "个性",
+    "personalityPlaceholder": "个性特征、优点、缺点、怪癖",
+    "goals": "目标和动力",
+    "goalsPlaceholder": "是什么驱动着这个角色？他们想要什么？",
+    "relationshipPotential": "关系潜力",
+    "notApplicable": "不适用",
+    "conflicts": "冲突",
+    "conflictsPlaceholder": "内部斗争和外部冲突",
+    "addCharacter": "添加字符"
+  },
+  "pathsForm": {
+    "formReset": "表格重置",
+    "formResetDesc": "表格重置。",
+    "maxPathsReached": "您最多只能创建 3 条路径。",
+    "minPathsRequired": "您必须至少有一条路径。",
+    "duplicateTitle": "标题重复",
+    "duplicateTitleDesc": "每条路径都必须有一个独特的标题。请选择不同的名称。",
+    "missingNames": "缺少路径名",
+    "missingNamesDesc": "请在继续之前为每条路径提供一个标题。",
+    "projectDataMissing": "项目数据丢失",
+    "validationPassed": "通过验证",
+    "validationPassedDesc": "路径验证成功。",
+    "validationFailed": "路径验证失败",
+    "validationFailedDesc": "路径验证失败",
+    "validationError": "路径验证错误",
+    "unexpectedError": "出现意外错误。请重试。",
+    "title": "步骤 4：故事路径",
+    "description": "定义故事的不同路线和结局。您最多可以创建 3 条不同的路径。"
+  },
+  "plotForm": {
+    "generationError": "生成错误",
+    "unexpectedFormat": "绘图数据格式出乎意料。请重试。"
+  },
+  "errors": {
+    "pageNotFound": "页面未找到",
+    "routerError": "路由器错误"
+  },
+  "translationSettings": {
+    "title": "翻译设置",
+    "description": "管理视觉小说应用程序的翻译。与 DeepL 连接，自动翻译语言文件中缺失的关键字。"
   }
 }

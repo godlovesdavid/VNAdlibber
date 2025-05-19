@@ -27,7 +27,26 @@
     "addCharacter": "キャラクターを追加",
     "reset": "リセット",
     "back": "戻る",
-    "next": "次へ"
+    "next": "次へ",
+    "maxCharactersReached": "作成できる文字は5文字までです。",
+    "minCharactersRequired": "少なくとも1人のキャラクターが必要です。",
+    "formReset": "フォームリセット",
+    "formResetDesc": "文字フォームがリセットされました。",
+    "duplicateName": "重複名",
+    "duplicateNameDesc": "各キャラクターには固有の名前が必要です。別の名前を選んでください。",
+    "missingDetailsPortrait": "肖像画を作成する前に、少なくとも名前と外見の説明をご記入ください。",
+    "portraitGenerated": "肖像画の生成",
+    "portraitGeneratedDesc": "キャラクターのポートレートが正常に生成されました。",
+    "portraitGenerationError": "キャラクターポートレートの生成に失敗しました。APIの設定を確認してください。",
+    "missingNames": "消えたキャラクター名",
+    "missingNamesDesc": "先に進む前に、各キャラクターの名前を記入してください。",
+    "projectDataMissing": "プロジェクトデータがない",
+    "validationPassed": "バリデーション合格",
+    "validationPassedDesc": "文字は正常に検証されました。",
+    "validationFailed": "文字検証失敗",
+    "validationFailedDesc": "文字検証失敗",
+    "checkDataTryAgain": "キャラクターデータをご確認の上、再度お試しください。",
+    "validationError": "文字検証エラー"
   },
   "conceptForm": {
     "title": "タイトル",
@@ -84,7 +103,12 @@
     "settingHelp": "物語の舞台となる世界や環境",
     "randomize": "オプションのランダム化",
     "reset": "リセット",
-    "next": "次のページ"
+    "next": "次のページ",
+    "validationError": "先に進む前に、すべてのフィールドのオプションを選択してください。",
+    "createYourStory": "ストーリーを創る",
+    "sentenceStart": "私に手紙を書く",
+    "about": "について",
+    "setIn": "で始まる"
   },
   "translation": {
     "manager": {
@@ -103,7 +127,11 @@
       "autoTranslate": "フォームフィールドの自動翻訳",
       "autoTranslateDescription": "言語変更時にフォームフィールドを自動的に翻訳",
       "sourceLanguage": "出典言語",
-      "sourceLanguageDescription": "翻訳前のコンテンツの原語"
+      "sourceLanguageDescription": "翻訳前のコンテンツの原語",
+      "confirmClear": "本当にすべての翻訳を削除しますか？これは英語以外のすべての翻訳テキストを削除し、元に戻すことはできません。",
+      "scanning": "スキャン...",
+      "scanMissingKeys": "紛失キーのスキャン",
+      "clearAllTranslations": "すべての翻訳を消去"
     }
   },
   "player": {
@@ -121,7 +149,8 @@
     "medium": "ミディアム",
     "fast": "速い",
     "loadingAct": "行為{{行為番号}}をロード中...",
-    "errorLoadingAct": "エラーロード法"
+    "errorLoadingAct": "エラーロード法",
+    "noActData": "アクトデータなし"
   },
   "errorMessages": {
     "translationFailed": "翻訳に失敗",
@@ -162,5 +191,94 @@
     "actImportedLabel": "アクト{{番号}}- 輸入",
     "fromCurrentProject": "現在のプロジェクトより",
     "emptyStateMessage": "ストーリーファイルをインポートして、「ストーリーを作成」メニューから演技を再生または生成する。"
+  },
+  "tones": {
+    "humorous": "ユーモラス",
+    "dark": "暗い",
+    "gritty": "ざらざら",
+    "lighthearted": "快活",
+    "melancholic": "メランコリック",
+    "romantic": "ロマンチック",
+    "satirical": "サティリカル",
+    "suspenseful": "サスペンスフル",
+    "tragicomic": "悲喜劇的",
+    "uplifting": "高揚",
+    "whimsical": "物好き"
+  },
+  "genres": {
+    "mystery": "ミステリー",
+    "romance": "ロマンス",
+    "sci_fi": "空想科学小説",
+    "adventure": "アドベンチャー",
+    "slice_of_life": "スライス・オブ・ライフ",
+    "thriller": "スリラー",
+    "comedy": "コメディ",
+    "horror": "ホラー",
+    "drama": "ドラマ"
+  },
+  "themes": {
+    "forgiveness": "赦し",
+    "freedom_vs_control": "自由とコントロール",
+    "growth": "成長",
+    "identity": "アイデンティティ",
+    "love_vs_duty": "愛と義務",
+    "revenge_and_justice": "復讐と正義",
+    "technology_vs_humanity": "技術対人間性",
+    "sacrifice": "犠牲",
+    "trust_and_betrayal": "信頼と裏切り"
+  },
+  "charactersForm": {
+    "name": "名称",
+    "enterName": "キャラクター名を入力",
+    "role": "役割",
+    "protagonist": "主人公",
+    "rolePlaceholder": "例：敵役、ライバル、恩師",
+    "occupation": "職業",
+    "occupationPlaceholder": "職業",
+    "gender": "性別",
+    "genderPlaceholder": "性別",
+    "age": "年齢",
+    "agePlaceholder": "年齢",
+    "generatePortrait": "肖像画の作成",
+    "personality": "パーソナリティ",
+    "personalityPlaceholder": "性格の特徴、長所、短所、癖",
+    "goals": "目標とモチベーション",
+    "goalsPlaceholder": "何がこの人物を駆り立てるのか？彼らは何を望んでいるのか？",
+    "relationshipPotential": "人間関係の可能性",
+    "notApplicable": "該当なし",
+    "conflicts": "コンフリクト",
+    "conflictsPlaceholder": "内部闘争と外部との対立",
+    "addCharacter": "キャラクター追加"
+  },
+  "pathsForm": {
+    "formReset": "フォームリセット",
+    "formResetDesc": "フォームリセット。",
+    "maxPathsReached": "作成できるパスは3つまで。",
+    "minPathsRequired": "少なくとも1つのパスが必要だ。",
+    "duplicateTitle": "タイトル重複",
+    "duplicateTitleDesc": "各パスには固有のタイトルが必要です。別の名前を選んでください。",
+    "missingNames": "パス名の欠落",
+    "missingNamesDesc": "先に進む前に、各パスのタイトルを記入してください。",
+    "projectDataMissing": "プロジェクトデータがない",
+    "validationPassed": "バリデーション合格",
+    "validationPassedDesc": "パスは正常に検証された。",
+    "validationFailed": "パス検証失敗",
+    "validationFailedDesc": "パス検証失敗",
+    "validationError": "パス検証エラー",
+    "unexpectedError": "予期せぬエラーが発生しました。もう一度お試しください。",
+    "title": "ステップ4：ストーリーパス",
+    "description": "ストーリーのルートとエンディングを定義します。最大で3つの経路を作成できます。"
+  },
+  "plotForm": {
+    "generationError": "世代エラー",
+    "unexpectedFormat": "プロットデータの形式が予想外でした。再試行してください。"
+  },
+  "errors": {
+    "pageNotFound": "ページが見つかりません",
+    "routerError": "ルーターエラー"
+  },
+  "translationSettings": {
+    "title": "翻訳設定",
+    "description": "ビジュアルノベルアプリケーションの翻訳を管理します。DeepLと接続することで、言語ファイルに欠落しているキーを自動的に翻訳します。"
   }
 }
