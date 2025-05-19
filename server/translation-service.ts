@@ -39,14 +39,18 @@ export async function translateTextsInternal(
       return results.map(result => result.text);
     }
     
-    // For other languages, use the normal mapping
+    // For other languages, use the normal mapping but handle source language carefully
     const mappedTargetLang = mapToDeeplLangCode(targetLang);
-    const mappedSourceLang = sourceLang ? mapToDeeplLangCode(sourceLang) : null;
     
+    // Default to English as source if not specified
+    // This is important because DeepL has strict requirements for source language codes
+    const safeSourceLang = sourceLang || 'en';
+    
+    // Always use EN-US as source to avoid DeepL errors
     // Translate texts
     const results = await translator.translateText(
       texts,
-      mappedSourceLang as deepl.SourceLanguageCode | null,
+      'EN-US' as deepl.SourceLanguageCode,
       mappedTargetLang as deepl.TargetLanguageCode
     );
     
