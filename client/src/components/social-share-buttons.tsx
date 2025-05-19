@@ -42,15 +42,15 @@ export function SocialShareButtons({ title, url }: SocialShareButtonsProps) {
         navigator.clipboard.writeText(shareUrl)
           .then(() => {
             toast({
-              title: "Link Copied",
-              description: "Share link copied to clipboard",
+              title: t('share.linkCopied', 'Link Copied'),
+            description: t('share.linkCopiedDesc', 'Share link copied to clipboard'),
               duration: 2000
             });
           })
           .catch(() => {
             toast({
-              title: "Copy Failed",
-              description: "Could not copy the link to clipboard",
+              title: t('share.copyFailed', 'Copy Failed'),
+              description: t('share.copyFailedDesc', 'Could not copy the link to clipboard'),
               variant: "destructive"
             });
           });
