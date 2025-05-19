@@ -87,7 +87,14 @@ export function TranslationManager() {
         setTranslationLog(prev => [...prev, `Processing ${language.name} (${language.code})...`]);
         console.log(`/api/translate/auto/${language.code}`)
         // Call auto-translation endpoint for this language
-        const response = await fetch(`/api/translate/auto/${language.code}`);
+        const response = await fetch(`/api/translate/auto/${language.code}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            // Add a custom header to prevent page reload
+            'X-No-Refresh': 'true'
+          }
+        });
         
         if (!response.ok) {
           const errorData = await response.json();
