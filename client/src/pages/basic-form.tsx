@@ -310,7 +310,7 @@ export default function BasicForm() {
 
               <div className="text-base md:text-lg leading-relaxed space-y-6">
                 <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                  <span className="text-gray-700">Write me a</span>
+                  <span className="text-gray-700">{t('basicForm.sentenceStart', 'Write me a')}</span>
 
                   {/* Tone Dropdown */}
                   <div className="inline-block">
@@ -358,7 +358,7 @@ export default function BasicForm() {
                     </Select>
                   </div>
 
-                  <span className="text-gray-700">about</span>
+                  <span className="text-gray-700">{t('basicForm.about', 'about')}</span>
 
                   {/* Theme Dropdown */}
                   <div className="inline-block">
@@ -390,7 +390,7 @@ export default function BasicForm() {
                     </Select>
                   </div>
 
-                  <span className="text-gray-700">set in</span>
+                  <span className="text-gray-700">{t('basicForm.setIn', 'set in')}</span>
 
                   {/* Setting Dropdown */}
                   <div className="inline-block">
@@ -435,7 +435,7 @@ export default function BasicForm() {
 
             <div className="pt-6 flex justify-between">
               <Button variant="outline" onClick={goBack}>
-                Back
+                {t('common.back', 'Back')}
               </Button>
               <Button
                 onClick={handleNext}
@@ -466,7 +466,7 @@ export default function BasicForm() {
                     Validating...
                   </>
                 ) : (
-                  "Next: Concept"
+                  t('common.next', 'Next: Concept')
                 )}
               </Button>
             </div>
