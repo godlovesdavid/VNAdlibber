@@ -39,8 +39,8 @@ export function LanguageDropdown() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="w-fit h-8 gap-1 px-2">
-          <span className="text-sm mr-1">{currentLanguage.flag}</span>
-          <span className="font-medium">{currentLanguage.code.toUpperCase()}</span>
+          <span className="text-sm mr-1.5">{currentLanguage.flag}</span>
+          <span className="font-medium text-xs">{currentLanguage.code.toUpperCase()}</span>
         </Button>
       </DropdownMenuTrigger>
       
@@ -53,10 +53,11 @@ export function LanguageDropdown() {
             }`}
             onClick={() => changeLanguage(language.code)}
           >
-            <span className="text-lg">{language.flag}</span>
+            <span className="text-sm mr-1">{language.flag}</span>
             <span className="flex-1">{language.nativeName}</span>
+            <span className="text-xs text-muted-foreground font-medium">{language.code.toUpperCase()}</span>
             {language.code === i18n.language && (
-              <Check className="h-4 w-4 text-primary" />
+              <Check className="h-4 w-4 text-primary ml-1" />
             )}
           </DropdownMenuItem>
         ))}
@@ -92,10 +93,11 @@ export function MobileLanguageDropdown() {
             }`}
             onClick={() => changeLanguage(language.code)}
           >
-            <span className="text-lg">{language.flag}</span>
+            <span className="text-sm mr-1">{language.flag}</span>
             <span className="flex-1">{language.nativeName}</span>
+            <span className="text-xs text-muted-foreground font-medium">{language.code.toUpperCase()}</span>
             {language.code === i18n.language && (
-              <Check className="h-4 w-4 text-primary" />
+              <Check className="h-4 w-4 text-primary ml-1" />
             )}
           </DropdownMenuItem>
         ))}
