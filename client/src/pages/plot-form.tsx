@@ -72,7 +72,12 @@ export default function PlotForm() {
   };
 
   // Generate plot outline using AI
-  const handleGeneratePlot = async () => {
+  const handleGeneratePlot = async (e?: React.MouseEvent) => {
+    // Prevent default form submission if this was triggered by a form
+    if (e) {
+      e.preventDefault();
+    }
+    
     const generatedPlot = await generatePlotData();
 
     if (generatedPlot) {
