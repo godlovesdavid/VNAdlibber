@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef,useEffect } from "react";
 import { useLocation } from "wouter";
 import { useVnContext } from "@/context/vn-context";
 import { NavBar } from "@/components/nav-bar";
@@ -15,6 +15,18 @@ export default function PlaySelection() {
   const { toast } = useToast();
   const { projectData } = useVnContext();
   const { t } = useTranslation();
+
+  //return button
+  useEffect(() => {
+    const returnButtonHandler = () => {
+        setLocation("/")
+    }
+    document.addEventListener("return", returnButtonHandler);
+    return () => {
+      document.removeEventListener("return", returnButtonHandler);
+    };
+  }, []);
+
   const [importedStories, setImportedStories] = useState<
     Array<{
       id: string;

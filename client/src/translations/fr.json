@@ -60,7 +60,9 @@
     "back": "Retour",
     "next": "Suivant",
     "previous": "Précédent",
-    "continue": "Continuer"
+    "continue": "Continuer",
+    "backToHome": "Retour à l'accueil",
+    "backToMainMenu": "Retour au menu principal"
   },
   "settings": {
     "language": "Langue",
@@ -117,7 +119,9 @@
     "off": "Arrêt",
     "slow": "Lenteur",
     "medium": "Moyen",
-    "fast": "Rapide"
+    "fast": "Rapide",
+    "loadingAct": "Chargement de l'acte {{numéro de l'acte}}...",
+    "errorLoadingAct": "Erreur de chargement de l'acte"
   },
   "errorMessages": {
     "translationFailed": "Échec de la traduction",
@@ -131,5 +135,32 @@
     "generationComplete": "Génération complète",
     "saved": "Sauvegarde réussie",
     "loaded": "Chargé avec succès"
+  },
+  "testPlayer": {
+    "title": "Page de test du lecteur VN",
+    "description": "Tester le lecteur VN avec des exemples de données de scène dans le nouveau format",
+    "layoutTitle": "Test VN Player",
+    "layoutDescription": "Tester le lecteur de romans visuels à l'aide d'exemples de scènes",
+    "startButton": "Démarrer le lecteur de test",
+    "infoTitle": "Informations sur les données d'essai",
+    "infoDesc": "Cette page de test utilise des exemples de données de scène dans le nouveau format simplifié :",
+    "formatNote": "Le lecteur devrait automatiquement le convertir dans le format attendu."
+  },
+  "playSelection": {
+    "title": "Jouer l'histoire",
+    "subtitle": "Sélectionnez un roman visuel à lire ou importez un fichier JSON.",
+    "importButton": "Importer un fichier d'histoire",
+    "defaultImportTitle": "Histoire importée",
+    "storyImported": "Histoire importée",
+    "importSuccess": "Importation réussie de {{nom du film}}",
+    "importFailed": "Échec de l'importation",
+    "invalidFormat": "Le format du fichier n'est pas valide. Veuillez télécharger un fichier JSON d'histoire valide. Détails de l'erreur : {{erreur}}",
+    "storyRemoved": "Histoire supprimée",
+    "storyRemovedDesc": "L'article importé a été supprimé.",
+    "playButton": "Jouer",
+    "actLabel": "Acte {{numéro}}",
+    "actImportedLabel": "Acte {{nombre}} - Importé",
+    "fromCurrentProject": "Du projet en cours",
+    "emptyStateMessage": "Importer un fichier d'histoire pour jouer ou générer des actes à partir du menu Créer une histoire"
   }
 }

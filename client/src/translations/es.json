@@ -60,7 +60,9 @@
     "back": "Volver",
     "next": "Siguiente",
     "previous": "Anterior",
-    "continue": "Continuar"
+    "continue": "Continuar",
+    "backToHome": "Volver al inicio",
+    "backToMainMenu": "Volver al menú principal"
   },
   "settings": {
     "language": "Idioma",
@@ -117,7 +119,9 @@
     "off": "Fuera de",
     "slow": "Lento",
     "medium": "Medio",
-    "fast": "Rápido"
+    "fast": "Rápido",
+    "loadingAct": "Cargando Acto {{actNumber}}...",
+    "errorLoadingAct": "Acto de carga de errores"
   },
   "errorMessages": {
     "translationFailed": "Traducción fallida",
@@ -131,5 +135,32 @@
     "generationComplete": "Generación completa",
     "saved": "Guardado correctamente",
     "loaded": "Cargado correctamente"
+  },
+  "testPlayer": {
+    "title": "Página de prueba de VN Player",
+    "description": "Pruebe el reproductor VN con datos de escena de muestra en el nuevo formato",
+    "layoutTitle": "Probar VN Player",
+    "layoutDescription": "Probar el reproductor de novelas visuales con datos de escenas de muestra",
+    "startButton": "Iniciar reproductor de prueba",
+    "infoTitle": "Información sobre los datos de las pruebas",
+    "infoDesc": "Esta página de prueba utiliza datos de escenas de muestra en el nuevo formato simplificado:",
+    "formatNote": "El reproductor debería convertirlo automáticamente al formato esperado."
+  },
+  "playSelection": {
+    "title": "Ver historia",
+    "subtitle": "Selecciona una novela visual para reproducirla o importa un archivo JSON.",
+    "importButton": "Importar archivo de historia",
+    "defaultImportTitle": "Historia importada",
+    "storyImported": "Historia Importada",
+    "importSuccess": "Importado con éxito {{filename}}",
+    "importFailed": "Importación fallida",
+    "invalidFormat": "El formato del archivo no es válido. Por favor, cargue un archivo JSON válido. Detalles del error: {{error}}",
+    "storyRemoved": "Historia eliminada",
+    "storyRemovedDesc": "Se ha eliminado la noticia importada.",
+    "playButton": "Jugar",
+    "actLabel": "Actuar {{número}}",
+    "actImportedLabel": "Ley {{número}} - Importado",
+    "fromCurrentProject": "Del proyecto actual",
+    "emptyStateMessage": "Importar un archivo de historia para reproducir o generar actos desde el menú Crear historia"
   }
 }

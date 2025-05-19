@@ -60,7 +60,9 @@
     "back": "バック",
     "next": "次のページ",
     "previous": "前へ",
-    "continue": "続ける"
+    "continue": "続ける",
+    "backToHome": "ホームへ戻る",
+    "backToMainMenu": "メインメニューに戻る"
   },
   "settings": {
     "language": "言語",
@@ -117,7 +119,9 @@
     "off": "オフ",
     "slow": "遅い",
     "medium": "ミディアム",
-    "fast": "速い"
+    "fast": "速い",
+    "loadingAct": "行為{{行為番号}}をロード中...",
+    "errorLoadingAct": "エラーロード法"
   },
   "errorMessages": {
     "translationFailed": "翻訳に失敗",
@@ -131,5 +135,32 @@
     "generationComplete": "世代完了",
     "saved": "保存に成功",
     "loaded": "ロードに成功"
+  },
+  "testPlayer": {
+    "title": "VN選手テストページ",
+    "description": "新フォーマットのサンプル・シーン・データでVNプレーヤーをテストする",
+    "layoutTitle": "テストVNプレーヤー",
+    "layoutDescription": "サンプル・シーン・データを使ってビジュアル・ノベル・プレーヤーをテストする",
+    "startButton": "テストプレーヤーの開始",
+    "infoTitle": "テストデータ情報",
+    "infoDesc": "このテストページでは、新しい簡略化されたフォーマットのサンプルシーンデータを使用します：",
+    "formatNote": "プレーヤーはこれを期待されるフォーマットに自動的に変換するはずです。"
+  },
+  "playSelection": {
+    "title": "プレイストーリー",
+    "subtitle": "再生するビジュアル・ノベルを選択するか、JSONファイルをインポートします。",
+    "importButton": "ストーリーファイルのインポート",
+    "defaultImportTitle": "輸入ストーリー",
+    "storyImported": "ストーリー 輸入",
+    "importSuccess": "ファイル名}}のインポートに成功しました。",
+    "importFailed": "インポート失敗",
+    "invalidFormat": "ファイル形式が無効です。有効なストーリーJSONファイルをアップロードしてください。エラーの詳細{エラー}}",
+    "storyRemoved": "ストーリー削除",
+    "storyRemovedDesc": "輸入された記事は削除された。",
+    "playButton": "プレー",
+    "actLabel": "アクト{{番号}}",
+    "actImportedLabel": "アクト{{番号}}- 輸入",
+    "fromCurrentProject": "現在のプロジェクトより",
+    "emptyStateMessage": "ストーリーファイルをインポートして、「ストーリーを作成」メニューから演技を再生または生成する。"
   }
 }

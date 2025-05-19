@@ -60,7 +60,9 @@
     "back": "Voltar",
     "next": "Seguinte",
     "previous": "Anterior",
-    "continue": "Continuar"
+    "continue": "Continuar",
+    "backToHome": "Voltar ao início",
+    "backToMainMenu": "Voltar ao menu principal"
   },
   "settings": {
     "language": "Idioma",
@@ -117,7 +119,9 @@
     "off": "Desligado",
     "slow": "Lento",
     "medium": "Médio",
-    "fast": "Rápido"
+    "fast": "Rápido",
+    "loadingAct": "A carregar o ato {{actNumber}}...",
+    "errorLoadingAct": "Erro ao carregar o ato"
   },
   "errorMessages": {
     "translationFailed": "A tradução falhou",
@@ -131,5 +135,32 @@
     "generationComplete": "Geração completa",
     "saved": "Guardado com sucesso",
     "loaded": "Carregado com sucesso"
+  },
+  "testPlayer": {
+    "title": "Página de teste do VN Player",
+    "description": "Testar o leitor VN com dados de cena de amostra no novo formato",
+    "layoutTitle": "Testar o leitor VN",
+    "layoutDescription": "Testar o leitor de romances visuais com dados de cenas de amostra",
+    "startButton": "Iniciar o leitor de teste",
+    "infoTitle": "Informações sobre os dados de ensaio",
+    "infoDesc": "Esta página de teste utiliza dados de cenas de amostra no novo formato simplificado:",
+    "formatNote": "O leitor deve convertê-lo automaticamente para o formato esperado."
+  },
+  "playSelection": {
+    "title": "Reproduzir história",
+    "subtitle": "Selecione um romance visual para jogar ou importe um ficheiro JSON.",
+    "importButton": "Importar ficheiro de história",
+    "defaultImportTitle": "História importada",
+    "storyImported": "História importada",
+    "importSuccess": "Importado com sucesso {{filename}}",
+    "importFailed": "Importação falhada",
+    "invalidFormat": "O formato do ficheiro não é válido. Carregue um ficheiro JSON de história válido. Detalhes do erro: {{erro}}",
+    "storyRemoved": "História removida",
+    "storyRemovedDesc": "A história importada foi retirada.",
+    "playButton": "Jogar",
+    "actLabel": "Ato {{número}}",
+    "actImportedLabel": "Ato {{número}} - Importado",
+    "fromCurrentProject": "Do projeto atual",
+    "emptyStateMessage": "Importar um ficheiro de história para reproduzir ou gerar actos a partir do menu Criar história"
   }
 }

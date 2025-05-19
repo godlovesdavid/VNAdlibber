@@ -60,7 +60,9 @@
     "back": "Zurück",
     "next": "Weiter",
     "previous": "Vorherige",
-    "continue": "Weiter"
+    "continue": "Weiter",
+    "backToHome": "Zurück zu Home",
+    "backToMainMenu": "Zurück zum Hauptmenü"
   },
   "settings": {
     "language": "Sprache",
@@ -117,7 +119,9 @@
     "off": "Aus",
     "slow": "Langsam",
     "medium": "Mittel",
-    "fast": "Schnell"
+    "fast": "Schnell",
+    "loadingAct": "Lade Akt {{AktNummer}}...",
+    "errorLoadingAct": "Fehler Loading Act"
   },
   "errorMessages": {
     "translationFailed": "Übersetzung fehlgeschlagen",
@@ -131,5 +135,32 @@
     "generationComplete": "Erzeugung abgeschlossen",
     "saved": "Erfolgreich gespeichert",
     "loaded": "Erfolgreich geladen"
+  },
+  "testPlayer": {
+    "title": "VN Player Test Seite",
+    "description": "Testen Sie den VN-Player mit Beispielszenendaten im neuen Format",
+    "layoutTitle": "VN-Spieler testen",
+    "layoutDescription": "Testen Sie den Visual Novel Player mit Beispielszenendaten",
+    "startButton": "Testspieler starten",
+    "infoTitle": "Informationen zu den Testdaten",
+    "infoDesc": "Diese Testseite verwendet Beispielszenendaten im neuen, vereinfachten Format:",
+    "formatNote": "Der Player sollte diese automatisch in das erwartete Format konvertieren."
+  },
+  "playSelection": {
+    "title": "Geschichte spielen",
+    "subtitle": "Wählen Sie einen visuellen Roman zum Abspielen oder importieren Sie eine JSON-Datei.",
+    "importButton": "Story-Datei importieren",
+    "defaultImportTitle": "Importierte Geschichte",
+    "storyImported": "Geschichte importiert",
+    "importSuccess": "Erfolgreich importiert {{Dateiname}}",
+    "importFailed": "Import fehlgeschlagen",
+    "invalidFormat": "Das Dateiformat ist ungültig. Bitte laden Sie eine gültige Story-JSON-Datei hoch. Fehlerdetails: {{Fehler}}",
+    "storyRemoved": "Geschichte entfernt",
+    "storyRemovedDesc": "Die importierte Geschichte wurde entfernt.",
+    "playButton": "Spielen",
+    "actLabel": "Akt {{Nummer}}",
+    "actImportedLabel": "Akt {{Nummer}} - Eingeführt",
+    "fromCurrentProject": "Vom aktuellen Projekt",
+    "emptyStateMessage": "Importieren Sie eine Story-Datei, um sie abzuspielen oder über das Menü \"Story erstellen\" Akte zu erstellen."
   }
 }

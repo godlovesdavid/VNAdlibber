@@ -60,7 +60,9 @@
     "back": "返回",
     "next": "下一页",
     "previous": "上一页",
-    "continue": "继续"
+    "continue": "继续",
+    "backToHome": "返回首页",
+    "backToMainMenu": "返回主菜单"
   },
   "settings": {
     "language": "语言",
@@ -117,7 +119,9 @@
     "off": "关闭",
     "slow": "慢",
     "medium": "中型",
-    "fast": "快速"
+    "fast": "快速",
+    "loadingAct": "加载法案 {{actNumber}}...",
+    "errorLoadingAct": "错误加载法"
   },
   "errorMessages": {
     "translationFailed": "翻译失败",
@@ -131,5 +135,32 @@
     "generationComplete": "一代完成",
     "saved": "成功保存",
     "loaded": "成功加载"
+  },
+  "testPlayer": {
+    "title": "VN 播放器测试页面",
+    "description": "使用新格式的示例场景数据测试 VN 播放器",
+    "layoutTitle": "测试 VN 播放器",
+    "layoutDescription": "使用样本场景数据测试视觉小说播放器",
+    "startButton": "启动测试播放器",
+    "infoTitle": "测试数据信息",
+    "infoDesc": "本测试页使用新简化格式的场景数据样本：",
+    "formatNote": "播放器会自动将其转换为预期格式。"
+  },
+  "playSelection": {
+    "title": "播放故事",
+    "subtitle": "选择要播放的视觉小说或导入 JSON 文件。",
+    "importButton": "导入故事文件",
+    "defaultImportTitle": "进口故事",
+    "storyImported": "进口故事",
+    "importSuccess": "成功导入 {{filename}}",
+    "importFailed": "导入失败",
+    "invalidFormat": "文件格式无效。请上传有效的故事 JSON 文件。错误详情：{{error}}",
+    "storyRemoved": "故事已删除",
+    "storyRemovedDesc": "已删除进口报道。",
+    "playButton": "播放",
+    "actLabel": "{{编号}}法案",
+    "actImportedLabel": "行为 {{ 数量｝- 进口",
+    "fromCurrentProject": "来自当前项目",
+    "emptyStateMessage": "从 \"创建故事 \"菜单导入故事文件进行播放或生成行为"
   }
 }
