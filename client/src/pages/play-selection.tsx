@@ -8,11 +8,13 @@ import { Upload, Play, ArrowLeft, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { GeneratedAct } from "@/types/vn";
 import { jsonrepair } from "jsonrepair";
+import { useTranslation } from "react-i18next";
 
 export default function PlaySelection() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { projectData } = useVnContext();
+  const { t } = useTranslation();
   const [importedStories, setImportedStories] = useState<
     Array<{
       id: string;
