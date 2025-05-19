@@ -72,30 +72,48 @@ export function FlagSelector() {
     // Change language in i18next
     await i18n.changeLanguage(langCode);
     
-    // Auto-translate form fields if setting is enabled
-    const autoTranslate = localStorage.getItem('vn-auto-translate') === 'true';
-    const sourceLanguage = localStorage.getItem('vn-auto-translate-source') || 'en';
-    
-    if (autoTranslate && langCode !== sourceLanguage) {
-      try {
+    // Special handling for form translations - ensure this happens on all pages
+    try {
+      // Auto-translate form fields if setting is enabled
+      const autoTranslate = localStorage.getItem('vn-auto-translate') === 'true';
+      const sourceLanguage = localStorage.getItem('vn-auto-translate-source') || 'en';
+      
+      if (autoTranslate && langCode !== sourceLanguage) {
+        console.log(`Translating form fields to ${langCode}...`);
+        
         // Find all text inputs and textareas (excluding those with data-no-translate attribute)
         const textInputs = document.querySelectorAll('input[type="text"]:not([data-no-translate])');
         const textareas = document.querySelectorAll('textarea:not([data-no-translate])');
         
-        // Import translation function dynamically
-        const { translateInputField } = await import('@/utils/translation-api');
+        // Import translation function dynamically to avoid circular dependencies
+        const { translateText } = await import('@/utils/translation-api');
         
         // Translate each input field
         const allInputs = [...Array.from(textInputs), ...Array.from(textareas)] as HTMLInputElement[];
         
         for (const input of allInputs) {
           if (input.value && input.value.trim() !== '') {
-            await translateInputField(input, langCode);
+            try {
+              // Special handling for Arabic - use English as source language
+              const effectiveSourceLang = (langCode === 'ar') ? 'en' : sourceLanguage;
+              
+              // Translate the field value
+              const translatedValue = await translateText(input.value, langCode, effectiveSourceLang);
+              
+              // Update the input value
+              input.value = translatedValue;
+              
+              // Dispatch input event to trigger React state updates
+              const event = new Event('input', { bubbles: true });
+              input.dispatchEvent(event);
+            } catch (fieldError) {
+              console.error(`Error translating field to ${langCode}:`, fieldError);
+            }
           }
         }
-      } catch (error) {
-        console.error('Error auto-translating fields:', error);
       }
+    } catch (error) {
+      console.error('Error in language change handler:', error);
     }
   };
   
