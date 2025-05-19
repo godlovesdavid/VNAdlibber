@@ -357,8 +357,8 @@ export default function PathsForm() {
     
     if (!projectData) {
       toast({
-        title: "Error", 
-        description: "Project data is missing",
+        title: t('common.error'), 
+        description: t('pathsForm.projectDataMissing', 'Project data is missing'),
         variant: "destructive"
       });
       return;
@@ -387,8 +387,8 @@ export default function PathsForm() {
         
         if (validationResult.valid) {
           toast({
-            title: "Validation Passed",
-            description: validationResult.message || "Paths validated successfully."
+            title: t('pathsForm.validationPassed', 'Validation Passed'),
+            description: validationResult.message || t('pathsForm.validationPassedDesc', 'Paths validated successfully.')
           });
           
           // Navigate to the next step
@@ -396,8 +396,8 @@ export default function PathsForm() {
         } else {
           // Show the specific validation error from the server
           toast({
-            title: "Path Validation Failed",
-            description: validationResult.issues || validationResult.message || "Your paths don't align with the characters and story.",
+            title: t('pathsForm.validationFailed', 'Path Validation Failed'),
+            description: validationResult.issues || validationResult.message || t('pathsForm.validationFailedDesc', 'Your paths don\'t align with the characters and story.'),
             variant: "destructive",
             // Set longer duration for validation errors
             duration: 120000,
@@ -411,7 +411,7 @@ export default function PathsForm() {
                             "Please check your path data and try again.";
         
         toast({
-          title: "Path Validation Error",
+          title: t('pathsForm.validationError', 'Path Validation Error'),
           description: errorMessage,
           variant: "destructive",
           duration: 120000,
@@ -420,8 +420,8 @@ export default function PathsForm() {
     } catch (error) {
       console.error("Error in path validation flow:", error);
       toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
+        title: t('common.error'),
+        description: t('pathsForm.unexpectedError', 'An unexpected error occurred. Please try again.'),
         variant: "destructive"
       });
     } finally {
@@ -452,11 +452,10 @@ export default function PathsForm() {
         <div className="creation-container max-w-4xl mx-auto p-6">
           <div className="mb-6">
             <h2 className="text-2xl font-semibold text-gray-800">
-              Step 4: Story Paths
+              {t('pathsForm.title', 'Step 4: Story Paths')}
             </h2>
             <p className="text-gray-600">
-              Define the different routes and endings your story can take. You
-              can create up to 3 distinct paths.
+              {t('pathsForm.description', 'Define the different routes and endings your story can take. You can create up to 3 distinct paths.')}
             </p>
           </div>
 
