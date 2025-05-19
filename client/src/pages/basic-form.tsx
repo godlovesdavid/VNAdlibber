@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 // Arrays for each dropdown type
 const tones = [
@@ -80,6 +81,7 @@ export default function BasicForm() {
   const [, setLocation] = useLocation();
   const { projectData, setBasicData, saveProject, hasUnsavedChanges, setConfirmDialogOpen } = useVnContext();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   // Track validation state
   const [isValidating, setIsValidating] = useState(false);
@@ -229,8 +231,8 @@ export default function BasicForm() {
     // Local validation
     if (!theme || !tone || !genre || !setting) {
       toast({
-        title: "Missing Information",
-        description: "Please select options for all fields before proceeding.",
+        title: t('common.error'),
+        description: t('basicForm.validationError', 'Please select options for all fields before proceeding.'),
         variant: "destructive",
       });
       return;
@@ -268,11 +270,10 @@ export default function BasicForm() {
       <div className="pt-16">
         <div className="creation-container max-w-4xl mx-auto p-3 sm:p-4 md:p-6">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-            Step 1: Basic Elements
+            {t('basicForm.title', 'Step 1: Basic Elements')}
           </h2>
           <p className="text-gray-600 mb-6">
-            Select the fundamental elements that will define your visual novel's
-            world and atmosphere.
+            {t('basicForm.description', 'Select the fundamental elements that will define your visual novel\'s world and atmosphere.')}
           </p>
 
           <div className="space-y-8">
@@ -280,7 +281,7 @@ export default function BasicForm() {
             <div className="bg-gray-50 p-6 rounded-lg shadow-sm border border-gray-200">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xl font-medium text-gray-700">
-                  Create Your Story
+                  {t('basicForm.createYourStory', 'Create Your Story')}
                 </h3>
                 <Button
                   variant="outline"
@@ -303,7 +304,7 @@ export default function BasicForm() {
                     <path d="M14 10h7"></path>
                     <path d="M21 10v7"></path>
                   </svg>
-                  Randomize All
+                  {t('basicForm.randomize', 'Randomize All')}
                 </Button>
               </div>
 
