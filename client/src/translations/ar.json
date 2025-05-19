@@ -162,18 +162,5 @@
     "actImportedLabel": "",
     "fromCurrentProject": "",
     "emptyStateMessage": ""
-  },
-  "tones": {
-    "humorous": "فكاهي",
-    "dark": "الظلام",
-    "gritty": "شجاع",
-    "lighthearted": "خفيف القلب",
-    "melancholic": "كئيب",
-    "romantic": "رومانسية",
-    "satirical": "ساخر",
-    "suspenseful": "تشويقية",
-    "tragicomic": "تراجيكومي",
-    "uplifting": "الارتقاء",
-    "whimsical": "غريب الأطوار"
   }
 }

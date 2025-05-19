@@ -192,18 +192,40 @@
     "fromCurrentProject": "From Current Project",
     "emptyStateMessage": "Import a story file to play or generate acts from the Create Story menu"
   },
+  "ins": "",
+  "@/utils/translation-api": "",
+  "input": "",
+  "Invalid project file format": "",
+  "Error importing project": {
+    " Please check the file format": {
+      "": ""
+    }
+  },
+  "return": "",
+  "vnSetTextSpeed": "",
+  "vnToggleImageGeneration": "",
+  "save": "",
+  "POST": "",
+  "GET": "",
+  "DELETE": "",
+  "a": "",
+  ":": "",
+  "UserCancelledGeneration": "",
+  "script": "",
+  "content-type": "",
+  "language-changed": "",
   "tones": {
-    "humorous": "humorous",
-    "dark": "dark",
-    "gritty": "gritty",
-    "lighthearted": "lighthearted",
-    "melancholic": "melancholic",
-    "romantic": "romantic",
-    "satirical": "satirical",
-    "suspenseful": "suspenseful",
-    "tragicomic": "tragicomic",
-    "uplifting": "uplifting",
-    "whimsical": "whimsical"
+    "humorous": "",
+    "dark": "",
+    "gritty": "",
+    "lighthearted": "",
+    "melancholic": "",
+    "romantic": "",
+    "satirical": "",
+    "suspenseful": "",
+    "tragicomic": "",
+    "uplifting": "",
+    "whimsical": ""
   },
   "genres": {
     "mystery": "",
@@ -285,5 +307,8 @@
   "translationSettings": {
     "title": "",
     "description": ""
+  },
+  "": {
+    "": ""
   }
 }

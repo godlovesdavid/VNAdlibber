@@ -162,18 +162,5 @@
     "actImportedLabel": "Ato {{número}} - Importado",
     "fromCurrentProject": "Do projeto atual",
     "emptyStateMessage": "Importar um ficheiro de história para reproduzir ou gerar actos a partir do menu Criar história"
-  },
-  "tones": {
-    "humorous": "humorístico",
-    "dark": "escuro",
-    "gritty": "corajoso",
-    "lighthearted": "alegre",
-    "melancholic": "melancólico",
-    "romantic": "romântico",
-    "satirical": "satírico",
-    "suspenseful": "cheio de suspense",
-    "tragicomic": "tragicómico",
-    "uplifting": "edificante",
-    "whimsical": "extravagante"
   }
 }

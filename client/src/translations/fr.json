@@ -162,18 +162,5 @@
     "actImportedLabel": "Acte {{nombre}} - Importé",
     "fromCurrentProject": "Du projet en cours",
     "emptyStateMessage": "Importer un fichier d'histoire pour jouer ou générer des actes à partir du menu Créer une histoire"
-  },
-  "tones": {
-    "humorous": "humoristique",
-    "dark": "sombre",
-    "gritty": "grinçant",
-    "lighthearted": "léger",
-    "melancholic": "mélancolique",
-    "romantic": "romantique",
-    "satirical": "satirique",
-    "suspenseful": "suspense",
-    "tragicomic": "tragicomique",
-    "uplifting": "édifiant",
-    "whimsical": "fantaisiste"
   }
 }
