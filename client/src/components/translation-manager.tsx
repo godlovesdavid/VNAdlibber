@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { initTranslator, autoTranslate } from '@/utils/deepl-translator';
+import { autoTranslateLanguage } from '@/utils/translation-api';
 import esTranslation from '../translations/es.json';
 import jaTranslation from '../translations/ja.json';
 import { useTranslation } from 'react-i18next';
@@ -19,51 +19,46 @@ export function TranslationManager() {
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
 
-  // Try to get saved API key from localStorage
-  useEffect(() => {
-    const savedKey = localStorage.getItem('deepl_api_key');
-    if (savedKey) {
-      setApiKey(savedKey);
-      // Try to initialize with saved key
-      if (initTranslator(savedKey)) {
+  // Check if API key is configured in environment
+  const checkApiConfig = async () => {
+    try {
+      // Test the API with a simple translation call
+      const response = await fetch('/api/translate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          texts: ['Hello'],
+          targetLang: 'es',
+        }),
+      });
+      
+      if (response.ok) {
         setIsInitialized(true);
+        return true;
+      } else {
+        const errorData = await response.json();
+        console.error('API test failed:', errorData.error);
+        return false;
       }
-    }
-  }, []);
-
-  // Initialize the DeepL translator with the provided API key
-  const handleInitialize = () => {
-    if (!apiKey) {
-      toast({
-        title: t('common.error'),
-        description: 'Please enter a DeepL API key',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (initTranslator(apiKey)) {
-      setIsInitialized(true);
-      localStorage.setItem('deepl_api_key', apiKey);
-      toast({
-        title: t('common.success'),
-        description: 'DeepL translator initialized successfully',
-      });
-    } else {
-      toast({
-        title: t('common.error'),
-        description: 'Failed to initialize DeepL translator. Please check your API key.',
-        variant: 'destructive',
-      });
+    } catch (error) {
+      console.error('API test error:', error);
+      return false;
     }
   };
+
+  // Check API configuration on component mount
+  useEffect(() => {
+    checkApiConfig();
+  }, []);
 
   // Run auto-translation for a specific language
   const handleAutoTranslate = async (language: string) => {
     if (!isInitialized) {
       toast({
         title: t('common.error'),
-        description: 'Please initialize the DeepL translator first',
+        description: 'DeepL translation is not available. Please check server configuration.',
         variant: 'destructive',
       });
       return;
@@ -73,17 +68,12 @@ export function TranslationManager() {
     setTranslationLog(prev => [...prev, `Starting translation for ${language}...`]);
 
     try {
-      // Get current translations for target language
-      const currentTranslations = language === 'es' ? esTranslation : jaTranslation;
+      // Get language as typed parameter
+      const lang = language as 'es' | 'ja';
       
-      // Map language code to DeepL language code
-      const targetLang = language === 'es' ? 'es' : 'ja';
-      
-      // Perform auto-translation
-      const updatedTranslations = await autoTranslate(currentTranslations, { 
-        targetLang: targetLang as any,
-        sourceLang: 'en' as any
-      });
+      // Perform auto-translation using our API utility
+      setTranslationLog(prev => [...prev, `Finding missing translations for ${language}...`]);
+      const updatedTranslations = await autoTranslateLanguage(lang);
       
       // Log results
       setTranslationLog(prev => [...prev, `Completed translation for ${language}`]);
@@ -123,116 +113,94 @@ export function TranslationManager() {
       <CardHeader>
         <CardTitle>Translation Manager</CardTitle>
         <CardDescription>
-          Manage translations for your application using DeepL automatic translation
+          Automatically translate missing keys in your application using DeepL
         </CardDescription>
       </CardHeader>
       
       <CardContent>
-        <Tabs defaultValue="setup" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="setup">Setup</TabsTrigger>
-            <TabsTrigger value="translate">Auto-Translate</TabsTrigger>
-          </TabsList>
-          
-          {/* Setup Tab */}
-          <TabsContent value="setup">
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="api-key">DeepL API Key</Label>
-                <div className="flex space-x-2">
-                  <Input
-                    id="api-key"
-                    type="password"
-                    placeholder="Enter your DeepL API key"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                  />
-                  <Button onClick={handleInitialize}>
-                    {isInitialized ? (
-                      <>
-                        <CheckCircle className="mr-2 h-4 w-4" />
-                        Initialized
-                      </>
-                    ) : (
-                      'Initialize'
-                    )}
-                  </Button>
-                </div>
-              </div>
+        <div className="space-y-6 py-2">
+          <div>
+            <div className="mb-4">
+              <p className="text-sm text-gray-700 mb-2">
+                This tool helps you translate missing keys in your application to different languages using DeepL's translation API. The DeepL API key is securely stored as an environment variable on the server.
+              </p>
               
-              <div className="pt-2">
-                <p className="text-sm text-gray-500">
-                  Get a free DeepL API key by signing up at{' '}
-                  <a 
-                    href="https://www.deepl.com/pro#developer" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline"
-                  >
-                    https://www.deepl.com/pro#developer
-                  </a>
-                </p>
-              </div>
+              <p className="text-sm text-gray-700">
+                When you click a translation button, it will:
+              </p>
+              <ol className="list-decimal pl-5 text-sm text-gray-700 space-y-1 mt-1">
+                <li>Find all untranslated keys in the selected language</li>
+                <li>Use DeepL to translate them from English</li>
+                <li>Generate a downloadable JSON file with the new translations</li>
+              </ol>
             </div>
-          </TabsContent>
-          
-          {/* Translate Tab */}
-          <TabsContent value="translate">
-            <div className="space-y-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <Button 
-                  onClick={() => handleAutoTranslate('es')} 
-                  disabled={translating || !isInitialized}
-                  className="w-full"
-                >
-                  {translating ? (
+
+            <div className="grid grid-cols-2 gap-4 my-6">
+              <Button 
+                onClick={() => handleAutoTranslate('es')} 
+                disabled={translating || !isInitialized}
+                className="w-full h-12"
+              >
+                {translating ? (
+                  <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <>Translate to Spanish</>
-                  )}
-                </Button>
-                
-                <Button 
-                  onClick={() => handleAutoTranslate('ja')} 
-                  disabled={translating || !isInitialized}
-                  className="w-full"
-                >
-                  {translating ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <>Translate to Japanese</>
-                  )}
-                </Button>
-              </div>
+                    Translating...
+                  </>
+                ) : (
+                  <>Translate to Spanish</>
+                )}
+              </Button>
               
-              {/* Translation log */}
-              {translationLog.length > 0 && (
-                <div className="mt-4">
-                  <Label>Translation Log</Label>
-                  <div className="bg-gray-100 p-3 rounded-md h-32 overflow-y-auto mt-1 text-sm">
-                    {translationLog.map((log, index) => (
-                      <div key={index} className="py-1">
-                        {log}
-                      </div>
-                    ))}
+              <Button 
+                onClick={() => handleAutoTranslate('ja')} 
+                disabled={translating || !isInitialized}
+                className="w-full h-12"
+              >
+                {translating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Translating...
+                  </>
+                ) : (
+                  <>Translate to Japanese</>
+                )}
+              </Button>
+            </div>
+            
+            {isInitialized ? (
+              <div className="flex items-center text-sm text-green-600 mt-2">
+                <CheckCircle className="mr-2 h-4 w-4" />
+                DeepL translation service is ready to use
+              </div>
+            ) : (
+              <div className="flex items-center text-sm text-amber-600 mt-2">
+                <AlertCircle className="mr-2 h-4 w-4" />
+                DeepL API not available. Please check your server configuration.
+              </div>
+            )}
+          </div>
+          
+          {/* Translation log */}
+          {translationLog.length > 0 && (
+            <div>
+              <Label>Translation Log</Label>
+              <div className="bg-gray-100 p-3 rounded-md h-40 overflow-y-auto mt-1 text-sm">
+                {translationLog.map((log, index) => (
+                  <div key={index} className="py-1">
+                    {log}
                   </div>
-                </div>
-              )}
-              
-              {isInitialized ? (
-                <div className="flex items-center text-sm text-green-600 mt-2">
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  DeepL translator is initialized and ready
-                </div>
-              ) : (
-                <div className="flex items-center text-sm text-amber-600 mt-2">
-                  <AlertCircle className="mr-2 h-4 w-4" />
-                  Please initialize the DeepL translator in the Setup tab first
-                </div>
-              )}
+                ))}
+              </div>
             </div>
-          </TabsContent>
-        </Tabs>
+          )}
+          
+          <div className="pt-2">
+            <p className="text-sm text-gray-600">
+              After downloading the translated JSON file, you'll need to replace the corresponding language file in your project. 
+              You can copy the content into <code className="bg-gray-100 px-1 py-0.5 rounded text-xs">client/src/translations/{'{es|ja}'}.json</code>
+            </p>
+          </div>
+        </div>
       </CardContent>
       
       <CardFooter className="border-t pt-4 flex justify-between">

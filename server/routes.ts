@@ -1154,6 +1154,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // DeepL translation endpoint
+  app.post('/api/translate', async (req, res) => {
+    try {
+      // Check if DEEPL_API_KEY is set
+      if (!process.env.DEEPL_API_KEY) {
+        return res.status(400).json({
+          error: 'DeepL API key is not configured'
+        });
+      }
+      
+      // Import the translation service and process the request
+      const { translateTexts } = await import('./translation-service');
+      return translateTexts(req, res);
+    } catch (error) {
+      console.error('Error in translation endpoint:', error);
+      return res.status(500).json({
+        error: error instanceof Error ? error.message : 'Unknown translation error'
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
