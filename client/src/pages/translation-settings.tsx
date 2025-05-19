@@ -1,10 +1,23 @@
 import { TranslationManager } from "@/components/translation-manager";
 import { NavBar } from "@/components/nav-bar";
 import { useTranslation } from "react-i18next";
-
+import {  useEffect } from "react";
+import { useLocation } from "wouter";
 export default function TranslationSettingsPage() {
+  const [location, setLocation] = useLocation();
   const { t } = useTranslation();
-  
+
+  //save and return buttons
+  useEffect(() => {
+    const returnButtonHandler = () => {
+        setLocation("/")
+    }
+    document.addEventListener("return", returnButtonHandler);
+    return () => {
+      document.removeEventListener("return", returnButtonHandler);
+    };
+  }, []);
+
   return (
     <>
       <NavBar />

@@ -6,7 +6,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Check, Globe } from "lucide-react";
+import { Check } from "lucide-react";
 
 interface Language {
   code: string;
@@ -26,7 +26,7 @@ const languages: Language[] = [
   { code: 'ar', name: 'Arabic', flag: '🇸🇦', nativeName: 'العربية' }
 ];
 
-export function LanguageDropdown() {
+export function LanguageMenu() {
   const { i18n } = useTranslation();
   
   const changeLanguage = (language: string) => {
@@ -38,13 +38,13 @@ export function LanguageDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="px-3 font-medium flex items-center gap-1.5">
+        <Button variant="ghost" size="sm" className="px-2 h-8 flex items-center gap-1.5">
           <span>{currentLanguage.flag}</span>
-          <span>{currentLanguage.code.toUpperCase()}</span>
+          <span className="font-medium">{currentLanguage.code.toUpperCase()}</span>
         </Button>
       </DropdownMenuTrigger>
       
-      <DropdownMenuContent align="end" className="w-40">
+      <DropdownMenuContent align="end" className="w-48">
         {languages.map((language) => (
           <DropdownMenuItem
             key={language.code}
@@ -53,45 +53,10 @@ export function LanguageDropdown() {
             }`}
             onClick={() => changeLanguage(language.code)}
           >
-            <span className="w-8 text-left text-xs font-medium">{language.code.toUpperCase()}</span>
-            <span className="flex-1">{language.nativeName}</span>
-            {language.code === i18n.language && (
-              <Check className="h-4 w-4 text-primary" />
-            )}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
-export function MobileLanguageDropdown() {
-  const { i18n } = useTranslation();
-  
-  const changeLanguage = (language: string) => {
-    i18n.changeLanguage(language);
-  };
-  
-  const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
-  
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="px-2 font-medium h-8">
-          {currentLanguage.code.toUpperCase()}
-        </Button>
-      </DropdownMenuTrigger>
-      
-      <DropdownMenuContent align="end" className="w-40">
-        {languages.map((language) => (
-          <DropdownMenuItem
-            key={language.code}
-            className={`flex items-center gap-2 text-sm cursor-pointer ${
-              language.code === i18n.language ? 'bg-muted' : ''
-            }`}
-            onClick={() => changeLanguage(language.code)}
-          >
-            <span className="w-8 text-left text-xs font-medium">{language.code.toUpperCase()}</span>
+            <div className="flex items-center gap-1.5 min-w-[60px]">
+              <span>{language.flag}</span>
+              <span className="text-xs font-medium">{language.code.toUpperCase()}</span>
+            </div>
             <span className="flex-1">{language.nativeName}</span>
             {language.code === i18n.language && (
               <Check className="h-4 w-4 text-primary" />
