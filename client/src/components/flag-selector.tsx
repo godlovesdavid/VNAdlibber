@@ -126,11 +126,11 @@ export function FlagSelector() {
     return (
       <DropdownMenuItem
         key={language.code}
-        className={`flex items-center p-2 ${isSelected ? 'bg-muted' : ''}`}
+        className={`flex items-center px-1.5 py-1 ${isSelected ? 'bg-muted' : ''} gap-1`}
         onClick={() => changeLanguage(language.code)}
       >
         <div style={{...flagContainerStyle, ...(flagStyles[language.countryCode] || {})}}></div>
-        <span className="font-medium">{language.countryCode}</span>
+        <span className="font-medium text-xs">{language.countryCode}</span>
       </DropdownMenuItem>
     );
   };
