@@ -108,7 +108,62 @@ const deepMerge = (target: Record<string, any>, source: Record<string, any>): Re
   return output;
 };
 
-// Handler to auto-translate a specific language
+// Handler to clear translations for a specific language
+export async function handleClearTranslations(req: Request, res: Response) {
+  try {
+    const { language } = req.params;
+    
+    // Validate language parameter
+    const supportedLanguages = ['es', 'ja', 'zh', 'fr', 'de', 'pt', 'ar'];
+    if (!supportedLanguages.includes(language)) {
+      return res.status(400).json({
+        error: `Invalid language. Supported languages are: ${supportedLanguages.join(', ')}`
+      });
+    }
+    
+    // Determine file path
+    let targetPath;
+    switch (language) {
+      case 'es': targetPath = ES_TRANSLATION_PATH; break;
+      case 'ja': targetPath = JA_TRANSLATION_PATH; break;
+      case 'zh': targetPath = ZH_TRANSLATION_PATH; break;
+      case 'fr': targetPath = FR_TRANSLATION_PATH; break;
+      case 'de': targetPath = DE_TRANSLATION_PATH; break;
+      case 'pt': targetPath = PT_TRANSLATION_PATH; break;
+      case 'ar': targetPath = AR_TRANSLATION_PATH; break;
+      default: targetPath = ES_TRANSLATION_PATH; // Fallback (should never happen)
+    }
+    
+    // Check if file exists
+    if (!fs.existsSync(targetPath)) {
+      return res.status(404).json({
+        error: `Translation file for ${language} does not exist.`
+      });
+    }
+    
+    // Read the current translations to count them
+    const currentTranslations = readJsonFile(targetPath);
+    const flatCurrent = flattenObject(currentTranslations);
+    const translationCount = Object.keys(flatCurrent).length;
+    
+    // Write an empty object to clear translations
+    writeJsonFile(targetPath, {});
+    
+    // Return success response
+    return res.json({
+      success: true,
+      message: `Successfully cleared all translations for ${language}.`,
+      clearedCount: translationCount
+    });
+    
+  } catch (error) {
+    console.error('Clear translations error:', error);
+    return res.status(500).json({
+      error: error instanceof Error ? error.message : 'Unknown error clearing translations'
+    });
+  }
+}
+
 export async function handleAutoTranslate(req: Request, res: Response) {
   try {
     const { language } = req.params;

@@ -62,6 +62,64 @@ export function TranslationManager() {
     checkApiConfig();
   }, []);
 
+  // Handle clearing all translations
+  const handleClearAllTranslations = async (e?: React.MouseEvent) => {
+    // Prevent default form submission if triggered by a form
+    if (e) {
+      e.preventDefault();
+    }
+    
+    // Confirm with the user before proceeding
+    if (!window.confirm(t('translation.manager.confirmClear', 'Are you sure you want to clear all translations? This will remove all translated text except for English and cannot be undone.'))) {
+      return;
+    }
+    
+    setTranslating(true);
+    setTranslationLog(prev => [...prev, 'Starting to clear all translations...']);
+    
+    try {
+      // Process each language
+      for (const language of supportedLanguages) {
+        setTranslationLog(prev => [...prev, `Clearing translations for ${language.name} (${language.code})...`]);
+        
+        // Call clear translations endpoint for this language
+        const response = await fetch(`/api/translate/clear/${language.code}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-No-Refresh': 'true'
+          }
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(`Clearing translations for ${language.name} failed: ${errorData.error || response.statusText}`);
+        }
+        
+        const data = await response.json();
+        setTranslationLog(prev => [...prev, `✓ ${language.name}: Cleared ${data.clearedCount || 'all'} translations`]);
+      }
+      
+      setTranslationLog(prev => [...prev, '✓ All translations have been cleared successfully']);
+      
+      toast({
+        title: 'Translations Cleared',
+        description: 'All translations have been cleared. You can now retranslate everything.',
+      });
+    } catch (error) {
+      console.error('Clearing translations error:', error);
+      setTranslationLog(prev => [...prev, `Error: ${error instanceof Error ? error.message : String(error)}`]);
+      
+      toast({
+        title: t('common.error'),
+        description: 'An error occurred while clearing translations',
+        variant: 'destructive',
+      });
+    } finally {
+      setTranslating(false);
+    }
+  };
+
   // Run translation for all languages
   const handleTranslateAll = async (e?: React.MouseEvent) => {
     // Prevent default form submission if this was triggered by a form
@@ -164,20 +222,31 @@ export function TranslationManager() {
                 </ol>
               </div>
 
-              <Button 
-                onClick={handleTranslateAll} 
-                disabled={translating || !isInitialized}
-                className="w-full h-12"
-              >
-                {translating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {t('translation.manager.translating')}
-                  </>
-                ) : (
-                  <>{t('translation.manager.translateAll')}</>
-                )}
-              </Button>
+              <div className="flex flex-col gap-3">
+                <Button 
+                  onClick={handleTranslateAll} 
+                  disabled={translating || !isInitialized}
+                  className="w-full h-12"
+                >
+                  {translating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {t('translation.manager.translating')}
+                    </>
+                  ) : (
+                    <>{t('translation.manager.translateAll')}</>
+                  )}
+                </Button>
+                
+                <Button 
+                  onClick={handleClearAllTranslations} 
+                  disabled={translating}
+                  variant="destructive"
+                  className="w-full"
+                >
+                  {t('translation.manager.clearAllTranslations', 'Clear All Translations')}
+                </Button>
+              </div>
               
               {isInitialized ? (
                 <div className="flex items-center text-sm text-green-600 mt-2">

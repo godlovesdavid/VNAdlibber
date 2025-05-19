@@ -400,31 +400,31 @@ export default function BasicForm() {
                       </SelectTrigger>
                       <SelectContent className="min-w-[200px]">
                         <SelectItem value="cyberpunk_world">
-                          {t('settings.cyberpunk_world', 'cyberpunk world')}
+                          cyberpunk world
                         </SelectItem>
                         <SelectItem value="steampunk_world">
-                          {t('settings.steampunk_world', 'steampunk world')}
+                          steampunk world
                         </SelectItem>
                         <SelectItem value="noir_setting">
-                          {t('settings.noir_setting', 'noir setting')}
+                          noir setting
                         </SelectItem>
-                        <SelectItem value="modern_day">{t('settings.modern_day', 'modern day')}</SelectItem>
-                        <SelectItem value="school">{t('settings.school', 'school')}</SelectItem>
-                        <SelectItem value="history">{t('settings.history', 'history')}</SelectItem>
-                        <SelectItem value="mythology">{t('settings.mythology', 'mythology')}</SelectItem>
-                        <SelectItem value="space">{t('settings.space', 'space')}</SelectItem>
-                        <SelectItem value="dystopia">{t('settings.dystopia', 'dystopia')}</SelectItem>
-                        <SelectItem value="utopia">{t('settings.utopia', 'utopia')}</SelectItem>
-                        <SelectItem value="urban_city">{t('settings.urban_city', 'urban city')}</SelectItem>
+                        <SelectItem value="modern_day">modern day</SelectItem>
+                        <SelectItem value="school">school</SelectItem>
+                        <SelectItem value="history">history</SelectItem>
+                        <SelectItem value="mythology">mythology</SelectItem>
+                        <SelectItem value="space">space</SelectItem>
+                        <SelectItem value="dystopia">dystopia</SelectItem>
+                        <SelectItem value="utopia">utopia</SelectItem>
+                        <SelectItem value="urban_city">urban city</SelectItem>
                         <SelectItem value="haunted_place">
-                          {t('settings.haunted_place', 'a haunted place')}
+                          a haunted place
                         </SelectItem>
-                        <SelectItem value="countryside">{t('settings.countryside', 'countryside')}</SelectItem>
+                        <SelectItem value="countryside">countryside</SelectItem>
                         <SelectItem value="post_apocalypse">
-                          {t('settings.post_apocalypse', 'post-apocalypse')}
+                          post-apocalypse
                         </SelectItem>
                         <SelectItem value="virtual_reality">
-                          {t('settings.virtual_reality', 'virtual reality')}
+                          virtual reality
                         </SelectItem>
                       </SelectContent>
                     </Select>
