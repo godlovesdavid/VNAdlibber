@@ -6,6 +6,8 @@ import { insertVnStorySchema } from "@shared/schema";
 import { generateSceneBackgroundImage } from "./image-generator";
 import { jsonrepair } from "jsonrepair";
 import rateLimit from "express-rate-limit";
+import { handleAutoTranslate } from "./i18n-service";
+import { translateTexts } from "./translation-service";
 
 // Use Google's Gemini API instead of OpenAI for text generation
 const GEMINI_API_URL =
@@ -1154,7 +1156,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // DeepL translation endpoint
+  // DeepL translation endpoints
   app.post('/api/translate', async (req, res) => {
     try {
       // Check if DEEPL_API_KEY is set
@@ -1173,6 +1175,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: error instanceof Error ? error.message : 'Unknown translation error'
       });
     }
+  });
+  
+  // Auto-translation endpoint to update translation files
+  app.get('/api/translate/auto/:language', async (req, res) => {
+    try {
+      // Check if DEEPL_API_KEY is set
+      if (!process.env.DEEPL_API_KEY) {
+        return res.status(400).json({
+          error: 'DeepL API key is not configured'
+        });
+      }
+      
+      // Handle the auto-translation request
+      return handleAutoTranslate(req, res);
+    } catch (error) {
+      console.error('Error in auto-translation endpoint:', error);
+      return res.status(500).json({
+        error: error instanceof Error ? error.message : 'Unknown translation error'
+      });
+    }
+  });
+  
+  // Translation status endpoint
+  app.get('/api/translate/status', (req, res) => {
+    const isApiKeyConfigured = !!process.env.DEEPL_API_KEY;
+    res.json({
+      available: isApiKeyConfigured,
+      source: 'DeepL'
+    });
   });
 
   const httpServer = createServer(app);
