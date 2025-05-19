@@ -581,29 +581,29 @@ export default function CharactersForm() {
                   <div className="mb-2">
                     <MinimalInput
                       id={`name-${index}`}
-                      label="Name"
+                      label={t('charactersForm.name', 'Name')}
                       value={character.name}
                       onChange={(e) =>
                         updateCharacter(index, "name", e.target.value)
                       }
-                      placeholder="Enter character name"
+                      placeholder={t('charactersForm.enterName', 'Enter character name')}
                     />
                   </div>
                   
                   <div className="mb-2">
                     {index === 0 ? (
                       <MinimalInput
-                        label="Role"
-                        placeholder="Protagonist"
-                        value="Protagonist"
+                        label={t('charactersForm.role', 'Role')}
+                        placeholder={t('charactersForm.protagonist', 'Protagonist')}
+                        value={t('charactersForm.protagonist', 'Protagonist')}
                         disabled
                         className="bg-gray-50 text-gray-500"
                       />
                     ) : (
                       <MinimalInput
-                        label="Role"
+                        label={t('charactersForm.role', 'Role')}
                         value={character.role}
-                        placeholder="e.g. antagonist, rival, mentor"
+                        placeholder={t('charactersForm.rolePlaceholder', 'e.g. antagonist, rival, mentor')}
                         onChange={(e) =>
                           updateCharacter(index, "role", e.target.value)
                         }
@@ -613,34 +613,34 @@ export default function CharactersForm() {
 
                   <div className="mb-2">
                     <MinimalInput
-                      label="Occupation"
+                      label={t('charactersForm.occupation', 'Occupation')}
                       value={character.occupation}
                       onChange={(e) =>
                         updateCharacter(index, "occupation", e.target.value)
                       }
-                      placeholder="Character's job or role"
+                      placeholder={t('charactersForm.occupationPlaceholder', "Character's job or role")}
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 mb-2">
                     <div>
                       <MinimalInput
-                        label="Gender"
+                        label={t('charactersForm.gender', 'Gender')}
                         value={character.gender}
                         onChange={(e) =>
                           updateCharacter(index, "gender", e.target.value)
                         }
-                        placeholder="Gender"
+                        placeholder={t('charactersForm.genderPlaceholder', 'Gender')}
                       />
                     </div>
                     <div>
                       <MinimalInput
-                        label="Age"
+                        label={t('charactersForm.age', 'Age')}
                         value={character.age}
                         onChange={(e) =>
                           updateCharacter(index, "age", e.target.value)
                         }
-                        placeholder="Age"
+                        placeholder={t('charactersForm.agePlaceholder', 'Age')}
                       />
                     </div>
                   </div>
