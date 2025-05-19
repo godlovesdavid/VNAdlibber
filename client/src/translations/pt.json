@@ -1,0 +1,69 @@
+{
+  "appName": "Criador de Romance Visual",
+  "nav": {
+    "home": "Início",
+    "create": "Criar",
+    "library": "Biblioteca",
+    "settings": "Configurações"
+  },
+  "characterForm": {
+    "title": "Passo 3: Personagens",
+    "description": "Crie os personagens que darão vida à sua história. O primeiro personagem será o protagonista.",
+    "protagonist": "Protagonista",
+    "character": "Personagem",
+    "name": "Nome",
+    "role": "Papel",
+    "occupation": "Ocupação",
+    "gender": "Gênero",
+    "age": "Idade",
+    "appearance": "Aparência",
+    "personality": "Personalidade",
+    "goals": "Objetivos e Motivação",
+    "relationshipPotential": "Potencial de Relacionamento",
+    "conflicts": "Conflitos",
+    "generate": "Gerar",
+    "generateAll": "Gerar Todos os Personagens",
+    "generatePortrait": "Gerar Retrato",
+    "addCharacter": "Adicionar Personagem",
+    "reset": "Redefinir",
+    "back": "Voltar",
+    "next": "Próximo"
+  },
+  "conceptForm": {
+    "title": "Passo 2: Conceito",
+    "description": "Defina o conceito central do seu romance visual com um título marcante, slogan e premissa.",
+    "title": "Título",
+    "titleHelp": "Crie um título memorável para o seu romance visual",
+    "tagline": "Slogan",
+    "taglineHelp": "Uma frase que captura a essência da sua história",
+    "premise": "Premissa",
+    "premiseHelp": "Breve descrição do cenário e do conflito central da sua história",
+    "generate": "Gerar",
+    "reset": "Redefinir",
+    "back": "Voltar",
+    "next": "Próximo"
+  },
+  "common": {
+    "generating": "Gerando...",
+    "saving": "Salvando...",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "warning": "Aviso",
+    "confirm": "Confirmar",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "view": "Visualizar",
+    "play": "Jogar",
+    "untitled": "Sem título"
+  },
+  "settings": {
+    "language": "Idioma",
+    "theme": "Tema",
+    "apiKeys": "Chaves de API",
+    "account": "Conta",
+    "save": "Salvar Configurações"
+  }
+}

@@ -6,6 +6,10 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import enTranslation from './translations/en.json';
 import esTranslation from './translations/es.json';
 import jaTranslation from './translations/ja.json';
+import zhTranslation from './translations/zh.json';
+import frTranslation from './translations/fr.json';
+import deTranslation from './translations/de.json';
+import ptTranslation from './translations/pt.json';
 
 const resources = {
   en: {
@@ -16,6 +20,18 @@ const resources = {
   },
   ja: {
     translation: jaTranslation
+  },
+  zh: {
+    translation: zhTranslation
+  },
+  fr: {
+    translation: frTranslation
+  },
+  de: {
+    translation: deTranslation
+  },
+  pt: {
+    translation: ptTranslation
   }
 };
 

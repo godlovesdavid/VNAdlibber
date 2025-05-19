@@ -1,0 +1,69 @@
+{
+  "appName": "Visual Novel Creator",
+  "nav": {
+    "home": "Startseite",
+    "create": "Erstellen",
+    "library": "Bibliothek",
+    "settings": "Einstellungen"
+  },
+  "characterForm": {
+    "title": "Schritt 3: Charaktere",
+    "description": "Erstellen Sie die Charaktere, die Ihre Geschichte zum Leben erwecken. Der erste Charakter wird der Protagonist sein.",
+    "protagonist": "Protagonist",
+    "character": "Charakter",
+    "name": "Name",
+    "role": "Rolle",
+    "occupation": "Beruf",
+    "gender": "Geschlecht",
+    "age": "Alter",
+    "appearance": "Aussehen",
+    "personality": "Persönlichkeit",
+    "goals": "Ziele & Motivation",
+    "relationshipPotential": "Beziehungspotential",
+    "conflicts": "Konflikte",
+    "generate": "Generieren",
+    "generateAll": "Alle Charaktere generieren",
+    "generatePortrait": "Portrait generieren",
+    "addCharacter": "Charakter hinzufügen",
+    "reset": "Zurücksetzen",
+    "back": "Zurück",
+    "next": "Weiter"
+  },
+  "conceptForm": {
+    "title": "Schritt 2: Konzept",
+    "description": "Definieren Sie das zentrale Konzept Ihrer Visual Novel mit einem einprägsamen Titel, Slogan und Prämisse.",
+    "title": "Titel",
+    "titleHelp": "Erstellen Sie einen einprägsamen Titel für Ihre Visual Novel",
+    "tagline": "Slogan",
+    "taglineHelp": "Ein Satz, der die Essenz Ihrer Geschichte einfängt",
+    "premise": "Prämisse",
+    "premiseHelp": "Kurze Beschreibung des Settings und des zentralen Konflikts Ihrer Geschichte",
+    "generate": "Generieren",
+    "reset": "Zurücksetzen",
+    "back": "Zurück",
+    "next": "Weiter"
+  },
+  "common": {
+    "generating": "Generiere...",
+    "saving": "Speichere...",
+    "loading": "Lade...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "warning": "Warnung",
+    "confirm": "Bestätigen",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "view": "Ansehen",
+    "play": "Spielen",
+    "untitled": "Unbenannt"
+  },
+  "settings": {
+    "language": "Sprache",
+    "theme": "Thema",
+    "apiKeys": "API-Schlüssel",
+    "account": "Konto",
+    "save": "Einstellungen speichern"
+  }
+}
