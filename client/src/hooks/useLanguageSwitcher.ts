@@ -15,7 +15,7 @@ export function useLanguageSwitcher() {
     await i18n.changeLanguage(language);
     
     // Auto-translate form fields if enabled
-    await translateAllFields(language);
+    // await translateAllFields(language);
     
     // Store the selected language in localStorage
     localStorage.setItem('i18nextLng', language);
@@ -26,15 +26,5 @@ export function useLanguageSwitcher() {
   return {
     currentLanguage: i18n.language,
     switchLanguage,
-    supportedLanguages: [
-      { code: 'en', name: 'English', countryCode: 'US' },
-      { code: 'es', name: 'Español', countryCode: 'ES' },
-      { code: 'fr', name: 'Français', countryCode: 'FR' },
-      { code: 'de', name: 'Deutsch', countryCode: 'DE' },
-      { code: 'ja', name: 'Japanese', countryCode: 'JP' },
-      { code: 'zh', name: 'Chinese', countryCode: 'CN' },
-      { code: 'pt', name: 'Português', countryCode: 'PT' },
-      { code: 'ar', name: 'Arabic', countryCode: 'SA' },
-    ]
   };
 }
