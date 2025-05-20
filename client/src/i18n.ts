@@ -10,6 +10,7 @@ import zhTranslation from './translations/zh.json';
 import frTranslation from './translations/fr.json';
 import deTranslation from './translations/de.json';
 import ptTranslation from './translations/pt.json';
+import arTranslation from './translations/ar.json';
 
 const resources = {
   en: {
@@ -32,6 +33,9 @@ const resources = {
   },
   pt: {
     translation: ptTranslation
+  },
+  ar: {
+    translation: arTranslation
   }
 };
 
