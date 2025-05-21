@@ -1247,7 +1247,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Generating portrait with ComfyUI, prompt:", prompt);
       
       // Load the workflow template (the json from attached asset)
-      const workflowTemplate = {
+      const workflowTemplate = {"prompt":{
         "1": {
           "inputs": {
             "ckpt_name": "Hyper-SDXL-1step-Unet-Comfyui.fp16.safetensors"
@@ -1395,7 +1395,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             "save_job_data": "disabled",
             "job_data_per_image": false,
             "job_custom_text": "",
-            "save_metadata": true,
+            "save_metadata": false,
             "counter_digits": 4,
             "counter_position": "last",
             "one_counter_per_folder": true,
@@ -1534,14 +1534,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           "_meta": {
             "title": "🔧 Image Resize"
           }
-        }
+        }}
       };
       
       // Insert the user's prompt into the workflow
-      workflowTemplate["3"]["inputs"]["text"] = prompt;
+      workflowTemplate["prompt"]["3"]["inputs"]["text"] = prompt;
       
       // Send the workflow to the ComfyUI endpoint
-      console.log("Sending request to ComfyUI endpoint");
+      console.log("Sending request to ComfyUI endpoint: " + JSON.stringify(workflowTemplate));
       const comfyResponse = await fetch("https://7389-47-45-90-17.ngrok-free.app/prompt", {
         method: "POST",
         headers: {
@@ -1588,18 +1588,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const historyResult = await historyResponse.json();
-      console.log("ComfyUI history result:", historyResult);
+      console.log("ComfyUI history result:", JSON.stringify(historyResult));
       
-      // Check if images are available
-      if (!historyResult.images || historyResult.images.length === 0) {
+      // Handle different response formats from ComfyUI
+      let imageInfo;
+      
+      if (historyResult.images && historyResult.images.length > 0) {
+        // Format: { images: [{ filename, type, ... }] }
+        imageInfo = historyResult.images[0];
+      } else if (historyResult[promptId] && historyResult[promptId].outputs) {
+        // Format: { promptId: { outputs: { '12': { images: [{ filename, type }] } } } }
+        const outputs = historyResult[promptId].outputs;
+        const outputKeys = Object.keys(outputs);
+        
+        // Find the first output with images
+        for (const key of outputKeys) {
+          if (outputs[key].images && outputs[key].images.length > 0) {
+            imageInfo = outputs[key].images[0];
+            break;
+          }
+        }
+      }
+      
+      if (!imageInfo) {
         return res.status(500).json({
           success: false,
           message: "No images were generated"
         });
       }
-      
-      // Get the first image details
-      const imageInfo = historyResult.images[0];
       const imageUrl = `https://7389-47-45-90-17.ngrok-free.app/view?filename=${imageInfo.filename}&type=${imageInfo.type}`;
       
       // Return the image URL
