@@ -21,9 +21,9 @@ export function CreationProgress({ currentStep }: CreationProgressProps) {
 
   // Handle click on step
   const handleStepClick = (step: number) => {
-    if (step <= maxStep) {
-      goToStep(step);
-    }
+    // if (step <= maxStep) {
+    //   goToStep(step);
+    // }
   };
 
   // Get tooltip content based on step
@@ -32,43 +32,43 @@ export function CreationProgress({ currentStep }: CreationProgressProps) {
 
       switch(step) {
         case 1: // Basic
-          if (!projectData.basicData) return 'Basic information not set';
-          return `Theme: ${projectData.basicData.theme}\nTone: ${projectData.basicData.tone}\nGenre: ${projectData.basicData.genre}`;
+          if (!projectData.basicData) return '';
+          return `${t('basicForm.theme') + ': ' + projectData.basicData.theme}\n${t('basicForm.tone') + ': ' + projectData.basicData.tone}\n${t('basicForm.genre') + ': ' + projectData.basicData.genre}`;
 
         case 2: // Concept
-          if (!projectData.conceptData) return 'Concept not set';
-          return `Title: ${projectData.conceptData.title}\nTagline: ${projectData.conceptData.tagline}\nPremise: ${projectData.conceptData.premise?.substring(0, 100)}${projectData.conceptData.premise?.length > 100 ? '...' : ''}`;
+          if (!projectData.conceptData) return '';
+          return `${t('conceptForm.title') + ': ' + projectData.conceptData.title}\nTagline: ${t('conceptForm.tagline') + ': ' + projectData.conceptData.tagline}\n${t('conceptForm.premise') + ': ' + projectData.conceptData.premise?.substring(0, 100)}${projectData.conceptData.premise?.length > 100 ? '...' : ''}`;
 
           case 3: // Characters
             if (!projectData.charactersData || Object.keys(projectData.charactersData).length === 0) 
-              return 'Characters not set'
+              return ''
 
-            return `Characters: ${Object.keys(projectData.charactersData).join(", ")}`;
+            return `${Object.keys(projectData.charactersData).join(", ")}`;
           
         case 4: // Paths
           if (!projectData.pathsData || Object.keys(projectData.pathsData).length === 0) 
-            return 'Paths not set';
-          return `Paths: ${Object.keys(projectData.pathsData).join(", ")}`;
+            return '';
+          return `${Object.keys(projectData.pathsData).join(", ")}`;
 
         case 5: // Plot
           if (!projectData.plotData || Object.keys(projectData.plotData).length === 0) 
-            return 'Plot not set';
+            return '';
           const acts = [];
           for (let i = 1; i <= 5; i++) {
             const actKey = `act${i}`;
             const act = projectData.plotData[actKey as keyof typeof projectData.plotData];
             if (act && typeof act === 'object' && 'title' in act) {
-              acts.push(`Act ${i}: ${act.title || 'Not set'}`);
+              acts.push(`${i}: ${act.title || ''}`);
             } else {
-              acts.push(`Act ${i}: Not set`);
+              acts.push(``);
             }
           }
-          return `Plot structure: \n${acts.join('\n')}`;
+          return `${acts.join('\n')}`;
 
         case 6: // Generate
           if (!projectData.generatedActs || Object.keys(projectData.generatedActs).length === 0) 
-            return 'No acts generated yet';
-          return `Generated acts: ${Object.keys(projectData.generatedActs).length}/5 complete`;
+            return '';
+          return `${Object.keys(projectData.generatedActs).length}/5`;
           
         default:
           return "";

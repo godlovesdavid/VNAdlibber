@@ -299,7 +299,7 @@ export default function CharactersForm() {
       console.error("Error generating portrait:", error);
       toast({
         title: t('errorMessages.generationFailed'),
-        description: t('characterForm.portraitGenerationError', 'Failed to generate character portrait. Please check your API configuration.'),
+        description: t('characterForm.portraitGenerationError', 'Please try again later, or you are generating too many too quickly.'),
         variant: "destructive"
       });
     } finally {
@@ -343,7 +343,7 @@ export default function CharactersForm() {
         // After generating character data, generate portraits for each character
         toast({
           title: "Generating Portraits",
-          description: "Now generating portraits for all characters...",
+          description: "Please wait..",
         });
         
         // Generate portraits for each character sequentially

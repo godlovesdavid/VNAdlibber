@@ -15,8 +15,9 @@ const GEMINI_API_URL =
 const GEMINI_API_URL_PRO =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent";
 
-// Get API key from environment variable or use fallback for development
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyDE-O9FT4wsie2Cb5SWNUhNVszlQg3dHnU";
+// Get API key from environment variable
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY
+const IMAGE_GEN_URL = process.env.IMAGE_GEN_URL
 
 // Helper function for Gemini API calls
 async function generateWithGemini(
@@ -148,7 +149,7 @@ const generateActSchema = z.object({
 export async function registerRoutes(app: Express): Promise<Server> {
   // Configure rate limiters
   const aiGenerationLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute window
+    windowMs: 1 * 60 * 1000, // 1 minute window
     max: 10, // 10 requests per minute per IP
     standardHeaders: true,
     legacyHeaders: false,
@@ -159,8 +160,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   const imageLimiter = rateLimit({
-    windowMs: 2 * 60 * 1000, // 2 minute window
-    max: 5, // 5 requests per 2 minutes per IP
+    windowMs: 1 * 60 * 1000, // 1 minute window
+    max: 5, // 5 requests per 1 minute per IP
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -1528,12 +1529,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       // Insert the user's prompt into the workflow
-      workflowTemplate["prompt"]["3"]["inputs"]["text"] = prompt;
+      workflowTemplate["prompt"]["3"]["inputs"]["text"] = "portrait,gray background, dynamic pose," + prompt;
       workflowTemplate["prompt"]["5"]["inputs"]["noise_seed"] = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)
       
       // Send the workflow to the ComfyUI endpoint
       console.log("Sending request to ComfyUI endpoint: " + JSON.stringify(workflowTemplate));
-      const comfyResponse = await fetch("https://7389-47-45-90-17.ngrok-free.app/prompt", {
+      const comfyResponse = await fetch(`${IMAGE_GEN_URL}/prompt`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -1566,7 +1567,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await new Promise(resolve => setTimeout(resolve, 5000));
       
       // Poll for image completion - check the history endpoint
-      const historyResponse = await fetch(`https://7389-47-45-90-17.ngrok-free.app/history/${promptId}`, {
+      const historyResponse = await fetch(`${IMAGE_GEN_URL}/history/${promptId}`, {
         method: "GET"
       });
       
@@ -1609,7 +1610,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       // Encode the filename to handle spaces and special characters
       const encodedFilename = encodeURIComponent(imageInfo.filename);
-      const imageUrl = `https://7389-47-45-90-17.ngrok-free.app/view?filename=${encodedFilename}&type=${imageInfo.type}&subfolder=Hyper-SDXL-1step-Unet-Comfyui.fp16`;
+      const imageUrl = `${IMAGE_GEN_URL}/view?filename=${encodedFilename}&type=${imageInfo.type}&subfolder=Hyper-SDXL-1step-Unet-Comfyui.fp16`;
       
       // Log the full image URL for debugging
       console.log("Generated portrait URL:", imageUrl);

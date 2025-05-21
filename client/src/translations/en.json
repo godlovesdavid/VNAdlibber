@@ -57,7 +57,7 @@
     "missingDetailsPortrait": "Please provide at least a name and appearance description before generating a portrait.",
     "portraitGenerated": "Portrait Generated",
     "portraitGeneratedDesc": "Character portrait has been generated successfully.",
-    "portraitGenerationError": "Failed to generate character portrait. Please check your API configuration.",
+    "portraitGenerationError": "Please try again later, or you are generating too many too quickly.",
     "missingNames": "Missing Character Names",
     "missingNamesDesc": "Please provide a name for each character before proceeding.",
     "projectDataMissing": "Project data is missing",
