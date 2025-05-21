@@ -1,33 +1,53 @@
 {
-  "appName": "ビジュアルノベルクリエーター",
+  "appName": "ビジュアル・ノベル・クリエーター",
   "nav": {
     "home": "ホーム",
     "create": "作成",
-    "library": "ライブラリ",
+    "library": "図書館",
     "settings": "設定"
+  },
+  "basicForm": {
+    "title": "ステップ1：基本情報",
+    "description": "ビジュアル・ノベルの基本要素を選びます。",
+    "theme": "テーマ",
+    "themeHelp": "物語の中心となるテーマや対立",
+    "tone": "トーン",
+    "toneHelp": "ストーリーの感情的な感触",
+    "genre": "ジャンル",
+    "genreHelp": "ストーリーのスタイルまたはカテゴリー",
+    "setting": "セッティング",
+    "settingHelp": "物語の舞台となる世界や環境",
+    "randomize": "オプションのランダム化",
+    "reset": "リセット",
+    "next": "次のページ",
+    "validationError": "先に進む前に、すべてのフィールドのオプションを選択してください。",
+    "createYourStory": "ストーリーを創る",
+    "sentenceStart": "私に手紙を書く",
+    "about": "について",
+    "setIn": "で始まる"
   },
   "characterForm": {
     "title": "ステップ3：キャラクター",
-    "description": "あなたのストーリーに命を吹き込むキャラクターを作成しましょう。最初のキャラクターは主人公となります。",
+    "description": "物語に命を吹き込む登場人物を作りましょう。最初のキャラクターが主人公になります。",
     "protagonist": "主人公",
     "character": "キャラクター",
-    "name": "名前",
+    "name": "名称",
     "role": "役割",
     "occupation": "職業",
     "gender": "性別",
     "age": "年齢",
-    "appearance": "外見",
-    "personality": "性格",
-    "goals": "目標と動機",
-    "relationshipPotential": "関係性の可能性",
-    "conflicts": "葛藤",
-    "generate": "生成",
-    "generateAll": "すべてのキャラクターを生成",
-    "generatePortrait": "ポートレートを生成",
-    "addCharacter": "キャラクターを追加",
+    "appearance": "外観",
+    "personality": "パーソナリティ",
+    "goals": "目標とモチベーション",
+    "relationshipPotential": "人間関係の可能性",
+    "conflicts": "コンフリクト",
+    "generate": "生成する",
+    "generateAll": "すべての文字を生成する",
+    "generatePortrait": "肖像画の作成",
+    "addCharacter": "キャラクター追加",
     "reset": "リセット",
-    "back": "戻る",
-    "next": "次へ",
+    "back": "バック",
+    "next": "次のページ",
     "maxCharactersReached": "作成できる文字は5文字までです。",
     "minCharactersRequired": "少なくとも1人のキャラクターが必要です。",
     "formReset": "フォームリセット",
@@ -50,31 +70,31 @@
   },
   "conceptForm": {
     "title": "タイトル",
-    "description": "魅力的なタイトル、タグライン、前提で視覚小説の中心概念を定義します。",
-    "titleHelp": "あなたのビジュアルノベルの記憶に残るタイトルを作成してください",
+    "description": "キャッチーなタイトル、キャッチフレーズ、前提でビジュアル・ノベルの中心的なコンセプトを明確にします。",
+    "titleHelp": "ビジュアル・ノベルの印象的なタイトルを作る",
     "tagline": "タグライン",
-    "taglineHelp": "あなたのストーリーの本質を捉えるフレーズ",
+    "taglineHelp": "あなたのストーリーの本質をとらえたフレーズ",
     "premise": "前提",
-    "premiseHelp": "あなたのストーリーの設定と中心的な葛藤の簡単な説明",
-    "generate": "生成",
+    "premiseHelp": "ストーリーの設定と中心的な対立についての簡単な説明",
+    "generate": "生成する",
     "reset": "リセット",
-    "back": "戻る",
-    "next": "次へ"
+    "back": "バック",
+    "next": "次のページ"
   },
   "common": {
-    "generating": "生成中...",
-    "saving": "保存中...",
+    "generating": "生成...",
+    "saving": "節約...",
     "loading": "読み込み中...",
     "error": "エラー",
     "success": "成功",
     "warning": "警告",
     "confirm": "確認",
     "cancel": "キャンセル",
-    "save": "保存",
+    "save": "セーブ",
     "delete": "削除",
     "edit": "編集",
     "view": "表示",
-    "play": "プレイ",
+    "play": "プレー",
     "untitled": "無題",
     "back": "バック",
     "next": "次のページ",
@@ -89,27 +109,7 @@
     "theme": "テーマ",
     "apiKeys": "APIキー",
     "account": "アカウント",
-    "save": "設定を保存"
-  },
-  "basicForm": {
-    "title": "ステップ1：基本情報",
-    "description": "ビジュアル・ノベルの基本要素を選びます。",
-    "theme": "テーマ",
-    "themeHelp": "物語の中心となるテーマや対立",
-    "tone": "トーン",
-    "toneHelp": "ストーリーの感情的な感触",
-    "genre": "ジャンル",
-    "genreHelp": "ストーリーのスタイルまたはカテゴリー",
-    "setting": "セッティング",
-    "settingHelp": "物語の舞台となる世界や環境",
-    "randomize": "オプションのランダム化",
-    "reset": "リセット",
-    "next": "次のページ",
-    "validationError": "先に進む前に、すべてのフィールドのオプションを選択してください。",
-    "createYourStory": "ストーリーを創る",
-    "sentenceStart": "私に手紙を書く",
-    "about": "について",
-    "setIn": "で始まる"
+    "save": "設定の保存"
   },
   "translation": {
     "manager": {
@@ -191,7 +191,7 @@
     "actLabel": "アクト{{番号}}",
     "actImportedLabel": "アクト{{番号}}- 輸入",
     "fromCurrentProject": "現在のプロジェクトより",
-    "emptyStateMessage": "ストーリーファイルをインポートして、「ストーリーを作成」メニューから演技を再生または生成する。"
+    "emptyStateMessage": "ストーリーファイルをインポートし、「ストーリー作成」メニューから演技を再生または生成する。"
   },
   "tones": {
     "humorous": "ユーモラス",
@@ -283,15 +283,6 @@
     "description": "ビジュアルノベルアプリケーションの翻訳を管理します。DeepLと接続することで、言語ファイルに欠落しているキーを自動的に翻訳します。"
   },
   "creationProgress": {
-    "tooltips": {
-      "basicNotSet": "基本情報が設定されていない",
-      "conceptNotSet": "コンセプトが設定されていない",
-      "charactersNotSet": "文字が設定されていない",
-      "pathsNotSet": "パスが設定されていない",
-      "plotNotSet": "プロットが設定されていない",
-      "notSet": "未設定",
-      "noActsGenerated": "アクトはまだ生成されていない"
-    },
     "stepNotAvailable": "このステップはまだ利用できない",
     "steps": {
       "basic": "基本",
@@ -300,6 +291,9 @@
       "paths": "パス",
       "plot": "プロット",
       "generate": "生成する！"
+    },
+    "tooltips": {
+      "charactersNotSet": "文字が設定されていない"
     }
   },
   "mainMenu": {

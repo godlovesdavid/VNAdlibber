@@ -1,31 +1,51 @@
 {
-  "appName": "Créateur de Roman Visuel",
+  "appName": "Créateur de romans visuels",
   "nav": {
     "home": "Accueil",
     "create": "Créer",
     "library": "Bibliothèque",
     "settings": "Paramètres"
   },
+  "basicForm": {
+    "title": "Étape 1 : Informations de base",
+    "description": "Sélectionnez les éléments de base de votre roman visuel.",
+    "theme": "Thème",
+    "themeHelp": "Le thème central ou le conflit de votre histoire",
+    "tone": "Tonalité",
+    "toneHelp": "L'aspect émotionnel de votre histoire",
+    "genre": "Genre",
+    "genreHelp": "Le style ou la catégorie de votre histoire",
+    "setting": "Paramètres",
+    "settingHelp": "Le monde ou l'environnement dans lequel se déroule votre histoire",
+    "randomize": "Options de randomisation",
+    "reset": "Remise à zéro",
+    "next": "Suivant",
+    "validationError": "Veuillez sélectionner les options pour tous les champs avant de continuer.",
+    "createYourStory": "Créez votre histoire",
+    "sentenceStart": "Écrivez-moi un",
+    "about": "à propos de",
+    "setIn": "fixé dans"
+  },
   "characterForm": {
     "title": "Étape 3 : Personnages",
     "description": "Créez les personnages qui donneront vie à votre histoire. Le premier personnage sera le protagoniste.",
     "protagonist": "Protagoniste",
-    "character": "Personnage",
+    "character": "Caractère",
     "name": "Nom",
     "role": "Rôle",
-    "occupation": "Profession",
+    "occupation": "Occupation",
     "gender": "Genre",
-    "age": "Âge",
+    "age": "L'âge",
     "appearance": "Apparence",
     "personality": "Personnalité",
-    "goals": "Objectifs et Motivation",
-    "relationshipPotential": "Potentiel de Relation",
+    "goals": "Objectifs et motivation",
+    "relationshipPotential": "Potentiel relationnel",
     "conflicts": "Conflits",
     "generate": "Générer",
-    "generateAll": "Générer Tous les Personnages",
-    "generatePortrait": "Générer Portrait",
-    "addCharacter": "Ajouter Personnage",
-    "reset": "Réinitialiser",
+    "generateAll": "Générer tous les caractères",
+    "generatePortrait": "Générer un portrait",
+    "addCharacter": "Ajouter un personnage",
+    "reset": "Remise à zéro",
     "back": "Retour",
     "next": "Suivant",
     "maxCharactersReached": "Vous ne pouvez créer que 5 caractères au maximum.",
@@ -50,29 +70,29 @@
   },
   "conceptForm": {
     "title": "Titre",
-    "description": "Définissez le concept central de votre roman visuel avec un titre accrocheur, un slogan et une prémisse.",
+    "description": "Définissez le concept central de votre roman visuel à l'aide d'un titre accrocheur, d'une accroche et d'une prémisse.",
     "titleHelp": "Créez un titre mémorable pour votre roman visuel",
-    "tagline": "Slogan",
+    "tagline": "Titre d'appel",
     "taglineHelp": "Une phrase qui capture l'essence de votre histoire",
-    "premise": "Prémisse",
+    "premise": "Prémisses",
     "premiseHelp": "Brève description du cadre et du conflit central de votre histoire",
     "generate": "Générer",
-    "reset": "Réinitialiser",
+    "reset": "Remise à zéro",
     "back": "Retour",
     "next": "Suivant"
   },
   "common": {
-    "generating": "Génération...",
-    "saving": "Sauvegarde...",
+    "generating": "Générer...",
+    "saving": "Économiser...",
     "loading": "Chargement...",
     "error": "Erreur",
     "success": "Succès",
     "warning": "Avertissement",
     "confirm": "Confirmer",
     "cancel": "Annuler",
-    "save": "Sauvegarder",
+    "save": "Économiser",
     "delete": "Supprimer",
-    "edit": "Éditer",
+    "edit": "Editer",
     "view": "Voir",
     "play": "Jouer",
     "untitled": "Sans titre",
@@ -89,27 +109,7 @@
     "theme": "Thème",
     "apiKeys": "Clés API",
     "account": "Compte",
-    "save": "Sauvegarder les Paramètres"
-  },
-  "basicForm": {
-    "title": "Étape 1 : Informations de base",
-    "description": "Sélectionnez les éléments de base de votre roman visuel.",
-    "theme": "Thème",
-    "themeHelp": "Le thème central ou le conflit de votre histoire",
-    "tone": "Tonalité",
-    "toneHelp": "L'aspect émotionnel de votre histoire",
-    "genre": "Genre",
-    "genreHelp": "Le style ou la catégorie de votre histoire",
-    "setting": "Paramètres",
-    "settingHelp": "Le monde ou l'environnement dans lequel se déroule votre histoire",
-    "randomize": "Options de randomisation",
-    "reset": "Remise à zéro",
-    "next": "Suivant",
-    "validationError": "Veuillez sélectionner les options pour tous les champs avant de continuer.",
-    "createYourStory": "Créez votre histoire",
-    "sentenceStart": "Écrivez-moi un",
-    "about": "à propos de",
-    "setIn": "fixé dans"
+    "save": "Sauvegarder les paramètres"
   },
   "translation": {
     "manager": {
@@ -174,7 +174,7 @@
     "startButton": "Démarrer le lecteur de test",
     "infoTitle": "Informations sur les données d'essai",
     "infoDesc": "Cette page de test utilise des exemples de données de scène dans le nouveau format simplifié :",
-    "formatNote": "Le lecteur devrait automatiquement le convertir dans le format attendu."
+    "formatNote": "Le lecteur devrait automatiquement le convertir au format attendu."
   },
   "playSelection": {
     "title": "Jouer l'histoire",
@@ -280,18 +280,9 @@
   },
   "translationSettings": {
     "title": "Paramètres de traduction",
-    "description": "Gérer les traductions pour votre application de roman visuel. Connectez-vous avec DeepL pour traduire automatiquement les clés manquantes dans vos fichiers de langue."
+    "description": "Gérer les traductions pour votre application de roman visuel. Connectez-vous à DeepL pour traduire automatiquement les clés manquantes dans vos fichiers de langue."
   },
   "creationProgress": {
-    "tooltips": {
-      "basicNotSet": "Les informations de base ne sont pas définies",
-      "conceptNotSet": "Concept non défini",
-      "charactersNotSet": "Caractères non définis",
-      "pathsNotSet": "Chemins non définis",
-      "plotNotSet": "Le tracé n'est pas défini",
-      "notSet": "Non défini",
-      "noActsGenerated": "Aucun acte généré pour l'instant"
-    },
     "stepNotAvailable": "Cette étape n'est pas encore disponible",
     "steps": {
       "basic": "Principes de base",
@@ -300,6 +291,9 @@
       "paths": "Chemins",
       "plot": "Tracé",
       "generate": "Générer !"
+    },
+    "tooltips": {
+      "charactersNotSet": "Caractères non définis"
     }
   },
   "mainMenu": {

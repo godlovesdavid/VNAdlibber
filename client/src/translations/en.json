@@ -283,15 +283,6 @@
     "description": "Manage translations for your visual novel application. Connect with DeepL to automatically translate missing keys in your language files."
   },
   "creationProgress": {
-    "tooltips": {
-      "basicNotSet": "Basic information not set",
-      "conceptNotSet": "Concept not set",
-      "charactersNotSet": "Characters not set",
-      "pathsNotSet": "Paths not set",
-      "plotNotSet": "Plot not set",
-      "notSet": "Not set",
-      "noActsGenerated": "No acts generated yet"
-    },
     "stepNotAvailable": "This step is not yet available",
     "steps": {
       "basic": "Basics",

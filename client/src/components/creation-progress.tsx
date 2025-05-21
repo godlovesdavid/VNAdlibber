@@ -16,9 +16,9 @@ interface CreationProgressProps {
 export function CreationProgress({ currentStep }: CreationProgressProps) {
   const { goToStep, projectData } = useVnContext();
   const { t } = useTranslation();
-  
+
   const maxStep = projectData?.currentStep || 1;
-  
+
   // Handle click on step
   const handleStepClick = (step: number) => {
     if (step <= maxStep) {
@@ -28,77 +28,51 @@ export function CreationProgress({ currentStep }: CreationProgressProps) {
 
   // Get tooltip content based on step
   const getTooltipContent = (step: number): string => {
-    if (!projectData) return "";
-    
-    switch(step) {
-      case 1: // Basic
-        if (!projectData.basicData) return t('creationProgress.tooltips.basicNotSet', 'Basic information not set');
-        return t('creationProgress.tooltips.basicInfo', 'Theme: {{theme}}\nTone: {{tone}}\nGenre: {{genre}}', {
-          theme: projectData.basicData.theme,
-          tone: projectData.basicData.tone,
-          genre: projectData.basicData.genre
-        });
-      
-      case 2: // Concept
-        if (!projectData.conceptData) return t('creationProgress.tooltips.conceptNotSet', 'Concept not set');
-        return t('creationProgress.tooltips.conceptInfo', 'Title: {{title}}\nTagline: {{tagline}}\nPremise: {{premise}}', {
-          title: projectData.conceptData.title,
-          tagline: projectData.conceptData.tagline,
-          premise: projectData.conceptData.premise?.substring(0, 100) + (projectData.conceptData.premise?.length > 100 ? '...' : '')
-        });
-      
-      case 3: // Characters
-        if (!projectData.charactersData || Object.keys(projectData.charactersData).length === 0) 
-          return t('creationProgress.tooltips.charactersNotSet', 'Characters not set');
+      if (!projectData) return "";
+
+      switch(step) {
+        case 1: // Basic
+          if (!projectData.basicData) return 'Basic information not set';
+          return `Theme: ${projectData.basicData.theme}\nTone: ${projectData.basicData.tone}\nGenre: ${projectData.basicData.genre}`;
+
+        case 2: // Concept
+          if (!projectData.conceptData) return 'Concept not set';
+          return `Title: ${projectData.conceptData.title}\nTagline: ${projectData.conceptData.tagline}\nPremise: ${projectData.conceptData.premise?.substring(0, 100)}${projectData.conceptData.premise?.length > 100 ? '...' : ''}`;
+
+          case 3: // Characters
+            if (!projectData.charactersData || Object.keys(projectData.charactersData).length === 0) 
+              return 'Characters not set'
+
+            return `Characters: ${Object.keys(projectData.charactersData).join(", ")}`;
           
-        const protagonistInfo = projectData?.protagonist ? 
-          t('creationProgress.tooltips.protagonist', '\nProtagonist: {{name}}', { name: projectData.protagonist }) : '';
-          
-        return t('creationProgress.tooltips.charactersInfo', 'Characters: {{characters}}{{protagonist}}', {
-          characters: Object.keys(projectData.charactersData).join(", "),
-          protagonist: protagonistInfo
-        });
-      
-      case 4: // Paths
-        if (!projectData.pathsData || Object.keys(projectData.pathsData).length === 0) 
-          return t('creationProgress.tooltips.pathsNotSet', 'Paths not set');
-        return t('creationProgress.tooltips.pathsInfo', 'Paths: {{paths}}', {
-          paths: Object.keys(projectData.pathsData).join(", ")
-        });
-      
-      case 5: // Plot
-        if (!projectData.plotData || Object.keys(projectData.plotData).length === 0) 
-          return t('creationProgress.tooltips.plotNotSet', 'Plot not set');
-        const acts = [];
-        for (let i = 1; i <= 5; i++) {
-          const actKey = `act${i}`;
-          const act = projectData.plotData[actKey as keyof typeof projectData.plotData];
-          if (act && typeof act === 'object' && 'title' in act) {
-            acts.push(t('creationProgress.tooltips.act', 'Act {{number}}: {{title}}', {
-              number: i,
-              title: act.title || t('creationProgress.tooltips.notSet', 'Not set')
-            }));
-          } else {
-            acts.push(t('creationProgress.tooltips.act', 'Act {{number}}: {{title}}', {
-              number: i,
-              title: t('creationProgress.tooltips.notSet', 'Not set')
-            }));
+        case 4: // Paths
+          if (!projectData.pathsData || Object.keys(projectData.pathsData).length === 0) 
+            return 'Paths not set';
+          return `Paths: ${Object.keys(projectData.pathsData).join(", ")}`;
+
+        case 5: // Plot
+          if (!projectData.plotData || Object.keys(projectData.plotData).length === 0) 
+            return 'Plot not set';
+          const acts = [];
+          for (let i = 1; i <= 5; i++) {
+            const actKey = `act${i}`;
+            const act = projectData.plotData[actKey as keyof typeof projectData.plotData];
+            if (act && typeof act === 'object' && 'title' in act) {
+              acts.push(`Act ${i}: ${act.title || 'Not set'}`);
+            } else {
+              acts.push(`Act ${i}: Not set`);
+            }
           }
-        }
-        return t('creationProgress.tooltips.plotStructure', 'Plot structure: \n{{acts}}', {
-          acts: acts.join('\n')
-        });
-      
-      case 6: // Generate
-        if (!projectData.generatedActs || Object.keys(projectData.generatedActs).length === 0) 
-          return t('creationProgress.tooltips.noActsGenerated', 'No acts generated yet');
-        return t('creationProgress.tooltips.generatedActs', 'Generated acts: {{count}}/5 complete', {
-          count: Object.keys(projectData.generatedActs).length
-        });
-      
-      default:
-        return "";
-    }
+          return `Plot structure: \n${acts.join('\n')}`;
+
+        case 6: // Generate
+          if (!projectData.generatedActs || Object.keys(projectData.generatedActs).length === 0) 
+            return 'No acts generated yet';
+          return `Generated acts: ${Object.keys(projectData.generatedActs).length}/5 complete`;
+          
+        default:
+          return "";
+      }
   };
   
   return (

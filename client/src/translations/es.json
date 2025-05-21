@@ -1,32 +1,52 @@
 {
-  "appName": "Creador de Novelas Visuales",
+  "appName": "Creador de novelas visuales",
   "nav": {
     "home": "Inicio",
-    "create": "Crear",
+    "create": "Cree",
     "library": "Biblioteca",
-    "settings": "Configuración"
+    "settings": "Ajustes"
+  },
+  "basicForm": {
+    "title": "Paso 1: Información básica",
+    "description": "Seleccione los elementos básicos de su novela visual.",
+    "theme": "Tema",
+    "themeHelp": "El tema o conflicto central de tu historia",
+    "tone": "Tono",
+    "toneHelp": "La emoción de su historia",
+    "genre": "Género",
+    "genreHelp": "El estilo o categoría de su historia",
+    "setting": "Configuración",
+    "settingHelp": "El mundo o el entorno en el que se desarrolla tu historia",
+    "randomize": "Opciones aleatorias",
+    "reset": "Restablecer",
+    "next": "Siguiente",
+    "validationError": "Seleccione las opciones de todos los campos antes de continuar.",
+    "createYourStory": "Crea tu historia",
+    "sentenceStart": "Escríbeme un",
+    "about": "acerca de",
+    "setIn": "fijado en"
   },
   "characterForm": {
     "title": "Paso 3: Personajes",
     "description": "Crea los personajes que darán vida a tu historia. El primer personaje será el protagonista.",
     "protagonist": "Protagonista",
-    "character": "Personaje",
+    "character": "Carácter",
     "name": "Nombre",
-    "role": "Rol",
+    "role": "Papel",
     "occupation": "Ocupación",
     "gender": "Género",
     "age": "Edad",
     "appearance": "Apariencia",
     "personality": "Personalidad",
-    "goals": "Objetivos y Motivación",
-    "relationshipPotential": "Potencial de Relación",
+    "goals": "Objetivos y motivación",
+    "relationshipPotential": "Potencial de relación",
     "conflicts": "Conflictos",
-    "generate": "Generar",
-    "generateAll": "Generar Todos los Personajes",
-    "generatePortrait": "Generar Retrato",
-    "addCharacter": "Añadir Personaje",
-    "reset": "Reiniciar",
-    "back": "Atrás",
+    "generate": "Genere",
+    "generateAll": "Generar todos los caracteres",
+    "generatePortrait": "Generar retrato",
+    "addCharacter": "Añadir carácter",
+    "reset": "Restablecer",
+    "back": "Volver",
     "next": "Siguiente",
     "maxCharactersReached": "Sólo puede crear hasta 5 caracteres.",
     "minCharactersRequired": "Debe tener al menos un personaje.",
@@ -50,28 +70,28 @@
   },
   "conceptForm": {
     "title": "Título",
-    "description": "Define el concepto central de tu novela visual con un título atractivo, eslogan y premisa.",
+    "description": "Defina el concepto central de su novela visual con un título pegadizo, un eslogan y una premisa.",
     "titleHelp": "Crea un título memorable para tu novela visual",
-    "tagline": "Eslogan",
-    "taglineHelp": "Una frase que captura la esencia de tu historia",
+    "tagline": "Etiqueta",
+    "taglineHelp": "Una frase que capte la esencia de tu historia",
     "premise": "Premisa",
-    "premiseHelp": "Breve descripción del escenario y conflicto central de tu historia",
-    "generate": "Generar",
-    "reset": "Reiniciar",
-    "back": "Atrás",
+    "premiseHelp": "Breve descripción del escenario y del conflicto central de la historia",
+    "generate": "Genere",
+    "reset": "Restablecer",
+    "back": "Volver",
     "next": "Siguiente"
   },
   "common": {
-    "generating": "Generando...",
-    "saving": "Guardando...",
+    "generating": "Generar...",
+    "saving": "Ahorrar...",
     "loading": "Cargando...",
     "error": "Error",
     "success": "Éxito",
     "warning": "Advertencia",
-    "confirm": "Confirmar",
+    "confirm": "Confirme",
     "cancel": "Cancelar",
     "save": "Guardar",
-    "delete": "Eliminar",
+    "delete": "Borrar",
     "edit": "Editar",
     "view": "Ver",
     "play": "Jugar",
@@ -79,7 +99,7 @@
     "back": "Volver",
     "next": "Siguiente",
     "previous": "Anterior",
-    "continue": "Continuar",
+    "continue": "Continúe en",
     "backToHome": "Volver al inicio",
     "backToMainMenu": "Volver al menú principal",
     "saveProject": "Guardar proyecto"
@@ -89,27 +109,7 @@
     "theme": "Tema",
     "apiKeys": "Claves API",
     "account": "Cuenta",
-    "save": "Guardar Configuración"
-  },
-  "basicForm": {
-    "title": "Paso 1: Información básica",
-    "description": "Seleccione los elementos básicos de su novela visual.",
-    "theme": "Tema",
-    "themeHelp": "El tema o conflicto central de tu historia",
-    "tone": "Tono",
-    "toneHelp": "La emoción de su historia",
-    "genre": "Género",
-    "genreHelp": "El estilo o categoría de su historia",
-    "setting": "Configuración",
-    "settingHelp": "El mundo o el entorno en el que se desarrolla tu historia",
-    "randomize": "Opciones aleatorias",
-    "reset": "Restablecer",
-    "next": "Siguiente",
-    "validationError": "Seleccione las opciones de todos los campos antes de continuar.",
-    "createYourStory": "Crea tu historia",
-    "sentenceStart": "Escríbeme un",
-    "about": "acerca de",
-    "setIn": "fijado en"
+    "save": "Guardar configuración"
   },
   "translation": {
     "manager": {
@@ -283,15 +283,6 @@
     "description": "Gestiona las traducciones de tu aplicación de novela visual. Conéctate con DeepL para traducir automáticamente las claves que falten en tus archivos de idioma."
   },
   "creationProgress": {
-    "tooltips": {
-      "basicNotSet": "Información básica no configurada",
-      "conceptNotSet": "Concepto no fijado",
-      "charactersNotSet": "Caracteres no fijados",
-      "pathsNotSet": "Rutas no establecidas",
-      "plotNotSet": "Parcela no fijada",
-      "notSet": "No fijado",
-      "noActsGenerated": "Aún no se han generado actos"
-    },
     "stepNotAvailable": "Este paso aún no está disponible",
     "steps": {
       "basic": "Conceptos básicos",
@@ -300,6 +291,9 @@
       "paths": "Caminos",
       "plot": "Parcela",
       "generate": "¡Genera!"
+    },
+    "tooltips": {
+      "charactersNotSet": "Caracteres no fijados"
     }
   },
   "mainMenu": {
@@ -349,7 +343,7 @@
     "linkCopied": "Enlace copiado",
     "linkCopiedDesc": "Enlace compartido copiado en el portapapeles",
     "copyFailed": "Copia fallida",
-    "copyFailedDesc": "No se ha podido copiar el enlace al portapapeles"
+    "copyFailedDesc": "No se ha podido copiar el enlace en el portapapeles"
   },
   "fontDemo": {
     "title": "Demostración de fuentes",

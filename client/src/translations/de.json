@@ -1,30 +1,50 @@
 {
-  "appName": "Visual Novel Creator",
+  "appName": "Visual Novel Schöpfer",
   "nav": {
     "home": "Startseite",
-    "create": "Erstellen",
+    "create": "erstellen.",
     "library": "Bibliothek",
     "settings": "Einstellungen"
   },
+  "basicForm": {
+    "title": "Schritt 1: Grundlegende Informationen",
+    "description": "Wählen Sie die grundlegenden Elemente für Ihren visuellen Roman aus.",
+    "theme": "Thema",
+    "themeHelp": "Das zentrale Thema oder der zentrale Konflikt in Ihrer Geschichte",
+    "tone": "Ton",
+    "toneHelp": "Das emotionale Gefühl Ihrer Geschichte",
+    "genre": "Genre",
+    "genreHelp": "Der Stil oder die Kategorie Ihrer Geschichte",
+    "setting": "Einstellung",
+    "settingHelp": "Die Welt oder Umgebung, in der Ihre Geschichte spielt",
+    "randomize": "Optionen zufällig auswählen",
+    "reset": "Zurücksetzen",
+    "next": "Weiter",
+    "validationError": "Bitte wählen Sie Optionen für alle Felder aus, bevor Sie fortfahren.",
+    "createYourStory": "Erstellen Sie Ihre Geschichte",
+    "sentenceStart": "Schreiben Sie mir eine",
+    "about": "über",
+    "setIn": "sich einstellen"
+  },
   "characterForm": {
-    "title": "Schritt 3: Charaktere",
-    "description": "Erstellen Sie die Charaktere, die Ihre Geschichte zum Leben erwecken. Der erste Charakter wird der Protagonist sein.",
+    "title": "Schritt 3: Schriftzeichen",
+    "description": "Erstellen Sie die Figuren, die Ihre Geschichte zum Leben erwecken werden. Die erste Figur wird der Protagonist sein.",
     "protagonist": "Protagonist",
-    "character": "Charakter",
+    "character": "Zeichen",
     "name": "Name",
     "role": "Rolle",
     "occupation": "Beruf",
     "gender": "Geschlecht",
     "age": "Alter",
-    "appearance": "Aussehen",
+    "appearance": "Erscheinungsbild",
     "personality": "Persönlichkeit",
-    "goals": "Ziele & Motivation",
-    "relationshipPotential": "Beziehungspotential",
+    "goals": "Ziele und Motivation",
+    "relationshipPotential": "Beziehungspotenzial",
     "conflicts": "Konflikte",
-    "generate": "Generieren",
-    "generateAll": "Alle Charaktere generieren",
-    "generatePortrait": "Portrait generieren",
-    "addCharacter": "Charakter hinzufügen",
+    "generate": "Erzeugen Sie",
+    "generateAll": "Alle Zeichen generieren",
+    "generatePortrait": "Porträt generieren",
+    "addCharacter": "Zeichen hinzufügen",
     "reset": "Zurücksetzen",
     "back": "Zurück",
     "next": "Weiter",
@@ -50,30 +70,30 @@
   },
   "conceptForm": {
     "title": "Titel",
-    "description": "Definieren Sie das zentrale Konzept Ihrer Visual Novel mit einem einprägsamen Titel, Slogan und Prämisse.",
-    "titleHelp": "Erstellen Sie einen einprägsamen Titel für Ihre Visual Novel",
-    "tagline": "Slogan",
-    "taglineHelp": "Ein Satz, der die Essenz Ihrer Geschichte einfängt",
+    "description": "Definieren Sie das zentrale Konzept Ihres visuellen Romans mit einem eingängigen Titel, einer Tagline und einer Prämisse.",
+    "titleHelp": "Erstellen Sie einen einprägsamen Titel für Ihren visuellen Roman",
+    "tagline": "Tagline",
+    "taglineHelp": "Ein Satz, der das Wesentliche Ihrer Geschichte wiedergibt",
     "premise": "Prämisse",
-    "premiseHelp": "Kurze Beschreibung des Settings und des zentralen Konflikts Ihrer Geschichte",
-    "generate": "Generieren",
+    "premiseHelp": "Kurze Beschreibung des Schauplatzes und des zentralen Konflikts Ihrer Geschichte",
+    "generate": "Erzeugen Sie",
     "reset": "Zurücksetzen",
     "back": "Zurück",
     "next": "Weiter"
   },
   "common": {
-    "generating": "Generiere...",
-    "saving": "Speichere...",
-    "loading": "Lade...",
+    "generating": "Erzeugen...",
+    "saving": "Sparen...",
+    "loading": "Laden...",
     "error": "Fehler",
     "success": "Erfolg",
     "warning": "Warnung",
-    "confirm": "Bestätigen",
+    "confirm": "Bestätigen Sie",
     "cancel": "Abbrechen",
-    "save": "Speichern",
+    "save": "Speichern Sie",
     "delete": "Löschen",
-    "edit": "Bearbeiten",
-    "view": "Ansehen",
+    "edit": "bearbeiten",
+    "view": "Siehe",
     "play": "Spielen",
     "untitled": "Unbenannt",
     "back": "Zurück",
@@ -90,26 +110,6 @@
     "apiKeys": "API-Schlüssel",
     "account": "Konto",
     "save": "Einstellungen speichern"
-  },
-  "basicForm": {
-    "title": "Schritt 1: Grundlegende Informationen",
-    "description": "Wählen Sie die grundlegenden Elemente für Ihren visuellen Roman aus.",
-    "theme": "Thema",
-    "themeHelp": "Das zentrale Thema oder der zentrale Konflikt in Ihrer Geschichte",
-    "tone": "Ton",
-    "toneHelp": "Das emotionale Gefühl Ihrer Geschichte",
-    "genre": "Genre",
-    "genreHelp": "Der Stil oder die Kategorie Ihrer Geschichte",
-    "setting": "Einstellung",
-    "settingHelp": "Die Welt oder Umgebung, in der Ihre Geschichte spielt",
-    "randomize": "Optionen zufällig auswählen",
-    "reset": "Zurücksetzen",
-    "next": "Weiter",
-    "validationError": "Bitte wählen Sie Optionen für alle Felder aus, bevor Sie fortfahren.",
-    "createYourStory": "Erstellen Sie Ihre Geschichte",
-    "sentenceStart": "Schreiben Sie mir eine",
-    "about": "über",
-    "setIn": "sich einstellen"
   },
   "translation": {
     "manager": {
@@ -174,7 +174,7 @@
     "startButton": "Testspieler starten",
     "infoTitle": "Informationen zu den Testdaten",
     "infoDesc": "Diese Testseite verwendet Beispielszenendaten im neuen, vereinfachten Format:",
-    "formatNote": "Der Player sollte diese automatisch in das erwartete Format konvertieren."
+    "formatNote": "Der Player sollte diese automatisch in das erwartete Format umwandeln."
   },
   "playSelection": {
     "title": "Geschichte spielen",
@@ -283,15 +283,6 @@
     "description": "Verwalten Sie Übersetzungen für Ihre Visual Novel Anwendung. Verbinden Sie sich mit DeepL, um fehlende Schlüssel in Ihren Sprachdateien automatisch zu übersetzen."
   },
   "creationProgress": {
-    "tooltips": {
-      "basicNotSet": "Grundlegende Informationen nicht eingestellt",
-      "conceptNotSet": "Konzept nicht festgelegt",
-      "charactersNotSet": "Zeichen nicht gesetzt",
-      "pathsNotSet": "Pfade nicht gesetzt",
-      "plotNotSet": "Plot nicht gesetzt",
-      "notSet": "Nicht festgelegt",
-      "noActsGenerated": "Noch keine Akte erstellt"
-    },
     "stepNotAvailable": "Dieser Schritt ist noch nicht verfügbar",
     "steps": {
       "basic": "Grundlagen",
@@ -300,6 +291,9 @@
       "paths": "Pfade",
       "plot": "Grundstücke",
       "generate": "Erzeugen!"
+    },
+    "tooltips": {
+      "charactersNotSet": "Zeichen nicht gesetzt"
     }
   },
   "mainMenu": {
