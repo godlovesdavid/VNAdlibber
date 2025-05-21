@@ -11,6 +11,7 @@ import {
   BasicData,
   ConceptData,
   CharactersData,
+  CharacterPortraitsData,
   PathsData,
   PlotData,
   GeneratedAct,
@@ -58,6 +59,7 @@ interface VnContextType {
   setBasicData: (data: BasicData) => void;
   setConceptData: (data: ConceptData) => void;
   setCharactersData: (data: CharactersData) => void;
+  setCharacterPortraitsData: (data: CharacterPortraitsData) => void;
   setPathsData: (data: PathsData) => void;
   setPlotData: (data: PlotData) => void;
   setGeneratedAct: (actNumber: number, data: GeneratedAct) => void;

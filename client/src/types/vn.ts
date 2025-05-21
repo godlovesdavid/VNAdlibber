@@ -26,6 +26,11 @@ export interface Character {
   conflict: string;
 }
 
+// Character portraits data
+export interface CharacterPortraitsData {
+  [name: string]: string; // Maps character name to portrait URL
+}
+
 // Characters data containing all characters
 export interface CharactersData {
   [name: string]: Character;
@@ -114,6 +119,7 @@ export interface VnProjectData {
   basicData: BasicData;
   conceptData?: ConceptData;
   charactersData?: CharactersData;
+  characterPortraitsData?: CharacterPortraitsData;
   pathsData?: PathsData;
   plotData?: PlotData;
   generatedActs?: Record<string, any>; // Fixed GeneratedAct reference
