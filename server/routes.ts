@@ -1616,7 +1616,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "No images were generated"
         });
       }
-      const imageUrl = `https://7389-47-45-90-17.ngrok-free.app/view?filename=${imageInfo.filename}&type=${imageInfo.type}`;
+      // Encode the filename to handle spaces and special characters
+      const encodedFilename = encodeURIComponent(imageInfo.filename);
+      const imageUrl = `https://7389-47-45-90-17.ngrok-free.app/view?filename=${encodedFilename}&type=${imageInfo.type}`;
       
       // Log the full image URL for debugging
       console.log("Generated portrait URL:", imageUrl);
