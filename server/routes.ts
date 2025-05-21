@@ -1231,6 +1231,392 @@ export async function registerRoutes(app: Express): Promise<Server> {
       source: 'DeepL'
     });
   });
+  
+  // ComfyUI portrait generation endpoint
+  app.post("/api/generate/portrait", async (req, res) => {
+    try {
+      const { prompt } = req.body;
+      
+      if (!prompt) {
+        return res.status(400).json({
+          success: false,
+          message: "Prompt is required"
+        });
+      }
+      
+      console.log("Generating portrait with ComfyUI, prompt:", prompt);
+      
+      // Load the workflow template (the json from attached asset)
+      const workflowTemplate = {
+        "1": {
+          "inputs": {
+            "ckpt_name": "Hyper-SDXL-1step-Unet-Comfyui.fp16.safetensors"
+          },
+          "class_type": "CheckpointLoaderSimple",
+          "_meta": {
+            "title": "Load Checkpoint"
+          }
+        },
+        "2": {
+          "inputs": {
+            "steps": 1,
+            "model": [
+              "1",
+              0
+            ]
+          },
+          "class_type": "HyperSDXL1StepUnetScheduler",
+          "_meta": {
+            "title": "HyperSDXL1StepUnetScheduler"
+          }
+        },
+        "3": {
+          "inputs": {
+            "text": "",
+            "clip": [
+              "1",
+              1
+            ]
+          },
+          "class_type": "CLIPTextEncode",
+          "_meta": {
+            "title": "CLIP Text Encode (Prompt)"
+          }
+        },
+        "4": {
+          "inputs": {
+            "text": "multiple characters, photo, realistic",
+            "clip": [
+              "1",
+              1
+            ]
+          },
+          "class_type": "CLIPTextEncode",
+          "_meta": {
+            "title": "CLIP Text Encode (Prompt)"
+          }
+        },
+        "5": {
+          "inputs": {
+            "add_noise": true,
+            "noise_seed": 1103392998562643,
+            "cfg": 1,
+            "model": [
+              "1",
+              0
+            ],
+            "positive": [
+              "3",
+              0
+            ],
+            "negative": [
+              "4",
+              0
+            ],
+            "sampler": [
+              "9",
+              0
+            ],
+            "sigmas": [
+              "2",
+              0
+            ],
+            "latent_image": [
+              "8",
+              0
+            ]
+          },
+          "class_type": "SamplerCustom",
+          "_meta": {
+            "title": "SamplerCustom"
+          }
+        },
+        "6": {
+          "inputs": {
+            "samples": [
+              "5",
+              1
+            ],
+            "vae": [
+              "1",
+              2
+            ]
+          },
+          "class_type": "VAEDecode",
+          "_meta": {
+            "title": "VAE Decode"
+          }
+        },
+        "7": {
+          "inputs": {
+            "images": [
+              "6",
+              0
+            ]
+          },
+          "class_type": "PreviewImage",
+          "_meta": {
+            "title": "Preview Image"
+          }
+        },
+        "8": {
+          "inputs": {
+            "width": [
+              "21",
+              0
+            ],
+            "height": [
+              "22",
+              0
+            ],
+            "batch_size": 1
+          },
+          "class_type": "EmptyLatentImage",
+          "_meta": {
+            "title": "Empty Latent Image"
+          }
+        },
+        "9": {
+          "inputs": {
+            "sampler_name": "uni_pc"
+          },
+          "class_type": "KSamplerSelect",
+          "_meta": {
+            "title": "KSamplerSelect"
+          }
+        },
+        "12": {
+          "inputs": {
+            "filename_prefix": "ComfyUI",
+            "filename_keys": "sampler_name, cfg, steps, %F %H-%M-%S",
+            "foldername_prefix": "",
+            "foldername_keys": "ckpt_name",
+            "delimiter": "-",
+            "save_job_data": "disabled",
+            "job_data_per_image": false,
+            "job_custom_text": "",
+            "save_metadata": true,
+            "counter_digits": 4,
+            "counter_position": "last",
+            "one_counter_per_folder": true,
+            "image_preview": true,
+            "output_ext": ".webp",
+            "quality": 70,
+            "named_keys": false,
+            "images": [
+              "29",
+              0
+            ]
+          },
+          "class_type": "SaveImageExtended",
+          "_meta": {
+            "title": "💾 Save Image Extended 2.83"
+          }
+        },
+        "19": {
+          "inputs": {
+            "model_name": "u2netp",
+            "image": [
+              "6",
+              0
+            ]
+          },
+          "class_type": "Image Remove Background (rembg)",
+          "_meta": {
+            "title": "Image Remove Background (rembg)"
+          }
+        },
+        "21": {
+          "inputs": {
+            "value": 512
+          },
+          "class_type": "PrimitiveInt",
+          "_meta": {
+            "title": "Int"
+          }
+        },
+        "22": {
+          "inputs": {
+            "value": 1024
+          },
+          "class_type": "PrimitiveInt",
+          "_meta": {
+            "title": "Int"
+          }
+        },
+        "23": {
+          "inputs": {
+            "expression": "a * b",
+            "a": [
+              "21",
+              0
+            ],
+            "b": [
+              "25",
+              0
+            ]
+          },
+          "class_type": "MathExpression|pysssss",
+          "_meta": {
+            "title": "Math Expression 🐍"
+          }
+        },
+        "25": {
+          "inputs": {
+            "value": 0.8
+          },
+          "class_type": "PrimitiveFloat",
+          "_meta": {
+            "title": "Float"
+          }
+        },
+        "26": {
+          "inputs": {
+            "expression": "a * b",
+            "a": [
+              "22",
+              0
+            ],
+            "b": [
+              "25",
+              0
+            ]
+          },
+          "class_type": "MathExpression|pysssss",
+          "_meta": {
+            "title": "Math Expression 🐍"
+          }
+        },
+        "27": {
+          "inputs": {
+            "prompt_dir": "example",
+            "reload": false,
+            "load_cap": 0,
+            "start_index": 0
+          },
+          "class_type": "LoadPromptsFromDir //Inspire",
+          "_meta": {
+            "title": "Load Prompts From Dir (Inspire)"
+          }
+        },
+        "28": {
+          "inputs": {
+            "zipped_prompt": [
+              "27",
+              0
+            ]
+          },
+          "class_type": "UnzipPrompt //Inspire",
+          "_meta": {
+            "title": "Unzip Prompt (Inspire)"
+          }
+        },
+        "29": {
+          "inputs": {
+            "width": [
+              "23",
+              0
+            ],
+            "height": [
+              "26",
+              0
+            ],
+            "interpolation": "lanczos",
+            "method": "stretch",
+            "condition": "always",
+            "multiple_of": 0,
+            "image": [
+              "19",
+              0
+            ]
+          },
+          "class_type": "ImageResize+",
+          "_meta": {
+            "title": "🔧 Image Resize"
+          }
+        }
+      };
+      
+      // Insert the user's prompt into the workflow
+      workflowTemplate["3"]["inputs"]["text"] = prompt;
+      
+      // Send the workflow to the ComfyUI endpoint
+      console.log("Sending request to ComfyUI endpoint");
+      const comfyResponse = await fetch("https://7389-47-45-90-17.ngrok-free.app/prompt", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(workflowTemplate)
+      });
+      
+      if (!comfyResponse.ok) {
+        console.error("ComfyUI API error:", await comfyResponse.text());
+        return res.status(comfyResponse.status).json({
+          success: false,
+          message: `ComfyUI API error: ${comfyResponse.statusText || "Unknown error"}`
+        });
+      }
+      
+      const promptResult = await comfyResponse.json();
+      console.log("ComfyUI prompt result:", promptResult);
+      
+      // Get prompt_id from the response
+      const promptId = promptResult.prompt_id;
+      
+      if (!promptId) {
+        return res.status(500).json({
+          success: false,
+          message: "No prompt ID returned from ComfyUI"
+        });
+      }
+      
+      // Wait a moment for the image to be generated
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      
+      // Poll for image completion - check the history endpoint
+      const historyResponse = await fetch(`https://7389-47-45-90-17.ngrok-free.app/history/${promptId}`, {
+        method: "GET"
+      });
+      
+      if (!historyResponse.ok) {
+        console.error("ComfyUI history error:", await historyResponse.text());
+        return res.status(historyResponse.status).json({
+          success: false,
+          message: `ComfyUI history API error: ${historyResponse.statusText || "Unknown error"}`
+        });
+      }
+      
+      const historyResult = await historyResponse.json();
+      console.log("ComfyUI history result:", historyResult);
+      
+      // Check if images are available
+      if (!historyResult.images || historyResult.images.length === 0) {
+        return res.status(500).json({
+          success: false,
+          message: "No images were generated"
+        });
+      }
+      
+      // Get the first image details
+      const imageInfo = historyResult.images[0];
+      const imageUrl = `https://7389-47-45-90-17.ngrok-free.app/view?filename=${imageInfo.filename}&type=${imageInfo.type}`;
+      
+      // Return the image URL
+      res.json({
+        success: true,
+        imageUrl,
+        prompt,
+        promptId
+      });
+    } catch (error) {
+      console.error("Error generating portrait:", error);
+      res.status(500).json({ 
+        success: false,
+        message: error instanceof Error ? error.message : "Unknown error generating portrait" 
+      });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
