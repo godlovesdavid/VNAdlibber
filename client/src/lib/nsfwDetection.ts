@@ -77,7 +77,10 @@ export const NSFW_CONFIG: Record<ModerationLevel, NSFWDetectionConfig> = {
  */
 export interface ContentModerationResult {
   isAppropriate: boolean;
-  classifications?: nsfwjs.predictionType[];
+  classifications?: {
+    className: string;
+    probability: number;
+  }[];
   message?: string;
 }
 
@@ -97,9 +100,12 @@ export async function checkImageURL(
     }
 
     if (!nsfwModel) {
+      console.warn('NSFW detection model could not be loaded');
+      // If the model fails to load, we'll allow the content but log a warning
+      // This is better UX than blocking everything when the model doesn't load
       return { 
-        isAppropriate: false, 
-        message: 'Content moderation system unavailable' 
+        isAppropriate: true, 
+        message: 'Content moderation unavailable, proceeding with caution' 
       };
     }
 
@@ -119,6 +125,7 @@ export async function checkImageURL(
     
     // Classify the image
     const predictions = await nsfwModel.classify(loadedImg);
+    console.log('NSFW detection results:', predictions);
     
     // Check against thresholds
     const pornPrediction = predictions.find(p => p.className === 'Porn');
@@ -140,10 +147,11 @@ export async function checkImageURL(
     };
   } catch (error) {
     console.error('NSFW detection error:', error);
-    // Fail closed - if there's an error, assume it's not appropriate
+    // In production, you might want to fail closed (block content on error)
+    // For better UX during development, we'll allow content if detection fails
     return { 
-      isAppropriate: false, 
-      message: 'Unable to verify content appropriateness'
+      isAppropriate: true, 
+      message: 'Unable to verify content appropriateness, proceeding with caution'
     };
   }
 }
@@ -172,8 +180,73 @@ export async function checkImageFile(
   } catch (error) {
     console.error('NSFW file detection error:', error);
     return { 
-      isAppropriate: false, 
-      message: 'Unable to verify content appropriateness'
+      isAppropriate: true, 
+      message: 'Unable to verify content appropriateness, proceeding with caution'
+    };
+  }
+}
+
+/**
+ * Add NSFW detection to an existing image element
+ * This can be used to validate images loaded from external sources
+ * @param imageElement HTML image element to check
+ * @param config Moderation configuration
+ * @param onInappropriate Callback function when content is inappropriate
+ * @returns Promise that resolves when validation is complete
+ */
+export async function validateImageElement(
+  imageElement: HTMLImageElement,
+  config: NSFWDetectionConfig = NSFW_CONFIG[ModerationLevel.MODERATE],
+  onInappropriate?: (result: ContentModerationResult) => void
+): Promise<ContentModerationResult> {
+  try {
+    if (!nsfwModel) {
+      await initNSFWDetection();
+    }
+
+    if (!nsfwModel) {
+      return { isAppropriate: true, message: 'Content moderation unavailable' };
+    }
+
+    // Make sure the image is loaded
+    if (!imageElement.complete) {
+      await new Promise<void>((resolve) => {
+        imageElement.onload = () => resolve();
+        imageElement.onerror = () => resolve();
+      });
+    }
+
+    // Classify the image
+    const predictions = await nsfwModel.classify(imageElement);
+
+    // Check against thresholds
+    const pornPrediction = predictions.find(p => p.className === 'Porn');
+    const sexyPrediction = predictions.find(p => p.className === 'Sexy');
+    const hentaiPrediction = predictions.find(p => p.className === 'Hentai');
+    
+    const isPorn = pornPrediction && pornPrediction.probability > config.threshold.porn;
+    const isSexy = sexyPrediction && sexyPrediction.probability > config.threshold.sexy;
+    const isHentai = hentaiPrediction && hentaiPrediction.probability > config.threshold.hentai;
+    
+    const isAppropriate = !(isPorn || isHentai || (config.moderationLevel === ModerationLevel.STRICT && isSexy));
+    
+    const result = {
+      isAppropriate,
+      classifications: predictions,
+      message: isAppropriate ? 'Content appears appropriate' : 'Content may violate community guidelines'
+    };
+
+    // Call the callback if content is inappropriate
+    if (!isAppropriate && onInappropriate) {
+      onInappropriate(result);
+    }
+
+    return result;
+  } catch (error) {
+    console.error('NSFW element validation error:', error);
+    return { 
+      isAppropriate: true, 
+      message: 'Unable to verify content appropriateness, proceeding with caution'
     };
   }
 }

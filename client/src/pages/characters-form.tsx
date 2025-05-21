@@ -420,6 +420,9 @@ export default function CharactersForm() {
           const character = updatedCharacters[i];
           if (character.name && character.appearance) {
             try {
+              // Import NSFW detection (dynamic import to avoid loading it unnecessarily)
+              const NSFWDetection = await import('@/lib/nsfwDetection');
+              
               setGeneratingPortraitIndex(i);
               
               // Construct portrait prompt
@@ -430,10 +433,28 @@ export default function CharactersForm() {
               const portraitData = await response.json();
               
               if (portraitData && portraitData.imageUrl) {
-                setCharacterPortraits(prev => ({
-                  ...prev,
-                  [i]: portraitData.imageUrl
-                }));
+                // Check if the generated image is appropriate
+                const contentCheck = await NSFWDetection.checkImageURL(
+                  portraitData.imageUrl,
+                  NSFWDetection.NSFW_CONFIG[NSFWDetection.ModerationLevel.MODERATE]
+                );
+                
+                if (contentCheck.isAppropriate) {
+                  // Image passed content check, display it
+                  setCharacterPortraits(prev => ({
+                    ...prev,
+                    [i]: portraitData.imageUrl
+                  }));
+                } else {
+                  // Image didn't pass the content check
+                  console.warn(`Portrait for ${character.name} didn't pass content guidelines:`, contentCheck.message);
+                  
+                  toast({
+                    title: t('common.contentGuidelines', 'Content Guidelines'),
+                    description: t('characterForm.inappropriatePortrait', 'A generated portrait does not meet content guidelines. Skipping.'),
+                    variant: "destructive",
+                  });
+                }
               }
             } catch (error) {
               console.error(`Error generating portrait for character ${i}:`, error);
