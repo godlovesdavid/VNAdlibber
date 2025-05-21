@@ -1618,6 +1618,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const imageUrl = `https://7389-47-45-90-17.ngrok-free.app/view?filename=${imageInfo.filename}&type=${imageInfo.type}`;
       
+      // Log the full image URL for debugging
+      console.log("Generated portrait URL:", imageUrl);
+      
       // Return the image URL
       res.json({
         success: true,

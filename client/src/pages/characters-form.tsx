@@ -666,6 +666,22 @@ export default function CharactersForm() {
                         src={characterPortraits[index]} 
                         alt={`Portrait of ${character.name || 'character'}`}
                         className="w-full h-full object-cover rounded-md shadow-md"
+                        onError={(e) => {
+                          console.error("Error loading portrait image:", characterPortraits[index]);
+                          e.currentTarget.onerror = null; // Prevent infinite error loop
+                          setCharacterPortraits(prev => {
+                            const newPortraits = {...prev};
+                            delete newPortraits[index]; // Remove failed portrait
+                            return newPortraits;
+                          });
+                          
+                          // Show error toast
+                          toast({
+                            title: t('errorMessages.imageLoadFailed', 'Image Failed to Load'),
+                            description: t('characterForm.portraitLoadError', 'The character portrait could not be loaded. Please try generating again.'),
+                            variant: "destructive"
+                          });
+                        }}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded-md">
