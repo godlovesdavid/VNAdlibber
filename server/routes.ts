@@ -273,22 +273,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const projectData = req.body;
       console.log('[SERVER] Project save request received with hash:', projectData.lastSavedHash);
+      
+      // Add debug for character portraits
+      console.log('[SERVER] Project has character portraits?', !!projectData.characterPortraitsData);
+      if (projectData.characterPortraitsData) {
+        console.log('[SERVER] Character portrait keys:', Object.keys(projectData.characterPortraitsData));
+      }
 
       // If project has an ID, update it
       if (projectData.id) {
         console.log(`[SERVER] Updating project ${projectData.id} with hash: ${projectData.lastSavedHash}`);
+        // Make sure characterPortraitsData is preserved
+        const dataToUpdate = {
+          ...projectData,
+          characterPortraitsData: projectData.characterPortraitsData || {}
+        };
+        
         const updatedProject = await storage.updateProject(
           projectData.id,
-          projectData,
+          dataToUpdate,
         );
         console.log(`[SERVER] Project updated, returning with hash: ${updatedProject.lastSavedHash}`);
+        console.log('[SERVER] Updated project has portraits data?', !!updatedProject.characterPortraitsData);
         return res.json(updatedProject);
       }
 
       // Otherwise create a new project
       console.log('[SERVER] Creating new project');
-      const newProject = await storage.createProject(projectData);
+      // Make sure characterPortraitsData is included
+      const dataToCreate = {
+        ...projectData,
+        characterPortraitsData: projectData.characterPortraitsData || {}
+      };
+      
+      const newProject = await storage.createProject(dataToCreate);
       console.log(`[SERVER] New project created with ID ${newProject.id} and hash: ${newProject.lastSavedHash}`);
+      console.log('[SERVER] New project has portraits data?', !!newProject.characterPortraitsData);
       res.status(201).json(newProject);
     } catch (error) {
       console.error("[SERVER] Error saving project:", error);
