@@ -83,6 +83,7 @@ export class MemStorage implements IStorage {
       },
       // Add empty objects for the required fields
       charactersData: {},
+      characterPortraitsData: {},
       pathsData: {},
       plotData: {},
       generatedActs: {},

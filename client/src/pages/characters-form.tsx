@@ -218,12 +218,19 @@ export default function CharactersForm() {
           }
         });
         
-        saveProject({
+        console.log("SAVE DEBUG: Saving portrait data to project:", portraitsObj);
+        
+        // Make sure portrait data is explicitly included in the save
+        const projectToSave = {
           ...projectData, 
           charactersData: characterData, 
           characterPortraitsData: portraitsObj, 
           currentStep: 3
-        });
+        };
+        
+        console.log("SAVE DEBUG: Complete project data being saved:", projectToSave);
+        
+        saveProject(projectToSave);
       }
     };
     
@@ -523,10 +530,18 @@ export default function CharactersForm() {
 
   // Load existing data if available
   useEffect(() => {
+    console.log("PORTRAIT DEBUG: Project data loaded:", projectData);
+    console.log("PORTRAIT DEBUG: Project data contains portraits data?", !!projectData?.characterPortraitsData);
+    if (projectData?.characterPortraitsData) {
+      console.log("PORTRAIT DEBUG: Portrait data keys:", Object.keys(projectData.characterPortraitsData));
+      console.log("PORTRAIT DEBUG: Portrait data content:", projectData.characterPortraitsData);
+    }
+    
     if (projectData?.charactersData && Object.keys(projectData.charactersData).length > 0) {
       // Convert from object to array format for the form
       const charactersArray = Object.entries(projectData.charactersData).map(
         ([name, character]) => {
+          console.log("PORTRAIT DEBUG: Processing character:", name);
           return {
             ...character,
             name // Add name field for form usage
@@ -542,14 +557,18 @@ export default function CharactersForm() {
         
         // Convert from name-based to index-based mapping for the UI
         charactersArray.forEach((character, index) => {
+          console.log("PORTRAIT DEBUG: Looking for portrait for character:", character.name);
           const portraitUrl = projectData.characterPortraitsData?.[character.name];
+          console.log("PORTRAIT DEBUG: Found portrait URL?", !!portraitUrl, portraitUrl);
           if (portraitUrl) {
             portraitsObj[index] = portraitUrl;
           }
         });
         
+        console.log("PORTRAIT DEBUG: Final portraits object to be set:", portraitsObj);
         setCharacterPortraits(portraitsObj);
-        console.log('Loaded portraits from project data:', portraitsObj);
+      } else {
+        console.log("PORTRAIT DEBUG: No portrait data found in project data");
       }
     }
   }, [projectData]);
