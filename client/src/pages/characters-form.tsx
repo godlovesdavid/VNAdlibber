@@ -25,7 +25,7 @@ import { useTranslation } from "react-i18next";
 
 export default function CharactersForm() {
   const [location, setLocation] = useLocation();
-  const { projectData, setCharactersData, goToStep, saveProject, hasUnsavedChanges, setConfirmDialogOpen } = useVnContext();
+  const { projectData, setCharactersData, setCharacterPortraitsData, goToStep, saveProject, hasUnsavedChanges, setConfirmDialogOpen } = useVnContext();
   const {
     generateCharacterData,
     generateMultipleCharactersData,
@@ -165,6 +165,24 @@ export default function CharactersForm() {
     // Set the characters data
     if (!justReturnObj) {
       setCharactersData(charactersObj);
+      
+      // Also save portrait data to context
+      if (Object.keys(characterPortraits).length > 0) {
+        const portraitsObj: Record<string, string> = {};
+        
+        // Convert from index-based to name-based mapping
+        Object.entries(characterPortraits).forEach(([indexStr, portraitUrl]) => {
+          const index = parseInt(indexStr);
+          const character = characters[index];
+          if (character && character.name) {
+            portraitsObj[character.name] = portraitUrl;
+          }
+        });
+        
+        // Save portraits to context
+        setCharacterPortraitsData(portraitsObj);
+        console.log('Saving character portraits to context:', portraitsObj);
+      }
     }
     
     // Log for debugging
@@ -185,7 +203,27 @@ export default function CharactersForm() {
     
     const saveFormHandler = () => {
       if (projectData) {
-        saveProject({...projectData, charactersData: saveCharacterData(true), currentStep: 3});
+        // Save both character data and portraits
+        const characterData = saveCharacterData(true);
+        
+        // Create portraits object
+        const portraitsObj: Record<string, string> = {};
+        
+        // Convert from index-based to name-based mapping
+        Object.entries(characterPortraits).forEach(([indexStr, portraitUrl]) => {
+          const index = parseInt(indexStr);
+          const character = characters[index];
+          if (character && character.name) {
+            portraitsObj[character.name] = portraitUrl;
+          }
+        });
+        
+        saveProject({
+          ...projectData, 
+          charactersData: characterData, 
+          characterPortraitsData: portraitsObj, 
+          currentStep: 3
+        });
       }
     };
     
@@ -497,6 +535,22 @@ export default function CharactersForm() {
       );
       
       setCharacters(charactersArray);
+      
+      // Load portraits if available
+      if (projectData.characterPortraitsData) {
+        const portraitsObj: Record<number, string> = {};
+        
+        // Convert from name-based to index-based mapping for the UI
+        charactersArray.forEach((character, index) => {
+          const portraitUrl = projectData.characterPortraitsData?.[character.name];
+          if (portraitUrl) {
+            portraitsObj[index] = portraitUrl;
+          }
+        });
+        
+        setCharacterPortraits(portraitsObj);
+        console.log('Loaded portraits from project data:', portraitsObj);
+      }
     }
   }, [projectData]);
 
