@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, jsonb, bytea } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -25,6 +25,7 @@ export const vnProjects = pgTable("vn_projects", {
   basicData: jsonb("basic_data").notNull().default({}),
   conceptData: jsonb("concept_data").default({}),
   charactersData: jsonb("characters_data").default({}),
+  characterPortraitsData: jsonb("character_portraits_data").default({}),
   pathsData: jsonb("paths_data").default({}),
   plotData: jsonb("plot_data").default({}),
   generatedActs: jsonb("generated_acts").default({}),
@@ -36,6 +37,8 @@ export const vnProjects = pgTable("vn_projects", {
 export const insertVnProjectSchema = createInsertSchema(vnProjects).omit({
   id: true
 });
+
+// For character portraits, we'll use a JSON field in the vnProjects table
 
 // VN Story schema - stores exported acts for play
 export const vnStories = pgTable("vn_stories", {

@@ -311,6 +311,21 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
       console.log("Characters data after update:", projectData?.charactersData);
     }, 0);
   };
+  
+  const setCharacterPortraitsData = (data: CharacterPortraitsData) => {
+    if (!projectData) return;
+
+    // Set the portrait data while preserving the rest of the project
+    setProjectData({
+      ...projectData,
+      characterPortraitsData: data,
+    });
+
+    // Verify the data was successfully set
+    setTimeout(() => {
+      console.log("Character portraits data after update:", projectData?.characterPortraitsData);
+    }, 0);
+  };
 
   const setPathsData = (data: PathsData) => {
     if (!projectData) return;
@@ -805,6 +820,7 @@ export const VnProvider: React.FC<{ children: React.ReactNode }> = ({
     setBasicData,
     setConceptData,
     setCharactersData,
+    setCharacterPortraitsData,
     setPathsData,
     setPlotData,
     setGeneratedAct,
