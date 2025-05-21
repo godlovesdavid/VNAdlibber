@@ -171,7 +171,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Apply rate limiters to AI generation endpoints
   app.use(["/api/generate/concept", "/api/generate/plot", "/api/generate/path", "/api/generate/character", "/api/generate/act"], aiGenerationLimiter);
-  app.use("/api/generate/image", imageLimiter);
+  app.use(["/api/generate/image", "/api/generate/portrait"], imageLimiter);
 
   // Project CRUD operations
   // OpenAI endpoint has been removed in favor of RunPod
