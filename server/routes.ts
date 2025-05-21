@@ -1247,298 +1247,289 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Generating portrait with ComfyUI, prompt:", prompt);
       
       // Load the workflow template (the json from attached asset)
-      const workflowTemplate = {"prompt":{
-        "1": {
-          "inputs": {
-            "ckpt_name": "Hyper-SDXL-1step-Unet-Comfyui.fp16.safetensors"
+      const workflowTemplate = {"prompt":
+        {
+          "1": {
+            "inputs": {
+              "ckpt_name": "Hyper-SDXL-1step-Unet-Comfyui.fp16.safetensors"
+            },
+            "class_type": "CheckpointLoaderSimple",
+            "_meta": {
+              "title": "Load Checkpoint"
+            }
           },
-          "class_type": "CheckpointLoaderSimple",
-          "_meta": {
-            "title": "Load Checkpoint"
-          }
-        },
-        "2": {
-          "inputs": {
-            "steps": 1,
-            "model": [
-              "1",
-              0
-            ]
+          "2": {
+            "inputs": {
+              "steps": 1,
+              "model": [
+                "1",
+                0
+              ]
+            },
+            "class_type": "HyperSDXL1StepUnetScheduler",
+            "_meta": {
+              "title": "HyperSDXL1StepUnetScheduler"
+            }
           },
-          "class_type": "HyperSDXL1StepUnetScheduler",
-          "_meta": {
-            "title": "HyperSDXL1StepUnetScheduler"
-          }
-        },
-        "3": {
-          "inputs": {
-            "text": "",
-            "clip": [
-              "1",
-              1
-            ]
+          "3": {
+            "inputs": {
+              "text": "",
+              "clip": [
+                "1",
+                1
+              ]
+            },
+            "class_type": "CLIPTextEncode",
+            "_meta": {
+              "title": "CLIP Text Encode (Prompt)"
+            }
           },
-          "class_type": "CLIPTextEncode",
-          "_meta": {
-            "title": "CLIP Text Encode (Prompt)"
-          }
-        },
-        "4": {
-          "inputs": {
-            "text": "multiple characters, photo, realistic",
-            "clip": [
-              "1",
-              1
-            ]
+          "4": {
+            "inputs": {
+              "text": "multiple characters, photo, realistic",
+              "clip": [
+                "1",
+                1
+              ]
+            },
+            "class_type": "CLIPTextEncode",
+            "_meta": {
+              "title": "CLIP Text Encode (Prompt)"
+            }
           },
-          "class_type": "CLIPTextEncode",
-          "_meta": {
-            "title": "CLIP Text Encode (Prompt)"
-          }
-        },
-        "5": {
-          "inputs": {
-            "add_noise": true,
-            "noise_seed": 1103392998562643,
-            "cfg": 1,
-            "model": [
-              "1",
-              0
-            ],
-            "positive": [
-              "3",
-              0
-            ],
-            "negative": [
-              "4",
-              0
-            ],
-            "sampler": [
-              "9",
-              0
-            ],
-            "sigmas": [
-              "2",
-              0
-            ],
-            "latent_image": [
-              "8",
-              0
-            ]
+          "5": {
+            "inputs": {
+              "add_noise": true,
+              "noise_seed": 553083796722994,
+              "cfg": 1,
+              "model": [
+                "1",
+                0
+              ],
+              "positive": [
+                "3",
+                0
+              ],
+              "negative": [
+                "4",
+                0
+              ],
+              "sampler": [
+                "9",
+                0
+              ],
+              "sigmas": [
+                "2",
+                0
+              ],
+              "latent_image": [
+                "8",
+                0
+              ]
+            },
+            "class_type": "SamplerCustom",
+            "_meta": {
+              "title": "SamplerCustom"
+            }
           },
-          "class_type": "SamplerCustom",
-          "_meta": {
-            "title": "SamplerCustom"
-          }
-        },
-        "6": {
-          "inputs": {
-            "samples": [
-              "5",
-              1
-            ],
-            "vae": [
-              "1",
-              2
-            ]
+          "6": {
+            "inputs": {
+              "samples": [
+                "5",
+                1
+              ],
+              "vae": [
+                "1",
+                2
+              ]
+            },
+            "class_type": "VAEDecode",
+            "_meta": {
+              "title": "VAE Decode"
+            }
           },
-          "class_type": "VAEDecode",
-          "_meta": {
-            "title": "VAE Decode"
-          }
-        },
-        "7": {
-          "inputs": {
-            "images": [
-              "6",
-              0
-            ]
+          "8": {
+            "inputs": {
+              "width": [
+                "21",
+                0
+              ],
+              "height": [
+                "22",
+                0
+              ],
+              "batch_size": 1
+            },
+            "class_type": "EmptyLatentImage",
+            "_meta": {
+              "title": "Empty Latent Image"
+            }
           },
-          "class_type": "PreviewImage",
-          "_meta": {
-            "title": "Preview Image"
-          }
-        },
-        "8": {
-          "inputs": {
-            "width": [
-              "21",
-              0
-            ],
-            "height": [
-              "22",
-              0
-            ],
-            "batch_size": 1
+          "9": {
+            "inputs": {
+              "sampler_name": "uni_pc"
+            },
+            "class_type": "KSamplerSelect",
+            "_meta": {
+              "title": "KSamplerSelect"
+            }
           },
-          "class_type": "EmptyLatentImage",
-          "_meta": {
-            "title": "Empty Latent Image"
-          }
-        },
-        "9": {
-          "inputs": {
-            "sampler_name": "uni_pc"
+          "12": {
+            "inputs": {
+              "filename_prefix": "ComfyUI",
+              "filename_keys": "sampler_name, cfg, steps, %F %H-%M-%S",
+              "foldername_prefix": "",
+              "foldername_keys": "ckpt_name",
+              "delimiter": "-",
+              "save_job_data": "disabled",
+              "job_data_per_image": false,
+              "job_custom_text": "",
+              "save_metadata": false,
+              "counter_digits": 4,
+              "counter_position": "last",
+              "one_counter_per_folder": true,
+              "image_preview": true,
+              "output_ext": ".webp",
+              "quality": 70,
+              "named_keys": false,
+              "images": [
+                "29",
+                0
+              ]
+            },
+            "class_type": "SaveImageExtended",
+            "_meta": {
+              "title": "💾 Save Image Extended 2.83"
+            }
           },
-          "class_type": "KSamplerSelect",
-          "_meta": {
-            "title": "KSamplerSelect"
-          }
-        },
-        "12": {
-          "inputs": {
-            "filename_prefix": "ComfyUI",
-            "filename_keys": "sampler_name, cfg, steps, %F %H-%M-%S",
-            "foldername_prefix": "",
-            "foldername_keys": "ckpt_name",
-            "delimiter": "-",
-            "save_job_data": "disabled",
-            "job_data_per_image": false,
-            "job_custom_text": "",
-            "save_metadata": false,
-            "counter_digits": 4,
-            "counter_position": "last",
-            "one_counter_per_folder": true,
-            "image_preview": true,
-            "output_ext": ".webp",
-            "quality": 70,
-            "named_keys": false,
-            "images": [
-              "29",
-              0
-            ]
+          "19": {
+            "inputs": {
+              "model_name": "u2netp",
+              "image": [
+                "6",
+                0
+              ]
+            },
+            "class_type": "Image Remove Background (rembg)",
+            "_meta": {
+              "title": "Image Remove Background (rembg)"
+            }
           },
-          "class_type": "SaveImageExtended",
-          "_meta": {
-            "title": "💾 Save Image Extended 2.83"
-          }
-        },
-        "19": {
-          "inputs": {
-            "model_name": "u2netp",
-            "image": [
-              "6",
-              0
-            ]
+          "21": {
+            "inputs": {
+              "value": 512
+            },
+            "class_type": "PrimitiveInt",
+            "_meta": {
+              "title": "Int"
+            }
           },
-          "class_type": "Image Remove Background (rembg)",
-          "_meta": {
-            "title": "Image Remove Background (rembg)"
-          }
-        },
-        "21": {
-          "inputs": {
-            "value": 512
+          "22": {
+            "inputs": {
+              "value": 1024
+            },
+            "class_type": "PrimitiveInt",
+            "_meta": {
+              "title": "Int"
+            }
           },
-          "class_type": "PrimitiveInt",
-          "_meta": {
-            "title": "Int"
-          }
-        },
-        "22": {
-          "inputs": {
-            "value": 1024
+          "23": {
+            "inputs": {
+              "expression": "a * b",
+              "a": [
+                "21",
+                0
+              ],
+              "b": [
+                "25",
+                0
+              ]
+            },
+            "class_type": "MathExpression|pysssss",
+            "_meta": {
+              "title": "Math Expression 🐍"
+            }
           },
-          "class_type": "PrimitiveInt",
-          "_meta": {
-            "title": "Int"
-          }
-        },
-        "23": {
-          "inputs": {
-            "expression": "a * b",
-            "a": [
-              "21",
-              0
-            ],
-            "b": [
-              "25",
-              0
-            ]
+          "25": {
+            "inputs": {
+              "value": 0.8
+            },
+            "class_type": "PrimitiveFloat",
+            "_meta": {
+              "title": "Float"
+            }
           },
-          "class_type": "MathExpression|pysssss",
-          "_meta": {
-            "title": "Math Expression 🐍"
-          }
-        },
-        "25": {
-          "inputs": {
-            "value": 0.8
+          "26": {
+            "inputs": {
+              "expression": "a * b",
+              "a": [
+                "22",
+                0
+              ],
+              "b": [
+                "25",
+                0
+              ]
+            },
+            "class_type": "MathExpression|pysssss",
+            "_meta": {
+              "title": "Math Expression 🐍"
+            }
           },
-          "class_type": "PrimitiveFloat",
-          "_meta": {
-            "title": "Float"
-          }
-        },
-        "26": {
-          "inputs": {
-            "expression": "a * b",
-            "a": [
-              "22",
-              0
-            ],
-            "b": [
-              "25",
-              0
-            ]
+          "27": {
+            "inputs": {
+              "prompt_dir": "example",
+              "reload": false,
+              "load_cap": 0,
+              "start_index": 0
+            },
+            "class_type": "LoadPromptsFromDir //Inspire",
+            "_meta": {
+              "title": "Load Prompts From Dir (Inspire)"
+            }
           },
-          "class_type": "MathExpression|pysssss",
-          "_meta": {
-            "title": "Math Expression 🐍"
-          }
-        },
-        "27": {
-          "inputs": {
-            "prompt_dir": "example",
-            "reload": false,
-            "load_cap": 0,
-            "start_index": 0
+          "28": {
+            "inputs": {
+              "zipped_prompt": [
+                "27",
+                0
+              ]
+            },
+            "class_type": "UnzipPrompt //Inspire",
+            "_meta": {
+              "title": "Unzip Prompt (Inspire)"
+            }
           },
-          "class_type": "LoadPromptsFromDir //Inspire",
-          "_meta": {
-            "title": "Load Prompts From Dir (Inspire)"
+          "29": {
+            "inputs": {
+              "width": [
+                "23",
+                0
+              ],
+              "height": [
+                "26",
+                0
+              ],
+              "interpolation": "lanczos",
+              "method": "stretch",
+              "condition": "always",
+              "multiple_of": 0,
+              "image": [
+                "19",
+                0
+              ]
+            },
+            "class_type": "ImageResize+",
+            "_meta": {
+              "title": "🔧 Image Resize"
+            }
           }
-        },
-        "28": {
-          "inputs": {
-            "zipped_prompt": [
-              "27",
-              0
-            ]
-          },
-          "class_type": "UnzipPrompt //Inspire",
-          "_meta": {
-            "title": "Unzip Prompt (Inspire)"
-          }
-        },
-        "29": {
-          "inputs": {
-            "width": [
-              "23",
-              0
-            ],
-            "height": [
-              "26",
-              0
-            ],
-            "interpolation": "lanczos",
-            "method": "stretch",
-            "condition": "always",
-            "multiple_of": 0,
-            "image": [
-              "19",
-              0
-            ]
-          },
-          "class_type": "ImageResize+",
-          "_meta": {
-            "title": "🔧 Image Resize"
-          }
-        }}
+        }
       };
       
       // Insert the user's prompt into the workflow
       workflowTemplate["prompt"]["3"]["inputs"]["text"] = prompt;
+      workflowTemplate["prompt"]["5"]["inputs"]["noise_seed"] = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)
       
       // Send the workflow to the ComfyUI endpoint
       console.log("Sending request to ComfyUI endpoint: " + JSON.stringify(workflowTemplate));
@@ -1618,7 +1609,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       // Encode the filename to handle spaces and special characters
       const encodedFilename = encodeURIComponent(imageInfo.filename);
-      const imageUrl = `https://7389-47-45-90-17.ngrok-free.app/view?filename=${encodedFilename}&type=${imageInfo.type}`;
+      const imageUrl = `https://7389-47-45-90-17.ngrok-free.app/view?filename=${encodedFilename}&type=${imageInfo.type}&subfolder=Hyper-SDXL-1step-Unet-Comfyui.fp16`;
       
       // Log the full image URL for debugging
       console.log("Generated portrait URL:", imageUrl);
