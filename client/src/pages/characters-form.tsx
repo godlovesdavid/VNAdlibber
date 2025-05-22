@@ -327,7 +327,24 @@ export default function CharactersForm() {
       await NSFWDetection.initNSFWDetection();
       
       // Construct a portrait prompt based on character details
-      const prompt = `Generate a 2:3 portrait of ${character.name}, a ${character.age ? character.age + '-year-old ' : ''}${character.gender} ${character.occupation}. ${character.appearance}`;
+      const originalPrompt = `Generate a 2:3 portrait of ${character.name}, a ${character.age ? character.age + '-year-old ' : ''}${character.gender} ${character.occupation}. ${character.appearance}`;
+      
+      // Translate prompt to English for better image generation
+      let prompt = originalPrompt;
+      try {
+        const { translateToEnglish, getCurrentLanguageCode } = await import('@/utils/google-translate');
+        const currentLang = getCurrentLanguageCode();
+        
+        if (currentLang !== 'en') {
+          console.log(`Translating portrait prompt from ${currentLang} to English...`);
+          prompt = await translateToEnglish(originalPrompt, currentLang);
+          console.log(`Original prompt: ${originalPrompt}`);
+          console.log(`Translated prompt: ${prompt}`);
+        }
+      } catch (error) {
+        console.warn('Translation failed, using original prompt:', error);
+        prompt = originalPrompt;
+      }
       
       // Call the server API to generate a portrait
       const response = await apiRequest("POST", "/api/generate/portrait", { prompt });
