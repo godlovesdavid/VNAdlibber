@@ -433,10 +433,10 @@ export default function CharactersForm() {
               const portraitData = await response.json();
               
               if (portraitData && portraitData.imageUrl) {
-                // Check if the generated image is appropriate
+                // Check if the generated image is appropriate using teen-safe settings
                 const contentCheck = await NSFWDetection.checkImageURL(
                   portraitData.imageUrl,
-                  NSFWDetection.NSFW_CONFIG[NSFWDetection.ModerationLevel.MODERATE]
+                  NSFWDetection.NSFW_CONFIG[NSFWDetection.ModerationLevel.TEEN_SAFE]
                 );
                 
                 if (contentCheck.isAppropriate) {
