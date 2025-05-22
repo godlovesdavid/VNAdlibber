@@ -98,6 +98,11 @@ export function MainMenu() {
         <FlagSelector />
       </div>
       <div className="w-full max-w-md mx-auto text-center mb-12">
+        <img 
+          src="/logo.png" 
+          alt="Visual Novel Ad Lib Logo" 
+          className="w-24 h-24 mx-auto mb-4"
+        />
         <h1 className="text-4xl text-primary font-bold mb-2">{t('mainMenu.title', 'Visual Novel Ad Lib')}</h1>
         <p className="text-muted-foreground">{t('mainMenu.subtitle', 'Dream it. Play it. Share it.')}</p>
       </div>
