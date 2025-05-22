@@ -327,14 +327,10 @@ export default function CharactersForm() {
       await NSFWDetection.initNSFWDetection();
       
       // Construct a portrait prompt based on character details
-      const prompt = `${character.name}, a ${character.age ? character.age + '-year-old ' : ''}${character.gender} ${character.occupation}. ${character.appearance}`;
+      const prompt = `Generate a 2:3 portrait of ${character.name}, a ${character.age ? character.age + '-year-old ' : ''}${character.gender} ${character.occupation}. ${character.appearance}`;
       
-      // Translate prompt to English for consistent image generation
-      const { smartTranslateToEnglish } = await import('@/utils/libretranslate');
-      const englishPrompt = await smartTranslateToEnglish(prompt);
-      alert(englishPrompt)
-      // Call the server API to generate a portrait using the English prompt
-      const response = await apiRequest("POST", "/api/generate/portrait", { prompt: englishPrompt });
+      // Call the server API to generate a portrait
+      const response = await apiRequest("POST", "/api/generate/portrait", { prompt });
       const portraitData = await response.json();
       
       if (portraitData && portraitData.imageUrl) {
@@ -432,12 +428,8 @@ export default function CharactersForm() {
               // Construct portrait prompt
               const prompt = `${character.name}, ${character.age ? character.age + '-year-old ' : ''}${character.gender} ${character.occupation}. ${character.appearance}`;
               
-              // Translate prompt to English for consistent image generation
-              const { smartTranslateToEnglish } = await import('@/utils/libretranslate');
-              const englishPrompt = await smartTranslateToEnglish(prompt);
-              
-              // Call the server API to generate a portrait using the English prompt
-              const response = await apiRequest("POST", "/api/generate/portrait", { prompt: englishPrompt });
+              // Call the server API to generate a portrait
+              const response = await apiRequest("POST", "/api/generate/portrait", { prompt });
               const portraitData = await response.json();
               
               if (portraitData && portraitData.imageUrl) {

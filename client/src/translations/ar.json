@@ -66,9 +66,7 @@
     "validationFailed": "فشل التحقق من صحة الشخصية",
     "validationFailedDesc": "فشل التحقق من صحة الشخصية",
     "checkDataTryAgain": "يرجى التحقق من بيانات شخصيتك والمحاولة مرة أخرى.",
-    "validationError": "خطأ في التحقق من صحة الأحرف",
-    "inappropriatePortrait": "الصورة التي تم إنشاؤها لا تفي بإرشادات المحتوى الخاصة بنا. يرجى محاولة الإنشاء مرة أخرى.",
-    "portraitLoadError": "تعذر تحميل صورة الشخصية. يرجى محاولة الإنشاء مرة أخرى."
+    "validationError": "خطأ في التحقق من صحة الأحرف"
   },
   "conceptForm": {
     "title": "العنوان",
@@ -104,8 +102,7 @@
     "continue": "تابع",
     "backToHome": "العودة إلى الصفحة الرئيسية",
     "backToMainMenu": "العودة إلى القائمة الرئيسية",
-    "saveProject": "مشروع الحفظ",
-    "contentGuidelines": "إرشادات المحتوى"
+    "saveProject": "مشروع الحفظ"
   },
   "settings": {
     "language": "اللغة",
@@ -161,8 +158,7 @@
     "generationFailed": "فشل التوليد",
     "connectionError": "خطأ في الاتصال",
     "saveFailed": "فشل في الحفظ",
-    "loadFailed": "فشل التحميل",
-    "imageLoadFailed": "فشل تحميل الصورة"
+    "loadFailed": "فشل التحميل"
   },
   "success": {
     "translationComplete": "اكتملت الترجمة",

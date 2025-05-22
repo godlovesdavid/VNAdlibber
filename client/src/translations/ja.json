@@ -66,9 +66,7 @@
     "validationFailed": "文字検証失敗",
     "validationFailedDesc": "文字検証失敗",
     "checkDataTryAgain": "キャラクターデータをご確認の上、再度お試しください。",
-    "validationError": "文字検証エラー",
-    "inappropriatePortrait": "生成された肖像画はコンテンツガイドラインに適合していません。もう一度生成してみてください。",
-    "portraitLoadError": "キャラクターのポートレートが読み込めませんでした。もう一度生成をお試しください。"
+    "validationError": "文字検証エラー"
   },
   "conceptForm": {
     "title": "タイトル",
@@ -104,8 +102,7 @@
     "continue": "続ける",
     "backToHome": "ホームへ戻る",
     "backToMainMenu": "メインメニューに戻る",
-    "saveProject": "保存プロジェクト",
-    "contentGuidelines": "コンテンツ・ガイドライン"
+    "saveProject": "保存プロジェクト"
   },
   "settings": {
     "language": "言語",
@@ -161,8 +158,7 @@
     "generationFailed": "世代交代に失敗",
     "connectionError": "接続エラー",
     "saveFailed": "保存に失敗",
-    "loadFailed": "ロードに失敗",
-    "imageLoadFailed": "画像の読み込みに失敗しました"
+    "loadFailed": "ロードに失敗"
   },
   "success": {
     "translationComplete": "翻訳完了",

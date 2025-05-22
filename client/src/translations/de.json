@@ -66,9 +66,7 @@
     "validationFailed": "Zeichenüberprüfung fehlgeschlagen",
     "validationFailedDesc": "Zeichenüberprüfung fehlgeschlagen",
     "checkDataTryAgain": "Bitte überprüfen Sie Ihre Charakterdaten und versuchen Sie es erneut.",
-    "validationError": "Fehler bei der Zeichenüberprüfung",
-    "inappropriatePortrait": "Das generierte Porträt entspricht nicht unseren Inhaltsrichtlinien. Bitte versuchen Sie, es erneut zu erstellen.",
-    "portraitLoadError": "Das Charakterportrait konnte nicht geladen werden. Bitte versuchen Sie, es erneut zu generieren."
+    "validationError": "Fehler bei der Zeichenüberprüfung"
   },
   "conceptForm": {
     "title": "Titel",
@@ -104,8 +102,7 @@
     "continue": "Weiter",
     "backToHome": "Zurück zu Home",
     "backToMainMenu": "Zurück zum Hauptmenü",
-    "saveProject": "Projekt speichern",
-    "contentGuidelines": "Inhaltliche Leitlinien"
+    "saveProject": "Projekt speichern"
   },
   "settings": {
     "language": "Sprache",
@@ -161,8 +158,7 @@
     "generationFailed": "Generation gescheitert",
     "connectionError": "Verbindungsfehler",
     "saveFailed": "Speichern fehlgeschlagen",
-    "loadFailed": "Laden fehlgeschlagen",
-    "imageLoadFailed": "Bild konnte nicht geladen werden"
+    "loadFailed": "Laden fehlgeschlagen"
   },
   "success": {
     "translationComplete": "Übersetzung abgeschlossen",

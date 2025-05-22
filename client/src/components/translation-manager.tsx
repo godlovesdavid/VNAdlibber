@@ -44,10 +44,6 @@ export function TranslationManager() {
     { code: 'de', name: 'German' },
     { code: 'pt', name: 'Portuguese' },
     { code: 'ar', name: 'Arabic' },
-    { code: 'hi', name: 'Hindi' },
-    { code: 'ru', name: 'Russian' },
-    { code: 'bn', name: 'Bengali' },
-    { code: 'id', name: 'Indonesian' }
   ];
 
   // Check if API key is configured in environment

@@ -66,9 +66,7 @@
     "validationFailed": "Character Validation Failed",
     "validationFailedDesc": "Character Validation Failed",
     "checkDataTryAgain": "Please check your character data and try again.",
-    "validationError": "Character Validation Error",
-    "inappropriatePortrait": "The generated portrait does not meet our content guidelines. Please try generating again.",
-    "portraitLoadError": "The character portrait could not be loaded. Please try generating again."
+    "validationError": "Character Validation Error"
   },
   "conceptForm": {
     "title": "Title",
@@ -104,8 +102,7 @@
     "continue": "Continue",
     "backToHome": "Back to Home",
     "backToMainMenu": "Back to Main Menu",
-    "saveProject": "Save Project",
-    "contentGuidelines": "Content Guidelines"
+    "saveProject": "Save Project"
   },
   "settings": {
     "language": "Language",
@@ -161,8 +158,7 @@
     "generationFailed": "Generation failed",
     "connectionError": "Connection error",
     "saveFailed": "Failed to save",
-    "loadFailed": "Failed to load",
-    "imageLoadFailed": "Image Failed to Load"
+    "loadFailed": "Failed to load"
   },
   "success": {
     "translationComplete": "Translation complete",
