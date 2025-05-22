@@ -11,6 +11,10 @@ import frTranslation from './translations/fr.json';
 import deTranslation from './translations/de.json';
 import ptTranslation from './translations/pt.json';
 import arTranslation from './translations/ar.json';
+import hiTranslation from './translations/hi.json';
+import ruTranslation from './translations/ru.json';
+import bnTranslation from './translations/bn.json';
+import idTranslation from './translations/id.json';
 
 const resources = {
   en: {
@@ -36,6 +40,18 @@ const resources = {
   },
   ar: {
     translation: arTranslation
+  },
+  hi: {
+    translation: hiTranslation
+  },
+  ru: {
+    translation: ruTranslation
+  },
+  bn: {
+    translation: bnTranslation
+  },
+  id: {
+    translation: idTranslation
   }
 };
 
