@@ -99,8 +99,8 @@ export function MainMenu() {
       </div>
       <div className="w-full max-w-md mx-auto text-center mb-12">
         <img 
-          src="/objects/logo.png" 
-          alt="Visual Novel Ad Lib Logo" 
+          src="/Objects/logo.png" 
+          alt="Logo" 
           className="w-24 h-24 mx-auto mb-4"
         />
         <h1 className="text-4xl text-primary font-bold mb-2">{t('mainMenu.title', 'Visual Novel Ad Lib')}</h1>
