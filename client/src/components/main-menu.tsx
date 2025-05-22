@@ -99,7 +99,7 @@ export function MainMenu() {
       </div>
       <div className="w-full max-w-md mx-auto text-center mb-12">
         <img 
-          src="/objects/logo.png" 
+          src="/objects/vnadlib_logo.webp" 
           alt="Visual Novel Ad Lib Logo" 
           className="w-24 h-24 mx-auto mb-4"
         />
