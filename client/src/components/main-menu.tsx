@@ -99,7 +99,7 @@ export function MainMenu() {
       </div>
       <div className="w-full max-w-md mx-auto text-center mb-12">
         <h1 className="text-4xl text-primary font-bold mb-2">{t('mainMenu.title', 'Visual Novel Ad Lib')}</h1>
-        <p className="text-muted-foreground">{t('mainMenu.subtitle', 'Dream up your very own VN with AI!')}</p>
+        <p className="text-muted-foreground">{t('mainMenu.subtitle', 'Dream it. Play it. Share it.')}</p>
       </div>
       
       <div className="w-full max-w-xs space-y-3">
@@ -154,7 +154,7 @@ export function MainMenu() {
           {t('mainMenu.shareStories', 'Share Stories')}
         </Button>
         
-        <Button 
+        {/* <Button 
           onClick={handleTranslationManager} 
           className="w-full flex items-center justify-center bg-white border border-indigo-500 text-indigo-600 hover:bg-indigo-50 py-6"
           variant="outline"
@@ -162,7 +162,7 @@ export function MainMenu() {
         >
           <Languages className="mr-2 h-5 w-5" />
           {t('mainMenu.translationManager', 'Translation Manager')}
-        </Button>
+        </Button> */}
 
         {/* <Button 
           onClick={handleTestPlayer} 
