@@ -332,7 +332,7 @@ export default function CharactersForm() {
       // Translate prompt to English for consistent image generation
       const { smartTranslateToEnglish } = await import('@/utils/libretranslate');
       const englishPrompt = await smartTranslateToEnglish(prompt);
-      
+      alert(englishPrompt)
       // Call the server API to generate a portrait using the English prompt
       const response = await apiRequest("POST", "/api/generate/portrait", { prompt: englishPrompt });
       const portraitData = await response.json();
