@@ -23,7 +23,11 @@ const languages: Language[] = [
   { code: 'fr', countryCode: 'FR', name: 'Français' },
   { code: 'de', countryCode: 'DE', name: 'Deutsch' },
   { code: 'pt', countryCode: 'BR', name: 'Português' },
-  { code: 'ar', countryCode: 'AR', name: 'العربية' }
+  { code: 'ar', countryCode: 'AR', name: 'العربية' },
+  { code: 'hi', countryCode: 'IN', name: 'हिन्दी' },
+  { code: 'ru', countryCode: 'RU', name: 'Русский' },
+  { code: 'bn', countryCode: 'BD', name: 'বাংলা' },
+  { code: 'id', countryCode: 'ID', name: 'Indonesia' }
 ];
 
 // CSS styles for flags container
@@ -62,6 +66,18 @@ const flagStyles: Record<string, React.CSSProperties> = {
   },
   AR: {
     background: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><rect width="3" height="2" fill="%23006C35"/><path d="M1.5,0.8 C1.2,0.8 1,1 1,1.2 C1,1.4 1.2,1.6 1.5,1.6 C1.8,1.6 2,1.4 2,1.2 C2,1 1.8,0.8 1.5,0.8 z" fill="%23fff"/><path d="M1.8,0.5 C1.7,0.55 1.6,0.6 1.5,0.6 C1.4,0.6 1.3,0.55 1.2,0.5 L1.4,0.7 L1.5,0.4 L1.6,0.7 z" fill="%23fff"/></svg>\') no-repeat center/cover',
+  },
+  IN: {
+    background: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><rect width="3" height="2" fill="%23ff9933"/><rect width="3" height="0.67" y="0.67" fill="%23fff"/><rect width="3" height="0.67" y="1.33" fill="%23138808"/><circle cx="1.5" cy="1" r="0.2" fill="%23000080"/></svg>\') no-repeat center/cover',
+  },
+  RU: {
+    background: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><rect width="3" height="2" fill="%23fff"/><rect width="3" height="0.67" fill="%230039a6"/><rect width="3" height="0.67" y="1.33" fill="%23d52b1e"/></svg>\') no-repeat center/cover',
+  },
+  BD: {
+    background: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><rect width="3" height="2" fill="%23006a4e"/><circle cx="1.2" cy="1" r="0.4" fill="%23f42a41"/></svg>\') no-repeat center/cover',
+  },
+  ID: {
+    background: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><rect width="3" height="2" fill="%23ce1126"/><rect width="3" height="1" fill="%23fff"/></svg>\') no-repeat center/cover',
   }
 };
 
