@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Pencil, FolderOpen, Play, Share2, Beaker, RotateCcw, Settings, Languages } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { FlagSelector } from "@/components/flag-selector";
+import logoSrc from "../assets/logo.webp";
 
 export function MainMenu() {
   const [, setLocation] = useLocation();
@@ -98,7 +99,7 @@ export function MainMenu() {
       </div>
       <div className="w-full max-w-md mx-auto text-center mb-12">
         <img 
-          src="/logo.webp" 
+          src={logoSrc} 
           alt="Visual Novel Creator Logo" 
           className="w-32 h-32 mx-auto mb-4"
         />
