@@ -1632,16 +1632,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const encodedFilename = encodeURIComponent(imageInfo.filename);
       const imageUrl = `${IMAGE_GEN_URL}/view?filename=${encodedFilename}&type=${imageInfo.type}&subfolder=Hyper-SDXL-1step-Unet-Comfyui.fp16`;
       
-      // Log the full image URL for debugging
-      console.log("Generated portrait URL:", imageUrl);
+      // Log the image generation for debugging
+      console.log("Generated portrait, fetching from ComfyUI to store in DB");
       
-      // Return the image URL
-      res.json({
-        success: true,
-        imageUrl,
-        prompt,
-        promptId
-      });
+      try {
+        // Fetch the image data for persistent storage
+        const imageResponse = await fetch(imageUrl);
+        if (!imageResponse.ok) {
+          throw new Error(`Failed to fetch image data: ${imageResponse.status}`);
+        }
+        
+        // Get the image data as a base64 string for storage
+        const imageBuffer = await imageResponse.arrayBuffer();
+        const base64Image = Buffer.from(imageBuffer).toString('base64');
+        
+        // Get content type (usually image/webp for ComfyUI)
+        const contentType = imageResponse.headers.get('content-type') || 'image/webp';
+        
+        // Create a data URL that can be used directly in the browser
+        const dataUrl = `data:${contentType};base64,${base64Image}`;
+        
+        // Return the data URL for direct embedding
+        res.json({
+          success: true,
+          imageUrl: dataUrl,
+          prompt,
+          promptId
+        });
+      } catch (error) {
+        console.error("Error fetching and encoding image:", error);
+        
+        // Fall back to the original URL if we couldn't fetch the image data
+        // This allows generation to still work, but won't have persistent storage
+        res.json({
+          success: true,
+          imageUrl,
+          prompt,
+          promptId,
+          warning: "Image URL is temporary and may expire"
+        });
+      }
     } catch (error) {
       console.error("Error generating portrait:", error);
       res.status(500).json({ 
