@@ -8,7 +8,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Pencil, FolderOpen, Play, Share2, Beaker, RotateCcw, Settings, Languages } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { FlagSelector } from "@/components/flag-selector";
-import logoImage from "@assets/image_1746248981035.png";
 
 export function MainMenu() {
   const [, setLocation] = useLocation();
@@ -99,9 +98,9 @@ export function MainMenu() {
       </div>
       <div className="w-full max-w-md mx-auto text-center mb-12">
         <img 
-          src="/Objects/logo.png" 
-          alt="Logo" 
-          className="w-24 h-24 mx-auto mb-4"
+          src="/logo.webp" 
+          alt="Visual Novel Creator Logo" 
+          className="w-32 h-32 mx-auto mb-4"
         />
         <h1 className="text-4xl text-primary font-bold mb-2">{t('mainMenu.title', 'Visual Novel Ad Lib')}</h1>
         <p className="text-muted-foreground">{t('mainMenu.subtitle', 'Dream it. Play it. Share it.')}</p>
