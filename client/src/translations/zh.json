@@ -66,7 +66,9 @@
     "validationFailed": "字符验证失败",
     "validationFailedDesc": "字符验证失败",
     "checkDataTryAgain": "请检查您的角色数据并重试。",
-    "validationError": "字符验证错误"
+    "validationError": "字符验证错误",
+    "inappropriatePortrait": "生成的肖像不符合我们的内容指南。请尝试重新生成。",
+    "portraitLoadError": "字符肖像无法加载。请尝试重新生成。"
   },
   "conceptForm": {
     "title": "标题",
@@ -102,7 +104,8 @@
     "continue": "继续",
     "backToHome": "返回首页",
     "backToMainMenu": "返回主菜单",
-    "saveProject": "保存项目"
+    "saveProject": "保存项目",
+    "contentGuidelines": "内容指南"
   },
   "settings": {
     "language": "语言",
@@ -158,7 +161,8 @@
     "generationFailed": "生成失败",
     "connectionError": "连接错误",
     "saveFailed": "保存失败",
-    "loadFailed": "加载失败"
+    "loadFailed": "加载失败",
+    "imageLoadFailed": "图像加载失败"
   },
   "success": {
     "translationComplete": "翻译完毕",

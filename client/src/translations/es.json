@@ -66,7 +66,9 @@
     "validationFailed": "Fallo de validación de caracteres",
     "validationFailedDesc": "Fallo de validación de caracteres",
     "checkDataTryAgain": "Por favor, comprueba los datos de tu personaje e inténtalo de nuevo.",
-    "validationError": "Error de validación de caracteres"
+    "validationError": "Error de validación de caracteres",
+    "inappropriatePortrait": "El retrato generado no cumple nuestras directrices de contenido. Por favor, intente generarlo de nuevo.",
+    "portraitLoadError": "No se ha podido cargar el retrato del personaje. Por favor, intente generarlo de nuevo."
   },
   "conceptForm": {
     "title": "Título",
@@ -102,7 +104,8 @@
     "continue": "Continúe en",
     "backToHome": "Volver al inicio",
     "backToMainMenu": "Volver al menú principal",
-    "saveProject": "Guardar proyecto"
+    "saveProject": "Guardar proyecto",
+    "contentGuidelines": "Directrices sobre contenidos"
   },
   "settings": {
     "language": "Idioma",
@@ -158,7 +161,8 @@
     "generationFailed": "Generación fallida",
     "connectionError": "Error de conexión",
     "saveFailed": "No se ha podido guardar",
-    "loadFailed": "Error de carga"
+    "loadFailed": "Error de carga",
+    "imageLoadFailed": "Error al cargar la imagen"
   },
   "success": {
     "translationComplete": "Traducción completa",
