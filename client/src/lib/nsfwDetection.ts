@@ -48,7 +48,6 @@ export interface NSFWDetectionConfig {
     porn: number;   // Explicit sexual content
     sexy: number;   // Suggestive but not explicit
     hentai: number; // Animated/drawn explicit content
-    violence: number; // Added threshold for violent content
   }
 }
 
@@ -59,28 +58,25 @@ export const NSFW_CONFIG: Record<ModerationLevel, NSFWDetectionConfig> = {
   [ModerationLevel.TEEN_SAFE]: {
     moderationLevel: ModerationLevel.TEEN_SAFE,
     threshold: {
-      porn: 0.2,    // Very low threshold - block almost anything potentially explicit
-      sexy: 0.4,    // Low threshold - block suggestive content
-      hentai: 0.2,  // Very low threshold - block animated explicit content
-      violence: 0.5 // Moderate threshold - allow mild violence but block graphic violence
+      porn: 0.7,    // Very low threshold - block almost anything potentially explicit
+      sexy: 0.6,    // 
+      hentai: 0.5,  // Very low threshold - block animated explicit content
     }
   },
   [ModerationLevel.ADULT_MODERATE]: {
     moderationLevel: ModerationLevel.ADULT_MODERATE,
     threshold: {
-      porn: 0.6,    // Moderate threshold - block explicit content
-      sexy: 0.7,    // Higher threshold - allow more suggestive content
-      hentai: 0.6,  // Moderate threshold - block explicit animated content
-      violence: 0.7 // Higher threshold - allow more violent content
+      porn: 0.85,    // Moderate threshold - block explicit content
+      sexy: 1.0,    // Higher threshold - allow more suggestive content
+      hentai: 0.8,  // Moderate threshold - block explicit animated content
     }
   },
   [ModerationLevel.ADULT_RELAXED]: {
     moderationLevel: ModerationLevel.ADULT_RELAXED,
     threshold: {
-      porn: 0.8,    // High threshold - only block the most explicit content
-      sexy: 0.9,    // Very high threshold - allow most suggestive content
-      hentai: 0.8,  // High threshold - allow most animated content
-      violence: 0.9 // Very high threshold - allow most violent content except extreme
+      porn: 1.0,    // High threshold - only block the most explicit content
+      sexy: 1.0,    // Very high threshold - allow most suggestive content
+      hentai: 1.0,  // High threshold - allow most animated content
     }
   }
 };

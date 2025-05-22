@@ -1,0 +1,74 @@
+{
+  "common": {
+    "error": "Kesalahan",
+    "success": "Berhasil",
+    "loading": "Memuat...",
+    "save": "Simpan",
+    "cancel": "Batal",
+    "continue": "Lanjutkan",
+    "back": "Kembali",
+    "next": "Selanjutnya",
+    "finish": "Selesai",
+    "delete": "Hapus",
+    "edit": "Edit",
+    "create": "Buat",
+    "contentGuidelines": "Panduan Konten"
+  },
+  "mainMenu": {
+    "title": "Visual Novel Ad Lib",
+    "subtitle": "Bermimpi. Bermain. Berbagi.",
+    "createNewStory": "Buat Cerita Baru",
+    "loadSavedProject": "Muat Proyek Tersimpan",
+    "playStory": "Mainkan Cerita",
+    "shareStories": "Bagikan Cerita",
+    "translationManager": "Manajer Terjemahan",
+    "noRecentProject": "Tidak ada proyek terbaru ditemukan untuk dilanjutkan"
+  },
+  "basicForm": {
+    "title": "Detail Dasar",
+    "description": "Pilih pengaturan dasar untuk cerita Anda",
+    "theme": "Pilih Tema",
+    "genre": "Pilih Genre",
+    "tone": "Pilih Nada",
+    "setting": "Pilih Pengaturan"
+  },
+  "conceptForm": {
+    "title": "Konsep Cerita",
+    "description": "Tentukan ide utama cerita Anda",
+    "storyTitle": "Judul Cerita",
+    "premise": "Premis"
+  },
+  "charactersForm": {
+    "title": "Karakter",
+    "description": "Buat karakter utama Anda",
+    "generateCharacters": "Generate Karakter",
+    "generatePortrait": "Generate Potret"
+  },
+  "characterForm": {
+    "portraitGenerated": "Potret Dihasilkan",
+    "portraitGeneratedDesc": "Potret karakter berhasil dihasilkan.",
+    "inappropriatePortrait": "Potret yang dihasilkan tidak memenuhi panduan konten kami. Coba generate lagi.",
+    "missingDetailsPortrait": "Berikan setidaknya nama dan deskripsi penampilan sebelum menghasilkan potret.",
+    "portraitGenerationError": "Coba lagi nanti, atau Anda menghasilkan terlalu banyak terlalu cepat.",
+    "portraitLoadError": "Potret karakter tidak dapat dimuat. Coba generate lagi."
+  },
+  "pathsForm": {
+    "title": "Jalur",
+    "description": "Rancang jalur cerita",
+    "generatePaths": "Generate Jalur"
+  },
+  "plotForm": {
+    "title": "Plot",
+    "description": "Buat plot detail untuk cerita Anda",
+    "generatePlot": "Generate Plot"
+  },
+  "generateVnForm": {
+    "title": "Generate Visual Novel",
+    "description": "Ubah cerita Anda menjadi visual novel interaktif",
+    "generateVn": "Generate VN"
+  },
+  "errorMessages": {
+    "generationFailed": "Generation Gagal",
+    "imageLoadFailed": "Gagal Memuat Gambar"
+  }
+}

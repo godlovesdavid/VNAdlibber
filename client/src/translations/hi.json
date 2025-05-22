@@ -1,0 +1,74 @@
+{
+  "common": {
+    "error": "त्रुटि",
+    "success": "सफलता",
+    "loading": "लोड हो रहा है...",
+    "save": "सेव करें",
+    "cancel": "रद्द करें",
+    "continue": "जारी रखें",
+    "back": "वापस",
+    "next": "आगे",
+    "finish": "समाप्त",
+    "delete": "हटाएं",
+    "edit": "संपादित करें",
+    "create": "बनाएं",
+    "contentGuidelines": "सामग्री दिशानिर्देश"
+  },
+  "mainMenu": {
+    "title": "विज़ुअल नॉवेल एड लिब",
+    "subtitle": "सपना देखें। खेलें। साझा करें।",
+    "createNewStory": "नई कहानी बनाएं",
+    "loadSavedProject": "सेव किया गया प्रोजेक्ट लोड करें",
+    "playStory": "कहानी खेलें",
+    "shareStories": "कहानियां साझा करें",
+    "translationManager": "अनुवाद प्रबंधक",
+    "noRecentProject": "जारी रखने के लिए कोई हाल की परियोजना नहीं मिली"
+  },
+  "basicForm": {
+    "title": "मूल विवरण",
+    "description": "अपनी कहानी के लिए बुनियादी सेटिंग चुनें",
+    "theme": "थीम चुनें",
+    "genre": "शैली चुनें",
+    "tone": "स्वर चुनें",
+    "setting": "सेटिंग चुनें"
+  },
+  "conceptForm": {
+    "title": "कहानी की अवधारणा",
+    "description": "अपनी कहानी का मुख्य विचार परिभाषित करें",
+    "storyTitle": "कहानी का शीर्षक",
+    "premise": "आधार"
+  },
+  "charactersForm": {
+    "title": "पात्र",
+    "description": "अपने मुख्य पात्र बनाएं",
+    "generateCharacters": "पात्र जेनरेट करें",
+    "generatePortrait": "चित्र जेनरेट करें"
+  },
+  "characterForm": {
+    "portraitGenerated": "चित्र जेनरेट किया गया",
+    "portraitGeneratedDesc": "पात्र का चित्र सफलतापूर्वक जेनरेट किया गया।",
+    "inappropriatePortrait": "जेनरेट किया गया चित्र हमारे सामग्री दिशानिर्देशों को पूरा नहीं करता। कृपया फिर से जेनरेट करने का प्रयास करें।",
+    "missingDetailsPortrait": "चित्र जेनरेट करने से पहले कृपया कम से कम नाम और रूप का विवरण प्रदान करें।",
+    "portraitGenerationError": "कृपया बाद में पुनः प्रयास करें, या आप बहुत तेज़ी से बहुत सारे जेनरेट कर रहे हैं।",
+    "portraitLoadError": "पात्र का चित्र लोड नहीं हो सका। कृपया फिर से जेनरेट करने का प्रयास करें।"
+  },
+  "pathsForm": {
+    "title": "पथ",
+    "description": "कहानी के रास्ते डिज़ाइन करें",
+    "generatePaths": "पथ जेनरेट करें"
+  },
+  "plotForm": {
+    "title": "प्लॉट",
+    "description": "अपनी कहानी के लिए विस्तृत कथानक बनाएं",
+    "generatePlot": "प्लॉट जेनरेट करें"
+  },
+  "generateVnForm": {
+    "title": "विज़ुअल नॉवेल जेनरेट करें",
+    "description": "अपनी कहानी को एक इंटरैक्टिव विज़ुअल नॉवेल में बदलें",
+    "generateVn": "VN जेनरेट करें"
+  },
+  "errorMessages": {
+    "generationFailed": "जेनरेशन विफल",
+    "imageLoadFailed": "छवि लोड करने में विफल"
+  }
+}

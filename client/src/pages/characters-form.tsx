@@ -337,7 +337,7 @@ export default function CharactersForm() {
         // Check if the generated image is appropriate (client-side check)
         const contentCheck = await NSFWDetection.checkImageURL(
           portraitData.imageUrl,
-          NSFWDetection.NSFW_CONFIG[NSFWDetection.ModerationLevel.MODERATE]
+          NSFWDetection.NSFW_CONFIG[NSFWDetection.ModerationLevel.ADULT_MODERATE]
         );
         
         if (contentCheck.isAppropriate) {
@@ -426,7 +426,7 @@ export default function CharactersForm() {
               setGeneratingPortraitIndex(i);
               
               // Construct portrait prompt
-              const prompt = `Generate a 2:3 portrait of ${character.name}, a ${character.age ? character.age + '-year-old ' : ''}${character.gender} ${character.occupation}. ${character.appearance}`;
+              const prompt = `${character.name}, ${character.age ? character.age + '-year-old ' : ''}${character.gender} ${character.occupation}. ${character.appearance}`;
               
               // Call the server API to generate a portrait
               const response = await apiRequest("POST", "/api/generate/portrait", { prompt });

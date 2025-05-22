@@ -1,0 +1,74 @@
+{
+  "common": {
+    "error": "ত্রুটি",
+    "success": "সফলতা",
+    "loading": "লোড হচ্ছে...",
+    "save": "সংরক্ষণ করুন",
+    "cancel": "বাতিল করুন",
+    "continue": "চালিয়ে যান",
+    "back": "পিছনে",
+    "next": "পরবর্তী",
+    "finish": "শেষ করুন",
+    "delete": "মুছে ফেলুন",
+    "edit": "সম্পাদনা করুন",
+    "create": "তৈরি করুন",
+    "contentGuidelines": "কন্টেন্ট নির্দেশিকা"
+  },
+  "mainMenu": {
+    "title": "ভিজ্যুয়াল নভেল অ্যাড লিব",
+    "subtitle": "স্বপ্ন দেখুন। খেলুন। শেয়ার করুন।",
+    "createNewStory": "নতুন গল্প তৈরি করুন",
+    "loadSavedProject": "সংরক্ষিত প্রজেক্ট লোড করুন",
+    "playStory": "গল্প খেলুন",
+    "shareStories": "গল্প শেয়ার করুন",
+    "translationManager": "অনুবাদ ব্যবস্থাপক",
+    "noRecentProject": "চালিয়ে যাওয়ার জন্য কোনো সাম্প্রতিক প্রজেক্ট পাওয়া যায়নি"
+  },
+  "basicForm": {
+    "title": "মূল বিবরণ",
+    "description": "আপনার গল্পের জন্য মূল সেটিংস বেছে নিন",
+    "theme": "থিম বেছে নিন",
+    "genre": "ধরন বেছে নিন",
+    "tone": "সুর বেছে নিন",
+    "setting": "সেটিং বেছে নিন"
+  },
+  "conceptForm": {
+    "title": "গল্পের ধারণা",
+    "description": "আপনার গল্পের মূল ধারণা নির্ধারণ করুন",
+    "storyTitle": "গল্পের শিরোনাম",
+    "premise": "ভিত্তি"
+  },
+  "charactersForm": {
+    "title": "চরিত্র",
+    "description": "আপনার প্রধান চরিত্রগুলি তৈরি করুন",
+    "generateCharacters": "চরিত্র জেনারেট করুন",
+    "generatePortrait": "প্রতিকৃতি জেনারেট করুন"
+  },
+  "characterForm": {
+    "portraitGenerated": "প্রতিকৃতি জেনারেট হয়েছে",
+    "portraitGeneratedDesc": "চরিত্রের প্রতিকৃতি সফলভাবে জেনারেট হয়েছে।",
+    "inappropriatePortrait": "জেনারেট করা প্রতিকৃতি আমাদের কন্টেন্ট নির্দেশিকা পূরণ করে না। আবার জেনারেট করার চেষ্টা করুন।",
+    "missingDetailsPortrait": "প্রতিকৃতি জেনারেট করার আগে অন্তত একটি নাম এবং চেহারার বর্ণনা প্রদান করুন।",
+    "portraitGenerationError": "পরে আবার চেষ্টা করুন, অথবা আপনি খুব দ্রুত অনেকগুলি জেনারেট করছেন।",
+    "portraitLoadError": "চরিত্রের প্রতিকৃতি লোড করা যায়নি। আবার জেনারেট করার চেষ্টা করুন।"
+  },
+  "pathsForm": {
+    "title": "পথ",
+    "description": "গল্পের পথগুলি ডিজাইন করুন",
+    "generatePaths": "পথ জেনারেট করুন"
+  },
+  "plotForm": {
+    "title": "প্লট",
+    "description": "আপনার গল্পের জন্য বিস্তারিত প্লট তৈরি করুন",
+    "generatePlot": "প্লট জেনারেট করুন"
+  },
+  "generateVnForm": {
+    "title": "ভিজ্যুয়াল নভেল জেনারেট করুন",
+    "description": "আপনার গল্পকে একটি ইন্টারঅ্যাক্টিভ ভিজ্যুয়াল নভেলে রূপ দিন",
+    "generateVn": "VN জেনারেট করুন"
+  },
+  "errorMessages": {
+    "generationFailed": "জেনারেশন ব্যর্থ",
+    "imageLoadFailed": "ছবি লোড ব্যর্থ"
+  }
+}
