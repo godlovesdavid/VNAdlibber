@@ -101,7 +101,7 @@ export function MainMenu() {
         <img 
           src={logoSrc} 
           alt="Visual Novel Creator Logo" 
-          className="w-32 h-32 mx-auto mb-4"
+          className="w-41 h-32 mx-auto mb-4"
         />
         <h1 className="text-4xl text-primary font-bold mb-2">{t('mainMenu.title', 'Visual Novel Ad Lib')}</h1>
         <p className="text-muted-foreground">{t('mainMenu.subtitle', 'Dream it. Play it. Share it.')}</p>
