@@ -4,9 +4,9 @@ import { setupVite, serveStatic, log } from "./vite";
 import { storage } from "./storage";
 
 const app = express();
-// Increase the limit to handle large image data (up to 50MB)
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: false }));
+// Increase the limit to handle image data (up to 200KB)
+app.use(express.json({ limit: '200kb' }));
+app.use(express.urlencoded({ limit: '200kb', extended: false }));
 
 app.use((req, res, next) => {
   const start = Date.now();
