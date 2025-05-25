@@ -1466,7 +1466,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   //image generator endpoint
   app.post("/api/generate/image", async (req, res) => {
     try {
-      const { prompt } = req.body;
+      const { prompt, width, height, remove_bg } = req.body;
       
       if (!prompt) {
         return res.status(400).json({
@@ -1475,10 +1475,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Validate optional parameters
+      const parsedWidth = width ? parseInt(width) : undefined;
+      const parsedHeight = height ? parseInt(height) : undefined;
+      const shouldRemoveBg = remove_bg === true || remove_bg === "true";
+      
+      // Validate dimensions if provided
+      if (parsedWidth && (parsedWidth < 64 || parsedWidth > 2048)) {
+        return res.status(400).json({
+          success: false,
+          message: "Width must be between 64 and 2048 pixels"
+        });
+      }
+      
+      if (parsedHeight && (parsedHeight < 64 || parsedHeight > 2048)) {
+        return res.status(400).json({
+          success: false,
+          message: "Height must be between 64 and 2048 pixels"
+        });
+      }
+      
       // Generate unique user ID for this request
       const userId = uuidv4();
       
-      console.log(`Queueing portrait generation for user ${userId} with prompt: ${prompt}`);
+      console.log(`Queueing image generation for user ${userId} with prompt: ${prompt}, dimensions: ${parsedWidth || 'default'}x${parsedHeight || 'default'}, remove_bg: ${shouldRemoveBg}`);
       
       // Store the response object for later use
       pendingRequests.set(userId, res);
@@ -1487,7 +1507,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       portraitQueue.push({
         userId,
         prompt,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        width: parsedWidth,
+        height: parsedHeight,
+        remove_bg: shouldRemoveBg
       });
       
       // Set timeout to clean up if client disconnects
