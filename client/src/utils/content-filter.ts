@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
-import Filter from 'bad-words';
+import { profanity } from 'profanity';
 
 // LDNOOBW (Language Detection No Obscenity or Bad Words) Content Filter
-// Using the proven bad-words library for content filtering
+// Using the profanity library with multilingual LDNOOBW word lists
 
 interface ContentFilterResult {
   isClean: boolean;
