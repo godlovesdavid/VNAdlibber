@@ -91,7 +91,7 @@ async function processImageQueue() {
   try {
     // Take up to 8 jobs from the queue
     const batch = imageQueue.splice(0, BATCH_SIZE);
-    console.log(`Processing batch of ${batch.length} portrait jobs`);
+    console.log(`Processing batch of ${batch.length} image jobs`);
     
     // Create batch workflow for all jobs
     const batchWorkflow = createBatchComfyUIWorkflow(batch);
@@ -114,7 +114,7 @@ async function processImageQueue() {
     await pollForBatchCompletion(promptId, batch.map(job => job.userId));
     
   } catch (error) {
-    console.error('Batch portrait generation failed:', error);
+    console.error('Batch image generation failed:', error);
     
     // Send error response to all waiting clients in this batch
     const batch = imageQueue.splice(0, 8);
@@ -123,7 +123,7 @@ async function processImageQueue() {
       if (response) {
         response.status(500).json({ 
           success: false, 
-          message: 'Portrait generation failed' 
+          message: 'image generation failed' 
         });
         pendingRequests.delete(job.userId);
       }
@@ -262,7 +262,7 @@ function createBatchComfyUIWorkflow(jobs: ImageJobData[]) {
             2
           ],
           "filename_keys": "sampler_name, cfg, steps, %F %H-%M-%S",
-          "foldername_prefix": "",
+          "foldername_prefix": "vnadlib",
           "foldername_keys": "ckpt_name",
           "delimiter": "-",
           "save_job_data": "disabled",
@@ -470,10 +470,7 @@ async function pollForBatchCompletion(promptId: string, userIds: string[]) {
 // Process individual image result from batch
 async function processBatchImageResult(userId: string, outputs: any) {
   try {
-    // TODO: Extract image for specific userId from batch outputs
-    // This depends on your custom workflow structure
-    
-    // For now, placeholder logic - you'll replace this with your custom batch workflow
+    console.log(JSON.stringify(outputs))
     const imageUrl = `${IMAGE_GEN_URL}/view?filename=${userId}.webp&type=output&subfolder=batch`;
     
     console.log(`Downloading image for user ${userId} from ComfyUI...`);
