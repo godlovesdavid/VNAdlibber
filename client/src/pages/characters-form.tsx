@@ -332,8 +332,12 @@ export default function CharactersForm() {
       // LDNOOBW content filtering for originalPrompt
       const { isContentClean, getCurrentLanguage } = await import('@/utils/content-filter');
       const currentLang = getCurrentLanguage();
-      console.log(currentLang)
-      if (!isContentClean(originalPrompt)) {
+      console.log(currentLang);
+      
+      const isClean = await isContentClean(originalPrompt);
+      console.log('Content filter result:', isClean);
+      
+      if (!isClean) {
         console.warn(`LDNOOBW filter blocked inappropriate content in prompt (${currentLang})`);
         toast({
           title: t('common.contentGuidelines', 'Content Guidelines'),

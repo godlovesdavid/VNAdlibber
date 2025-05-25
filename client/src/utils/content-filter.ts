@@ -38,38 +38,40 @@ export async function filterInappropriateContent(text: string, language?: string
   
   try {
     // Import the language-specific word list
-    const naughtyWords = await import('naughty-words');
-    const wordList = naughtyWords.default[langToUse] || naughtyWords.default['en'];
-    console.log(wordList)
-    if (!wordList || !Array.isArray(wordList)) {
-      throw new Error(`Invalid word list for language: ${langToUse}`);
-    }
-    
+    // const naughtyWords = await import('naughty-words');
+    // const wordList = naughtyWords.default[langToUse] || naughtyWords.default['en'];
+
+    // if (!wordList || !Array.isArray(wordList)) {
+    //   throw new Error(`Invalid word list for language: ${langToUse}`);
+    // }
+    const wordList = ["2 girls 1 cup", "bunghole"]
     // Check for inappropriate words and phrases using regex
     const detectedWords: string[] = [];
     let cleanedText = text;
     const textLower = text.toLowerCase();
-    
+    console.log(wordList)
+    console.log(text)
     for (const badWord of wordList) {
       if (!badWord || typeof badWord !== 'string') continue;
-      
+
       // Escape special regex characters in the bad word
       const escapedBadWord = badWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      
+
       // Create regex to match the word/phrase with word boundaries (for single words) or anywhere (for phrases)
       const isPhrase = badWord.includes(' ');
       const regexPattern = isPhrase 
         ? new RegExp(escapedBadWord, 'gi')  // Phrases can appear anywhere
         : new RegExp(`\\b${escapedBadWord}\\b`, 'gi');  // Single words need word boundaries
-      
+
       if (regexPattern.test(textLower)) {
         detectedWords.push(badWord);
-        
+
         // Replace with asterisks
         const asterisks = '*'.repeat(badWord.length);
         cleanedText = cleanedText.replace(regexPattern, asterisks);
       }
     }
+    console.log(detectedWords + ' ' + (detectedWords.length == 0))
     
     return {
       isClean: detectedWords.length === 0,
