@@ -22,6 +22,167 @@ const GEMINI_API_URL_PRO =
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY?.trim()
 const IMAGE_GEN_URL = process.env.IMAGE_GEN_URL?.trim()
 
+// In-memory queue for portrait generation (no Redis needed)
+interface PortraitJobData {
+  userId: string;
+  prompt: string;
+  timestamp: number;
+}
+
+// Queue and maps for portrait generation
+const portraitQueue: PortraitJobData[] = [];
+const pendingRequests = new Map<string, Response>();
+let isProcessing = false;
+
+// Start queue worker that polls every second
+setInterval(processPortraitQueue, 1000);
+
+// Worker function to process portrait generation jobs
+async function processPortraitQueue() {
+  if (isProcessing || portraitQueue.length === 0) {
+    return;
+  }
+  
+  isProcessing = true;
+  
+  try {
+    // Take up to 8 jobs from the queue
+    const batch = portraitQueue.splice(0, 8);
+    console.log(`Processing batch of ${batch.length} portrait jobs`);
+    
+    // Create batch workflow for all jobs
+    const batchWorkflow = createBatchComfyUIWorkflow(batch);
+    
+    // Submit to ComfyUI
+    const submissionResponse = await fetch(`${IMAGE_GEN_URL}/prompt`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: batchWorkflow })
+    });
+    
+    if (!submissionResponse.ok) {
+      throw new Error(`ComfyUI submission failed: ${submissionResponse.statusText}`);
+    }
+    
+    const submissionData = await submissionResponse.json();
+    const promptId = submissionData.prompt_id;
+    
+    // Poll for completion
+    await pollForBatchCompletion(promptId, batch.map(job => job.userId));
+    
+  } catch (error) {
+    console.error('Batch portrait generation failed:', error);
+    
+    // Send error response to all waiting clients in this batch
+    const batch = portraitQueue.splice(0, 8);
+    for (const job of batch) {
+      const response = pendingRequests.get(job.userId);
+      if (response) {
+        response.status(500).json({ 
+          success: false, 
+          message: 'Portrait generation failed' 
+        });
+        pendingRequests.delete(job.userId);
+      }
+    }
+  } finally {
+    isProcessing = false;
+  }
+}
+
+// Placeholder for your custom batch ComfyUI workflow
+function createBatchComfyUIWorkflow(jobs: PortraitJobData[]) {
+  // TODO: Implement your custom batch workflow here
+  // This should create a ComfyUI workflow that processes multiple prompts
+  // and names the output images with the corresponding userIds
+  console.log(`Creating batch workflow for ${jobs.length} jobs`);
+  
+  // Placeholder workflow structure - you'll replace this with your custom batch workflow
+  const firstJob = jobs[0];
+  return {
+    // Your custom batch workflow JSON goes here
+    // Make sure output images are named with the userId
+    "3": {
+      "inputs": {
+        "text": `portrait,gray background, dynamic pose,${firstJob.prompt}`,
+        "clip": ["1", 1]
+      },
+      "class_type": "CLIPTextEncode"
+    }
+    // Add your batch processing nodes here
+  };
+}
+
+// Poll ComfyUI history for batch completion
+async function pollForBatchCompletion(promptId: string, userIds: string[]) {
+  const maxAttempts = 300; // 5 minutes timeout
+  let attempts = 0;
+  
+  while (attempts < maxAttempts) {
+    try {
+      const historyResponse = await fetch(`${IMAGE_GEN_URL}/history/${promptId}`);
+      
+      if (historyResponse.ok) {
+        const historyData = await historyResponse.json();
+        
+        if (historyData[promptId] && historyData[promptId].status?.completed) {
+          // Process completed images
+          const outputs = historyData[promptId].outputs;
+          
+          for (const userId of userIds) {
+            await processBatchImageResult(userId, outputs);
+          }
+          return;
+        }
+      }
+      
+      // Wait 1 second before next poll
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      attempts++;
+      
+    } catch (error) {
+      console.error('Error polling ComfyUI history:', error);
+      attempts++;
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+  
+  throw new Error('Timeout waiting for batch completion');
+}
+
+// Process individual image result from batch
+async function processBatchImageResult(userId: string, outputs: any) {
+  try {
+    // TODO: Extract image for specific userId from batch outputs
+    // This depends on your custom workflow structure
+    
+    // For now, placeholder logic
+    const imageUrl = `data:image/png;base64,placeholder_for_${userId}`;
+    
+    // Send response to waiting client
+    const response = pendingRequests.get(userId);
+    if (response) {
+      response.json({
+        success: true,
+        imageUrl: imageUrl
+      });
+      pendingRequests.delete(userId);
+    }
+    
+  } catch (error) {
+    console.error(`Error processing image for user ${userId}:`, error);
+    
+    const response = pendingRequests.get(userId);
+    if (response) {
+      response.status(500).json({
+        success: false,
+        message: 'Image processing failed'
+      });
+      pendingRequests.delete(userId);
+    }
+  }
+}
+
 // Helper function for Gemini API calls
 async function generateWithGemini(
   prompt: string,
