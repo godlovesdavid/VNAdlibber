@@ -332,11 +332,8 @@ export default function CharactersForm() {
       // LDNOOBW content filtering for originalPrompt
       const { isContentClean, getCurrentLanguage } = await import('@/utils/content-filter');
       const currentLang = getCurrentLanguage();
-      console.log(currentLang);
-      
       const isClean = await isContentClean(originalPrompt);
       console.log('Content filter result:', isClean);
-      
       if (!isClean) {
         console.warn(`LDNOOBW filter blocked inappropriate content in prompt (${currentLang})`);
         toast({
@@ -346,6 +343,7 @@ export default function CharactersForm() {
         });
         return;
       }
+      console.log(isContentClean(originalPrompt))
       console.log(`LDNOOBW filter passed for prompt in language: ${currentLang}`);
       
       // Translate prompt to English for better image generation
@@ -370,10 +368,10 @@ export default function CharactersForm() {
       const response = await apiRequest("POST", "/api/generate/image", { prompt, width:512, height:1024, remove_bg:true });
       const portraitData = await response.json();
 
-      if (portraitData && portraitData.imageUrl) {
+      if (portraitData && portraitData.url) {
         // // Check if the generated image is appropriate (client-side check)
-        // const contentCheck = await NSFWDetection.checkImageURL(
-        //   portraitData.imageUrl,
+        // const contentCheck = await NSFWDetection.checkurl(
+        //   portraitData.url,
         //   NSFWDetection.NSFW_CONFIG[NSFWDetection.ModerationLevel.ADULT_MODERATE]
         // );
         
@@ -381,7 +379,7 @@ export default function CharactersForm() {
         //   // Image passed the client-side check, display it
           setCharacterPortraits(prev => ({
             ...prev,
-            [index]: portraitData.imageUrl
+            [index]: portraitData.url
           }));
           
           toast({
@@ -469,10 +467,10 @@ export default function CharactersForm() {
               const response = await apiRequest("POST", "/api/generate/image", { prompt, width: 512, height: 1024, remove_bg:true});
               const portraitData = await response.json();
               
-              if (portraitData && portraitData.imageUrl) {
+              if (portraitData && portraitData.url) {
                 // Check if the generated image is appropriate using teen-safe settings
-                // const contentCheck = await NSFWDetection.checkImageURL(
-                //   portraitData.imageUrl,
+                // const contentCheck = await NSFWDetection.checkurl(
+                //   portraitData.url,
                 //   NSFWDetection.NSFW_CONFIG[NSFWDetection.ModerationLevel.ADULT_MODERATE]
                 // );
                 
@@ -480,7 +478,7 @@ export default function CharactersForm() {
                   // Image passed content check, display it
                   setCharacterPortraits(prev => ({
                     ...prev,
-                    [i]: portraitData.imageUrl
+                    [i]: portraitData.url
                   }));
                 // } else {
                 //   // Image didn't pass the content check

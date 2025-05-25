@@ -39,7 +39,7 @@ const pendingRequests = new Map<string, Response>();
 let isProcessing = false;
 
 // Start queue worker that polls every second
-setInterval(processImageQueue, 1000);
+setInterval(processImageQueue, 500);
 
 // Content filtering function using NudeNet
 async function checkImageContent(base64ImageData: string): Promise<{appropriate: boolean, message: string, scores: any}> {
@@ -274,7 +274,7 @@ function createBatchComfyUIWorkflow(jobs: ImageJobData[]) {
           "one_counter_per_folder": false,
           "image_preview": false,
           "output_ext": ".webp",
-          "quality": 60,
+          "quality": 70,
           "named_keys": false,
           "images": [
             "63",
@@ -455,13 +455,13 @@ async function pollForBatchCompletion(promptId: string, userIds: string[]) {
       }
       
       // Wait 1 second before next poll
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 500));
       attempts++;
       
     } catch (error) {
       console.error('Error polling ComfyUI history:', error);
       attempts++;
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
   }
   
@@ -471,9 +471,9 @@ async function pollForBatchCompletion(promptId: string, userIds: string[]) {
 // Process individual image result from batch
 async function processBatchImageResult(userId: string, outputs: any) {
   try {
-    const imageUrl = `${IMAGE_GEN_URL}/view?filename=${userId}.webp&type=output&subfolder=vnadlib`;
+    const url = `${IMAGE_GEN_URL}/view?filename=${userId}.webp&type=output&subfolder=vnadlib`;
     console.log(`Downloading image for user ${userId} from ComfyUI...`);
-    const imageResponse = await fetch(imageUrl);
+    const imageResponse = await fetch(url);
     
     if (!imageResponse.ok) {
       throw new Error(`Failed to fetch image: ${imageResponse.status}`);
@@ -542,7 +542,7 @@ async function processBatchImageResult(userId: string, outputs: any) {
     if (response) {
       response.json({
         success: true,
-        imageUrl: dataUrl,
+        url: dataUrl,
         contentFilter: {
           appropriate: true,
           message: "Content verified as appropriate"

@@ -38,13 +38,13 @@ export async function filterInappropriateContent(text: string, language?: string
   
   try {
     // Import the language-specific word list
-    // const naughtyWords = await import('naughty-words');
-    // const wordList = naughtyWords.default[langToUse] || naughtyWords.default['en'];
+    const naughtyWords = await import('naughty-words');
+    const wordList = naughtyWords.default[langToUse] || naughtyWords.default['en'];
 
-    // if (!wordList || !Array.isArray(wordList)) {
-    //   throw new Error(`Invalid word list for language: ${langToUse}`);
-    // }
-    const wordList = ["2 girls 1 cup", "bunghole"]
+    if (!wordList || !Array.isArray(wordList)) {
+      throw new Error(`Invalid word list for language: ${langToUse}`);
+    }
+    
     // Check for inappropriate words and phrases using regex
     const detectedWords: string[] = [];
     let cleanedText = text;

@@ -7,6 +7,7 @@ import { ChevronDown, RefreshCw } from "lucide-react";
 import { Scene, SceneChoice, GeneratedAct } from "@/types/vn";
 import * as ImageGenerator from "@/lib/image-generator";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 // Helper function to convert various act formats to array format for VN player
 function convertActFormat(actData: any): {
@@ -432,8 +433,9 @@ export function VnPlayer({
       // Generate new image if not cached
       console.log("Generating new image for scene:", currentScene.setting);
       // alert(JSON.stringify({name: currentScene.name, image_prompt: currentScene?.image_prompt || ''}))
-      const result = await ImageGenerator.generateSceneBackground({name: currentScene.name, image_prompt: currentScene?.image_prompt || ''});
-
+      // const result = await ImageGenerator.generateSceneBackground({name: currentScene.name, image_prompt: currentScene?.image_prompt || ''});
+      const response = await apiRequest("POST", "/api/generate/image", { prompt:currentScene.image_prompt, width:1024, height:1024});
+      const result = await response.json();
       if (result.url) {
         // Cache the new image
         ImageGenerator.setCachedImageUrl(currentScene.setting, result.url);
@@ -446,7 +448,7 @@ export function VnPlayer({
       setError("Failed to generate image");
       toast({
         title: "Image Generation Failed",
-        description: error as String,
+        description: (error as Error).message,
         variant: "destructive"
       });
     } finally {
