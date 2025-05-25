@@ -40,23 +40,34 @@ export async function filterInappropriateContent(text: string, language?: string
     // Import the language-specific word list
     const naughtyWords = await import('naughty-words');
     const wordList = naughtyWords.default[langToUse] || naughtyWords.default['en'];
-    
+    console.log(wordList)
     if (!wordList || !Array.isArray(wordList)) {
       throw new Error(`Invalid word list for language: ${langToUse}`);
     }
     
-    // Check for inappropriate words
-    const textWords = text.toLowerCase().split(/\s+/);
+    // Check for inappropriate words and phrases using regex
     const detectedWords: string[] = [];
     let cleanedText = text;
+    const textLower = text.toLowerCase();
     
-    for (const word of textWords) {
-      const cleanWord = word.replace(/[^\w\u00C0-\u017F\u0400-\u04FF\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]/g, '');
-      if (cleanWord && wordList.includes(cleanWord)) {
-        detectedWords.push(cleanWord);
+    for (const badWord of wordList) {
+      if (!badWord || typeof badWord !== 'string') continue;
+      
+      // Escape special regex characters in the bad word
+      const escapedBadWord = badWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      
+      // Create regex to match the word/phrase with word boundaries (for single words) or anywhere (for phrases)
+      const isPhrase = badWord.includes(' ');
+      const regexPattern = isPhrase 
+        ? new RegExp(escapedBadWord, 'gi')  // Phrases can appear anywhere
+        : new RegExp(`\\b${escapedBadWord}\\b`, 'gi');  // Single words need word boundaries
+      
+      if (regexPattern.test(textLower)) {
+        detectedWords.push(badWord);
+        
         // Replace with asterisks
-        const asterisks = '*'.repeat(cleanWord.length);
-        cleanedText = cleanedText.replace(new RegExp(`\\b${cleanWord}\\b`, 'gi'), asterisks);
+        const asterisks = '*'.repeat(badWord.length);
+        cleanedText = cleanedText.replace(regexPattern, asterisks);
       }
     }
     
