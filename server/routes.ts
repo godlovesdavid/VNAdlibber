@@ -28,6 +28,9 @@ interface PortraitJobData {
   userId: string;
   prompt: string;
   timestamp: number;
+  width?: number;
+  height?: number;
+  remove_bg?: boolean;
 }
 
 // Queue and maps for portrait generation
@@ -1493,7 +1496,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`Cleaning up abandoned request for user ${userId}`);
           pendingRequests.delete(userId);
         }
-      }, 300000); // 5 minutes timeout
+      }, 30000); 
       
       // Clean up timeout when request completes
       res.on('finish', () => {
