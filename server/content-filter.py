@@ -4,15 +4,24 @@ import sys
 import json
 import base64
 from io import BytesIO
-from PIL import Image
-import numpy as np
-from nudenet import NudeDetector
+
+try:
+    from PIL import Image
+    import numpy as np
+    from nudenet import NudeDetector
+    DEPS_AVAILABLE = True
+except ImportError as e:
+    DEPS_AVAILABLE = False
+    IMPORT_ERROR = str(e)
 
 # Initialize NudeNet detector (loads model once)
 detector = None
 
 def init_detector():
     global detector
+    if not DEPS_AVAILABLE:
+        raise ImportError(f"Required dependencies not available: {IMPORT_ERROR}")
+    
     if detector is None:
         detector = NudeDetector()
         print("NudeNet detector initialized", file=sys.stderr)

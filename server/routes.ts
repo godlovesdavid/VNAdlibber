@@ -41,7 +41,10 @@ setInterval(processPortraitQueue, 1000);
 // Content filtering function using NudeNet
 async function checkImageContent(base64ImageData: string): Promise<{appropriate: boolean, message: string, scores: any}> {
   return new Promise((resolve, reject) => {
-    const python = spawn('python3', ['/home/runner/workspace/server/content-filter.py', base64ImageData]);
+    const python = spawn('.pythonlibs/bin/python', ['./server/content-filter.py', base64ImageData], {
+      cwd: process.cwd(),
+      env: { ...process.env }
+    });
     
     let output = '';
     let error = '';
