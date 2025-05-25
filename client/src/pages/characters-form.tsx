@@ -328,11 +328,12 @@ export default function CharactersForm() {
       
       // Construct a portrait prompt based on character details
       const originalPrompt = `${character.name}, a ${character.age ? character.age + '-year-old ' : ''}${character.gender} ${character.occupation}. ${character.appearance}`;
-      
+
+
       // LDNOOBW content filtering for originalPrompt
       const { isContentClean, getCurrentLanguage } = await import('@/utils/content-filter');
       const currentLang = getCurrentLanguage();
-      
+      console.log(currentLang);
       if (!isContentClean(originalPrompt)) {
         console.warn(`LDNOOBW filter blocked inappropriate content in prompt (${currentLang})`);
         toast({
@@ -342,7 +343,6 @@ export default function CharactersForm() {
         });
         return;
       }
-      
       console.log(`LDNOOBW filter passed for prompt in language: ${currentLang}`);
       
       // Translate prompt to English for better image generation
