@@ -1418,6 +1418,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   
+  // New Bull queue-based portrait generation endpoint
+  app.post("/api/generate/portrait", async (req, res) => {
+    try {
+      const { prompt } = req.body;
+      
+      if (!prompt) {
+        return res.status(400).json({
+          success: false,
+          message: "Prompt is required"
+        });
+      }
+      
+      // Generate unique user ID for this request
+      const userId = uuidv4();
+      
+      console.log(`Queueing portrait generation for user ${userId} with prompt: ${prompt}`);
+      
+      // Store the response object for later use
+      pendingRequests.set(userId, res);
+      
+      // Add job to queue
+      portraitQueue.push({
+        userId,
+        prompt,
+        timestamp: Date.now()
+      });
+      
+      // Set timeout to clean up if client disconnects
+      const timeout = setTimeout(() => {
+        if (pendingRequests.has(userId)) {
+          console.log(`Cleaning up abandoned request for user ${userId}`);
+          pendingRequests.delete(userId);
+        }
+      }, 300000); // 5 minutes timeout
+      
+      // Clean up timeout when request completes
+      res.on('finish', () => {
+        clearTimeout(timeout);
+      });
+      
+      // Note: Response is sent later by the worker via pendingRequests map
+      
+    } catch (error) {
+      console.error("Error queueing portrait generation:", error);
+      res.status(500).json({ 
+        success: false,
+        message: error instanceof Error ? error.message : "Unknown error queueing portrait generation" 
+      });
+    }
+  });
+
+  // Scene background generation endpoint (keeping existing)
+  app.post("/api/generate/scene-background", async (req, res) => {
+    try {
+      const { backgroundDescription, themeDescription } = req.body;
+      
+      if (!backgroundDescription) {
+        return res.status(400).json({
+          success: false,
+          message: "Background description is required"
+        });
+      }
+      
+      const imageUrl = await generateSceneBackgroundImage(backgroundDescription, themeDescription);
+      
+      res.json({
+        success: true,
+        imageUrl
+      });
+    } catch (error) {
+      console.error("Error generating scene background:", error);
+      res.status(500).json({ 
+        success: false,
+        message: error instanceof Error ? error.message : "Unknown error generating scene background" 
+      });
+    }
+  });
+
+  // OLD PORTRAIT ENDPOINT TO REMOVE:
+  /*
   // ComfyUI portrait generation endpoint
   app.post("/api/generate/portrait", async (req, res) => {
     try {
