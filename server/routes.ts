@@ -472,7 +472,6 @@ async function pollForBatchCompletion(promptId: string, userIds: string[]) {
 async function processBatchImageResult(userId: string, outputs: any) {
   try {
     const imageUrl = `${IMAGE_GEN_URL}/view?filename=${userId}.webp&type=output&subfolder=vnadlib`;
-    
     console.log(`Downloading image for user ${userId} from ComfyUI...`);
     const imageResponse = await fetch(imageUrl);
     

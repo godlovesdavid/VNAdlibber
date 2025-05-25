@@ -365,6 +365,7 @@ export default function CharactersForm() {
       // Call the server API to generate a portrait
       const response = await apiRequest("POST", "/api/generate/image", { prompt, width:512, height:1024, remove_bg:true });
       const portraitData = await response.json();
+
       if (portraitData && portraitData.imageUrl) {
         // // Check if the generated image is appropriate (client-side check)
         // const contentCheck = await NSFWDetection.checkImageURL(
@@ -398,10 +399,9 @@ export default function CharactersForm() {
         throw new Error("Failed to generate portrait");
       }
     } catch (error) {
-      console.error("Error generating portrait:", error);
       toast({
         title: t('errorMessages.generationFailed'),
-        description: t('characterForm.portraitGenerationError', 'Please try again later, or you are generating too many too quickly.'),
+        description: (error as Error).message,
         variant: "destructive"
       });
     } finally {

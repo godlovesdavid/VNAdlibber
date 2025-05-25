@@ -1,5 +1,3 @@
-const Filter = require('naughty-words');
-
 // LDNOOBW (Language Detection No Obscenity or Bad Words) Content Filter
 // Using the official naughty-words library from LDNOOBW repository
 
@@ -17,7 +15,6 @@ const LDNOOBW_SUPPORTED_LANGS = [
 
 // Get current language from i18next
 export function getCurrentLanguage(): string {
-  console.log(123)
   // Try to get from i18next store
   if (typeof window !== 'undefined' && (window as any).i18next) {
     return (window as any).i18next.language || 'en';
@@ -33,39 +30,40 @@ export function getCurrentLanguage(): string {
 }
 
 // Main content filtering function using naughty-words LDNOOBW library
-export function filterInappropriateContent(text: string, language?: string): ContentFilterResult {
+export async function filterInappropriateContent(text: string, language?: string): Promise<ContentFilterResult> {
   const detectedLang = language || getCurrentLanguage();
   
   // Use language-specific filtering if supported, otherwise default to English
   const langToUse = LDNOOBW_SUPPORTED_LANGS.includes(detectedLang) ? detectedLang : 'en';
   
   try {
-    // Create language-specific filter
-    const filter = new Filter({ language: langToUse });
+    // Import the language-specific word list
+    const naughtyWords = await import('naughty-words');
+    const wordList = naughtyWords.default[langToUse] || naughtyWords.default['en'];
     
-    // Filter the text
-    const filteredResult = filter.clean(text);
+    if (!wordList || !Array.isArray(wordList)) {
+      throw new Error(`Invalid word list for language: ${langToUse}`);
+    }
     
-    // Check if any words were filtered (text changed)
-    const hasProfanity = filteredResult !== text;
-    
-    // Extract detected words by comparing original and filtered text
+    // Check for inappropriate words
+    const textWords = text.toLowerCase().split(/\s+/);
     const detectedWords: string[] = [];
-    if (hasProfanity) {
-      const originalWords = text.toLowerCase().split(/\s+/);
-      const filteredWords = filteredResult.toLowerCase().split(/\s+/);
-      
-      for (let i = 0; i < originalWords.length; i++) {
-        if (filteredWords[i] && filteredWords[i] !== originalWords[i]) {
-          detectedWords.push(originalWords[i]);
-        }
+    let cleanedText = text;
+    
+    for (const word of textWords) {
+      const cleanWord = word.replace(/[^\w\u00C0-\u017F\u0400-\u04FF\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]/g, '');
+      if (cleanWord && wordList.includes(cleanWord)) {
+        detectedWords.push(cleanWord);
+        // Replace with asterisks
+        const asterisks = '*'.repeat(cleanWord.length);
+        cleanedText = cleanedText.replace(new RegExp(`\\b${cleanWord}\\b`, 'gi'), asterisks);
       }
     }
     
     return {
-      isClean: !hasProfanity,
-      detectedWords: Array.from(new Set(detectedWords)), // Remove duplicates
-      cleanedText: filteredResult,
+      isClean: detectedWords.length === 0,
+      detectedWords: Array.from(new Set(detectedWords)),
+      cleanedText,
       language: langToUse
     };
   } catch (error) {
@@ -81,14 +79,14 @@ export function filterInappropriateContent(text: string, language?: string): Con
 }
 
 // Helper function to check if text is clean
-export function isContentClean(text: string): boolean {
-  const result = filterInappropriateContent(text);
+export async function isContentClean(text: string): Promise<boolean> {
+  const result = await filterInappropriateContent(text);
   return result.isClean;
 }
 
 // Helper function to clean text
-export function cleanInappropriateContent(text: string): string {
-  const result = filterInappropriateContent(text);
+export async function cleanInappropriateContent(text: string): Promise<string> {
+  const result = await filterInappropriateContent(text);
   return result.cleanedText;
 }
 
