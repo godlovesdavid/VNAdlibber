@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { spawn } from 'child_process';
 import { storage } from "./storage";
 import { z } from "zod";
 import { insertVnStorySchema } from "@shared/schema";
@@ -36,6 +37,41 @@ let isProcessing = false;
 
 // Start queue worker that polls every second
 setInterval(processPortraitQueue, 1000);
+
+// Content filtering function using NudeNet
+async function checkImageContent(base64ImageData: string): Promise<{appropriate: boolean, message: string, scores: any}> {
+  return new Promise((resolve, reject) => {
+    const python = spawn('python3', ['/home/runner/workspace/server/content-filter.py', base64ImageData]);
+    
+    let output = '';
+    let error = '';
+    
+    python.stdout.on('data', (data) => {
+      output += data.toString();
+    });
+    
+    python.stderr.on('data', (data) => {
+      error += data.toString();
+    });
+    
+    python.on('close', (code) => {
+      if (code === 0) {
+        try {
+          const result = JSON.parse(output.trim());
+          resolve(result);
+        } catch (parseError) {
+          reject(new Error(`Failed to parse content filter result: ${parseError}`));
+        }
+      } else {
+        reject(new Error(`Content filter failed with code ${code}: ${error}`));
+      }
+    });
+    
+    python.on('error', (err) => {
+      reject(new Error(`Failed to spawn content filter: ${err.message}`));
+    });
+  });
+}
 
 // Worker function to process portrait generation jobs
 async function processPortraitQueue() {
@@ -154,13 +190,68 @@ async function pollForBatchCompletion(promptId: string, userIds: string[]) {
 // Process individual image result from batch
 async function processBatchImageResult(userId: string, outputs: any) {
   try {
-    const imageUrl = encodeURIComponent(`${IMAGE_GEN_URL}/history/vnadlib/${userId}.webp`);
-
+    // TODO: Extract image for specific userId from batch outputs
+    // This depends on your custom workflow structure
+    
+    // For now, placeholder logic - you'll replace this with your custom batch workflow
+    const imageUrl = `${IMAGE_GEN_URL}/view?filename=${userId}.webp&type=output&subfolder=batch`;
+    
+    console.log(`Downloading image for user ${userId} from ComfyUI...`);
     const imageResponse = await fetch(imageUrl);
+    
+    if (!imageResponse.ok) {
+      throw new Error(`Failed to fetch image: ${imageResponse.status}`);
+    }
     
     // Get the image data as a base64 string for storage
     const imageBuffer = await imageResponse.arrayBuffer();
     const base64Image = Buffer.from(imageBuffer).toString('base64');
+
+    console.log(`Running NudeNet content filter for user ${userId}...`);
+    
+    // Run NudeNet content filtering
+    try {
+      const contentCheck = await checkImageContent(base64Image);
+      
+      if (!contentCheck.appropriate) {
+        console.log(`Content filter rejected image for user ${userId}: ${contentCheck.message}`);
+        
+        // Send error response for inappropriate content
+        const response = pendingRequests.get(userId);
+        if (response) {
+          response.status(400).json({
+            success: false,
+            message: "Generated image does not meet content guidelines. Please try again with a different description.",
+            contentFilter: {
+              appropriate: false,
+              reason: contentCheck.message
+            }
+          });
+          pendingRequests.delete(userId);
+        }
+        return;
+      }
+      
+      console.log(`Content filter passed for user ${userId}: ${contentCheck.message}`);
+      
+    } catch (filterError) {
+      console.error(`Content filtering failed for user ${userId}:`, filterError);
+      
+      // If filtering fails, err on the side of caution and reject the image
+      const response = pendingRequests.get(userId);
+      if (response) {
+        response.status(500).json({
+          success: false,
+          message: "Content verification failed. Please try again.",
+          contentFilter: {
+            appropriate: false,
+            reason: "Content filtering system error"
+          }
+        });
+        pendingRequests.delete(userId);
+      }
+      return;
+    }
 
     // Get content type (usually image/webp for ComfyUI)
     const contentType = imageResponse.headers.get('content-type') || 'image/webp';
@@ -168,18 +259,34 @@ async function processBatchImageResult(userId: string, outputs: any) {
     // Create a data URL that can be used directly in the browser
     const dataUrl = `data:${contentType};base64,${base64Image}`;
     
+    console.log(`Image approved and ready for user ${userId}`);
+    
     // Send response to waiting client
     const response = pendingRequests.get(userId);
     if (response) {
       response.json({
         success: true,
         imageUrl: dataUrl,
+        contentFilter: {
+          appropriate: true,
+          message: "Content verified as appropriate"
+        }
       });
       pendingRequests.delete(userId);
     }
     
   } catch (error) {
     console.error(`Error processing image for user ${userId}:`, error);
+    
+    // Send error response
+    const response = pendingRequests.get(userId);
+    if (response) {
+      response.status(500).json({
+        success: false,
+        message: "Image processing failed"
+      });
+      pendingRequests.delete(userId);
+    }
   }
 }
 
