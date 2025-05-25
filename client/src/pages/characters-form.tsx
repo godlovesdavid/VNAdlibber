@@ -329,11 +329,10 @@ export default function CharactersForm() {
       // Construct a portrait prompt based on character details
       const originalPrompt = `${character.name}, a ${character.age ? character.age + '-year-old ' : ''}${character.gender} ${character.occupation}. ${character.appearance}`;
 
-
       // LDNOOBW content filtering for originalPrompt
       const { isContentClean, getCurrentLanguage } = await import('@/utils/content-filter');
       const currentLang = getCurrentLanguage();
-      console.log(currentLang);
+      console.log(currentLang)
       if (!isContentClean(originalPrompt)) {
         console.warn(`LDNOOBW filter blocked inappropriate content in prompt (${currentLang})`);
         toast({

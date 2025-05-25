@@ -17,6 +17,7 @@ const LDNOOBW_SUPPORTED_LANGS = [
 
 // Get current language from i18next
 export function getCurrentLanguage(): string {
+  console.log(123)
   // Try to get from i18next store
   if (typeof window !== 'undefined' && (window as any).i18next) {
     return (window as any).i18next.language || 'en';
