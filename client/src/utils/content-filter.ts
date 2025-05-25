@@ -1,5 +1,4 @@
-import { useTranslation } from 'react-i18next';
-import { profanity } from 'profanity';
+import * as profanity from 'profanity';
 
 // LDNOOBW (Language Detection No Obscenity or Bad Words) Content Filter
 // Using the profanity library with multilingual LDNOOBW word lists
@@ -27,36 +26,27 @@ export function getCurrentLanguage(): string {
   return 'en';
 }
 
-// Main content filtering function using bad-words library
+// Main content filtering function using profanity library with LDNOOBW
 export function filterInappropriateContent(text: string, language?: string): ContentFilterResult {
   const detectedLang = language || getCurrentLanguage();
   
-  // Initialize the filter
-  const filter = new Filter();
-  
   // Check if text contains profanity
-  const hasProfanity = filter.isProfane(text);
+  const hasProfanity = profanity.exists(text);
   
   // Get cleaned text
-  const cleanedText = filter.clean(text);
+  const cleanedText = profanity.purify(text)[0];
   
-  // Extract detected words by comparing original and cleaned text
+  // Extract detected words from the library
   const detectedWords: string[] = [];
   if (hasProfanity) {
-    // Simple approach: find words that were replaced with asterisks
-    const originalWords = text.toLowerCase().split(/\s+/);
-    const cleanedWords = cleanedText.toLowerCase().split(/\s+/);
-    
-    for (let i = 0; i < originalWords.length; i++) {
-      if (cleanedWords[i] && cleanedWords[i].includes('*') && !originalWords[i].includes('*')) {
-        detectedWords.push(originalWords[i]);
-      }
-    }
+    // Get the words that were detected
+    const words = profanity.purify(text)[1];
+    detectedWords.push(...words);
   }
   
   return {
     isClean: !hasProfanity,
-    detectedWords: [...new Set(detectedWords)], // Remove duplicates
+    detectedWords: Array.from(new Set(detectedWords)), // Remove duplicates
     cleanedText,
     language: detectedLang
   };
@@ -64,14 +54,12 @@ export function filterInappropriateContent(text: string, language?: string): Con
 
 // Helper function to check if text is clean
 export function isContentClean(text: string): boolean {
-  const filter = new Filter();
-  return !filter.isProfane(text);
+  return !profanity.exists(text);
 }
 
 // Helper function to clean text
 export function cleanInappropriateContent(text: string): string {
-  const filter = new Filter();
-  return filter.clean(text);
+  return profanity.purify(text)[0];
 }
 
 // Export types for use in components
