@@ -16,8 +16,8 @@ const GEMINI_API_URL_PRO =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent";
 
 // Get API key from environment variable
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY
-const IMAGE_GEN_URL = process.env.IMAGE_GEN_URL
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY?.trim()
+const IMAGE_GEN_URL = process.env.IMAGE_GEN_URL?.trim()
 
 // Helper function for Gemini API calls
 async function generateWithGemini(
@@ -149,8 +149,8 @@ const generateActSchema = z.object({
 export async function registerRoutes(app: Express): Promise<Server> {
   // Configure rate limiters
   const aiGenerationLimiter = rateLimit({
-    windowMs: 1 * 60 * 1000, // 1 minute window
-    max: 10, // 10 requests per minute per IP
+    windowMs: 20000,
+    max: 5,
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -160,8 +160,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   const imageLimiter = rateLimit({
-    windowMs: 1 * 60 * 1000, // 1 minute window
-    max: 5, // 5 requests per 1 minute per IP
+    windowMs: 20000, 
+    max: 5, 
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -1252,6 +1252,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       source: 'DeepL'
     });
   });
+
   
   // ComfyUI portrait generation endpoint
   app.post("/api/generate/portrait", async (req, res) => {
@@ -1582,45 +1583,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "No prompt ID returned from ComfyUI"
         });
       }
-      
-      // Wait a moment for the image to be generated
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      
-      // Poll for image completion - check the history endpoint
-      const historyResponse = await fetch(`${IMAGE_GEN_URL}/history/${promptId}`, {
-        method: "GET"
-      });
-      
-      if (!historyResponse.ok) {
-        console.error("ComfyUI history error:", await historyResponse.text());
-        return res.status(historyResponse.status).json({
+
+      //wait
+      const startTime = Date.now();
+      await new Promise(resolve => setTimeout(resolve, 1200));
+      const timeout = 15000
+      let historyResult = null
+      while (true) {
+        const response = await fetch(`${IMAGE_GEN_URL}/history/${promptId}`);
+        if (response.ok) {
+          historyResult = await response.json();
+          console.log("ComfyUI history result:", JSON.stringify(historyResult));
+          if (Object.keys(historyResult).length != 0)
+            break
+        // Timeout check
+        if (Date.now() - startTime > timeout) {
+          throw new Error("Timeout: Image generation took too long.");
+        }
+
+        // Wait before polling again
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      else {
+        console.error("ComfyUI history error:", await response.text());
+        return res.status(response.status).json({
           success: false,
-          message: `ComfyUI history API error: ${historyResponse.statusText || "Unknown error"}`
+          message: `ComfyUI history API error: ${response.statusText || "Unknown error"}`
         });
       }
-      
-      const historyResult = await historyResponse.json();
-      console.log("ComfyUI history result:", JSON.stringify(historyResult));
-      
-      // Handle different response formats from ComfyUI
-      let imageInfo;
-      
-      if (historyResult.images && historyResult.images.length > 0) {
-        // Format: { images: [{ filename, type, ... }] }
-        imageInfo = historyResult.images[0];
-      } else if (historyResult[promptId] && historyResult[promptId].outputs) {
-        // Format: { promptId: { outputs: { '12': { images: [{ filename, type }] } } } }
-        const outputs = historyResult[promptId].outputs;
-        const outputKeys = Object.keys(outputs);
-        
-        // Find the first output with images
-        for (const key of outputKeys) {
-          if (outputs[key].images && outputs[key].images.length > 0) {
-            imageInfo = outputs[key].images[0];
-            break;
-          }
-        }
       }
+      
+      let imageInfo;
+      if (historyResult[promptId]['outputs']['12']['images'].length > 0) 
+        imageInfo = historyResult[promptId]['outputs']['12']['images'][0];
       
       if (!imageInfo) {
         return res.status(500).json({

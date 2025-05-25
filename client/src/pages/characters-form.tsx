@@ -327,7 +327,7 @@ export default function CharactersForm() {
       await NSFWDetection.initNSFWDetection();
       
       // Construct a portrait prompt based on character details
-      const originalPrompt = `Generate a 2:3 portrait of ${character.name}, a ${character.age ? character.age + '-year-old ' : ''}${character.gender} ${character.occupation}. ${character.appearance}`;
+      const originalPrompt = `${character.name}, a ${character.age ? character.age + '-year-old ' : ''}${character.gender} ${character.occupation}. ${character.appearance}`;
       
       // Translate prompt to English for better image generation
       let prompt = originalPrompt;
@@ -351,14 +351,14 @@ export default function CharactersForm() {
       const portraitData = await response.json();
       
       if (portraitData && portraitData.imageUrl) {
-        // Check if the generated image is appropriate (client-side check)
-        const contentCheck = await NSFWDetection.checkImageURL(
-          portraitData.imageUrl,
-          NSFWDetection.NSFW_CONFIG[NSFWDetection.ModerationLevel.ADULT_MODERATE]
-        );
+        // // Check if the generated image is appropriate (client-side check)
+        // const contentCheck = await NSFWDetection.checkImageURL(
+        //   portraitData.imageUrl,
+        //   NSFWDetection.NSFW_CONFIG[NSFWDetection.ModerationLevel.ADULT_MODERATE]
+        // );
         
-        if (contentCheck.isAppropriate) {
-          // Image passed the client-side check, display it
+        // if (contentCheck.isAppropriate) {
+        //   // Image passed the client-side check, display it
           setCharacterPortraits(prev => ({
             ...prev,
             [index]: portraitData.imageUrl
@@ -368,16 +368,17 @@ export default function CharactersForm() {
             title: t('characterForm.portraitGenerated', 'Portrait Generated'),
             description: t('characterForm.portraitGeneratedDesc', 'Character portrait has been generated successfully.')
           });
-        } else {
-          // Image did not pass the client-side NSFW check
-          console.warn("Generated portrait did not pass content guidelines check:", contentCheck.message);
+      //   } 
+      // else {
+      //     // Image did not pass the client-side NSFW check
+      //     console.warn("Generated portrait did not pass content guidelines check:", contentCheck.message);
           
-          toast({
-            title: t('common.contentGuidelines', 'Content Guidelines'),
-            description: t('characterForm.inappropriatePortrait', 'The generated portrait does not meet our content guidelines. Please try generating again.'),
-            variant: "destructive"
-          });
-        }
+      //     toast({
+      //       title: t('common.contentGuidelines', 'Content Guidelines'),
+      //       description: t('characterForm.inappropriatePortrait', 'The generated portrait does not meet our content guidelines. Please try generating again.'),
+      //       variant: "destructive"
+      //     });
+      //   }
       } else {
         throw new Error("Failed to generate portrait");
       }
@@ -451,27 +452,27 @@ export default function CharactersForm() {
               
               if (portraitData && portraitData.imageUrl) {
                 // Check if the generated image is appropriate using teen-safe settings
-                const contentCheck = await NSFWDetection.checkImageURL(
-                  portraitData.imageUrl,
-                  NSFWDetection.NSFW_CONFIG[NSFWDetection.ModerationLevel.ADULT_MODERATE]
-                );
+                // const contentCheck = await NSFWDetection.checkImageURL(
+                //   portraitData.imageUrl,
+                //   NSFWDetection.NSFW_CONFIG[NSFWDetection.ModerationLevel.ADULT_MODERATE]
+                // );
                 
-                if (contentCheck.isAppropriate) {
+                // if (contentCheck.isAppropriate) {
                   // Image passed content check, display it
                   setCharacterPortraits(prev => ({
                     ...prev,
                     [i]: portraitData.imageUrl
                   }));
-                } else {
-                  // Image didn't pass the content check
-                  console.warn(`Portrait for ${character.name} didn't pass content guidelines:`, contentCheck.message);
+                // } else {
+                //   // Image didn't pass the content check
+                //   console.warn(`Portrait for ${character.name} didn't pass content guidelines:`, contentCheck.message);
                   
-                  toast({
-                    title: t('common.contentGuidelines', 'Content Guidelines'),
-                    description: t('characterForm.inappropriatePortrait', 'A generated portrait does not meet content guidelines. Skipping.'),
-                    variant: "destructive",
-                  });
-                }
+                //   toast({
+                //     title: t('common.contentGuidelines', 'Content Guidelines'),
+                //     description: t('characterForm.inappropriatePortrait', 'A generated portrait does not meet content guidelines. Skipping.'),
+                //     variant: "destructive",
+                //   });
+                // }
               }
             } catch (error) {
               console.error(`Error generating portrait for character ${i}:`, error);
