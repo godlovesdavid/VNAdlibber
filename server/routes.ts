@@ -24,22 +24,22 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY?.trim()
 const IMAGE_GEN_URL = process.env.IMAGE_GEN_URL?.trim()
 
 // In-memory queue for portrait generation (no Redis needed)
-interface PortraitJobData {
+interface ImageJobData {
   userId: string;
   prompt: string;
   timestamp: number;
-  width?: number;
-  height?: number;
-  remove_bg?: boolean;
+  width: number;
+  height: number;
+  remove_bg: boolean;
 }
 
 // Queue and maps for portrait generation
-const portraitQueue: PortraitJobData[] = [];
+const imageQueue: ImageJobData[] = [];
 const pendingRequests = new Map<string, Response>();
 let isProcessing = false;
 
 // Start queue worker that polls every second
-setInterval(processPortraitQueue, 1000);
+setInterval(processImageQueue, 1000);
 
 // Content filtering function using NudeNet
 async function checkImageContent(base64ImageData: string): Promise<{appropriate: boolean, message: string, scores: any}> {
@@ -80,9 +80,9 @@ async function checkImageContent(base64ImageData: string): Promise<{appropriate:
 }
 
 // Worker function to process portrait generation jobs
-async function processPortraitQueue() {
+async function processImageQueue() {
   const BATCH_SIZE = 8
-  if (isProcessing || portraitQueue.length === 0) {
+  if (isProcessing || imageQueue.length === 0) {
     return;
   }
   
@@ -90,7 +90,7 @@ async function processPortraitQueue() {
   
   try {
     // Take up to 8 jobs from the queue
-    const batch = portraitQueue.splice(0, BATCH_SIZE);
+    const batch = imageQueue.splice(0, BATCH_SIZE);
     console.log(`Processing batch of ${batch.length} portrait jobs`);
     
     // Create batch workflow for all jobs
@@ -117,7 +117,7 @@ async function processPortraitQueue() {
     console.error('Batch portrait generation failed:', error);
     
     // Send error response to all waiting clients in this batch
-    const batch = portraitQueue.splice(0, 8);
+    const batch = imageQueue.splice(0, 8);
     for (const job of batch) {
       const response = pendingRequests.get(job.userId);
       if (response) {
@@ -133,27 +133,300 @@ async function processPortraitQueue() {
   }
 }
 
-// Placeholder for your custom batch ComfyUI workflow
-function createBatchComfyUIWorkflow(jobs: PortraitJobData[]) {
-  // TODO: Implement your custom batch workflow here
+// custom batch ComfyUI workflow
+function createBatchComfyUIWorkflow(jobs: ImageJobData[]) {
   // This should create a ComfyUI workflow that processes multiple prompts
   // and names the output images with the corresponding userIds
   console.log(`Creating batch workflow for ${jobs.length} jobs`);
   
-  // Placeholder workflow structure - you'll replace this with your custom batch workflow
-  const firstJob = jobs[0];
-  return {
-    // Your custom batch workflow JSON goes here
-    // Make sure output images are named with the userId
-    "3": {
-      "inputs": {
-        "text": `portrait,gray background, dynamic pose,${firstJob.prompt}`,
-        "clip": ["1", 1]
+  const workflow = {
+      "1": {
+        "inputs": {
+          "ckpt_name": "Hyper-SDXL-1step-Unet-Comfyui.fp16.safetensors"
+        },
+        "class_type": "CheckpointLoaderSimple",
+        "_meta": {
+          "title": "Load Checkpoint"
+        }
       },
-      "class_type": "CLIPTextEncode"
+      "2": {
+        "inputs": {
+          "steps": 1,
+          "model": [
+            "1",
+            0
+          ]
+        },
+        "class_type": "HyperSDXL1StepUnetScheduler",
+        "_meta": {
+          "title": "HyperSDXL1StepUnetScheduler"
+        }
+      },
+      "4": {
+        "inputs": {
+          "text": [
+            "60",
+            1
+          ],
+          "clip": [
+            "1",
+            1
+          ]
+        },
+        "class_type": "CLIPTextEncode",
+        "_meta": {
+          "title": "CLIP Text Encode (Prompt)"
+        }
+      },
+      "5": {
+        "inputs": {
+          "add_noise": true,
+          "noise_seed": 431000548006409,
+          "cfg": 1,
+          "model": [
+            "1",
+            0
+          ],
+          "positive": [
+            "40",
+            0
+          ],
+          "negative": [
+            "4",
+            0
+          ],
+          "sampler": [
+            "9",
+            0
+          ],
+          "sigmas": [
+            "2",
+            0
+          ],
+          "latent_image": [
+            "8",
+            0
+          ]
+        },
+        "class_type": "SamplerCustom",
+        "_meta": {
+          "title": "SamplerCustom"
+        }
+      },
+      "6": {
+        "inputs": {
+          "samples": [
+            "5",
+            1
+          ],
+          "vae": [
+            "1",
+            2
+          ]
+        },
+        "class_type": "VAEDecode",
+        "_meta": {
+          "title": "VAE Decode"
+        }
+      },
+      "8": {
+        "inputs": {
+          "width": [
+            "60",
+            3
+          ],
+          "height": [
+            "60",
+            4
+          ],
+          "batch_size": 1
+        },
+        "class_type": "EmptyLatentImage",
+        "_meta": {
+          "title": "Empty Latent Image"
+        }
+      },
+      "9": {
+        "inputs": {
+          "sampler_name": "uni_pc"
+        },
+        "class_type": "KSamplerSelect",
+        "_meta": {
+          "title": "KSamplerSelect"
+        }
+      },
+      "12": {
+        "inputs": {
+          "filename_prefix": [
+            "60",
+            2
+          ],
+          "filename_keys": "sampler_name, cfg, steps, %F %H-%M-%S",
+          "foldername_prefix": "",
+          "foldername_keys": "ckpt_name",
+          "delimiter": "-",
+          "save_job_data": "disabled",
+          "job_data_per_image": false,
+          "job_custom_text": "",
+          "save_metadata": false,
+          "counter_digits": 4,
+          "counter_position": "last",
+          "one_counter_per_folder": true,
+          "image_preview": true,
+          "output_ext": ".webp",
+          "quality": 70,
+          "named_keys": false,
+          "images": [
+            "63",
+            0
+          ]
+        },
+        "class_type": "SaveImageExtended",
+        "_meta": {
+          "title": "💾 Save Image Extended 2.83"
+        }
+      },
+      "40": {
+        "inputs": {
+          "text": [
+            "60",
+            0
+          ],
+          "clip": [
+            "1",
+            1
+          ]
+        },
+        "class_type": "CLIPTextEncode",
+        "_meta": {
+          "title": "CLIP Text Encode (Prompt)"
+        }
+      },
+      "42": {
+        "inputs": {
+          "stop_at_clip_layer": -2,
+          "clip": [
+            "1",
+            1
+          ]
+        },
+        "class_type": "CLIPSetLastLayer",
+        "_meta": {
+          "title": "CLIP Set Last Layer"
+        }
+      },
+      "60": {
+        "inputs": {
+          "zipped_input_prompt": [
+            "64",
+            0
+          ]
+        },
+        "class_type": "UnzipInputPrompt",
+        "_meta": {
+          "title": "📤 Unzip Input Prompt"
+        }
+      },
+      "61": {
+        "inputs": {
+          "model_name": "u2netp",
+          "image": [
+            "6",
+            0
+          ]
+        },
+        "class_type": "Image Remove Background (rembg)",
+        "_meta": {
+          "title": "Image Remove Background (rembg)"
+        }
+      },
+      "63": {
+        "inputs": {
+          "ANY": [
+            "60",
+            5
+          ],
+          "IF_TRUE": [
+            "61",
+            0
+          ],
+          "IF_FALSE": [
+            "6",
+            0
+          ]
+        },
+        "class_type": "If ANY execute A else B",
+        "_meta": {
+          "title": "If"
+        }
+      },
+      "64": {
+        "inputs": {
+          "positive_prompt_1": "a nude girl",
+          "negative_prompt_1": "",
+          "name_1": "Prompt_1",
+          "width_1": 1024,
+          "height_1": 1024,
+          "remove_bg_1": false,
+          "positive_prompt_2": "",
+          "negative_prompt_2": "",
+          "name_2": "Prompt_2",
+          "width_2": 1024,
+          "height_2": 1024,
+          "remove_bg_2": false,
+          "positive_prompt_3": "",
+          "negative_prompt_3": "",
+          "name_3": "Prompt_3",
+          "width_3": 1024,
+          "height_3": 1024,
+          "remove_bg_3": false,
+          "positive_prompt_4": "",
+          "negative_prompt_4": "",
+          "name_4": "Prompt_4",
+          "width_4": 1024,
+          "height_4": 1024,
+          "remove_bg_4": false,
+          "positive_prompt_5": "",
+          "negative_prompt_5": "",
+          "name_5": "Prompt_5",
+          "width_5": 1024,
+          "height_5": 1024,
+          "remove_bg_5": false,
+          "positive_prompt_6": "",
+          "negative_prompt_6": "",
+          "name_6": "Prompt_6",
+          "width_6": 1024,
+          "height_6": 1024,
+          "remove_bg_6": false,
+          "positive_prompt_7": "",
+          "negative_prompt_7": "",
+          "name_7": "Prompt_7",
+          "width_7": 1024,
+          "height_7": 1024,
+          "remove_bg_7": false,
+          "positive_prompt_8": "",
+          "negative_prompt_8": "",
+          "name_8": "Prompt_8",
+          "width_8": 1024,
+          "height_8": 1024,
+          "remove_bg_8": false
+        },
+        "class_type": "BatchPromptInput",
+        "_meta": {
+          "title": "📥 Batch Prompt Input"
+        }
+      }
     }
-    // Add your batch processing nodes here
-  };
+  let i = 1
+  for (const job of jobs)
+  {
+    workflow['64']['inputs']['name_' + i] = job.userId
+    workflow['64']['inputs']['width_' + i] = job.width
+    workflow['64']['inputs']['height_' + i] = job.height
+    workflow['64']['inputs']['remove_bg_' + i] = job.remove_bg
+    i += 1
+  }
+  return {"prompt": workflow};
 }
 
 // Poll ComfyUI history for batch completion
@@ -1466,7 +1739,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   //image generator endpoint
   app.post("/api/generate/image", async (req, res) => {
     try {
-      const { prompt, width, height, remove_bg } = req.body;
+      const { prompt, width=1024, height=1024, remove_bg =false} = req.body;
       
       if (!prompt) {
         return res.status(400).json({
@@ -1475,20 +1748,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Validate optional parameters
-      const parsedWidth = width ? parseInt(width) : undefined;
-      const parsedHeight = height ? parseInt(height) : undefined;
-      const shouldRemoveBg = remove_bg === true || remove_bg === "true";
-      
       // Validate dimensions if provided
-      if (parsedWidth && (parsedWidth < 64 || parsedWidth > 2048)) {
+      if (width && (width < 64 || width > 2048)) {
         return res.status(400).json({
           success: false,
           message: "Width must be between 64 and 2048 pixels"
         });
       }
       
-      if (parsedHeight && (parsedHeight < 64 || parsedHeight > 2048)) {
+      if (height && (height < 64 || height > 2048)) {
         return res.status(400).json({
           success: false,
           message: "Height must be between 64 and 2048 pixels"
@@ -1498,19 +1766,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate unique user ID for this request
       const userId = uuidv4();
       
-      console.log(`Queueing image generation for user ${userId} with prompt: ${prompt}, dimensions: ${parsedWidth || 'default'}x${parsedHeight || 'default'}, remove_bg: ${shouldRemoveBg}`);
+      console.log(`Queueing image generation for user ${userId} with prompt: ${prompt}, dimensions: ${width || 'default'}x${height || 'default'}, remove_bg: ${remove_bg}`);
       
       // Store the response object for later use
       pendingRequests.set(userId, res);
       
       // Add job to queue
-      portraitQueue.push({
+      imageQueue.push({
         userId,
         prompt,
         timestamp: Date.now(),
-        width: parsedWidth,
-        height: parsedHeight,
-        remove_bg: shouldRemoveBg
+        width: width,
+        height: height,
+        remove_bg: remove_bg
       });
       
       // Set timeout to clean up if client disconnects
