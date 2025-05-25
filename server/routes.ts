@@ -261,20 +261,20 @@ function createBatchComfyUIWorkflow(jobs: ImageJobData[]) {
             "60",
             2
           ],
-          "filename_keys": "sampler_name, cfg, steps, %F %H-%M-%S",
+          "filename_keys": "",
           "foldername_prefix": "vnadlib",
-          "foldername_keys": "ckpt_name",
-          "delimiter": "-",
+          "foldername_keys": "",
+          "delimiter": "",
           "save_job_data": "disabled",
           "job_data_per_image": false,
           "job_custom_text": "",
           "save_metadata": false,
-          "counter_digits": 4,
+          "counter_digits": 0,
           "counter_position": "last",
-          "one_counter_per_folder": true,
-          "image_preview": true,
+          "one_counter_per_folder": false,
+          "image_preview": false,
           "output_ext": ".webp",
-          "quality": 70,
+          "quality": 60,
           "named_keys": false,
           "images": [
             "63",
@@ -417,6 +417,7 @@ function createBatchComfyUIWorkflow(jobs: ImageJobData[]) {
         }
       }
     }
+  workflow["5"]["inputs"]["noise_seed"] = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) //generate seed
   let i = 1;
   for (const job of jobs) {
     const inputs = workflow['64'].inputs as Record<string, any>;
@@ -427,7 +428,7 @@ function createBatchComfyUIWorkflow(jobs: ImageJobData[]) {
     inputs[`remove_bg_${i}`] = job.remove_bg;
     i++;
   }
-  return {"prompt": workflow};
+  return workflow;
 }
 
 // Poll ComfyUI history for batch completion
@@ -470,8 +471,7 @@ async function pollForBatchCompletion(promptId: string, userIds: string[]) {
 // Process individual image result from batch
 async function processBatchImageResult(userId: string, outputs: any) {
   try {
-    console.log(JSON.stringify(outputs))
-    const imageUrl = `${IMAGE_GEN_URL}/view?filename=${userId}.webp&type=output&subfolder=batch`;
+    const imageUrl = `${IMAGE_GEN_URL}/view?filename=${userId}.webp&type=output&subfolder=vnadlib`;
     
     console.log(`Downloading image for user ${userId} from ComfyUI...`);
     const imageResponse = await fetch(imageUrl);
