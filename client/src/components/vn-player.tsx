@@ -774,19 +774,19 @@ export function VnPlayer({
     };
   }, [mode, isTextAnimating]);
   
-  // Log current scene and image state for debugging
-  useEffect(() => {
-    if (currentScene) {
-      console.log(
-        `Current scene updated: ${currentScene.name}, image status:`,
-        {
-          imageUrl: imageUrl ? "Has URL" : "No URL",
-          isGenerating,
-          hasError: !!imageError,
-        },
-      );
-    }
-  }, [currentScene, imageUrl, isGenerating, imageError]);
+  // // Log current scene and image state for debugging
+  // useEffect(() => {
+  //   if (currentScene) {
+  //     console.log(
+  //       `Current scene updated: ${currentScene.name}, image status:`,
+  //       {
+  //         imageUrl: imageUrl ? "Has URL" : "No URL",
+  //         isGenerating,
+  //         hasError: !!imageError,
+  //       },
+  //     );
+  //   }
+  // }, [currentScene, imageUrl, isGenerating, imageError]);
 
   // Show loading while no scene is available
   if (!currentScene) {
