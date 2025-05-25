@@ -8,6 +8,9 @@ import { jsonrepair } from "jsonrepair";
 import rateLimit from "express-rate-limit";
 import { handleAutoTranslate, handleClearTranslations, handleScanForMissingKeys } from "./i18n-service";
 import { translateTexts } from "./translation-service";
+import Queue from 'bull';
+import { v4 as uuidv4 } from 'uuid';
+import type { Response } from 'express';
 
 // Use Google's Gemini API instead of OpenAI for text generation
 const GEMINI_API_URL =
