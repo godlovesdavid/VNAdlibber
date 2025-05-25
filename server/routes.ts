@@ -8,9 +8,9 @@ import { jsonrepair } from "jsonrepair";
 import rateLimit from "express-rate-limit";
 import { handleAutoTranslate, handleClearTranslations, handleScanForMissingKeys } from "./i18n-service";
 import { translateTexts } from "./translation-service";
-import Queue from 'bull';
 import { v4 as uuidv4 } from 'uuid';
 import type { Response } from 'express';
+import { timestamp } from "drizzle-orm/mysql-core";
 
 // Use Google's Gemini API instead of OpenAI for text generation
 const GEMINI_API_URL =
@@ -39,6 +39,7 @@ setInterval(processPortraitQueue, 1000);
 
 // Worker function to process portrait generation jobs
 async function processPortraitQueue() {
+  const BATCH_SIZE = 8
   if (isProcessing || portraitQueue.length === 0) {
     return;
   }
@@ -47,7 +48,7 @@ async function processPortraitQueue() {
   
   try {
     // Take up to 8 jobs from the queue
-    const batch = portraitQueue.splice(0, 8);
+    const batch = portraitQueue.splice(0, BATCH_SIZE);
     console.log(`Processing batch of ${batch.length} portrait jobs`);
     
     // Create batch workflow for all jobs
@@ -115,7 +116,7 @@ function createBatchComfyUIWorkflow(jobs: PortraitJobData[]) {
 
 // Poll ComfyUI history for batch completion
 async function pollForBatchCompletion(promptId: string, userIds: string[]) {
-  const maxAttempts = 300; // 5 minutes timeout
+  const maxAttempts = 20; 
   let attempts = 0;
   
   while (attempts < maxAttempts) {
@@ -153,33 +154,32 @@ async function pollForBatchCompletion(promptId: string, userIds: string[]) {
 // Process individual image result from batch
 async function processBatchImageResult(userId: string, outputs: any) {
   try {
-    // TODO: Extract image for specific userId from batch outputs
-    // This depends on your custom workflow structure
+    const imageUrl = encodeURIComponent(`${IMAGE_GEN_URL}/history/vnadlib/${userId}.webp`);
+
+    const imageResponse = await fetch(imageUrl);
     
-    // For now, placeholder logic
-    const imageUrl = `data:image/png;base64,placeholder_for_${userId}`;
+    // Get the image data as a base64 string for storage
+    const imageBuffer = await imageResponse.arrayBuffer();
+    const base64Image = Buffer.from(imageBuffer).toString('base64');
+
+    // Get content type (usually image/webp for ComfyUI)
+    const contentType = imageResponse.headers.get('content-type') || 'image/webp';
+
+    // Create a data URL that can be used directly in the browser
+    const dataUrl = `data:${contentType};base64,${base64Image}`;
     
     // Send response to waiting client
     const response = pendingRequests.get(userId);
     if (response) {
       response.json({
         success: true,
-        imageUrl: imageUrl
+        imageUrl: dataUrl,
       });
       pendingRequests.delete(userId);
     }
     
   } catch (error) {
     console.error(`Error processing image for user ${userId}:`, error);
-    
-    const response = pendingRequests.get(userId);
-    if (response) {
-      response.status(500).json({
-        success: false,
-        message: 'Image processing failed'
-      });
-      pendingRequests.delete(userId);
-    }
   }
 }
 
@@ -336,77 +336,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Apply rate limiters to AI generation endpoints
   app.use(["/api/generate/concept", "/api/generate/plot", "/api/generate/path", "/api/generate/character", "/api/generate/act"], aiGenerationLimiter);
-  app.use(["/api/generate/image", "/api/generate/portrait"], imageLimiter);
+  app.use(["/api/generate/image"], imageLimiter);
 
   // Project CRUD operations
-  // OpenAI endpoint has been removed in favor of RunPod
-
-  // Test RunPod API connectivity
-  app.get("/api/test/runpod", async (req, res) => {
-    try {
-      console.log("Testing RunPod API connectivity...");
-
-      const endpointId = process.env.RUNPOD_ENDPOINT_ID || "sdxl";
-      const apiKey = process.env.RUNPOD_API_KEY;
-
-      if (!apiKey) {
-        return res.status(401).json({
-          success: false,
-          message:
-            "RunPod API key is missing. Please add RUNPOD_API_KEY to your environment variables.",
-        });
-      }
-
-      try {
-        // Test the RunPod API by checking endpoint health
-        const healthCheckUrl = `https://api.runpod.ai/v2/${endpointId}/health`;
-        console.log(`Checking RunPod endpoint health: ${endpointId}`);
-
-        const response = await fetch(healthCheckUrl, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          return res.json({
-            success: true,
-            message: "RunPod API connection successful",
-            response: data,
-            endpoint: endpointId,
-          });
-        } else {
-          const errorText = await response.text();
-          return res.status(response.status).json({
-            success: false,
-            message: `RunPod API error: ${response.status} ${response.statusText}`,
-            response: errorText,
-            endpoint: endpointId,
-          });
-        }
-      } catch (apiError) {
-        console.error("RunPod API error:", apiError);
-        return res.status(500).json({
-          success: false,
-          message:
-            apiError instanceof Error
-              ? apiError.message
-              : "Unknown RunPod API error",
-        });
-      }
-    } catch (error) {
-      console.error("Error testing RunPod API:", error);
-      res.status(500).json({
-        success: false,
-        message: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  });
-
-  // DALL-E endpoint has been removed in favor of RunPod
-
   app.get("/api/projects", async (req, res) => {
     try {
       const projects = await storage.getProjects();
@@ -1220,126 +1152,126 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Image generation endpoint
-  app.post("/api/generate/image", async (req, res) => {
-    try {
-      console.log("Image generation endpoint called with body:", req.body);
+  // // Image generation endpoint
+  // app.post("/api/generate/image", async (req, res) => {
+  //   try {
+  //     console.log("Image generation endpoint called with body:", req.body);
 
-      // Check if RunPod API key is configured
-      if (!process.env.RUNPOD_API_KEY) {
-        console.error("RunPod API key is missing");
-        return res.status(401).json({
-          error:
-            "RunPod API key is missing. Please add the RUNPOD_API_KEY secret in your environment variables.",
-        });
-      }
+  //     // Check if RunPod API key is configured
+  //     if (!process.env.RUNPOD_API_KEY) {
+  //       console.error("RunPod API key is missing");
+  //       return res.status(401).json({
+  //         error:
+  //           "RunPod API key is missing. Please add the RUNPOD_API_KEY secret in your environment variables.",
+  //       });
+  //     }
 
-      const { scene, imageType, optimizeForMobile } = req.body;
+  //     const { scene, imageType, optimizeForMobile } = req.body;
 
-      // Check if we should use optimized image settings (smaller/cheaper)
-      const useOptimizedSettings = optimizeForMobile === true;
+  //     // Check if we should use optimized image settings (smaller/cheaper)
+  //     const useOptimizedSettings = optimizeForMobile === true;
 
-      if (imageType === "background") {
-        try {
-          console.log(
-            "Calling RunPod with API key:",
-            process.env.RUNPOD_API_KEY ? "Present (hidden)" : "Missing",
-          );
+  //     if (imageType === "background") {
+  //       try {
+  //         console.log(
+  //           "Calling RunPod with API key:",
+  //           process.env.RUNPOD_API_KEY ? "Present (hidden)" : "Missing",
+  //         );
 
-          // Make sure we have the required API key
-          if (!process.env.RUNPOD_API_KEY) {
-            console.error("❌ RUNPOD_API_KEY is missing");
-            return res.status(500).json({
-              error: "RUNPOD_API_KEY is required for image generation",
-            });
-          }
+  //         // Make sure we have the required API key
+  //         if (!process.env.RUNPOD_API_KEY) {
+  //           console.error("❌ RUNPOD_API_KEY is missing");
+  //           return res.status(500).json({
+  //             error: "RUNPOD_API_KEY is required for image generation",
+  //           });
+  //         }
 
-          // Check if endpoint ID is specified (optional)
-          const endpointId = process.env.RUNPOD_ENDPOINT_ID;
-          if (endpointId) {
-            console.log(`- Using RunPod endpoint ID: ${endpointId}`);
-          } else {
-            console.log("- Using default RunPod SDXL endpoint");
-          }
+  //         // Check if endpoint ID is specified (optional)
+  //         const endpointId = process.env.RUNPOD_ENDPOINT_ID;
+  //         if (endpointId) {
+  //           console.log(`- Using RunPod endpoint ID: ${endpointId}`);
+  //         } else {
+  //           console.log("- Using default RunPod SDXL endpoint");
+  //         }
 
-          const result = await generateSceneBackgroundImage(
-            scene.name,
-            scene.image_prompt,
-          );
+  //         const result = await generateSceneBackgroundImage(
+  //           scene.name,
+  //           scene.image_prompt,
+  //         );
 
-          // No environment variables to reset since we've removed DALL-E
-          console.log(
-            `Background image generated for scene ${scene.name}:`,
-            result.url ? "Success (URL hidden for privacy)" : "No URL returned",
-          );
+  //         // No environment variables to reset since we've removed DALL-E
+  //         console.log(
+  //           `Background image generated for scene ${scene.name}:`,
+  //           result.url ? "Success (URL hidden for privacy)" : "No URL returned",
+  //         );
 
-          // Log the actual URL for debugging (truncated for data URLs)
-          if (result.url) {
-            const logUrl = result.url.startsWith("data:")
-              ? `${result.url.substring(0, 30)}...`
-              : result.url;
-            console.log(`🎨 RUNPOD AI IMAGE: ${logUrl}`);
-          }
+  //         // Log the actual URL for debugging (truncated for data URLs)
+  //         if (result.url) {
+  //           const logUrl = result.url.startsWith("data:")
+  //             ? `${result.url.substring(0, 30)}...`
+  //             : result.url;
+  //           console.log(`🎨 RUNPOD AI IMAGE: ${logUrl}`);
+  //         }
 
-          // Include optimization information in the response
-          res.json({
-            ...result,
-            isOptimized: useOptimizedSettings,
-          });
-        } catch (generateError) {
-          console.error("Error generating image with RunPod:", generateError);
+  //         // Include optimization information in the response
+  //         res.json({
+  //           ...result,
+  //           isOptimized: useOptimizedSettings,
+  //         });
+  //       } catch (generateError) {
+  //         console.error("Error generating image with RunPod:", generateError);
 
-          const errorMessage =
-            generateError instanceof Error
-              ? generateError.message
-              : "Unknown error during image generation";
+  //         const errorMessage =
+  //           generateError instanceof Error
+  //             ? generateError.message
+  //             : "Unknown error during image generation";
 
-          console.log("Returning error to client:", errorMessage);
+  //         console.log("Returning error to client:", errorMessage);
 
-          // Use consistent error format
-          res.status(500).json({
-            message: "Failed to generate background image",
-            technicalDetails: errorMessage,
-            rootCause: errorMessage.includes("RunPod API")
-              ? "Error connecting to RunPod API. Please check your API key and endpoint ID."
-              : "Image generation failed",
-            isModelOverloaded: errorMessage.includes("overloaded"),
-            retryRecommended: true
-          });
-        }
-      } else {
-        // Future extension point for character images
-        console.log(
-          "Character image generation requested but not implemented yet",
-        );
-        res.status(400).json({
-          message: "Character image generation not implemented yet",
-          technicalDetails: "This feature is planned for a future update",
-          rootCause: "Feature not implemented",
-          isModelOverloaded: false,
-          retryRecommended: false
-        });
-      }
-    } catch (error) {
-      console.error("Error processing image generation request:", error);
+  //         // Use consistent error format
+  //         res.status(500).json({
+  //           message: "Failed to generate background image",
+  //           technicalDetails: errorMessage,
+  //           rootCause: errorMessage.includes("RunPod API")
+  //             ? "Error connecting to RunPod API. Please check your API key and endpoint ID."
+  //             : "Image generation failed",
+  //           isModelOverloaded: errorMessage.includes("overloaded"),
+  //           retryRecommended: true
+  //         });
+  //       }
+  //     } else {
+  //       // Future extension point for character images
+  //       console.log(
+  //         "Character image generation requested but not implemented yet",
+  //       );
+  //       res.status(400).json({
+  //         message: "Character image generation not implemented yet",
+  //         technicalDetails: "This feature is planned for a future update",
+  //         rootCause: "Feature not implemented",
+  //         isModelOverloaded: false,
+  //         retryRecommended: false
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.error("Error processing image generation request:", error);
       
-      // Extract detailed error information
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      const errorCause = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause 
-        ? String(error.cause.message) 
-        : null;
-      const isOverloaded = typeof errorMessage === 'string' && errorMessage.includes("overloaded");
-      const statusCode = isOverloaded ? 503 : 500; // Service Unavailable for overloaded model
+  //     // Extract detailed error information
+  //     const errorMessage = error instanceof Error ? error.message : "Unknown error";
+  //     const errorCause = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause 
+  //       ? String(error.cause.message) 
+  //       : null;
+  //     const isOverloaded = typeof errorMessage === 'string' && errorMessage.includes("overloaded");
+  //     const statusCode = isOverloaded ? 503 : 500; // Service Unavailable for overloaded model
       
-      res.status(statusCode).json({
-        message: "Failed to process image generation request",
-        technicalDetails: errorMessage,
-        rootCause: errorCause || "An unexpected error occurred during image processing",
-        isModelOverloaded: isOverloaded,
-        retryRecommended: true
-      });
-    }
-  });
+  //     res.status(statusCode).json({
+  //       message: "Failed to process image generation request",
+  //       technicalDetails: errorMessage,
+  //       rootCause: errorCause || "An unexpected error occurred during image processing",
+  //       isModelOverloaded: isOverloaded,
+  //       retryRecommended: true
+  //     });
+  //   }
+  // });
 
   // DeepL translation endpoints
   app.post('/api/translate', async (req, res) => {
@@ -1419,7 +1351,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   
   // New Bull queue-based portrait generation endpoint
-  app.post("/api/generate/portrait", async (req, res) => {
+  app.post("/api/generate/image", async (req, res) => {
     try {
       const { prompt } = req.body;
       
@@ -1465,457 +1397,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false,
         message: error instanceof Error ? error.message : "Unknown error queueing portrait generation" 
-      });
-    }
-  });
-
-  // Scene background generation endpoint (keeping existing)
-  app.post("/api/generate/scene-background", async (req, res) => {
-    try {
-      const { backgroundDescription, themeDescription } = req.body;
-      
-      if (!backgroundDescription) {
-        return res.status(400).json({
-          success: false,
-          message: "Background description is required"
-        });
-      }
-      
-      const imageUrl = await generateSceneBackgroundImage(backgroundDescription, themeDescription);
-      
-      res.json({
-        success: true,
-        imageUrl
-      });
-    } catch (error) {
-      console.error("Error generating scene background:", error);
-      res.status(500).json({ 
-        success: false,
-        message: error instanceof Error ? error.message : "Unknown error generating scene background" 
-      });
-    }
-  });
-
-  // OLD PORTRAIT ENDPOINT TO REMOVE:
-  /*
-  // ComfyUI portrait generation endpoint
-  app.post("/api/generate/portrait", async (req, res) => {
-    try {
-      const { prompt } = req.body;
-      
-      if (!prompt) {
-        return res.status(400).json({
-          success: false,
-          message: "Prompt is required"
-        });
-      }
-      
-      console.log("Generating portrait with ComfyUI, prompt:", prompt);
-      
-      // Load the workflow template (the json from attached asset)
-      const workflowTemplate = {"prompt":
-        {
-          "1": {
-            "inputs": {
-              "ckpt_name": "Hyper-SDXL-1step-Unet-Comfyui.fp16.safetensors"
-            },
-            "class_type": "CheckpointLoaderSimple",
-            "_meta": {
-              "title": "Load Checkpoint"
-            }
-          },
-          "2": {
-            "inputs": {
-              "steps": 1,
-              "model": [
-                "1",
-                0
-              ]
-            },
-            "class_type": "HyperSDXL1StepUnetScheduler",
-            "_meta": {
-              "title": "HyperSDXL1StepUnetScheduler"
-            }
-          },
-          "3": {
-            "inputs": {
-              "text": "",
-              "clip": [
-                "1",
-                1
-              ]
-            },
-            "class_type": "CLIPTextEncode",
-            "_meta": {
-              "title": "CLIP Text Encode (Prompt)"
-            }
-          },
-          "4": {
-            "inputs": {
-              "text": "multiple characters, photo, realistic",
-              "clip": [
-                "1",
-                1
-              ]
-            },
-            "class_type": "CLIPTextEncode",
-            "_meta": {
-              "title": "CLIP Text Encode (Prompt)"
-            }
-          },
-          "5": {
-            "inputs": {
-              "add_noise": true,
-              "noise_seed": 553083796722994,
-              "cfg": 1,
-              "model": [
-                "1",
-                0
-              ],
-              "positive": [
-                "3",
-                0
-              ],
-              "negative": [
-                "4",
-                0
-              ],
-              "sampler": [
-                "9",
-                0
-              ],
-              "sigmas": [
-                "2",
-                0
-              ],
-              "latent_image": [
-                "8",
-                0
-              ]
-            },
-            "class_type": "SamplerCustom",
-            "_meta": {
-              "title": "SamplerCustom"
-            }
-          },
-          "6": {
-            "inputs": {
-              "samples": [
-                "5",
-                1
-              ],
-              "vae": [
-                "1",
-                2
-              ]
-            },
-            "class_type": "VAEDecode",
-            "_meta": {
-              "title": "VAE Decode"
-            }
-          },
-          "8": {
-            "inputs": {
-              "width": [
-                "21",
-                0
-              ],
-              "height": [
-                "22",
-                0
-              ],
-              "batch_size": 1
-            },
-            "class_type": "EmptyLatentImage",
-            "_meta": {
-              "title": "Empty Latent Image"
-            }
-          },
-          "9": {
-            "inputs": {
-              "sampler_name": "uni_pc"
-            },
-            "class_type": "KSamplerSelect",
-            "_meta": {
-              "title": "KSamplerSelect"
-            }
-          },
-          "12": {
-            "inputs": {
-              "filename_prefix": "ComfyUI",
-              "filename_keys": "sampler_name, cfg, steps, %F %H-%M-%S",
-              "foldername_prefix": "",
-              "foldername_keys": "ckpt_name",
-              "delimiter": "-",
-              "save_job_data": "disabled",
-              "job_data_per_image": false,
-              "job_custom_text": "",
-              "save_metadata": false,
-              "counter_digits": 4,
-              "counter_position": "last",
-              "one_counter_per_folder": true,
-              "image_preview": true,
-              "output_ext": ".webp",
-              "quality": 70,
-              "named_keys": false,
-              "images": [
-                "29",
-                0
-              ]
-            },
-            "class_type": "SaveImageExtended",
-            "_meta": {
-              "title": "💾 Save Image Extended 2.83"
-            }
-          },
-          "19": {
-            "inputs": {
-              "model_name": "u2netp",
-              "image": [
-                "6",
-                0
-              ]
-            },
-            "class_type": "Image Remove Background (rembg)",
-            "_meta": {
-              "title": "Image Remove Background (rembg)"
-            }
-          },
-          "21": {
-            "inputs": {
-              "value": 512
-            },
-            "class_type": "PrimitiveInt",
-            "_meta": {
-              "title": "Int"
-            }
-          },
-          "22": {
-            "inputs": {
-              "value": 1024
-            },
-            "class_type": "PrimitiveInt",
-            "_meta": {
-              "title": "Int"
-            }
-          },
-          "23": {
-            "inputs": {
-              "expression": "a * b",
-              "a": [
-                "21",
-                0
-              ],
-              "b": [
-                "25",
-                0
-              ]
-            },
-            "class_type": "MathExpression|pysssss",
-            "_meta": {
-              "title": "Math Expression 🐍"
-            }
-          },
-          "25": {
-            "inputs": {
-              "value": 0.8
-            },
-            "class_type": "PrimitiveFloat",
-            "_meta": {
-              "title": "Float"
-            }
-          },
-          "26": {
-            "inputs": {
-              "expression": "a * b",
-              "a": [
-                "22",
-                0
-              ],
-              "b": [
-                "25",
-                0
-              ]
-            },
-            "class_type": "MathExpression|pysssss",
-            "_meta": {
-              "title": "Math Expression 🐍"
-            }
-          },
-          "27": {
-            "inputs": {
-              "prompt_dir": "example",
-              "reload": false,
-              "load_cap": 0,
-              "start_index": 0
-            },
-            "class_type": "LoadPromptsFromDir //Inspire",
-            "_meta": {
-              "title": "Load Prompts From Dir (Inspire)"
-            }
-          },
-          "28": {
-            "inputs": {
-              "zipped_prompt": [
-                "27",
-                0
-              ]
-            },
-            "class_type": "UnzipPrompt //Inspire",
-            "_meta": {
-              "title": "Unzip Prompt (Inspire)"
-            }
-          },
-          "29": {
-            "inputs": {
-              "width": [
-                "23",
-                0
-              ],
-              "height": [
-                "26",
-                0
-              ],
-              "interpolation": "lanczos",
-              "method": "stretch",
-              "condition": "always",
-              "multiple_of": 0,
-              "image": [
-                "19",
-                0
-              ]
-            },
-            "class_type": "ImageResize+",
-            "_meta": {
-              "title": "🔧 Image Resize"
-            }
-          }
-        }
-      };
-      
-      // Insert the user's prompt into the workflow
-      workflowTemplate["prompt"]["3"]["inputs"]["text"] = "portrait,gray background, dynamic pose," + prompt;
-      workflowTemplate["prompt"]["5"]["inputs"]["noise_seed"] = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)
-      
-      // Send the workflow to the ComfyUI endpoint
-      console.log("Sending request to ComfyUI endpoint: " + JSON.stringify(workflowTemplate));
-      const comfyResponse = await fetch(`${IMAGE_GEN_URL}/prompt`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(workflowTemplate)
-      });
-      
-      if (!comfyResponse.ok) {
-        console.error("ComfyUI API error:", await comfyResponse.text());
-        return res.status(comfyResponse.status).json({
-          success: false,
-          message: `ComfyUI API error: ${comfyResponse.statusText || "Unknown error"}`
-        });
-      }
-      
-      const promptResult = await comfyResponse.json();
-      console.log("ComfyUI prompt result:", promptResult);
-      
-      // Get prompt_id from the response
-      const promptId = promptResult.prompt_id;
-      
-      if (!promptId) {
-        return res.status(500).json({
-          success: false,
-          message: "No prompt ID returned from ComfyUI"
-        });
-      }
-
-      //wait
-      const startTime = Date.now();
-      await new Promise(resolve => setTimeout(resolve, 1200));
-      const timeout = 15000
-      let historyResult = null
-      while (true) {
-        const response = await fetch(`${IMAGE_GEN_URL}/history/${promptId}`);
-        if (response.ok) {
-          historyResult = await response.json();
-          console.log("ComfyUI history result:", JSON.stringify(historyResult));
-          if (Object.keys(historyResult).length != 0)
-            break
-        // Timeout check
-        if (Date.now() - startTime > timeout) {
-          throw new Error("Timeout: Image generation took too long.");
-        }
-
-        // Wait before polling again
-        await new Promise(resolve => setTimeout(resolve, 500));
-      }
-      else {
-        console.error("ComfyUI history error:", await response.text());
-        return res.status(response.status).json({
-          success: false,
-          message: `ComfyUI history API error: ${response.statusText || "Unknown error"}`
-        });
-      }
-      }
-      
-      let imageInfo;
-      if (historyResult[promptId]['outputs']['12']['images'].length > 0) 
-        imageInfo = historyResult[promptId]['outputs']['12']['images'][0];
-      
-      if (!imageInfo) {
-        return res.status(500).json({
-          success: false,
-          message: "No images were generated"
-        });
-      }
-      // Encode the filename to handle spaces and special characters
-      const encodedFilename = encodeURIComponent(imageInfo.filename);
-      const imageUrl = `${IMAGE_GEN_URL}/view?filename=${encodedFilename}&type=${imageInfo.type}&subfolder=Hyper-SDXL-1step-Unet-Comfyui.fp16`;
-      
-      // Log the image generation for debugging
-      console.log("Generated portrait, fetching from ComfyUI to store in DB");
-      
-      try {
-        // Fetch the image data for persistent storage
-        const imageResponse = await fetch(imageUrl);
-        if (!imageResponse.ok) {
-          throw new Error(`Failed to fetch image data: ${imageResponse.status}`);
-        }
-        
-        // Get the image data as a base64 string for storage
-        const imageBuffer = await imageResponse.arrayBuffer();
-        const base64Image = Buffer.from(imageBuffer).toString('base64');
-        
-        // Get content type (usually image/webp for ComfyUI)
-        const contentType = imageResponse.headers.get('content-type') || 'image/webp';
-        
-        // Create a data URL that can be used directly in the browser
-        const dataUrl = `data:${contentType};base64,${base64Image}`;
-        
-        // Return the data URL for direct embedding
-        res.json({
-          success: true,
-          imageUrl: dataUrl,
-          prompt,
-          promptId
-        });
-      } catch (error) {
-        console.error("Error fetching and encoding image:", error);
-        
-        // Fall back to the original URL if we couldn't fetch the image data
-        // This allows generation to still work, but won't have persistent storage
-        res.json({
-          success: true,
-          imageUrl,
-          prompt,
-          promptId,
-          warning: "Image URL is temporary and may expire"
-        });
-      }
-    } catch (error) {
-      console.error("Error generating portrait:", error);
-      res.status(500).json({ 
-        success: false,
-        message: error instanceof Error ? error.message : "Unknown error generating portrait" 
       });
     }
   });
