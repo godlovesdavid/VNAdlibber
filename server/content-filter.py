@@ -84,14 +84,14 @@ def check_image_content(image_data_base64):
                 }
         
         # Check for moderate-risk content with moderate threshold
-        moderate_risk_labels = ['EXPOSED_ARMPITS', 'EXPOSED_BELLY', 'EXPOSED_FEET']
-        for label in moderate_risk_labels:
-            if scores.get(label, 0) > suggestive_threshold:
-                return {
-                    "appropriate": False,
-                    "scores": scores,
-                    "message": f"Suggestive content detected: {label} (confidence: {scores[label]:.2f})"
-                }
+        # moderate_risk_labels = ['EXPOSED_ARMPITS', 'EXPOSED_BELLY', 'EXPOSED_FEET']
+        # for label in moderate_risk_labels:
+        #     if scores.get(label, 0) > suggestive_threshold:
+        #         return {
+        #             "appropriate": False,
+        #             "scores": scores,
+        #             "message": f"Suggestive content detected: {label} (confidence: {scores[label]:.2f})"
+        #         }
         
         # Content passed all checks
         return {
