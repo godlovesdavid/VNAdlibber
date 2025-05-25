@@ -417,14 +417,15 @@ function createBatchComfyUIWorkflow(jobs: ImageJobData[]) {
         }
       }
     }
-  let i = 1
-  for (const job of jobs)
-  {
-    workflow['64']['inputs']['name_' + i] = job.userId
-    workflow['64']['inputs']['width_' + i] = job.width
-    workflow['64']['inputs']['height_' + i] = job.height
-    workflow['64']['inputs']['remove_bg_' + i] = job.remove_bg
-    i += 1
+  let i = 1;
+  for (const job of jobs) {
+    const inputs = workflow['64'].inputs as Record<string, any>;
+    inputs[`positive_prompt_${i}`] = job.prompt;
+    inputs[`name_${i}`] = job.userId;
+    inputs[`width_${i}`] = job.width;
+    inputs[`height_${i}`] = job.height;
+    inputs[`remove_bg_${i}`] = job.remove_bg;
+    i++;
   }
   return {"prompt": workflow};
 }
