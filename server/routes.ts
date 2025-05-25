@@ -48,18 +48,18 @@ async function checkImageContent(base64ImageData: string): Promise<{appropriate:
       cwd: process.cwd(),
       env: { ...process.env }
     });
-    
+
     let output = '';
     let error = '';
-    
+
     python.stdout.on('data', (data) => {
       output += data.toString();
     });
-    
+
     python.stderr.on('data', (data) => {
       error += data.toString();
     });
-    
+
     python.on('close', (code) => {
       if (code === 0) {
         try {
@@ -72,11 +72,11 @@ async function checkImageContent(base64ImageData: string): Promise<{appropriate:
         reject(new Error(`Content filter failed with code ${code}: ${error}`));
       }
     });
-    
+
     python.on('error', (err) => {
       reject(new Error(`Failed to spawn content filter: ${err.message}`));
     });
-    
+
     // Write the base64 data to stdin instead of passing as argument
     python.stdin.write(base64ImageData);
     python.stdin.end();
@@ -89,37 +89,37 @@ async function processImageQueue() {
   if (isProcessing || imageQueue.length === 0) {
     return;
   }
-  
+
   isProcessing = true;
-  
+
   try {
     // Take up to 8 jobs from the queue
     const batch = imageQueue.splice(0, BATCH_SIZE);
     console.log(`Processing batch of ${batch.length} image jobs`);
-    
+
     // Create batch workflow for all jobs
     const batchWorkflow = createBatchComfyUIWorkflow(batch);
-    
+
     // Submit to ComfyUI
     const submissionResponse = await fetch(`${IMAGE_GEN_URL}/prompt`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt: batchWorkflow })
     });
-    
+
     if (!submissionResponse.ok) {
       throw new Error(`ComfyUI submission failed: ${submissionResponse.statusText}`);
     }
-    
+
     const submissionData = await submissionResponse.json();
     const promptId = submissionData.prompt_id;
-    
+
     // Poll for completion
     await pollForBatchCompletion(promptId, batch.map(job => job.userId));
-    
+
   } catch (error) {
     console.error('Batch image generation failed:', error);
-    
+
     // Send error response to all waiting clients in this batch
     const batch = imageQueue.splice(0, 8);
     for (const job of batch) {
@@ -142,7 +142,7 @@ function createBatchComfyUIWorkflow(jobs: ImageJobData[]) {
   // This should create a ComfyUI workflow that processes multiple prompts
   // and names the output images with the corresponding userIds
   console.log(`Creating batch workflow for ${jobs.length} jobs`);
-  
+
   const workflow = {
       "1": {
         "inputs": {
@@ -439,36 +439,36 @@ function createBatchComfyUIWorkflow(jobs: ImageJobData[]) {
 async function pollForBatchCompletion(promptId: string, userIds: string[]) {
   const maxAttempts = 20; 
   let attempts = 0;
-  
+
   while (attempts < maxAttempts) {
     try {
       const historyResponse = await fetch(`${IMAGE_GEN_URL}/history/${promptId}`);
-      
+
       if (historyResponse.ok) {
         const historyData = await historyResponse.json();
-        
+
         if (historyData[promptId] && historyData[promptId].status?.completed) {
           // Process completed images
           const outputs = historyData[promptId].outputs;
-          
+
           for (const userId of userIds) {
             await processBatchImageResult(userId, outputs);
           }
           return;
         }
       }
-      
+
       // Wait 1 second before next poll
       await new Promise(resolve => setTimeout(resolve, 500));
       attempts++;
-      
+
     } catch (error) {
       console.error('Error polling ComfyUI history:', error);
       attempts++;
       await new Promise(resolve => setTimeout(resolve, 500));
     }
   }
-  
+
   throw new Error('Timeout waiting for batch completion');
 }
 
@@ -478,24 +478,24 @@ async function processBatchImageResult(userId: string, outputs: any) {
     const url = `${IMAGE_GEN_URL}/view?filename=${userId}.webp&type=output&subfolder=vnadlib`;
     console.log(`Downloading image for user ${userId} from ComfyUI...`);
     const imageResponse = await fetch(url);
-    
+
     if (!imageResponse.ok) {
       throw new Error(`Failed to fetch image: ${imageResponse.status}`);
     }
-    
+
     // Get the image data as a base64 string for storage
     const imageBuffer = await imageResponse.arrayBuffer();
     const base64Image = Buffer.from(imageBuffer).toString('base64');
 
     console.log(`Running NudeNet content filter for user ${userId}...`);
-    
+
     // Run NudeNet content filtering
     try {
       const contentCheck = await checkImageContent(base64Image);
-      
+
       if (!contentCheck.appropriate) {
         console.log(`Content filter rejected image for user ${userId}: ${contentCheck.message}`);
-        
+
         // Send error response for inappropriate content
         const response = pendingRequests.get(userId);
         if (response) {
@@ -511,12 +511,12 @@ async function processBatchImageResult(userId: string, outputs: any) {
         }
         return;
       }
-      
+
       console.log(`Content filter passed for user ${userId}: ${contentCheck.message}`);
-      
+
     } catch (filterError) {
       console.error(`Content filtering failed for user ${userId}:`, filterError);
-      
+
       // If filtering fails, err on the side of caution and reject the image
       const response = pendingRequests.get(userId);
       if (response) {
@@ -538,9 +538,9 @@ async function processBatchImageResult(userId: string, outputs: any) {
 
     // Create a data URL that can be used directly in the browser
     const dataUrl = `data:${contentType};base64,${base64Image}`;
-    
+
     console.log(`Image approved and ready for user ${userId}`);
-    
+
     // Send response to waiting client
     const response = pendingRequests.get(userId);
     if (response) {
@@ -554,10 +554,10 @@ async function processBatchImageResult(userId: string, outputs: any) {
       });
       pendingRequests.delete(userId);
     }
-    
+
   } catch (error) {
     console.error(`Error processing image for user ${userId}:`, error);
-    
+
     // Send error response
     const response = pendingRequests.get(userId);
     if (response) {
@@ -696,6 +696,48 @@ const generateActSchema = z.object({
   projectContext: z.any(),
 });
 
+// Function to moderate content using OpenAI Moderation API
+async function moderateContent(input: string): Promise<{ flagged: boolean; message: string; categories: any }> {
+  try {
+    if (!process.env.OPENAI_API_KEY) {
+      console.warn("OPENAI_API_KEY is not set. Skipping content moderation.");
+      return { flagged: false, message: "OPENAI_API_KEY not set, content moderation skipped.", categories: {} };
+    }
+
+    const moderationResponse = await fetch("https://api.openai.com/v1/moderations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({ input }),
+    });
+
+    if (!moderationResponse.ok) {
+      throw new Error(`OpenAI Moderation API error: ${moderationResponse.statusText}`);
+    }
+
+    const moderationData = await moderationResponse.json();
+    const result = moderationData.results[0];
+
+    if (result.flagged) {
+      const categories = result.categories;
+      let message = "Content violates OpenAI guidelines in the following categories:\n";
+      for (const category in categories) {
+        if (categories[category]) {
+          message += `- ${category}\n`;
+        }
+      }
+      return { flagged: true, message: message, categories: categories };
+    }
+
+    return { flagged: false, message: "Content passed moderation check.", categories: result.categories };
+  } catch (error) {
+    console.error("Error moderating content:", error);
+    return { flagged: true, message: `Content moderation failed: ${error instanceof Error ? error.message : 'Unknown error'}`, categories: {} };
+  }
+}
+
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Configure rate limiters
@@ -709,7 +751,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       errorType: "rate_limit_exceeded"
     }
   });
-  
+
   const imageLimiter = rateLimit({
     windowMs: 20000, 
     max: 5, 
@@ -720,7 +762,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       errorType: "rate_limit_exceeded"
     }
   });
-  
+
   // Apply rate limiters to AI generation endpoints
   app.use(["/api/generate/concept", "/api/generate/plot", "/api/generate/path", "/api/generate/character", "/api/generate/act"], aiGenerationLimiter);
   app.use(["/api/generate/image"], imageLimiter);
@@ -756,7 +798,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const projectData = req.body;
       console.log('[SERVER] Project save request received with hash:', projectData.lastSavedHash);
-      
+
       // Add debug for character portraits
       console.log('[SERVER] Project has character portraits?', !!projectData.characterPortraitsData);
       if (projectData.characterPortraitsData) {
@@ -771,7 +813,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ...projectData,
           characterPortraitsData: projectData.characterPortraitsData || {}
         };
-        
+
         const updatedProject = await storage.updateProject(
           projectData.id,
           dataToUpdate,
@@ -788,7 +830,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...projectData,
         characterPortraitsData: projectData.characterPortraitsData || {}
       };
-      
+
       const newProject = await storage.createProject(dataToCreate);
       console.log(`[SERVER] New project created with ID ${newProject.id} and hash: ${newProject.lastSavedHash}`);
       console.log('[SERVER] New project has portraits data?', !!newProject.characterPortraitsData);
@@ -831,7 +873,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to save story" });
     }
   });
-  
+
   // Helper function to generate a unique ID for shared stories
   function generateShareId(length = 8) {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -841,42 +883,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     return result;
   }
-  
+
   // Share a project/story by creating a shareable link
   app.post("/api/share", async (req, res) => {
     try {
       const { projectId, actNumber: requestedActNumber, title } = req.body;
-      
+
       if (!projectId) {
         return res.status(400).json({ error: 'No project ID provided' });
       }
-      
+
       // Get the project from storage
       const project = await storage.getProject(projectId);
-      
+
       if (!project) {
         return res.status(404).json({ error: 'Project not found' });
       }
-      
+
       // Generate a unique share ID
       const shareId = generateShareId(12); // Use longer IDs to reduce collision chance
       const now = new Date().toISOString();
-      
+
       // Type assertion for the generatedActs property
       interface ProjectWithGeneratedActs extends Omit<typeof project, 'generatedActs'> {
         generatedActs?: Record<string, any>;
       }
       const typedProject = project as ProjectWithGeneratedActs;
       const generatedActs = typedProject.generatedActs || {};
-      
+
       // Determine which act to share
       let actKey: string | undefined;
       let actNum: number = 1; // Default to act 1 if nothing else is specified
-      
+
       // Check if requestedActNumber is valid
       if (requestedActNumber !== undefined && requestedActNumber !== null) {
         let requestedActNum;
-        
+
         // Handle different types of act number input
         if (typeof requestedActNumber === 'string') {
           requestedActNum = parseInt(requestedActNumber, 10);
@@ -885,7 +927,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } else {
           requestedActNum = null;
         }
-        
+
         // Use the parsed act number if it's valid
         if (requestedActNum && requestedActNum >= 1 && requestedActNum <= 5) {
           actKey = `act${requestedActNum}`;
@@ -893,35 +935,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         // Otherwise fall through to using the first available act
       }
-      
+
       // If no valid act number was provided or parsed, use the first available act
       if (!actKey) {
         const actKeys = Object.keys(generatedActs);
-        
+
         if (actKeys.length === 0) {
           return res.status(400).json({ error: 'No generated acts found in this project' });
         }
-        
+
         actKey = actKeys[0];
         // Extract the number from the actKey (e.g., "act1" -> 1)
         actNum = parseInt(actKey.replace('act', ''), 10);
       }
-      
+
       // Initialize actData variable
       let actData; 
-      
+
       // If actData was provided directly in the request body, use that
       // This handles the case for newly generated acts that haven't been saved to the database yet
       if (req.body.actData) {
         actData = req.body.actData;
-        
+
         // Make sure the act number is included in the act data for proper loading
         actData.act = actNum;
       }
       // Otherwise check if the act exists in the project's generatedActs
       else if (generatedActs[actKey]) {
         actData = generatedActs[actKey];
-        
+
         // Make sure the act number is included in the act data for proper loading
         actData.act = actNum;
       } 
@@ -930,7 +972,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: `Act ${actNum} not found in this project` });
       }
       const storyTitle = title || project.title || `Visual Novel Act ${actNum}`;
-      
+
       // Create a new story entry in the database
       const story = await storage.createStory({
         shareId,
@@ -941,15 +983,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         actData,
         actNumber: actNum  // This should be the proper act number from above
       });
-      
+
       // Return the share ID and related information with URL-safe title
       const urlSafeTitle = storyTitle.toLowerCase()
         .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric chars with hyphens
         .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
-      
+
       // The act number in the URL should reflect the actual act number we're sharing
       const actString = `act-${actNum}`;
-      
+
       res.json({ 
         shareId, 
         storyId: story.id,
@@ -962,33 +1004,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to share story' });
     }
   });
-  
+
   // Get a shared story by its share ID
   app.get("/api/play/:shareId", async (req, res) => {
     try {
       const { shareId } = req.params;
-      
+
       console.log(`[SERVER] Fetching shared story with ID: ${shareId}`);
-      
+
       // Get the story with the matching share ID
       const story = await storage.getStoryByShareId(shareId);
-      
+
       if (!story) {
         console.log(`[SERVER] Story not found with share ID: ${shareId}`);
         return res.status(404).json({ error: 'Shared story not found' });
       }
-      
+
       console.log(`[SERVER] Found story #${story.id} with title: ${story.title}`);
-      
+
       // Validate the actData before sending it to the client
       if (!story.actData) {
         console.log(`[SERVER] Warning: Story #${story.id} has no actData`);
         return res.status(400).json({ error: 'Shared story has missing data' });
       }
-      
+
       // Update the lastAccessed timestamp
       await storage.updateStoryLastAccessed(story.id);
-      
+
       // Ensure actNumber is properly set for the client
       if (!story.actNumber && story.actData && typeof story.actData === 'object') {
         // TypeScript: We need to check if 'act' exists on the object
@@ -1000,9 +1042,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`[SERVER] Setting actNumber from actData: ${story.actNumber}`);
         }
       }
-      
+
       console.log(`[SERVER] Returning story with actNumber: ${story.actNumber}, actData type: ${typeof story.actData}`);
-      
+
       // Return the story data
       res.json({ story });
     } catch (error) {
@@ -1010,27 +1052,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to retrieve shared story' });
     }
   });
-  
+
   // Admin endpoint to check expired links
   app.get("/api/admin/expired-links", async (req, res) => {
     try {
       const { days = "30" } = req.query;
       const daysNumber = parseInt(days as string, 10) || 30;
-      
+
       // Get all stories
       const stories = await storage.getStories();
-      
+
       // Calculate expiration date
       const expirationDate = new Date();
       expirationDate.setDate(expirationDate.getDate() - daysNumber);
-      
+
       // Filter expired stories
       const expiredStories = stories.filter(story => {
         if (!story.lastAccessed) return false;
         const lastAccessedDate = new Date(story.lastAccessed);
         return lastAccessedDate < expirationDate;
       });
-      
+
       // Return information about expired stories
       res.json({ 
         totalStories: stories.length,
@@ -1084,7 +1126,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create prompt for validation based on content type
       const validationPrompt = JSON.stringify(projectContext, null, 2)
-      
+
       // Validate using Gemini
       const responseContent = await generateWithGemini(
         validationPrompt,
@@ -1112,7 +1154,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(validationResult);
     } catch (error) {
       console.error("Error validating content:", error);
-      
+
       // Extract detailed error information
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       const errorCause = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause 
@@ -1120,7 +1162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : null;
       const isOverloaded = typeof errorMessage === 'string' && errorMessage.includes("overloaded");
       const statusCode = isOverloaded ? 503 : 500; // Service Unavailable for overloaded model
-      
+
       res.status(statusCode).json({
         message: "Failed to validate content",
         technicalDetails: errorMessage,
@@ -1145,21 +1187,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       `;
 
-      // Use Gemini to generate the concept
+      // Check content before generation
+      const moderationCheck = await moderateContent(prompt);
+      if (moderationCheck.flagged) {
+        return res.status(400).json({
+          message: "Content request violates guidelines",
+          technicalDetails: moderationCheck.message,
+          categories: moderationCheck.categories,
+          retryRecommended: true
+        });
+      }
+
+      // Generate concept using Gemini
       const systemPrompt =
         "You're a visual novel brainstormer with wildly creative ideas";
       const responseContent = await generateWithGemini(prompt, systemPrompt);
-      
+
       // Try to parse response
       try {
         if (responseContent === "{}" || !responseContent) throw new Error("Empty response");
         const generatedConcept = JSON.parse(responseContent);
-        
+
         // Clean up title if needed
         if (generatedConcept.title) {
           generatedConcept.title = generatedConcept.title.replace("Echo Bloom: ", ''); //ai likes to put this weird thing as the title
         }
-        
+
         res.json(generatedConcept);
       } catch (e) {
         console.error("Problem parsing concept JSON:", e);
@@ -1175,7 +1228,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       console.error("Error generating concept:", error);
-      
+
       // Extract detailed error information
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       const errorCause = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause 
@@ -1183,7 +1236,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : null;
       const isOverloaded = typeof errorMessage === 'string' && errorMessage.includes("overloaded");
       const statusCode = isOverloaded ? 503 : 500; // Service Unavailable for overloaded model
-      
+
       res.status(statusCode).json({
         message: "Failed to generate concept",
         technicalDetails: errorMessage,
@@ -1228,7 +1281,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ${indices.length > 1 ? '\n  "Another Character Name": { ... },' : ""}
           ${indices.length > 1 ? '\n  "Third Character Name": { ... }' : ""}
         }
-        
+
         Make characters feel realistic, complex, and memorable with distinct personalities.
         ${indices.length > 1 ? "Make the first character the main protagonist." : ""}
         Keep all characters consistent with the story's theme, tone, and genre.
@@ -1261,7 +1314,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       console.error("Error generating characters:", error);
-      
+
       // Extract detailed error information
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       const errorCause = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause 
@@ -1269,7 +1322,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : null;
       const isOverloaded = typeof errorMessage === 'string' && errorMessage.includes("overloaded");
       const statusCode = isOverloaded ? 503 : 500; // Service Unavailable for overloaded model
-      
+
       res.status(statusCode).json({
         message: "Failed to generate characters",
         technicalDetails: errorMessage,
@@ -1291,10 +1344,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create prompt for the path generation - {title: {...}} format
       const prompt = `Given this story context:
         ${JSON.stringify(projectContext, null, 2)}
-        
+
         Generate exactly ${indices.length} story path${indices.length > 1 ? "s" : ""} for a visual novel in JSON format.
         Each path represents a different storyline or route the player can follow.
-        
+
         Return in this exact format where the path title is the key:
         {
           "Path Title": {
@@ -1309,7 +1362,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ${indices.length > 1 ? '\n  "Another Path Title": { ... },' : ""}
           ${indices.length > 1 ? '\n  "Third Path Title": { ... }' : ""}
         }
-        
+
         Make each path distinct and compelling, with different story arcs, challenges, and themes.
         Use descriptive and thematic titles as the keys (e.g. 'Path of Redemption', 'Journey of Discovery').
         Ensure paths align with the overall story context and character relationships.
@@ -1340,7 +1393,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       console.error("Error generating paths:", error);
-      
+
       // Extract detailed error information
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       const errorCause = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause 
@@ -1348,7 +1401,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : null;
       const isOverloaded = typeof errorMessage === 'string' && errorMessage.includes("overloaded");
       const statusCode = isOverloaded ? 503 : 500; // Service Unavailable for overloaded model
-      
+
       res.status(statusCode).json({
         message: "Failed to generate paths",
         technicalDetails: errorMessage,
@@ -1381,7 +1434,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           "act4": {/* same structure as act1 */},
           "act5": {/* same structure as act1 */}
         }
-        
+
         Make the 5 acts follow this structure: Introduction, Rising Action, Midpoint Twist, Escalating Conflict, Resolution/Endings.
         Be descriptive and imaginative about events to create a rich visual novel story.
       `;
@@ -1410,7 +1463,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       console.error("Error generating plot:", error);
-      
+
       // Extract detailed error information
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       const errorCause = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause 
@@ -1418,7 +1471,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : null;
       const isOverloaded = typeof errorMessage === 'string' && errorMessage.includes("overloaded");
       const statusCode = isOverloaded ? 503 : 500; // Service Unavailable for overloaded model
-      
+
       res.status(statusCode).json({
         message: "Failed to generate plot",
         technicalDetails: errorMessage,
@@ -1437,7 +1490,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create prompt for the act generation - simplified {scene1: {...}} format
       const prompt = `You are tasked with creating scenes for Act ${actNumber} based on this story context:
         ${JSON.stringify(projectContext, null, 2)}
-        
+
         Generate a visual novel act structure in JSON with the exact format below:
         {
           "scene1": {
@@ -1485,7 +1538,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
              "next": "scene5",
              "failNext": "scene6"
            }
-        
+
         Make it engaging!
       `;
 
@@ -1520,7 +1573,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       console.error("Error generating act:", error);
-      
+
       // Extract detailed error information
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       const errorCause = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause 
@@ -1528,7 +1581,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         : null;
       const isOverloaded = typeof errorMessage === 'string' && errorMessage.includes("overloaded");
       const statusCode = isOverloaded ? 503 : 500; // Service Unavailable for overloaded model
-      
+
       res.status(statusCode).json({
         message: "Failed to generate act",
         technicalDetails: errorMessage,
@@ -1641,7 +1694,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   //     }
   //   } catch (error) {
   //     console.error("Error processing image generation request:", error);
-      
+
   //     // Extract detailed error information
   //     const errorMessage = error instanceof Error ? error.message : "Unknown error";
   //     const errorCause = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause 
@@ -1649,7 +1702,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   //       : null;
   //     const isOverloaded = typeof errorMessage === 'string' && errorMessage.includes("overloaded");
   //     const statusCode = isOverloaded ? 503 : 500; // Service Unavailable for overloaded model
-      
+
   //     res.status(statusCode).json({
   //       message: "Failed to process image generation request",
   //       technicalDetails: errorMessage,
@@ -1669,7 +1722,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           error: 'DeepL API key is not configured'
         });
       }
-      
+
       // Import the translation service and process the request
       const { translateTexts } = await import('./translation-service');
       return translateTexts(req, res);
@@ -1680,7 +1733,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  
+
   // Auto-translation endpoint to update translation files
   app.get('/api/translate/auto/:language', async (req, res) => {
     try {
@@ -1690,7 +1743,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           error: 'DeepL API key is not configured'
         });
       }
-      
+
       // Handle the auto-translation request
       return handleAutoTranslate(req, res);
     } catch (error) {
@@ -1700,9 +1753,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  
+
   // Scan for missing translation keys endpoint
-  app.get('/api/translate/scan', async (req, res) => {
+  ```python
+app.get('/api/translate/scan', async (req, res) => {
     try {
       // Handle the scan for missing keys request
       return handleScanForMissingKeys(req, res);
@@ -1736,19 +1790,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  
+
   //image generator endpoint
   app.post("/api/generate/image", async (req, res) => {
     try {
       const { prompt, width=1024, height=1024, remove_bg =false} = req.body;
-      
+
       if (!prompt) {
         return res.status(400).json({
           success: false,
           message: "Prompt is required"
         });
       }
-      
+
       // Validate dimensions if provided
       if (width && (width < 64 || width > 2048)) {
         return res.status(400).json({
@@ -1756,22 +1810,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "Width must be between 64 and 2048 pixels"
         });
       }
-      
+
       if (height && (height < 64 || height > 2048)) {
         return res.status(400).json({
           success: false,
           message: "Height must be between 64 and 2048 pixels"
         });
       }
-      
+
       // Generate unique user ID for this request
       const userId = uuidv4();
-      
+
       console.log(`Queueing image generation for user ${userId} with prompt: ${prompt}, dimensions: ${width || 'default'}x${height || 'default'}, remove_bg: ${remove_bg}`);
-      
+
       // Store the response object for later use
       pendingRequests.set(userId, res);
-      
+
       // Add job to queue
       imageQueue.push({
         userId,
@@ -1781,7 +1835,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         height: height,
         remove_bg: remove_bg
       });
-      
+
       // Set timeout to clean up if client disconnects
       const timeout = setTimeout(() => {
         if (pendingRequests.has(userId)) {
@@ -1789,14 +1843,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           pendingRequests.delete(userId);
         }
       }, 30000); 
-      
+
       // Clean up timeout when request completes
       res.on('finish', () => {
         clearTimeout(timeout);
       });
-      
+
       // Note: Response is sent later by the worker via pendingRequests map
-      
+
     } catch (error) {
       console.error("Error queueing portrait generation:", error);
       res.status(500).json({ 
