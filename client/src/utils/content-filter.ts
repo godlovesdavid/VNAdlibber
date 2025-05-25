@@ -1,7 +1,7 @@
-import * as profanity from 'profanity';
+import { filter, removeWords, addWords } from 'naughty-words';
 
 // LDNOOBW (Language Detection No Obscenity or Bad Words) Content Filter
-// Using the profanity library with multilingual LDNOOBW word lists
+// Using the official naughty-words library from LDNOOBW repository
 
 interface ContentFilterResult {
   isClean: boolean;
@@ -26,40 +26,45 @@ export function getCurrentLanguage(): string {
   return 'en';
 }
 
-// Main content filtering function using profanity library with LDNOOBW
+// Main content filtering function using naughty-words LDNOOBW library
 export function filterInappropriateContent(text: string, language?: string): ContentFilterResult {
   const detectedLang = language || getCurrentLanguage();
   
-  // Check if text contains profanity
-  const hasProfanity = profanity.exists(text);
+  // Filter the text using naughty-words
+  const filteredResult = filter(text);
   
-  // Get cleaned text
-  const cleanedText = profanity.purify(text)[0];
+  // Check if any words were filtered (text changed)
+  const hasProfanity = filteredResult !== text;
   
-  // Extract detected words from the library
+  // Extract detected words by comparing original and filtered text
   const detectedWords: string[] = [];
   if (hasProfanity) {
-    // Get the words that were detected
-    const words = profanity.purify(text)[1];
-    detectedWords.push(...words);
+    const originalWords = text.toLowerCase().split(/\s+/);
+    const filteredWords = filteredResult.toLowerCase().split(/\s+/);
+    
+    for (let i = 0; i < originalWords.length; i++) {
+      if (filteredWords[i] && filteredWords[i] !== originalWords[i]) {
+        detectedWords.push(originalWords[i]);
+      }
+    }
   }
   
   return {
     isClean: !hasProfanity,
     detectedWords: Array.from(new Set(detectedWords)), // Remove duplicates
-    cleanedText,
+    cleanedText: filteredResult,
     language: detectedLang
   };
 }
 
 // Helper function to check if text is clean
 export function isContentClean(text: string): boolean {
-  return !profanity.exists(text);
+  return filter(text) === text;
 }
 
 // Helper function to clean text
 export function cleanInappropriateContent(text: string): string {
-  return profanity.purify(text)[0];
+  return filter(text);
 }
 
 // Export types for use in components
