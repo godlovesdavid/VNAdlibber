@@ -110,17 +110,26 @@ def check_image_content(image_data_base64):
 
 def main():
     """Main function for command-line usage"""
-    if len(sys.argv) != 2:
+    try:
+        # Read base64 image data from stdin
+        image_data = sys.stdin.read().strip()
+        if not image_data:
+            print(json.dumps({
+                "appropriate": False,
+                "scores": {},
+                "message": "No image data provided"
+            }))
+            sys.exit(1)
+        
+        result = check_image_content(image_data)
+        print(json.dumps(result))
+    except Exception as e:
         print(json.dumps({
             "appropriate": False,
             "scores": {},
-            "message": "Usage: python content-filter.py <base64_image_data>"
+            "message": f"Error reading input: {str(e)}"
         }))
         sys.exit(1)
-    
-    image_data = sys.argv[1]
-    result = check_image_content(image_data)
-    print(json.dumps(result))
 
 if __name__ == "__main__":
     main()
