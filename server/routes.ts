@@ -1457,7 +1457,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   
-  // New Bull queue-based portrait generation endpoint
+  //image generator endpoint
   app.post("/api/generate/image", async (req, res) => {
     try {
       const { prompt } = req.body;
