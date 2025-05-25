@@ -353,7 +353,7 @@ export default function CharactersForm() {
         const currentLang = getCurrentLanguageCode();
         
         if (currentLang !== 'en') {
-          console.log(`Translating portrait prompt from ${currentLang} to English...`);
+          console.log(`Translating portrait prompt to English...`);
           prompt = await translateToEnglish(originalPrompt, currentLang);
           console.log(`Original prompt: ${originalPrompt}`);
           console.log(`Translated prompt: ${prompt}`);
@@ -455,8 +455,8 @@ export default function CharactersForm() {
           const character = updatedCharacters[i];
           if (character.name && character.appearance) {
             try {
-              // Import NSFW detection (dynamic import to avoid loading it unnecessarily)
-              const NSFWDetection = await import('@/lib/nsfwDetection');
+              // // Import NSFW detection (dynamic import to avoid loading it unnecessarily)
+              // const NSFWDetection = await import('@/lib/nsfwDetection');
               
               setGeneratingPortraitIndex(i);
               
