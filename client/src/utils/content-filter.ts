@@ -34,8 +34,8 @@ export async function filterInappropriateContent(text: string): Promise<ContentF
   const detectedLang = getCurrentLanguage();
   
   // Use language-specific filtering if supported, otherwise default to English
-  const langToUse = LDNOOBW_SUPPORTED_LANGS.includes(detectedLang) ? detectedLang : 'en';
-  
+  // const langToUse = LDNOOBW_SUPPORTED_LANGS.includes(detectedLang) ? detectedLang : 'en';
+  const langToUse = 'en' //for now just filter english
   try {
     // Import the language-specific word list
     const naughtyWords = await import('naughty-words');

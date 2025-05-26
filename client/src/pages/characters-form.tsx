@@ -320,31 +320,9 @@ export default function CharactersForm() {
     setGeneratingPortraitIndex(index);
     
     try {
-      // // Import NSFW detection (dynamic import to avoid loading it unnecessarily)
-      // const NSFWDetection = await import('@/lib/nsfwDetection');
-      
-      // // Initialize NSFW detection if needed
-      // await NSFWDetection.initNSFWDetection();
-      
       // Construct a portrait prompt based on character details
       const originalPrompt = `${character.name}, a ${character.age ? character.age + '-year-old ' : ''}${character.gender} ${character.occupation}. ${character.appearance}`;
 
-      // LDNOOBW content filtering for originalPrompt
-      const { isContentClean } = await import('@/utils/content-filter');
-      const isClean = await isContentClean(originalPrompt);
-      console.log('Content filter result:', isClean);
-      if (!isClean) {
-        console.warn(`LDNOOBW filter blocked- inappropriate content in prompt `);
-        toast({
-          title: t('common.contentGuidelines', 'Content Guidelines'),
-          description: t('characterForm.inappropriatePrompt', 'The character description contains inappropriate language. Please revise and try again.'),
-          variant: "destructive"
-        });
-        return;
-      }
-      console.log(isContentClean(originalPrompt))
-      console.log(`LDNOOBW filter passed for prompt`);
-      
       // Translate prompt to English for better image generation
       let prompt = originalPrompt;
       try {
@@ -357,20 +335,28 @@ export default function CharactersForm() {
         console.warn('Translation failed, using original prompt:', error);
         prompt = originalPrompt;
       }
-      
+
+      // LDNOOBW content filtering for originalPrompt
+      const { isContentClean } = await import('@/utils/content-filter');
+      const isClean = await isContentClean(prompt);
+      console.log('Content filter result:', isClean);
+      if (!isClean) {
+        console.warn(`LDNOOBW filter blocked- inappropriate content in prompt `);
+        toast({
+          title: t('common.contentGuidelines', 'Content Guidelines'),
+          description: t('characterForm.inappropriatePrompt', 'The character description contains inappropriate language. Please revise and try again.'),
+          variant: "destructive"
+        });
+        return;
+      }
+      console.log(isContentClean(originalPrompt))
+      console.log(`LDNOOBW filter passed for prompt`);
+
       // Call the server API to generate a portrait
       const response = await apiRequest("POST", "/api/generate/image", { prompt, width:512, height:1024, remove_bg:true });
       const portraitData = await response.json();
 
       if (portraitData && portraitData.url) {
-        // // Check if the generated image is appropriate (client-side check)
-        // const contentCheck = await NSFWDetection.checkurl(
-        //   portraitData.url,
-        //   NSFWDetection.NSFW_CONFIG[NSFWDetection.ModerationLevel.ADULT_MODERATE]
-        // );
-        
-        // if (contentCheck.isAppropriate) {
-        //   // Image passed the client-side check, display it
           setCharacterPortraits(prev => ({
             ...prev,
             [index]: portraitData.url
@@ -380,17 +366,6 @@ export default function CharactersForm() {
             title: t('characterForm.portraitGenerated', 'Portrait Generated'),
             description: t('characterForm.portraitGeneratedDesc', 'Character portrait has been generated successfully.')
           });
-      //   } 
-      // else {
-      //     // Image did not pass the client-side NSFW check
-      //     console.warn("Generated portrait did not pass content guidelines check:", contentCheck.message);
-          
-      //     toast({
-      //       title: t('common.contentGuidelines', 'Content Guidelines'),
-      //       description: t('characterForm.inappropriatePortrait', 'The generated portrait does not meet our content guidelines. Please try generating again.'),
-      //       variant: "destructive"
-      //     });
-      //   }
       } else {
         throw new Error("Failed to generate portrait");
       }
@@ -449,9 +424,6 @@ export default function CharactersForm() {
           const character = updatedCharacters[i];
           if (character.name && character.appearance) {
             try {
-              // // Import NSFW detection (dynamic import to avoid loading it unnecessarily)
-              // const NSFWDetection = await import('@/lib/nsfwDetection');
-              
               setGeneratingPortraitIndex(i);
               
               // Construct portrait prompt
@@ -462,28 +434,10 @@ export default function CharactersForm() {
               const portraitData = await response.json();
               
               if (portraitData && portraitData.url) {
-                // Check if the generated image is appropriate using teen-safe settings
-                // const contentCheck = await NSFWDetection.checkurl(
-                //   portraitData.url,
-                //   NSFWDetection.NSFW_CONFIG[NSFWDetection.ModerationLevel.ADULT_MODERATE]
-                // );
-                
-                // if (contentCheck.isAppropriate) {
-                  // Image passed content check, display it
                   setCharacterPortraits(prev => ({
                     ...prev,
                     [i]: portraitData.url
                   }));
-                // } else {
-                //   // Image didn't pass the content check
-                //   console.warn(`Portrait for ${character.name} didn't pass content guidelines:`, contentCheck.message);
-                  
-                //   toast({
-                //     title: t('common.contentGuidelines', 'Content Guidelines'),
-                //     description: t('characterForm.inappropriatePortrait', 'A generated portrait does not meet content guidelines. Skipping.'),
-                //     variant: "destructive",
-                //   });
-                // }
               }
             } catch (error) {
               console.error(`Error generating portrait for character ${i}:`, error);
