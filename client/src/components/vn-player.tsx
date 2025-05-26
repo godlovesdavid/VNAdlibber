@@ -536,7 +536,7 @@ export function VnPlayer({
     } catch (error) {
       console.error("Error initializing first scene:", error);
     }
-  }, [actData, mode, animateText]);
+  }, [actData, mode]);
 
   // Update current scene when scene ID changes
   useEffect(() => {
