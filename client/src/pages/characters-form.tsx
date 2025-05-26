@@ -349,20 +349,15 @@ export default function CharactersForm() {
       // Translate prompt to English for better image generation
       let prompt = originalPrompt;
       try {
-        const { translateToEnglish, getCurrentLanguageCode } = await import('@/utils/google-translate');
-        const currentLang = getCurrentLanguageCode();
-        
-        if (currentLang !== 'en') {
-          console.log(`Translating portrait prompt to English...`);
-          prompt = await translateToEnglish(originalPrompt, currentLang);
-          console.log(`Original prompt: ${originalPrompt}`);
-          console.log(`Translated prompt: ${prompt}`);
-        }
+        const { translateToEnglish } = await import('@/utils/google-translate');
+        console.log(`Translating portrait prompt to English...`);
+        prompt = await translateToEnglish(originalPrompt);
+        console.log(`Original prompt: ${originalPrompt}`);
+        console.log(`Translated prompt: ${prompt}`);
       } catch (error) {
         console.warn('Translation failed, using original prompt:', error);
         prompt = originalPrompt;
       }
-      
       
       // Call the server API to generate a portrait
       const response = await apiRequest("POST", "/api/generate/image", { prompt, width:512, height:1024, remove_bg:true });

@@ -239,22 +239,22 @@ export default function ConceptForm() {
       <div className="pt-16">
         <div className="creation-container max-w-4xl mx-auto p-6">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-            {t('conceptForm.title')}
+            {t('conceptForm.title', 'Concept')}
           </h2>
           <p className="text-gray-600 mb-6">
-            {t('conceptForm.description')}
+            {t('conceptForm.description', 'Define the central concept of your visual novel with a catchy title, tagline, and premise.')}
           </p>
 
           <div className="space-y-6">
             {/* Title */}
             <div className="form-group">
               <p className="text-xs text-gray-500 mb-2">
-                {t('conceptForm.titleHelp')}
+                {t('conceptForm.titleHelp', 'Create a memorable title for your visual novel')}
               </p>
               <MinimalInput
                 id="title"
-                label={t('conceptForm.title')}
-                placeholder="e.g. Chronicles of the Hidden City"
+                label={t('conceptForm.title', 'Title')}
+                placeholder=""
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
@@ -263,12 +263,12 @@ export default function ConceptForm() {
             {/* Tagline */}
             <div className="form-group">
               <p className="text-xs text-gray-500 mb-2">
-                {t('conceptForm.taglineHelp')}
+                {t('conceptForm.taglineHelp', "A phrase that captures the essence of your story")}
               </p>
               <MinimalInput
                 id="tagline"
-                label={t('conceptForm.tagline')}
-                placeholder="e.g. When secrets become weapons, who can you trust?"
+                label={t('conceptForm.tagline', 'Tagline')}
+                placeholder=""
                 value={tagline}
                 onChange={(e) => setTagline(e.target.value)}
               />
@@ -281,9 +281,9 @@ export default function ConceptForm() {
               </p>
               <MinimalTextarea
                 id="premise"
-                label={t('conceptForm.premise')}
+                label={t('conceptForm.premise', "Brief description of your story's setting and central conflict")}
                 rows={4}
-                placeholder="e.g. In a city where memories can be traded like currency, a young archivist discovers a forbidden memory that reveals a conspiracy at the heart of society. As they navigate a web of deception, they must choose between exposing the truth or protecting those they love."
+                placeholder=""
                 value={premise}
                 onChange={(e) => setPremise(e.target.value)}
               />
@@ -292,7 +292,7 @@ export default function ConceptForm() {
             <div className="pt-6 flex justify-between">
               <div className="flex items-center">
                 <Button variant="outline" onClick={handleBack}>
-                  {t('conceptForm.back')}
+                  {t('conceptForm.back', 'back')}
                 </Button>
                 {/* Autosave indicator */}
                 {autosaving && (
@@ -317,7 +317,7 @@ export default function ConceptForm() {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       ></path>
                     </svg>
-                    {t('common.saving')}
+                    {t('common.saving', 'Saving...')}
                   </div>
                 )}
               </div>
@@ -328,7 +328,7 @@ export default function ConceptForm() {
                   onClick={handleResetForm}
                   disabled={isGenerating}
                 >
-                  {t('conceptForm.reset')}
+                  {t('conceptForm.reset', 'reset')}
                 </Button>
                 <Button
                   variant="outline"
@@ -358,7 +358,7 @@ export default function ConceptForm() {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      {t('common.generating')}
+                      {t('common.generating', 'Generating...')}
                     </>
                   ) : (
                     <>
@@ -367,7 +367,7 @@ export default function ConceptForm() {
                     </>
                   )}
                 </Button>
-                <Button onClick={handleNext}>{t('conceptForm.next')}: {t('characterForm.title').split(':')[0]}</Button>
+                <Button onClick={handleNext}>{t('conceptForm.next', 'next')}: {t('characterForm.title', 'Title').split(':')[0]}</Button>
               </div>
             </div>
 
@@ -379,7 +379,7 @@ export default function ConceptForm() {
                   className="text-red-600 border-red-300 hover:bg-red-50"
                   onClick={cancelGeneration}
                 >
-                  {t('common.cancel')}
+                  {t('common.cancel', 'cancel')}
                 </Button>
               </div>
             )}

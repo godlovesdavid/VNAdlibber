@@ -92,11 +92,11 @@ async function processImageQueue() {
 
   isProcessing = true;
 
-  try {
     // Take up to 8 jobs from the queue
     const batch = imageQueue.splice(0, BATCH_SIZE);
     console.log(`Processing batch of ${batch.length} image jobs`);
 
+  try {
     // Create batch workflow for all jobs
     const batchWorkflow = createBatchComfyUIWorkflow(batch);
 
@@ -120,8 +120,6 @@ async function processImageQueue() {
   } catch (error) {
     console.error('Batch image generation failed:', error);
 
-    // Send error response to all waiting clients in this batch
-    const batch = imageQueue.splice(0, 8);
     for (const job of batch) {
       const response = pendingRequests.get(job.userId);
       if (response) {
@@ -1755,8 +1753,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Scan for missing translation keys endpoint
-  ```python
-app.get('/api/translate/scan', async (req, res) => {
+  app.get('/api/translate/scan', async (req, res) => {
     try {
       // Handle the scan for missing keys request
       return handleScanForMissingKeys(req, res);

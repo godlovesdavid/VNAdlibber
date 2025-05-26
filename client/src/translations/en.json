@@ -69,7 +69,7 @@
     "validationError": "Character Validation Error"
   },
   "conceptForm": {
-    "title": "Title",
+    "title": "Concept",
     "description": "Define the central concept of your visual novel with a catchy title, tagline, and premise.",
     "titleHelp": "Create a memorable title for your visual novel",
     "tagline": "Tagline",
