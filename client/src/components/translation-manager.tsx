@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { supportedLanguages } from '@/components/flag-selector';
 
 
 export function TranslationManager() {
@@ -29,22 +30,11 @@ export function TranslationManager() {
     const saved = localStorage.getItem('vn-auto-translate');
     return saved === 'true';
   });
-  
+
   const [localSourceLanguage, setLocalSourceLanguage] = useState<string>(() => {
     const saved = localStorage.getItem('vn-auto-translate-source');
     return saved || 'en';
   });
-
-  // Supported languages for translation
-  const supportedLanguages = [
-    { code: 'es', name: 'Spanish' },
-    { code: 'ja', name: 'Japanese' },
-    { code: 'zh', name: 'Chinese' },
-    { code: 'fr', name: 'French' },
-    { code: 'de', name: 'German' },
-    { code: 'pt', name: 'Portuguese' },
-    { code: 'ar', name: 'Arabic' },
-  ];
 
   // Check if API key is configured in environment
   const checkApiConfig = async () => {
@@ -69,20 +59,20 @@ export function TranslationManager() {
     if (e) {
       e.preventDefault();
     }
-    
+
     // Confirm with the user before proceeding
     if (!window.confirm(t('translation.manager.confirmClear', 'Are you sure you want to clear all translations? This will remove all translated text except for English and cannot be undone.'))) {
       return;
     }
-    
+
     setTranslating(true);
     setTranslationLog(prev => [...prev, 'Starting to clear all translations...']);
-    
+
     try {
       // Process each language
       for (const language of supportedLanguages) {
         setTranslationLog(prev => [...prev, `Clearing translations for ${language.name} (${language.code})...`]);
-        
+
         // Call clear translations endpoint for this language
         const response = await fetch(`/api/translate/clear/${language.code}`, {
           method: 'POST',
@@ -91,18 +81,18 @@ export function TranslationManager() {
             'X-No-Refresh': 'true'
           }
         });
-        
+
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(`Clearing translations for ${language.name} failed: ${errorData.error || response.statusText}`);
         }
-        
+
         const data = await response.json();
         setTranslationLog(prev => [...prev, `✓ ${language.name}: Cleared ${data.clearedCount || 'all'} translations`]);
       }
-      
+
       setTranslationLog(prev => [...prev, '✓ All translations have been cleared successfully']);
-      
+
       toast({
         title: 'Translations Cleared',
         description: 'All translations have been cleared. You can now retranslate everything.',
@@ -110,7 +100,7 @@ export function TranslationManager() {
     } catch (error) {
       console.error('Clearing translations error:', error);
       setTranslationLog(prev => [...prev, `Error: ${error instanceof Error ? error.message : String(error)}`]);
-      
+
       toast({
         title: t('common.error'),
         description: 'An error occurred while clearing translations',
@@ -127,10 +117,10 @@ export function TranslationManager() {
     if (e) {
       e.preventDefault();
     }
-    
+
     setScanning(true);
     setTranslationLog(prev => [...prev, 'Starting to scan codebase for missing translation keys...']);
-    
+
     try {
       // Call scan endpoint
       const response = await fetch('/api/translate/scan', {
@@ -140,17 +130,17 @@ export function TranslationManager() {
           'X-No-Refresh': 'true'
         }
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(`Scanning for missing keys failed: ${errorData.error || response.statusText}`);
       }
-      
+
       const data = await response.json();
-      
+
       if (data.keysAdded > 0) {
         setTranslationLog(prev => [...prev, `✓ Found and added ${data.keysAdded} missing translation keys to English translations file.`]);
-        
+
         // List the new keys that were found
         if (data.newKeys && data.newKeys.length > 0) {
           setTranslationLog(prev => [...prev, 'New keys found:']);
@@ -158,26 +148,26 @@ export function TranslationManager() {
             setTranslationLog(prev => [...prev, `  - ${key}`]);
           });
         }
-        
+
         toast({
           title: 'Missing Keys Found',
           description: `Found and added ${data.keysAdded} missing translation keys.`,
         });
       } else {
         setTranslationLog(prev => [...prev, '✓ No missing translation keys found in codebase.']);
-        
+
         toast({
           title: 'No Missing Keys',
           description: 'No missing translation keys were found in the codebase.',
         });
       }
-      
+
       setTranslationLog(prev => [...prev, `✓ Total translation keys: ${data.totalKeys}`]);
-      
+
     } catch (error) {
       console.error('Scanning for missing keys error:', error);
       setTranslationLog(prev => [...prev, `Error: ${error instanceof Error ? error.message : String(error)}`]);
-      
+
       toast({
         title: t('common.error'),
         description: 'An error occurred while scanning for missing translation keys',
@@ -194,7 +184,7 @@ export function TranslationManager() {
     if (e) {
       e.preventDefault();
     }
-    
+
     if (!isInitialized) {
       toast({
         title: t('common.error'),
@@ -221,23 +211,23 @@ export function TranslationManager() {
             'X-No-Refresh': 'true'
           }
         });
-        
+
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(`Translation for ${language.name} failed: ${errorData.error || response.statusText}`);
         }
-        
+
         const data = await response.json();
-        
+
         if (data.translatedCount > 0) {
           setTranslationLog(prev => [...prev, `✓ ${language.name}: Added ${data.translatedCount} translations`]);
         } else {
           setTranslationLog(prev => [...prev, `✓ ${language.name}: No new translations needed`]);
         }
       }
-      
+
       setTranslationLog(prev => [...prev, '✓ All translations completed successfully']);
-      
+
       toast({
         title: 'Translation Complete',
         description: 'All languages have been updated with the latest translations.',
@@ -245,7 +235,7 @@ export function TranslationManager() {
     } catch (error) {
       console.error('Multi-language translation error:', error);
       setTranslationLog(prev => [...prev, `Error: ${error instanceof Error ? error.message : String(error)}`]);
-      
+
       toast({
         title: t('common.error'),
         description: 'An error occurred during translation',
@@ -264,21 +254,21 @@ export function TranslationManager() {
           {t('translation.manager.description')}
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent>
         <Tabs defaultValue="bulk" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="bulk">{t('translation.manager.bulkTranslateTitle')}</TabsTrigger>
             <TabsTrigger value="settings">{t('translation.manager.settings')}</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="bulk" className="space-y-6 py-4">
             <div>
               <div className="mb-4">
                 <p className="text-sm text-gray-700 mb-2">
                   {t('translation.manager.bulkTranslateDescription')}
                 </p>
-                
+
                 <p className="text-sm text-gray-700">
                   When you click the translate button, it will:
                 </p>
@@ -305,7 +295,7 @@ export function TranslationManager() {
                     <>{t('translation.manager.translateAll')}</>
                   )}
                 </Button>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <Button 
                     onClick={handleScanForMissingKeys}
@@ -322,7 +312,7 @@ export function TranslationManager() {
                       <>{t('translation.manager.scanMissingKeys', 'Scan for Missing Keys')}</>
                     )}
                   </Button>
-                  
+
                   <Button 
                     onClick={handleClearAllTranslations} 
                     disabled={translating || scanning}
@@ -333,7 +323,7 @@ export function TranslationManager() {
                   </Button>
                 </div>
               </div>
-              
+
               {isInitialized ? (
                 <div className="flex items-center text-sm text-green-600 mt-2">
                   <CheckCircle className="mr-2 h-4 w-4" />
@@ -346,7 +336,7 @@ export function TranslationManager() {
                 </div>
               )}
             </div>
-            
+
             {/* Translation log */}
             {translationLog.length > 0 && (
               <div>
@@ -361,7 +351,7 @@ export function TranslationManager() {
               </div>
             )}
           </TabsContent>
-          
+
           <TabsContent value="settings" className="space-y-6 py-4">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
@@ -380,15 +370,15 @@ export function TranslationManager() {
                   aria-label="Auto-translate toggle"
                 />
               </div>
-              
+
               <Separator />
-              
+
               <div className="space-y-2">
                 <h4 className="font-medium">{t('translation.manager.sourceLanguage')}</h4>
                 <p className="text-sm text-muted-foreground mb-2">
                   {t('translation.manager.sourceLanguageDescription')}
                 </p>
-                
+
                 <Select 
                   value={localSourceLanguage} 
                   onValueChange={(value) => {
@@ -416,7 +406,7 @@ export function TranslationManager() {
           </TabsContent>
         </Tabs>
       </CardContent>
-      
+
       <CardFooter className="border-t pt-4 flex justify-between">
         <p className="text-xs text-gray-500">
           DeepL Free API allows up to 500,000 characters per month
