@@ -2,16 +2,6 @@ import i18next from 'i18next';
 import { translateText } from './translation-api';
 
 /**
- * Check if the given language code is a valid supported language
- * @param langCode The language code to validate
- * @returns Boolean indicating if the language is supported
- */
-export function isValidLanguage(langCode: string): boolean {
-  const supportedLanguages = ['en', 'es', 'ja', 'zh', 'fr', 'de', 'pt', 'ar'];
-  return supportedLanguages.includes(langCode);
-}
-
-/**
  * Auto-translate all input fields in the current form
  * @param targetLang Target language code (e.g. 'es', 'fr')
  */

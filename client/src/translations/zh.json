@@ -66,7 +66,10 @@
     "validationFailed": "字符验证失败",
     "validationFailedDesc": "字符验证失败",
     "checkDataTryAgain": "请检查您的角色数据并重试。",
-    "validationError": "字符验证错误"
+    "validationError": "字符验证错误",
+    "inappropriatePrompt": "角色描述包含不当语言。请修改后重试。",
+    "inappropriatePortrait": "生成的肖像不符合我们的内容指南。请尝试重新生成。",
+    "portraitLoadError": "字符肖像无法加载。请尝试重新生成。"
   },
   "conceptForm": {
     "title": "标题",
@@ -102,7 +105,8 @@
     "continue": "继续",
     "backToHome": "返回首页",
     "backToMainMenu": "返回主菜单",
-    "saveProject": "保存项目"
+    "saveProject": "保存项目",
+    "contentGuidelines": "内容指南"
   },
   "settings": {
     "language": "语言",
@@ -158,7 +162,8 @@
     "generationFailed": "生成失败",
     "connectionError": "连接错误",
     "saveFailed": "保存失败",
-    "loadFailed": "加载失败"
+    "loadFailed": "加载失败",
+    "imageLoadFailed": "图像加载失败"
   },
   "success": {
     "translationComplete": "翻译完毕",
@@ -249,7 +254,10 @@
     "notApplicable": "不适用",
     "conflicts": "冲突",
     "conflictsPlaceholder": "内部斗争和外部冲突",
-    "addCharacter": "添加字符"
+    "addCharacter": "添加字符",
+    "appearance": "外观",
+    "appearancePlaceholder": "外貌描写--对塑造人物形象很重要",
+    "relationshipPotentialPlaceholder": "是敌是友？浪漫吗？"
   },
   "pathsForm": {
     "formReset": "表格重置",
@@ -268,11 +276,36 @@
     "validationError": "路径验证错误",
     "unexpectedError": "出现意外错误。请重试。",
     "title": "步骤 4：故事路径",
-    "description": "定义故事的不同路线和结局。您最多可以创建 3 条不同的路径。"
+    "description": "定义故事的不同路线和结局。您最多可以创建 3 条不同的路径。",
+    "pathTitle": "路径标题",
+    "pathTitlePlaceholder": "本故事情节的主题名称",
+    "loveInterest": "恋爱对象（可选）",
+    "selectLoveInterest": "选择恋爱对象",
+    "noRomance": "无 - 不注重浪漫",
+    "keyChoices": "关键选择",
+    "keyChoicesHelp": "塑造这条路线的关键球员决定",
+    "beginning": "开始",
+    "beginningPlaceholder": "路线起点说明",
+    "middle": "中层",
+    "middlePlaceholder": "冲突升级和意外转折的描述",
+    "climax": "高潮",
+    "climaxPlaceholder": "该路径最高拉力矩的描述",
+    "goodEnding": "美好结局",
+    "goodEndingPlaceholder": "积极决议的说明",
+    "badEnding": "糟糕的结局",
+    "badEndingPlaceholder": "负面结果描述",
+    "generateAllPaths": "生成所有路径",
+    "nextPlot": "下一页情节"
   },
   "plotForm": {
     "generationError": "生成错误",
-    "unexpectedFormat": "绘图数据格式出乎意料。请重试。"
+    "unexpectedFormat": "绘图数据格式出乎意料。请重试。",
+    "title": "标题",
+    "summary": "摘要",
+    "events": "活动",
+    "arcsActivated": "激活的弧",
+    "arcIntersections": "弧形交叉口",
+    "playerChoices": "玩家选择"
   },
   "errors": {
     "pageNotFound": "页面未找到",
@@ -348,5 +381,11 @@
   "fontDemo": {
     "title": "字体演示",
     "description": "本页展示了应用程序中可用的各种字体样式和重量。"
+  },
+  "generateVnForm": {
+    "title": "步骤 6：生成视觉小说",
+    "description": "为视觉小说的每一幕生成场景。您可以调整每一幕的场景数量，并根据需要重新生成。",
+    "scenesPerAct": "每幕场景",
+    "exportActs": "出口法"
   }
 }

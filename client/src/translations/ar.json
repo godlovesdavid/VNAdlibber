@@ -66,7 +66,10 @@
     "validationFailed": "فشل التحقق من صحة الشخصية",
     "validationFailedDesc": "فشل التحقق من صحة الشخصية",
     "checkDataTryAgain": "يرجى التحقق من بيانات شخصيتك والمحاولة مرة أخرى.",
-    "validationError": "خطأ في التحقق من صحة الأحرف"
+    "validationError": "خطأ في التحقق من صحة الأحرف",
+    "inappropriatePrompt": "يحتوي وصف الشخصية على ألفاظ غير لائقة. يرجى المراجعة والمحاولة مرة أخرى.",
+    "inappropriatePortrait": "الصورة التي تم إنشاؤها لا تفي بإرشادات المحتوى الخاصة بنا. يرجى محاولة الإنشاء مرة أخرى.",
+    "portraitLoadError": "تعذر تحميل صورة الشخصية. يرجى محاولة الإنشاء مرة أخرى."
   },
   "conceptForm": {
     "title": "العنوان",
@@ -102,7 +105,8 @@
     "continue": "تابع",
     "backToHome": "العودة إلى الصفحة الرئيسية",
     "backToMainMenu": "العودة إلى القائمة الرئيسية",
-    "saveProject": "مشروع الحفظ"
+    "saveProject": "مشروع الحفظ",
+    "contentGuidelines": "إرشادات المحتوى"
   },
   "settings": {
     "language": "اللغة",
@@ -158,7 +162,8 @@
     "generationFailed": "فشل التوليد",
     "connectionError": "خطأ في الاتصال",
     "saveFailed": "فشل في الحفظ",
-    "loadFailed": "فشل التحميل"
+    "loadFailed": "فشل التحميل",
+    "imageLoadFailed": "فشل تحميل الصورة"
   },
   "success": {
     "translationComplete": "اكتملت الترجمة",
@@ -249,7 +254,10 @@
     "notApplicable": "غير متاح",
     "conflicts": "التعارضات",
     "conflictsPlaceholder": "الصراعات الداخلية والصراعات الخارجية",
-    "addCharacter": "إضافة شخصية"
+    "addCharacter": "إضافة شخصية",
+    "appearance": "المظهر",
+    "appearancePlaceholder": "الوصف الجسدي - مهم لتصور الشخصية",
+    "relationshipPotentialPlaceholder": "صديق أم عدو؟ رومانسي؟"
   },
   "pathsForm": {
     "formReset": "إعادة تعيين النموذج",
@@ -268,11 +276,36 @@
     "validationError": "خطأ في التحقق من صحة المسار",
     "unexpectedError": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.",
     "title": "الخطوة 4: مسارات القصة",
-    "description": "حدد المسارات والنهايات المختلفة التي يمكن أن تسلكها قصتك. يمكنك إنشاء ما يصل إلى 3 مسارات مختلفة."
+    "description": "حدد المسارات والنهايات المختلفة التي يمكن أن تسلكها قصتك. يمكنك إنشاء ما يصل إلى 3 مسارات مختلفة.",
+    "pathTitle": "عنوان المسار",
+    "pathTitlePlaceholder": "الاسم الموضوعي لهذه القصة",
+    "loveInterest": "الاهتمام بالحب (اختياري)",
+    "selectLoveInterest": "اختر الاهتمام بالحب",
+    "noRomance": "لا شيء - لا يركز على الرومانسية",
+    "keyChoices": "الخيارات الرئيسية",
+    "keyChoicesHelp": "قرارات اللاعب الحاسمة التي تشكل هذا المسار",
+    "beginning": "البداية",
+    "beginningPlaceholder": "وصف كيفية بدء هذا المسار",
+    "middle": "الأوسط",
+    "middlePlaceholder": "وصف تصعيد النزاع والتطور (التطورات) غير المتوقعة",
+    "climax": "الذروة",
+    "climaxPlaceholder": "وصف أعلى لحظة توتر في هذا المسار",
+    "goodEnding": "نهاية جيدة",
+    "goodEndingPlaceholder": "وصف القرار الإيجابي",
+    "badEnding": "نهاية سيئة",
+    "badEndingPlaceholder": "وصف النتيجة السلبية",
+    "generateAllPaths": "إنشاء جميع المسارات",
+    "nextPlot": "التالي: المؤامرة"
   },
   "plotForm": {
     "generationError": "خطأ في التوليد",
-    "unexpectedFormat": "كان تنسيق بيانات الرسم البياني غير متوقع. يرجى المحاولة مرة أخرى."
+    "unexpectedFormat": "كان تنسيق بيانات الرسم البياني غير متوقع. يرجى المحاولة مرة أخرى.",
+    "title": "العنوان",
+    "summary": "الملخص",
+    "events": "الفعاليات",
+    "arcsActivated": "أقواس مفعلة",
+    "arcIntersections": "تقاطعات القوس",
+    "playerChoices": "اختيارات اللاعب"
   },
   "errors": {
     "pageNotFound": "الصفحة غير موجود",
@@ -354,5 +387,11 @@
   "fontDemo": {
     "title": "عرض توضيحي للخط",
     "description": "توضح هذه الصفحة أنماط الخطوط والأوزان المختلفة المتوفرة في التطبيق."
+  },
+  "generateVnForm": {
+    "title": "الخطوة 6: إنشاء رواية مرئية",
+    "description": "توليد المشاهد لكل فصل من فصول روايتك المرئية. يمكنك ضبط عدد المشاهد لكل فصل وإعادة توليدها حسب الحاجة.",
+    "scenesPerAct": "مشاهد لكل فصل:",
+    "exportActs": "أعمال التصدير"
   }
 }

@@ -66,7 +66,10 @@
     "validationFailed": "Zeichenüberprüfung fehlgeschlagen",
     "validationFailedDesc": "Zeichenüberprüfung fehlgeschlagen",
     "checkDataTryAgain": "Bitte überprüfen Sie Ihre Charakterdaten und versuchen Sie es erneut.",
-    "validationError": "Fehler bei der Zeichenüberprüfung"
+    "validationError": "Fehler bei der Zeichenüberprüfung",
+    "inappropriatePrompt": "Die Charakterbeschreibung enthält unangemessene Sprache. Bitte überarbeiten Sie sie und versuchen Sie es erneut.",
+    "inappropriatePortrait": "Das generierte Porträt entspricht nicht unseren Inhaltsrichtlinien. Bitte versuchen Sie, es erneut zu erstellen.",
+    "portraitLoadError": "Das Charakterportrait konnte nicht geladen werden. Bitte versuchen Sie, es erneut zu generieren."
   },
   "conceptForm": {
     "title": "Titel",
@@ -102,7 +105,8 @@
     "continue": "Weiter",
     "backToHome": "Zurück zu Home",
     "backToMainMenu": "Zurück zum Hauptmenü",
-    "saveProject": "Projekt speichern"
+    "saveProject": "Projekt speichern",
+    "contentGuidelines": "Inhaltliche Leitlinien"
   },
   "settings": {
     "language": "Sprache",
@@ -158,7 +162,8 @@
     "generationFailed": "Generation gescheitert",
     "connectionError": "Verbindungsfehler",
     "saveFailed": "Speichern fehlgeschlagen",
-    "loadFailed": "Laden fehlgeschlagen"
+    "loadFailed": "Laden fehlgeschlagen",
+    "imageLoadFailed": "Bild konnte nicht geladen werden"
   },
   "success": {
     "translationComplete": "Übersetzung abgeschlossen",
@@ -249,7 +254,10 @@
     "notApplicable": "K.A.",
     "conflicts": "Konflikte",
     "conflictsPlaceholder": "Innere Kämpfe und äußere Konflikte",
-    "addCharacter": "Zeichen hinzufügen"
+    "addCharacter": "Zeichen hinzufügen",
+    "appearance": "Erscheinungsbild",
+    "appearancePlaceholder": "Körperliche Beschreibung - wichtig für die Visualisierung des Charakters",
+    "relationshipPotentialPlaceholder": "Freund oder Feind? Liebenswert?"
   },
   "pathsForm": {
     "formReset": "Formular zurücksetzen",
@@ -268,11 +276,36 @@
     "validationError": "Fehler bei der Pfadvalidierung",
     "unexpectedError": "Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es erneut.",
     "title": "Schritt 4: Erzählpfade",
-    "description": "Definieren Sie die verschiedenen Wege und Enden, die Ihre Geschichte nehmen kann. Sie können bis zu 3 verschiedene Pfade erstellen."
+    "description": "Definieren Sie die verschiedenen Wege und Enden, die Ihre Geschichte nehmen kann. Sie können bis zu 3 verschiedene Pfade erstellen.",
+    "pathTitle": "Pfad Titel",
+    "pathTitlePlaceholder": "Thematischer Name für diesen Handlungsstrang",
+    "loveInterest": "Liebesbeziehung (optional)",
+    "selectLoveInterest": "Liebesinteresse auswählen",
+    "noRomance": "Keine - Nicht auf Romantik ausgerichtet",
+    "keyChoices": "Wichtige Entscheidungen",
+    "keyChoicesHelp": "Entscheidende Spielerentscheidungen, die diesen Weg bestimmen",
+    "beginning": "Beginnend mit",
+    "beginningPlaceholder": "Beschreibung des Beginns dieser Route",
+    "middle": "Mitte",
+    "middlePlaceholder": "Beschreibung der Konflikteskalation und der unerwarteten Wendung(en)",
+    "climax": "Climax",
+    "climaxPlaceholder": "Beschreibung des höchsten Spannungsmoments dieses Pfades",
+    "goodEnding": "Gutes Ende",
+    "goodEndingPlaceholder": "Beschreibung der positiven Auflösung",
+    "badEnding": "Schlechtes Ende",
+    "badEndingPlaceholder": "Beschreibung des negativen Ergebnisses",
+    "generateAllPaths": "Alle Pfade generieren",
+    "nextPlot": "Nächste: Handlung"
   },
   "plotForm": {
     "generationError": "Erzeugungsfehler",
-    "unexpectedFormat": "Das Format der Plotdaten war unerwartet. Bitte versuchen Sie es erneut."
+    "unexpectedFormat": "Das Format der Plotdaten war unerwartet. Bitte versuchen Sie es erneut.",
+    "title": "Titel",
+    "summary": "Zusammenfassung",
+    "events": "Veranstaltungen",
+    "arcsActivated": "Aktivierte Bögen",
+    "arcIntersections": "Bogenschnittpunkte",
+    "playerChoices": "Spieler-Auswahlen"
   },
   "errors": {
     "pageNotFound": "pageNotFound",
@@ -348,5 +381,11 @@
   "fontDemo": {
     "title": "Schriftart-Demo",
     "description": "Auf dieser Seite werden verschiedene Schriftarten und -schnitte vorgestellt, die in der Anwendung verfügbar sind."
+  },
+  "generateVnForm": {
+    "title": "Schritt 6: Visuelle Novelle generieren",
+    "description": "Generieren Sie die Szenen für jeden Akt Ihres visuellen Romans. Sie können die Anzahl der Szenen pro Akt anpassen und bei Bedarf neu generieren.",
+    "scenesPerAct": "Szenen pro Akt:",
+    "exportActs": "Ausfuhrgesetze"
   }
 }

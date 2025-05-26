@@ -2,7 +2,7 @@
 export async function translateToEnglish(text: string): Promise<string> {
 
   try {
-    // Use Google Translate's public endpoint
+    // Use Google Translate's public endpoint (using autodetect language to prevent users from circumventing)
     const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(text)}`;
     
     const response = await fetch(url, {

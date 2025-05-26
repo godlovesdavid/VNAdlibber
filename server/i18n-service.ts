@@ -113,13 +113,6 @@ export async function handleClearTranslations(req: Request, res: Response) {
   try {
     const { language } = req.params;
     
-    // Validate language parameter
-    const supportedLanguages = ['es', 'ja', 'zh', 'fr', 'de', 'pt', 'ar'];
-    if (!supportedLanguages.includes(language)) {
-      return res.status(400).json({
-        error: `Invalid language. Supported languages are: ${supportedLanguages.join(', ')}`
-      });
-    }
     
     // Determine file path
     let targetPath;

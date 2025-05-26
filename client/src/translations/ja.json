@@ -66,7 +66,10 @@
     "validationFailed": "文字検証失敗",
     "validationFailedDesc": "文字検証失敗",
     "checkDataTryAgain": "キャラクターデータをご確認の上、再度お試しください。",
-    "validationError": "文字検証エラー"
+    "validationError": "文字検証エラー",
+    "inappropriatePrompt": "キャラクター説明に不適切な表現が含まれています。修正して再度お試しください。",
+    "inappropriatePortrait": "生成された肖像画はコンテンツガイドラインに適合していません。もう一度生成してみてください。",
+    "portraitLoadError": "キャラクターのポートレートが読み込めませんでした。もう一度生成をお試しください。"
   },
   "conceptForm": {
     "title": "タイトル",
@@ -102,7 +105,8 @@
     "continue": "続ける",
     "backToHome": "ホームへ戻る",
     "backToMainMenu": "メインメニューに戻る",
-    "saveProject": "保存プロジェクト"
+    "saveProject": "保存プロジェクト",
+    "contentGuidelines": "コンテンツ・ガイドライン"
   },
   "settings": {
     "language": "言語",
@@ -158,7 +162,8 @@
     "generationFailed": "世代交代に失敗",
     "connectionError": "接続エラー",
     "saveFailed": "保存に失敗",
-    "loadFailed": "ロードに失敗"
+    "loadFailed": "ロードに失敗",
+    "imageLoadFailed": "画像の読み込みに失敗しました"
   },
   "success": {
     "translationComplete": "翻訳完了",
@@ -249,7 +254,10 @@
     "notApplicable": "該当なし",
     "conflicts": "コンフリクト",
     "conflictsPlaceholder": "内部闘争と外部との対立",
-    "addCharacter": "キャラクター追加"
+    "addCharacter": "キャラクター追加",
+    "appearance": "外観",
+    "appearancePlaceholder": "身体描写-キャラクターを視覚化するために重要",
+    "relationshipPotentialPlaceholder": "敵か味方か？ロマンチック？"
   },
   "pathsForm": {
     "formReset": "フォームリセット",
@@ -268,11 +276,36 @@
     "validationError": "パス検証エラー",
     "unexpectedError": "予期せぬエラーが発生しました。もう一度お試しください。",
     "title": "ステップ4：ストーリーパス",
-    "description": "ストーリーのルートとエンディングを定義します。最大で3つの経路を作成できます。"
+    "description": "ストーリーのルートとエンディングを定義します。最大で3つの経路を作成できます。",
+    "pathTitle": "パスタイトル",
+    "pathTitlePlaceholder": "このストーリーのテーマ名",
+    "loveInterest": "恋愛対象（オプション）",
+    "selectLoveInterest": "恋の相手を選ぶ",
+    "noRomance": "なし - ロマンス重視ではない",
+    "keyChoices": "主な選択肢",
+    "keyChoicesHelp": "このルートを形成する重要な選手の決断",
+    "beginning": "始まり",
+    "beginningPlaceholder": "このルートが始まるまでの説明",
+    "middle": "ミドル",
+    "middlePlaceholder": "対立の激化と予想外の展開の描写",
+    "climax": "クライマックス",
+    "climaxPlaceholder": "このパスの最高張力モーメントの説明",
+    "goodEnding": "グッド・エンディング",
+    "goodEndingPlaceholder": "ポジティブな解決策",
+    "badEnding": "バッド・エンディング",
+    "badEndingPlaceholder": "ネガティブな結果の説明",
+    "generateAllPaths": "すべてのパスを生成する",
+    "nextPlot": "次へプロット"
   },
   "plotForm": {
     "generationError": "世代エラー",
-    "unexpectedFormat": "プロットデータの形式が予想外でした。再試行してください。"
+    "unexpectedFormat": "プロットデータの形式が予想外でした。再試行してください。",
+    "title": "タイトル",
+    "summary": "概要",
+    "events": "イベント",
+    "arcsActivated": "アーク起動",
+    "arcIntersections": "アーク交差点",
+    "playerChoices": "選手の選択"
   },
   "errors": {
     "pageNotFound": "ページが見つかりません",
@@ -348,5 +381,11 @@
   "fontDemo": {
     "title": "フォントデモ",
     "description": "このページでは、アプリケーションで利用可能なさまざまなフォントスタイルとウェイトを紹介します。"
+  },
+  "generateVnForm": {
+    "title": "ステップ6：ビジュアル・ノベルの作成",
+    "description": "ビジュアルノベルの各幕のシーンを生成します。幕ごとのシーン数を調整し、必要に応じて再生成することができます。",
+    "scenesPerAct": "1幕あたりのシーン",
+    "exportActs": "輸出法"
   }
 }

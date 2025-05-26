@@ -66,7 +66,10 @@
     "validationFailed": "Fallo de validación de caracteres",
     "validationFailedDesc": "Fallo de validación de caracteres",
     "checkDataTryAgain": "Por favor, comprueba los datos de tu personaje e inténtalo de nuevo.",
-    "validationError": "Error de validación de caracteres"
+    "validationError": "Error de validación de caracteres",
+    "inappropriatePrompt": "The character description contains inappropriate language. Please revise and try again.",
+    "inappropriatePortrait": "The generated portrait does not meet our content guidelines. Please try generating again.",
+    "portraitLoadError": "The character portrait could not be loaded. Please try generating again."
   },
   "conceptForm": {
     "title": "Título",
@@ -102,7 +105,8 @@
     "continue": "Continúe en",
     "backToHome": "Volver al inicio",
     "backToMainMenu": "Volver al menú principal",
-    "saveProject": "Guardar proyecto"
+    "saveProject": "Guardar proyecto",
+    "contentGuidelines": "Content Guidelines"
   },
   "settings": {
     "language": "Idioma",
@@ -158,7 +162,8 @@
     "generationFailed": "Generación fallida",
     "connectionError": "Error de conexión",
     "saveFailed": "No se ha podido guardar",
-    "loadFailed": "Error de carga"
+    "loadFailed": "Error de carga",
+    "imageLoadFailed": "Image Failed to Load"
   },
   "success": {
     "translationComplete": "Traducción completa",
@@ -249,7 +254,10 @@
     "notApplicable": "N/A",
     "conflicts": "Conflictos",
     "conflictsPlaceholder": "Luchas internas y conflictos externos",
-    "addCharacter": "Añadir carácter"
+    "addCharacter": "Añadir carácter",
+    "appearance": "Appearance",
+    "appearancePlaceholder": "Physical description - important for character visualization",
+    "relationshipPotentialPlaceholder": "Friend or foe? Romanceable?"
   },
   "pathsForm": {
     "formReset": "Restablecer formulario",
@@ -268,11 +276,36 @@
     "validationError": "Error de validación de ruta",
     "unexpectedError": "Se ha producido un error inesperado. Por favor, inténtalo de nuevo.",
     "title": "Paso 4: Trayectorias de la historia",
-    "description": "Define las diferentes rutas y finales que puede tomar tu historia. Puedes crear hasta 3 caminos distintos."
+    "description": "Define las diferentes rutas y finales que puede tomar tu historia. Puedes crear hasta 3 caminos distintos.",
+    "pathTitle": "Path Title",
+    "pathTitlePlaceholder": "Thematic name for this storyline",
+    "loveInterest": "Love Interest (Optional)",
+    "selectLoveInterest": "Select love interest",
+    "noRomance": "None - Not Romance Focused",
+    "keyChoices": "Key Choices",
+    "keyChoicesHelp": "Critical player decisions that shape this route",
+    "beginning": "Beginning",
+    "beginningPlaceholder": "Description of how this route begins",
+    "middle": "Middle",
+    "middlePlaceholder": "Description of conflict escalation and unexpected twist(s)",
+    "climax": "Climax",
+    "climaxPlaceholder": "Description of the highest tension moment of this path",
+    "goodEnding": "Good Ending",
+    "goodEndingPlaceholder": "Description of positive resolution",
+    "badEnding": "Bad Ending",
+    "badEndingPlaceholder": "Description of negative outcome",
+    "generateAllPaths": "Generate All Paths",
+    "nextPlot": "Next: Plot"
   },
   "plotForm": {
     "generationError": "Error de generación",
-    "unexpectedFormat": "El formato de los datos del gráfico era inesperado. Por favor, inténtelo de nuevo."
+    "unexpectedFormat": "El formato de los datos del gráfico era inesperado. Por favor, inténtelo de nuevo.",
+    "title": "Title",
+    "summary": "Summary",
+    "events": "Events",
+    "arcsActivated": "Arcs Activated",
+    "arcIntersections": "Arc Intersections",
+    "playerChoices": "Player Choices"
   },
   "errors": {
     "pageNotFound": "pageNotFound",
@@ -348,5 +381,11 @@
   "fontDemo": {
     "title": "Demostración de fuentes",
     "description": "Esta página muestra varios estilos y pesos de fuentes disponibles en la aplicación."
+  },
+  "generateVnForm": {
+    "title": "Step 6: Generate Visual Novel",
+    "description": "Generate the scenes for each act of your visual novel. You can adjust the number of scenes per act and regenerate as needed.",
+    "scenesPerAct": "Scenes Per Act:",
+    "exportActs": "Export Acts"
   }
 }

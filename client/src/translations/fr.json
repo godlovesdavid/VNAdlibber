@@ -66,7 +66,10 @@
     "validationFailed": "Échec de la validation des caractères",
     "validationFailedDesc": "Échec de la validation des caractères",
     "checkDataTryAgain": "Veuillez vérifier les données de votre personnage et réessayer.",
-    "validationError": "Erreur de validation des caractères"
+    "validationError": "Erreur de validation des caractères",
+    "inappropriatePrompt": "La description du personnage contient un langage inapproprié. Veuillez réviser et réessayer.",
+    "inappropriatePortrait": "Le portrait généré ne correspond pas à nos directives en matière de contenu. Veuillez réessayer de le générer.",
+    "portraitLoadError": "Le portrait du personnage n'a pas pu être chargé. Veuillez essayer de le générer à nouveau."
   },
   "conceptForm": {
     "title": "Titre",
@@ -102,7 +105,8 @@
     "continue": "Continuer",
     "backToHome": "Retour à l'accueil",
     "backToMainMenu": "Retour au menu principal",
-    "saveProject": "Sauvegarder le projet"
+    "saveProject": "Sauvegarder le projet",
+    "contentGuidelines": "Lignes directrices sur le contenu"
   },
   "settings": {
     "language": "Langue",
@@ -158,7 +162,8 @@
     "generationFailed": "La génération a échoué",
     "connectionError": "Erreur de connexion",
     "saveFailed": "Échec de la sauvegarde",
-    "loadFailed": "Échec du chargement"
+    "loadFailed": "Échec du chargement",
+    "imageLoadFailed": "L'image n'a pas pu être chargée"
   },
   "success": {
     "translationComplete": "Traduction terminée",
@@ -249,7 +254,10 @@
     "notApplicable": "N/A",
     "conflicts": "Conflits",
     "conflictsPlaceholder": "Luttes internes et conflits externes",
-    "addCharacter": "Ajouter un personnage"
+    "addCharacter": "Ajouter un personnage",
+    "appearance": "Apparence",
+    "appearancePlaceholder": "Description physique - importante pour la visualisation du personnage",
+    "relationshipPotentialPlaceholder": "Ami ou ennemi ? Romanesque ?"
   },
   "pathsForm": {
     "formReset": "Réinitialisation du formulaire",
@@ -268,11 +276,36 @@
     "validationError": "Erreur de validation du chemin",
     "unexpectedError": "Une erreur inattendue s'est produite. Veuillez réessayer.",
     "title": "Étape 4 : Chemins de l'histoire",
-    "description": "Définissez les différentes voies et fins que votre histoire peut prendre. Vous pouvez créer jusqu'à 3 chemins distincts."
+    "description": "Définissez les différentes voies et fins que votre histoire peut prendre. Vous pouvez créer jusqu'à 3 chemins distincts.",
+    "pathTitle": "Titre du chemin",
+    "pathTitlePlaceholder": "Nom thématique de cette intrigue",
+    "loveInterest": "Intérêt amoureux (facultatif)",
+    "selectLoveInterest": "Sélectionner l'intérêt amoureux",
+    "noRomance": "Aucun - Pas d'intérêt pour le romantisme",
+    "keyChoices": "Choix clés",
+    "keyChoicesHelp": "Les décisions cruciales des acteurs qui façonnent cet itinéraire",
+    "beginning": "Début",
+    "beginningPlaceholder": "Description du début de l'itinéraire",
+    "middle": "Moyen",
+    "middlePlaceholder": "Description de l'escalade du conflit et des rebondissements inattendus",
+    "climax": "Climax",
+    "climaxPlaceholder": "Description du moment de tension le plus élevé de cette trajectoire",
+    "goodEnding": "Bonne fin",
+    "goodEndingPlaceholder": "Description de la résolution positive",
+    "badEnding": "Mauvaise fin",
+    "badEndingPlaceholder": "Description du résultat négatif",
+    "generateAllPaths": "Générer tous les chemins",
+    "nextPlot": "Suivant : Le complot"
   },
   "plotForm": {
     "generationError": "Erreur de génération",
-    "unexpectedFormat": "Le format des données du tracé est inattendu. Veuillez réessayer."
+    "unexpectedFormat": "Le format des données du tracé est inattendu. Veuillez réessayer.",
+    "title": "Titre",
+    "summary": "Résumé",
+    "events": "Evénements",
+    "arcsActivated": "Arcs activés",
+    "arcIntersections": "Intersections des arcs",
+    "playerChoices": "Choix des joueurs"
   },
   "errors": {
     "pageNotFound": "pageNotFound",
@@ -348,5 +381,11 @@
   "fontDemo": {
     "title": "Démonstration de police",
     "description": "Cette page présente les différents styles et graisses de polices disponibles dans l'application."
+  },
+  "generateVnForm": {
+    "title": "Étape 6 : Générer un roman visuel",
+    "description": "Générez les scènes pour chaque acte de votre roman visuel. Vous pouvez ajuster le nombre de scènes par acte et les régénérer si nécessaire.",
+    "scenesPerAct": "Scènes par acte :",
+    "exportActs": "Actes d'exportation"
   }
 }

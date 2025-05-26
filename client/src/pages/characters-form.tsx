@@ -330,12 +330,11 @@ export default function CharactersForm() {
       const originalPrompt = `${character.name}, a ${character.age ? character.age + '-year-old ' : ''}${character.gender} ${character.occupation}. ${character.appearance}`;
 
       // LDNOOBW content filtering for originalPrompt
-      const { isContentClean, getCurrentLanguage } = await import('@/utils/content-filter');
-      const currentLang = getCurrentLanguage();
+      const { isContentClean } = await import('@/utils/content-filter');
       const isClean = await isContentClean(originalPrompt);
       console.log('Content filter result:', isClean);
       if (!isClean) {
-        console.warn(`LDNOOBW filter blocked inappropriate content in prompt (${currentLang})`);
+        console.warn(`LDNOOBW filter blocked- inappropriate content in prompt `);
         toast({
           title: t('common.contentGuidelines', 'Content Guidelines'),
           description: t('characterForm.inappropriatePrompt', 'The character description contains inappropriate language. Please revise and try again.'),
@@ -344,7 +343,7 @@ export default function CharactersForm() {
         return;
       }
       console.log(isContentClean(originalPrompt))
-      console.log(`LDNOOBW filter passed for prompt in language: ${currentLang}`);
+      console.log(`LDNOOBW filter passed for prompt`);
       
       // Translate prompt to English for better image generation
       let prompt = originalPrompt;

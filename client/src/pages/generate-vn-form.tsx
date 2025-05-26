@@ -27,6 +27,7 @@ import { ShareStoryDialog } from "@/components/modals/share-story-dialog";
 import { PlayerData, GeneratedAct, VnProjectData } from "@/types/vn";
 import { ConfirmationModal } from "@/components/modals/confirmation-modal";
 import { GenerationResult } from "@/lib/openai";
+import { useTranslation } from "react-i18next";
 
 // Helper functions for accessing act data safely
 function getActTitle(actNumber: number, projectData: VnProjectData | null): string {
@@ -94,7 +95,9 @@ export default function GenerateVnForm() {
   const [regenerateConfirmOpen, setRegenerateConfirmOpen] = useState(false);
   const [actToRegenerate, setActToRegenerate] = useState<number | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
- 
+
+  const { t } = useTranslation();
+  
   // Debug log for tracking projectData changes
   useEffect(() => {
     // Only log when component mounts, not on every projectData change
