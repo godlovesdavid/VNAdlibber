@@ -964,7 +964,11 @@ export function VnPlayer({
                 const currentSpeaker = currentScene.dialogue[currentDialogueIndex][0];
                 const portraitUrl = getCharacterPortrait(currentSpeaker);
                 const isLeftPosition = currentDialogueIndex % 2 === 0; // Even indices = left, odd = right
-                const size_percent = 60
+                
+                // Mobile-responsive sizing
+                const isMobile = window.innerWidth <= 768;
+                const isTablet = window.innerWidth > 768 && window.innerWidth <= 1024;
+                const size_percent = isMobile ? 45 : isTablet ? 55 : 60;
                 if (portraitUrl) {
                   return (
                     <div
