@@ -55,12 +55,12 @@ export const languages: Language[] = [
   { code: 'ru', countryCode: 'RU', name: 'Русский', flagStyle:  {
       background: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><rect width="3" height="2" fill="%23fff"/><rect width="3" height="0.67" fill="%230039a6"/><rect width="3" height="0.67" y="1.33" fill="%23d52b1e"/></svg>\') no-repeat center/cover',
     }},
-  { code: 'bn', countryCode: 'BD', name: 'বাংলা', flagStyle: {
-      background: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><rect width="3" height="2" fill="%23006a4e"/><circle cx="1.2" cy="1" r="0.4" fill="%23f42a41"/></svg>\') no-repeat center/cover',
-    } },
-  { code: 'id', countryCode: 'ID', name: 'Indonesia', flagStyle: {
-    background: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><rect width="3" height="2" fill="%23ce1126"/><rect width="3" height="1" fill="%23fff"/></svg>\') no-repeat center/cover',
-  } }
+  // { code: 'bn', countryCode: 'BD', name: 'বাংলা', flagStyle: {
+  //     background: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><rect width="3" height="2" fill="%23006a4e"/><circle cx="1.2" cy="1" r="0.4" fill="%23f42a41"/></svg>\') no-repeat center/cover',
+  //   } },
+  // { code: 'id', countryCode: 'ID', name: 'Indonesia', flagStyle: {
+  //   background: 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><rect width="3" height="2" fill="%23ce1126"/><rect width="3" height="1" fill="%23fff"/></svg>\') no-repeat center/cover',
+  // } }
 ];
 
 export function TranslationManager() {

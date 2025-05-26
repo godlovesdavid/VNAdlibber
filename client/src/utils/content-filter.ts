@@ -30,8 +30,8 @@ export function getCurrentLanguage(): string {
 }
 
 // Main content filtering function using naughty-words LDNOOBW library
-export async function filterInappropriateContent(text: string, language?: string): Promise<ContentFilterResult> {
-  const detectedLang = language || getCurrentLanguage();
+export async function filterInappropriateContent(text: string): Promise<ContentFilterResult> {
+  const detectedLang = getCurrentLanguage();
   
   // Use language-specific filtering if supported, otherwise default to English
   const langToUse = LDNOOBW_SUPPORTED_LANGS.includes(detectedLang) ? detectedLang : 'en';
