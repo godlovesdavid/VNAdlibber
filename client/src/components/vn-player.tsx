@@ -969,16 +969,12 @@ export function VnPlayer({
                   return (
                     <div
                       className={cn(
-                        "absolute bottom-[40%] sm:bottom-[35%] w-64 h-80 sm:w-72 sm:h-96 md:w-80 md:h-[28rem] z-5",
+                        "absolute w-48 h-64 sm:w-56 sm:h-72 md:w-64 md:h-80 z-15",
                         "transition-all duration-500 ease-in-out",
                         isLeftPosition 
-                          ? "left-0 bottom-0" 
-                          : "right-0 bottom-0"
+                          ? "bottom-4 left-4" 
+                          : "bottom-4 right-4"
                       )}
-                      style={{
-                        bottom: "40%", // Keep above dialogue area
-                        ...(isLeftPosition ? { left: 0 } : { right: 0 })
-                      }}
                       key={`character-${currentDialogueIndex}-${currentSpeaker}`}
                     >
                       <img
