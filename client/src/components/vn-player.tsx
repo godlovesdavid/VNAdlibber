@@ -975,6 +975,10 @@ export function VnPlayer({
                           ? "bottom-0 left-0" 
                           : "bottom-0 right-0"
                       )}
+                      style={{
+                        maxHeight: "calc(100vh - 160px)", // Leave space for dialogue and top padding
+                        objectPosition: "bottom"
+                      }}
                       key={`character-${currentDialogueIndex}-${currentSpeaker}`}
                     >
                       <img
@@ -983,6 +987,7 @@ export function VnPlayer({
                         className="w-full h-full object-cover shadow-2xl"
                         style={{
                           filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.5))",
+                          objectPosition: "bottom center" // Keep character feet at bottom, crop from top if needed
                         }}
                         onError={(e) => {
                           console.warn(`Failed to load portrait for ${currentSpeaker}:`, portraitUrl);
