@@ -385,7 +385,8 @@ export default function PathsForm() {
         
         const validationResult = await validationResponse.json();
         
-        if (validationResult.valid) {
+        if (!validationResult.valid) 
+          throw new Error(validationResult.issues)
           toast({
             title: t('pathsForm.validationPassed', 'Validation Passed'),
             description: validationResult.message || t('pathsForm.validationPassedDesc', 'Paths validated successfully.')
@@ -393,23 +394,9 @@ export default function PathsForm() {
           
           // Navigate to the next step
           setLocation("/create/plot");
-        } else {
-          // Show the specific validation error from the server
-          toast({
-            title: t('pathsForm.validationFailed', 'Path Validation Failed'),
-            description: validationResult.issues || validationResult.message || t('pathsForm.validationFailedDesc', 'Your paths don\'t align with the characters and story.'),
-            variant: "destructive",
-            // Set longer duration for validation errors
-            duration: 120000,
-          });
-        }
       } catch (error: any) {
-        console.error("Validation error:", error);
-        
-        // Extract the specific message from the error object
         const errorMessage = error.data?.message || 
                             "Please check your path data and try again.";
-        
         toast({
           title: t('pathsForm.validationError', 'Path Validation Error'),
           description: errorMessage,

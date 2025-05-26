@@ -364,7 +364,7 @@ function createBatchComfyUIWorkflow(jobs: ImageJobData[]) {
       },
       "64": {
         "inputs": {
-          "positive_prompt_1": "a nude girl",
+          "positive_prompt_1": "",
           "negative_prompt_1": "",
           "name_1": "Prompt_1",
           "width_1": 1024,

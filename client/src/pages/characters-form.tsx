@@ -298,7 +298,11 @@ export default function CharactersForm() {
         setCharacters(updatedCharacters);
       }
     } catch (error) {
-      console.error("Error generating character:", error);
+      toast({
+        title: t('errorMessages.generationFailed', "Generation failed"),
+        description: (error as Error).message,
+        variant: "destructive"
+      });
     } finally {
       setGeneratingCharacterIndex(null);
     }
@@ -323,55 +327,34 @@ export default function CharactersForm() {
       // Construct a portrait prompt based on character details
       const originalPrompt = `${character.name}, a ${character.age ? character.age + '-year-old ' : ''}${character.gender} ${character.occupation}. ${character.appearance}`;
 
-      // Translate prompt to English for better image generation
       let prompt = originalPrompt;
+      
+      // Translate prompt to English first
       try {
         const { translateToEnglish } = await import('@/utils/google-translate');
-        console.log(`Translating portrait prompt to English...`);
         prompt = await translateToEnglish(originalPrompt);
-        console.log(`Original prompt: ${originalPrompt}`);
-        console.log(`Translated prompt: ${prompt}`);
       } catch (error) {
-        console.warn('Translation failed, using original prompt:', error);
         prompt = originalPrompt;
       }
 
-      // LDNOOBW content filtering for originalPrompt
+      // LDNOOBW content filtering for prompt
       const { isContentClean } = await import('@/utils/content-filter');
       const isClean = await isContentClean(prompt);
-      console.log('Content filter result:', isClean);
-      if (!isClean) {
-        console.warn(`LDNOOBW filter blocked- inappropriate content in prompt `);
-        toast({
-          title: t('common.contentGuidelines', 'Content Guidelines'),
-          description: t('characterForm.inappropriatePrompt', 'The character description contains inappropriate language. Please revise and try again.'),
-          variant: "destructive"
-        });
-        return;
-      }
-      console.log(isContentClean(originalPrompt))
-      console.log(`LDNOOBW filter passed for prompt`);
+      if (!isClean) 
+        throw new Error(t('characterForm.inappropriatePrompt', 'The character description contains inappropriate language. Please revise and try again.'))
 
       // Call the server API to generate a portrait
       const response = await apiRequest("POST", "/api/generate/image", { prompt, width:512, height:1024, remove_bg:true });
       const portraitData = await response.json();
 
-      if (portraitData && portraitData.url) {
-          setCharacterPortraits(prev => ({
-            ...prev,
-            [index]: portraitData.url
-          }));
+      setCharacterPortraits(prev => ({
+        ...prev,
+        [index]: portraitData.url
+      }));
           
-          toast({
-            title: t('characterForm.portraitGenerated', 'Portrait Generated'),
-            description: t('characterForm.portraitGeneratedDesc', 'Character portrait has been generated successfully.')
-          });
-      } else {
-        throw new Error("Failed to generate portrait");
-      }
     } catch (error) {
       toast({
-        title: t('errorMessages.generationFailed'),
+        title: t('errorMessages.generationFailed', "Generation failed"),
         description: (error as Error).message,
         variant: "destructive"
       });
@@ -415,8 +398,8 @@ export default function CharactersForm() {
         
         // After generating character data, generate portraits for each character
         toast({
-          title: "Generating Portraits",
-          description: "Please wait..",
+          title: t("generating_portraits", "Generating portraits"),
+          description: t("please_wait", "Please wait.."),
         });
         
         // Generate portraits for each character sequentially
@@ -440,7 +423,11 @@ export default function CharactersForm() {
                   }));
               }
             } catch (error) {
-              console.error(`Error generating portrait for character ${i}:`, error);
+              toast({
+                title: t('errorMessages.generationFailed', "Generation failed"),
+                description: (error as Error).message,
+                variant: "destructive"
+              });
             }
           }
         }
@@ -453,7 +440,11 @@ export default function CharactersForm() {
         });
       }
     } catch (error) {
-      console.error("Error generating characters:", error);
+      toast({
+        title: t('errorMessages.generationFailed', "Generation failed"),
+        description: (error as Error).message,
+        variant: "destructive"
+      });
     } finally {
       setGeneratingCharacterIndex(null);
     }
@@ -511,8 +502,9 @@ export default function CharactersForm() {
         });
         
         const validationResult = await validationResponse.json();
+        if (!validationResult.valid) 
+          throw new Error(validationResult.issues)
         
-        if (validationResult.valid) {
           toast({
             title: t('characterForm.validationPassed', 'Validation Passed'),
             description: validationResult.message || t('characterForm.validationPassedDesc', 'Characters validated successfully.')
@@ -520,19 +512,7 @@ export default function CharactersForm() {
           
           // Navigate to the next step
           setLocation("/create/paths");
-        } else {
-          // Show the specific validation error from the server
-          toast({
-            title: t('characterForm.validationFailed', 'Character Validation Failed'),
-            description: validationResult.issues || validationResult.message || t('characterForm.validationFailedDesc', 'Your characters don\'t align with the story.'),
-            variant: "destructive",
-            // Set longer duration for validation errors
-            duration: 120000,
-          });
-        }
       } catch (error: any) {
-        console.error("Validation error:", error);
-        
         // Extract the specific message from the error object
         const errorMessage = error.data?.message || 
                             t('characterForm.checkDataTryAgain', 'Please check your character data and try again.');
@@ -932,7 +912,7 @@ export default function CharactersForm() {
                       Generating All...
                     </>
                   ) : (
-                    "Generate All"
+                    "Generate All Characters"
                   )} 
                   </Button>
             </div>
