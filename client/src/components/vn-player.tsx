@@ -288,8 +288,16 @@ export function VnPlayer({
       }
     }
   }, [rawActData, actData]);
-  const { playerData, updatePlayerData } = useVnContext();
+  const { playerData, updatePlayerData, projectData } = useVnContext();
   const { toast } = useToast(); // Initialize toast
+
+  // Helper function to get character portrait from project context
+  const getCharacterPortrait = (characterName: string): string | null => {
+    if (!projectData?.characterPortraits) return null;
+    
+    // Find character portrait by name (exact match)
+    return projectData.characterPortraits[characterName] || null;
+  };
 
   // Core scene and dialogue state
   const [currentSceneId, setCurrentSceneId] = useState("");
@@ -948,6 +956,49 @@ export function VnPlayer({
               </div>
             </div>
           )}
+
+          {/* Character Images - alternating left/right positions */}
+          {currentScene.dialogue && Array.isArray(currentScene.dialogue) && 
+            currentDialogueIndex < currentScene.dialogue.length && (
+              (() => {
+                const currentSpeaker = currentScene.dialogue[currentDialogueIndex][0];
+                const portraitUrl = getCharacterPortrait(currentSpeaker);
+                const isLeftPosition = currentDialogueIndex % 2 === 0; // Even indices = left, odd = right
+                
+                if (portraitUrl) {
+                  return (
+                    <div
+                      className={cn(
+                        "absolute bottom-[40%] sm:bottom-[35%] w-64 h-80 sm:w-72 sm:h-96 md:w-80 md:h-[28rem] z-5",
+                        "transition-all duration-500 ease-in-out",
+                        isLeftPosition 
+                          ? "left-4 sm:left-8 md:left-12" 
+                          : "right-4 sm:right-8 md:right-12"
+                      )}
+                      key={`character-${currentDialogueIndex}-${currentSpeaker}`}
+                    >
+                      <img
+                        src={portraitUrl}
+                        alt={`${currentSpeaker} portrait`}
+                        className="w-full h-full object-cover rounded-lg shadow-2xl border-2 border-white/20"
+                        style={{
+                          filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.5))",
+                        }}
+                        onError={(e) => {
+                          console.warn(`Failed to load portrait for ${currentSpeaker}:`, portraitUrl);
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                      {/* Character name label */}
+                      <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-3 py-1 rounded-full text-sm font-medium">
+                        {currentSpeaker}
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()
+            )}
         </div>
 
         <div
