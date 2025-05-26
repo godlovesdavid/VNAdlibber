@@ -51,7 +51,7 @@ export default function PlotForm() {
     };
   }, [plotActs]);
 
-  
+
   // Load existing data if available
   useEffect(() => {
     if (projectData?.plotData && Object.keys(projectData.plotData).length > 0) {
@@ -79,7 +79,7 @@ export default function PlotForm() {
     if (e) {
       e.preventDefault();
     }
-    
+
     const generatedPlot = await generatePlotData();
 
     if (generatedPlot) {
@@ -149,7 +149,7 @@ export default function PlotForm() {
     //   pathsData: projectData.pathsData,
     //   plotData: plotActs, // Use the current plot data
     // };
-    
+
     // Use our validation utility
     // try {
     //   const isValid = await validateFormContent(contextData, "plot");
@@ -345,7 +345,7 @@ export default function PlotForm() {
                         {plotActs.act1.title && (
                           <div>
                             <h5 className="text-sm font-medium text-neutral-700">
-                              Title
+                              {t('plotForm.title', 'Title')}
                             </h5>
                             <p className="text-neutral-600">
                               {plotActs.act1.title}
@@ -354,7 +354,7 @@ export default function PlotForm() {
                         )}
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Summary
+                            {t('plotForm.summary', 'Summary')}
                           </h5>
                           <p className="text-neutral-600">
                             {plotActs.act1.summary}
@@ -362,7 +362,7 @@ export default function PlotForm() {
                         </div>
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Events
+                            {t('plotForm.events', 'Events')}
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
                             {plotActs.act1.events.map(
@@ -374,7 +374,7 @@ export default function PlotForm() {
                         </div>
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Arcs Activated
+                            {t('plotForm.arcsActivated', 'Arcs Activated')}
                           </h5>
                           <p className="text-neutral-600">
                             {plotActs.act1.arcsActivated?.join(", ") }
@@ -382,7 +382,7 @@ export default function PlotForm() {
                         </div>
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Arc Intersections
+                            {t('plotForm.arcIntersections', 'Arc Intersections')}
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
                             {plotActs.act1.arcIntersections?.map(
@@ -394,7 +394,7 @@ export default function PlotForm() {
                         </div>
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Player Choices
+                            {t('plotForm.playerChoices', 'Player Choices')}
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
                             {plotActs.act1.playerChoices.map(
@@ -428,7 +428,7 @@ export default function PlotForm() {
                         {plotActs.act2.title && (
                           <div>
                             <h5 className="text-sm font-medium text-neutral-700">
-                              Title
+                              {t('plotForm.title', 'Title')}
                             </h5>
                             <p className="text-neutral-600">
                               {plotActs.act2.title}
@@ -437,7 +437,7 @@ export default function PlotForm() {
                         )}
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Summary
+                            {t('plotForm.summary', 'Summary')}
                           </h5>
                           <p className="text-neutral-600">
                             {plotActs.act2.summary}
@@ -445,7 +445,7 @@ export default function PlotForm() {
                         </div>
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Events
+                            {t('plotForm.events', 'Events')}
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
                             {plotActs.act2.events.map(
@@ -457,7 +457,7 @@ export default function PlotForm() {
                         </div>
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Arcs Activated
+                            {t('plotForm.arcsActivated', 'Arcs Activated')}
                           </h5>
                           <p className="text-neutral-600">
                             {plotActs.act2.arcsActivated?.join(", ")}
@@ -465,7 +465,7 @@ export default function PlotForm() {
                         </div>
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Arc Intersections
+                            {t('plotForm.arcIntersections', 'Arc Intersections')}
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
                             {plotActs.act2.arcIntersections?.map(
@@ -477,7 +477,7 @@ export default function PlotForm() {
                         </div>
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Player Choices
+                            {t('plotForm.playerChoices', 'Player Choices')}
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
                             {plotActs.act2.playerChoices.map(
@@ -511,7 +511,7 @@ export default function PlotForm() {
                         {plotActs.act3.title && (
                           <div>
                             <h5 className="text-sm font-medium text-neutral-700">
-                              Title
+                              {t('plotForm.title', 'Title')}
                             </h5>
                             <p className="text-neutral-600">
                               {plotActs.act3.title}
@@ -520,7 +520,7 @@ export default function PlotForm() {
                         )}
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Summary
+                            {t('plotForm.summary', 'Summary')}
                           </h5>
                           <p className="text-neutral-600">
                             {plotActs.act3.summary}
@@ -528,7 +528,7 @@ export default function PlotForm() {
                         </div>
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Events
+                            {t('plotForm.events', 'Events')}
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
                             {plotActs.act3.events.map(
@@ -540,7 +540,7 @@ export default function PlotForm() {
                         </div>
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Arcs Activated
+                            {t('plotForm.arcsActivated', 'Arcs Activated')}
                           </h5>
                           <p className="text-neutral-600">
                             {plotActs.act3.arcsActivated?.join(", ")}
@@ -548,7 +548,7 @@ export default function PlotForm() {
                         </div>
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Arc Intersections
+                            {t('plotForm.arcIntersections', 'Arc Intersections')}
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
                             {plotActs.act3.arcIntersections?.map(
@@ -560,7 +560,7 @@ export default function PlotForm() {
                         </div>
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Player Choices
+                            {t('plotForm.playerChoices', 'Player Choices')}
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
                             {plotActs.act3.playerChoices.map(
@@ -594,7 +594,7 @@ export default function PlotForm() {
                         {plotActs.act4.title && (
                           <div>
                             <h5 className="text-sm font-medium text-neutral-700">
-                              Title
+                              {t('plotForm.title', 'Title')}
                             </h5>
                             <p className="text-neutral-600">
                               {plotActs.act4.title}
@@ -603,7 +603,7 @@ export default function PlotForm() {
                         )}
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Summary
+                            {t('plotForm.summary', 'Summary')}
                           </h5>
                           <p className="text-neutral-600">
                             {plotActs.act4.summary}
@@ -611,7 +611,7 @@ export default function PlotForm() {
                         </div>
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Events
+                            {t('plotForm.events', 'Events')}
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
                             {plotActs.act4.events.map(
@@ -623,7 +623,7 @@ export default function PlotForm() {
                         </div>
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Arcs Activated
+                            {t('plotForm.arcsActivated', 'Arcs Activated')}
                           </h5>
                           <p className="text-neutral-600">
                             {plotActs.act4.arcsActivated?.join(", ")}
@@ -631,7 +631,7 @@ export default function PlotForm() {
                         </div>
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Arc Intersections
+                            {t('plotForm.arcIntersections', 'Arc Intersections')}
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
                             {plotActs.act4.arcIntersections?.map(
@@ -643,7 +643,7 @@ export default function PlotForm() {
                         </div>
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Player Choices
+                            {t('plotForm.playerChoices', 'Player Choices')}
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
                             {plotActs.act4.playerChoices.map(
@@ -677,7 +677,7 @@ export default function PlotForm() {
                         {plotActs.act5.title && (
                           <div>
                             <h5 className="text-sm font-medium text-neutral-700">
-                              Title
+                              {t('plotForm.title', 'Title')}
                             </h5>
                             <p className="text-neutral-600">
                               {plotActs.act5.title}
@@ -686,7 +686,7 @@ export default function PlotForm() {
                         )}
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Summary
+                            {t('plotForm.summary', 'Summary')}
                           </h5>
                           <p className="text-neutral-600">
                             {plotActs.act5.summary}
@@ -694,7 +694,7 @@ export default function PlotForm() {
                         </div>
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Events
+                            {t('plotForm.events', 'Events')}
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
                             {plotActs.act5.events.map(
@@ -706,7 +706,7 @@ export default function PlotForm() {
                         </div>
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Arcs Activated
+                            {t('plotForm.arcsActivated', 'Arcs Activated')}
                           </h5>
                           <p className="text-neutral-600">
                             {plotActs.act5.arcsActivated?.join(", ")}
@@ -714,7 +714,7 @@ export default function PlotForm() {
                         </div>
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Arc Intersections
+                            {t('plotForm.arcIntersections', 'Arc Intersections')}
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
                             {plotActs.act5.arcIntersections?.map(
@@ -726,7 +726,7 @@ export default function PlotForm() {
                         </div>
                         <div>
                           <h5 className="text-sm font-medium text-neutral-700">
-                            Player Choices
+                            {t('plotForm.playerChoices', 'Player Choices')}
                           </h5>
                           <ul className="list-disc list-inside text-neutral-600 pl-2">
                             {plotActs.act5.playerChoices.map(

@@ -27,34 +27,34 @@ export default function ConceptForm() {
   const [tagline, setTagline] = useState("");
   const [premise, setPremise] = useState("");
   const [autosaving, setAutosaving] = useState(false);
-  
+
   // Create form data object for autosave
   const formData = { title, tagline, premise };
-  
+
   // Setup autosave
   // useSimpleAutosave(
   //   formData, 
   //   (data) => {
   //     // Skip saving if not enough data
   //     if (!data.title && !data.tagline && !data.premise) return;
-      
+
   //     // Show autosaving indicator
   //     setAutosaving(true);
-      
+
   //     // Save to context
   //     setConceptData({
   //       title: data.title,
   //       tagline: data.tagline,
   //       premise: data.premise
   //     });
-      
+
   //     // Clear autosaving indicator after a short delay
   //     setTimeout(() => setAutosaving(false), 300);
   //   },
   //   500, // 1.5 second delay
   //   "ConceptForm" // Log prefix
   // );
-  
+
   // Generic field change handler for all form fields
   // const handleFieldChange = (
   //   field: 'title' | 'tagline' | 'premise',
@@ -105,7 +105,7 @@ export default function ConceptForm() {
     };
   }, [title, tagline, premise]);
 
-  
+
   // Load existing data if available or clear form if starting a new project
   useEffect(() => {
     // If project data exists and has concept data
@@ -122,7 +122,7 @@ export default function ConceptForm() {
       setPremise("");
     }
   }, [projectData]);
-  
+
   // No need for extra cleanup as our main useEffect handles it
 
   // Go back to previous step
@@ -134,7 +134,7 @@ export default function ConceptForm() {
       tagline,
       premise,
     });
-    
+
     goToStep(1);
   };
 
@@ -168,7 +168,7 @@ export default function ConceptForm() {
         tagline,
         premise,
       });
-      
+
       // Navigate to the next step
       setLocation("/create/characters");
     } catch (error) {
@@ -187,7 +187,7 @@ export default function ConceptForm() {
     if (e) {
       e.preventDefault();
     }
-    
+
     const generatedConcept = await generateConceptData();
 
     if (generatedConcept) {
@@ -206,23 +206,23 @@ export default function ConceptForm() {
         tagline: generatedConcept.tagline,
         premise: generatedConcept.premise,
       });
-      
+
       // Log the manual save
     }
   };
-  
+
   // Reset form fields to empty values with confirmation
   const handleResetForm = () => {
     // Ask for confirmation before clearing
     if (!window.confirm("Are you sure?")) {
       return; // User canceled the reset
     }
-    
+
     // Reset all form fields
     setTitle("");
     setTagline("");
     setPremise("");
-    
+
     // Show toast notification
     toast({
       title: "Form Reset",

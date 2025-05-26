@@ -295,11 +295,10 @@ export default function GenerateVnForm() {
       <div className="pt-16">
         <div className="creation-container max-w-4xl mx-auto p-6">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-            Step 6: Generate Visual Novel
+            {t('generateVnForm.title', 'Step 6: Generate Visual Novel')}
           </h2>
           <p className="text-gray-600 mb-6">
-            Generate the scenes for each act of your visual novel. You can
-            adjust the number of scenes per act and regenerate as needed.
+            {t('generateVnForm.description', 'Generate the scenes for each act of your visual novel. You can adjust the number of scenes per act and regenerate as needed.')}
           </p>
 
           <div className="flex items-center justify-between mb-4">
@@ -308,7 +307,7 @@ export default function GenerateVnForm() {
                 htmlFor="scenes-per-act"
                 className="block text-sm font-medium text-neutral-700 mr-3"
               >
-                Scenes Per Act:
+                {t('generateVnForm.scenesPerAct', 'Scenes Per Act:')}
               </label>
               <Select
                 value={scenesPerAct.toString()}
@@ -331,7 +330,7 @@ export default function GenerateVnForm() {
               onClick={handleExportActs}
               disabled={!Object.keys(projectData?.generatedActs || {}).length}
             >
-              <Download className="mr-1 h-4 w-4" /> Export Acts
+              <Download className="mr-1 h-4 w-4" /> {t('generateVnForm.exportActs', 'Export Acts')}
             </Button>
           </div>
 

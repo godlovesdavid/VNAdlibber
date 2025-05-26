@@ -490,10 +490,10 @@ export default function PathsForm() {
                     {/* Path Title */}
                     <div className="form-group">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Path Title
+                        {t('pathsForm.pathTitle', 'Path Title')}
                       </label>
                       <Input
-                        placeholder="Thematic name for this storyline"
+                        placeholder={t('pathsForm.pathTitlePlaceholder', 'Thematic name for this storyline')}
                         value={route.title}
                         onChange={(e) =>
                           updatePath(index, "title", e.target.value)
@@ -504,7 +504,7 @@ export default function PathsForm() {
                     {/* Love Interest */}
                     <div className="form-group">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Love Interest (Optional)
+                        {t('pathsForm.loveInterest', 'Love Interest (Optional)')}
                       </label>
                       <Select
                         value={route.loveInterest || "none"}
@@ -517,11 +517,11 @@ export default function PathsForm() {
                         }
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select love interest" />
+                          <SelectValue placeholder={t('pathsForm.selectLoveInterest', 'Select love interest')} />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="none">
-                            None - Not Romance Focused
+                            {t('pathsForm.noRomance', 'None - Not Romance Focused')}
                           </SelectItem>
                           {getCharacterOptions().map((option) => (
                             <SelectItem key={option.value} value={option.value}>
@@ -535,10 +535,10 @@ export default function PathsForm() {
                     {/* Key Choices */}
                     <div className="form-group">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Key Choices
+                        {t('pathsForm.keyChoices', 'Key Choices')}
                       </label>
                       <p className="text-xs text-gray-500 mb-2">
-                        Critical player decisions that shape this route
+                        {t('pathsForm.keyChoicesHelp', 'Critical player decisions that shape this route')}
                       </p>
                       <div className="space-y-2">
                         <Textarea
@@ -556,11 +556,11 @@ export default function PathsForm() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="form-group">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Beginning
+                          {t('pathsForm.beginning', 'Beginning')}
                         </label>
                         <Textarea
                           rows={3}
-                          placeholder="Description of how this route begins"
+                          placeholder={t('pathsForm.beginningPlaceholder', 'Description of how this route begins')}
                           value={route.beginning}
                           onChange={(e) =>
                             updatePath(index, "beginning", e.target.value)
@@ -570,11 +570,11 @@ export default function PathsForm() {
 
                       <div className="form-group">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Middle
+                          {t('pathsForm.middle', 'Middle')}
                         </label>
                         <Textarea
                           rows={3}
-                          placeholder="Description of conflict escalation and unexpected twist(s)"
+                          placeholder={t('pathsForm.middlePlaceholder', 'Description of conflict escalation and unexpected twist(s)')}
                           value={route.middle}
                           onChange={(e) =>
                             updatePath(index, "middle", e.target.value)
@@ -585,11 +585,11 @@ export default function PathsForm() {
 
                     <div className="form-group">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Climax
+                        {t('pathsForm.climax', 'Climax')}
                       </label>
                       <Textarea
                         rows={3}
-                        placeholder="Description of the highest tension moment of this path"
+                        placeholder={t('pathsForm.climaxPlaceholder', 'Description of the highest tension moment of this path')}
                         value={route.climax}
                         onChange={(e) =>
                           updatePath(index, "climax", e.target.value)
@@ -601,11 +601,11 @@ export default function PathsForm() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="form-group">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Good Ending
+                          {t('pathsForm.goodEnding', 'Good Ending')}
                         </label>
                         <Textarea
                           rows={3}
-                          placeholder="Description of positive resolution"
+                          placeholder={t('pathsForm.goodEndingPlaceholder', 'Description of positive resolution')}
                           value={route.goodEnding}
                           onChange={(e) =>
                             updatePath(index, "goodEnding", e.target.value)
@@ -615,11 +615,11 @@ export default function PathsForm() {
 
                       <div className="form-group">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Bad Ending
+                          {t('pathsForm.badEnding', 'Bad Ending')}
                         </label>
                         <Textarea
                           rows={3}
-                          placeholder="Description of negative outcome"
+                          placeholder={t('pathsForm.badEndingPlaceholder', 'Description of negative outcome')}
                           value={route.badEnding}
                           onChange={(e) =>
                             updatePath(index, "badEnding", e.target.value)
@@ -714,7 +714,7 @@ export default function PathsForm() {
                       Generating...
                     </>
                   ) : (
-                    <>Generate All Paths</>
+                    <>{t('pathsForm.generateAllPaths', 'Generate All Paths')}</>
                   )}
                 </Button>
               </div>
@@ -787,7 +787,7 @@ export default function PathsForm() {
                       Validating...
                     </>
                   ) : (
-                    "Next: Plot"
+                    {t('pathsForm.nextPlot', 'Next: Plot')}
                   )}
                 </Button>
                   </div>

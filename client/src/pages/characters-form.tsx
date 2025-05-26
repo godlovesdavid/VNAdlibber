@@ -795,13 +795,13 @@ export default function CharactersForm() {
 
                   <div>
                     <MinimalTextarea
-                      label="Appearance"
+                      label={t('charactersForm.appearance', 'Appearance')}
                       value={character.appearance}
                       onChange={(e) =>
                         updateCharacter(index, "appearance", e.target.value)
                       }
                       rows={4}
-                      placeholder="Physical description - important for character visualization"
+                      placeholder={t('charactersForm.appearancePlaceholder', 'Physical description - important for character visualization')}
                     />
                   </div>
                 </div>
@@ -917,7 +917,7 @@ export default function CharactersForm() {
                         )
                       }
                       rows={2}
-                      placeholder="Friend or foe? Romanceable?"
+                      placeholder={t('charactersForm.relationshipPotentialPlaceholder', 'Friend or foe? Romanceable?')}
                     />)}
                 </div>
 
