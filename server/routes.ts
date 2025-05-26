@@ -1493,7 +1493,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         {
           "scene1": {
             "setting": "location name (with optionally time of day)",
-            "image_prompt": "Detailed visual description for AI image generation",
+            "setting_description": "Detailed visual description of the background for AI image generation",
             "dialogue": [
               ["Narrator", "Descriptive text about the scene"],
               ["Character Name", "Character dialogue"],
@@ -1525,7 +1525,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         - Use of a narrator is encouraged to explain the scene or provide context.
         - The protagonist may think in parentheses.
         - Unknown characters are named "???" until revealed.
-        - "image_prompt" is a prompt directed to Stable Diffusion 1.5 and is used for real time generating a background image for the VN program. It is only required when visiting the setting for the first time. 
+        - "setting_description" is a prompt directed to Stable Diffusion XL and is used for real time generating a background image for the VN program. It is only required when visiting the setting for the first time. Do not include main characters here as those are rendered separately.
         - Maintain the given tone (${projectContext.basicData.tone}) consistent with the story context.
         - You may optionally include [emotion] or [action] tags before dialogue when it enhances the scene.
         - If a choice increases or decreases a relationship, reflect it subtly in the dialogue tone.
@@ -1634,7 +1634,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   //         const result = await generateSceneBackgroundImage(
   //           scene.name,
-  //           scene.image_prompt,
+  //           scene.setting_description,
   //         );
 
   //         // No environment variables to reset since we've removed DALL-E
@@ -1818,7 +1818,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate unique user ID for this request
       const userId = uuidv4();
 
-      console.log(`Queueing image generation for user ${userId} with prompt: ${prompt}, dimensions: ${width || 'default'}x${height || 'default'}, remove_bg: ${remove_bg}`);
+      console.log(`Queueing image generation for ticket ${userId} with prompt: ${prompt}, dimensions: ${width || 'default'}x${height || 'default'}, remove_bg: ${remove_bg}`);
 
       // Store the response object for later use
       pendingRequests.set(userId, res);

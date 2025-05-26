@@ -293,10 +293,10 @@ export function VnPlayer({
 
   // Helper function to get character portrait from project context
   const getCharacterPortrait = (characterName: string): string | null => {
-    if (!projectData?.characterPortraits) return null;
+    if (!projectData?.characterPortraitsData) return null;
     
     // Find character portrait by name (exact match)
-    return projectData.characterPortraits[characterName] || null;
+    return projectData.characterPortraitsData[characterName] || null;
   };
 
   // Core scene and dialogue state
@@ -419,9 +419,9 @@ export function VnPlayer({
 
   // IMAGE GEN
   const generateImage = useCallback(async () => {
-    if (!currentScene || isGenerating || !imageGenerationEnabled || !currentScene?.image_prompt)
+    if (!currentScene || isGenerating || !imageGenerationEnabled || !currentScene?.setting_description)
     {
-      // alert((!currentScene).toString() + isGenerating.toString() + !imageGenerationEnabled.toString()+ (!currentScene?.image_prompt).toString())
+      // alert((!currentScene).toString() + isGenerating.toString() + !imageGenerationEnabled.toString()+ (!currentScene?.setting_description).toString())
       return
     }
     try {
@@ -440,9 +440,9 @@ export function VnPlayer({
 
       // Generate new image if not cached
       console.log("Generating new image for scene:", currentScene.setting);
-      // alert(JSON.stringify({name: currentScene.name, image_prompt: currentScene?.image_prompt || ''}))
-      // const result = await ImageGenerator.generateSceneBackground({name: currentScene.name, image_prompt: currentScene?.image_prompt || ''});
-      const response = await apiRequest("POST", "/api/generate/image", { prompt:currentScene.image_prompt, width:1024, height:1024});
+      // alert(JSON.stringify({name: currentScene.name, setting_description: currentScene?.setting_description || ''}))
+      // const result = await ImageGenerator.generateSceneBackground({name: currentScene.name, setting_description: currentScene?.setting_description || ''});
+      const response = await apiRequest("POST", "/api/generate/image", { prompt:currentScene.setting_description, width:1024, height:1024});
       const result = await response.json();
       if (result.url) {
         // Cache the new image
@@ -892,10 +892,10 @@ export function VnPlayer({
                 sceneId={currentScene.name}
                 isGenerated={true}
               />
-            ) : currentScene.image_prompt ? (
+            ) : currentScene.setting_description ? (
               // Display scene's existing background image
               <SceneBackground
-                imageUrl={currentScene.image_prompt}
+                imageUrl={currentScene.setting_description}
                 sceneId={currentScene.name}
                 isGenerated={false}
               />
@@ -972,9 +972,13 @@ export function VnPlayer({
                         "absolute bottom-[40%] sm:bottom-[35%] w-64 h-80 sm:w-72 sm:h-96 md:w-80 md:h-[28rem] z-5",
                         "transition-all duration-500 ease-in-out",
                         isLeftPosition 
-                          ? "left-4 sm:left-8 md:left-12" 
-                          : "right-4 sm:right-8 md:right-12"
+                          ? "left-0 bottom-0" 
+                          : "right-0 bottom-0"
                       )}
+                      style={{
+                        bottom: "40%", // Keep above dialogue area
+                        ...(isLeftPosition ? { left: 0 } : { right: 0 })
+                      }}
                       key={`character-${currentDialogueIndex}-${currentSpeaker}`}
                     >
                       <img

@@ -82,7 +82,7 @@ export interface SceneChoice {
 export interface Scene {
   name: string;
   setting: string;
-  image_prompt?: string;
+  setting_description?: string;
   dialogue: [string, string][];
   choices: SceneChoice[] | null;
 }
