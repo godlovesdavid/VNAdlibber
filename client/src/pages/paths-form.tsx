@@ -787,7 +787,7 @@ export default function PathsForm() {
                       Validating...
                     </>
                   ) : (
-                    {t('pathsForm.nextPlot', 'Next: Plot')}
+                    t('pathsForm.nextPlot', 'Next: Plot')
                   )}
                 </Button>
                   </div>

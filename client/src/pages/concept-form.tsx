@@ -324,14 +324,6 @@ export default function ConceptForm() {
               <div className="flex space-x-3">
                 <Button
                   variant="outline"
-                  className="border-red-300 text-red-600 hover:bg-red-50"
-                  onClick={handleResetForm}
-                  disabled={isGenerating}
-                >
-                  {t('conceptForm.reset', 'reset')}
-                </Button>
-                <Button
-                  variant="outline"
                   className="border-primary text-primary hover:bg-primary-100"
                   onClick={handleGenerateConcept}
                   disabled={isGenerating}
@@ -366,6 +358,14 @@ export default function ConceptForm() {
                       {t('conceptForm.generate')}
                     </>
                   )}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-red-300 text-red-600 hover:bg-red-50"
+                  onClick={handleResetForm}
+                  disabled={isGenerating}
+                >
+                  {t('conceptForm.reset', 'reset')}
                 </Button>
                 <Button onClick={handleNext}>{t('conceptForm.next', 'next')}: {t('characterForm.title', 'Title').split(':')[0]}</Button>
               </div>
