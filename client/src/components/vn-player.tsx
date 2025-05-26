@@ -964,30 +964,27 @@ export function VnPlayer({
                 const currentSpeaker = currentScene.dialogue[currentDialogueIndex][0];
                 const portraitUrl = getCharacterPortrait(currentSpeaker);
                 const isLeftPosition = currentDialogueIndex % 2 === 0; // Even indices = left, odd = right
-                
+                const size_percent = 60
                 if (portraitUrl) {
                   return (
                     <div
-                      className={cn(
-                        "absolute w-64 h-80 sm:w-72 sm:h-96 md:w-80 md:h-[28rem] z-15",
-                        "transition-all duration-500 ease-in-out",
-                        isLeftPosition 
-                          ? "bottom-0 left-0" 
-                          : "bottom-0 right-0"
-                      )}
+                      className="absolute bottom-0 z-15"
                       style={{
-                        maxHeight: "calc(100vh - 160px)", // Leave space for dialogue and top padding
-                        objectPosition: "bottom"
+                        right: isLeftPosition ? "auto" : "0",
+                        left: isLeftPosition ? "0" : "auto",
+                        transform: isLeftPosition ? "none" : `translateX(${100 - size_percent}%)`, // ← key part!
                       }}
-                      key={`character-${currentDialogueIndex}-${currentSpeaker}`}
                     >
                       <img
                         src={portraitUrl}
                         alt={`${currentSpeaker} portrait`}
-                        className="w-full h-full object-cover shadow-2xl"
                         style={{
-                          filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.5))",
-                          objectPosition: "bottom center" // Keep character feet at bottom, crop from top if needed
+                          width: `${size_percent}%`,
+                          height: "auto",
+                          display: "block",
+                          objectFit: "contain",
+                          objectPosition: "bottom center",
+                          filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.5))"
                         }}
                         onError={(e) => {
                           console.warn(`Failed to load portrait for ${currentSpeaker}:`, portraitUrl);
@@ -995,6 +992,7 @@ export function VnPlayer({
                         }}
                       />
                     </div>
+
                   );
                 }
                 return null;
