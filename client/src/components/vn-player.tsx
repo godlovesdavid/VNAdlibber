@@ -20,53 +20,58 @@ function convertActFormat(actData: any): {
     console.error("convertActFormat received undefined or null actData");
     return { scenes: [], act: 1 };
   }
-  
-  console.log("convertActFormat received data:", JSON.stringify(actData).substring(0, 200) + "...");
-  
+
+  console.log(
+    "convertActFormat received data:",
+    JSON.stringify(actData).substring(0, 200) + "...",
+  );
+
   // Reset to debug - dump full data structure
   console.log("DEBUG: Full act data structure keys:", Object.keys(actData));
-  
+
   // Handle case where the data is already in the correct format
   if (actData.scenes && Array.isArray(actData.scenes)) {
     console.log("Act data is already in the legacy array format");
     return {
       ...actData,
-      characterPortraits: actData.characterPortraits
+      characterPortraits: actData.characterPortraits,
     };
   }
 
   let sceneMap = {};
   let actNumber = 1;
-  
+
   // Check if it has an explicit act number
-  if (actData.act && typeof actData.act === 'number') {
+  if (actData.act && typeof actData.act === "number") {
     actNumber = actData.act;
     console.log("Using explicit act number from data:", actNumber);
-  } else if (actData.act && typeof actData.act === 'string') {
+  } else if (actData.act && typeof actData.act === "string") {
     actNumber = parseInt(actData.act) || 1;
     console.log("Using parsed act number from string:", actNumber);
-  } else if (actData.actNumber && typeof actData.actNumber === 'number') {
+  } else if (actData.actNumber && typeof actData.actNumber === "number") {
     actNumber = actData.actNumber;
     console.log("Using actNumber property:", actNumber);
   }
 
   // Check for the new simplified format: {scene1: {...}, scene2: {...}}
   if (Object.keys(actData).some((key) => key.startsWith("scene"))) {
-    console.log("Act data is in the simplified scene map format with scene keys");
+    console.log(
+      "Act data is in the simplified scene map format with scene keys",
+    );
     sceneMap = {};
-    
+
     // Extract only the scene objects (ignore other properties like 'act')
-    Object.keys(actData).forEach(key => {
+    Object.keys(actData).forEach((key) => {
       if (key.startsWith("scene")) {
         (sceneMap as any)[key] = actData[key];
       }
     });
-    
+
     // Attempt to extract act number from scene names if available
-    const firstScene = Object.values(actData).find(val => 
-      val && typeof val === 'object' && 'dialogue' in val
+    const firstScene = Object.values(actData).find(
+      (val) => val && typeof val === "object" && "dialogue" in val,
     ) as any;
-    
+
     if (firstScene && firstScene.name && typeof firstScene.name === "string") {
       const match = firstScene.name.match(/Act (\d+)/i);
       if (match && match[1]) {
@@ -85,14 +90,16 @@ function convertActFormat(actData: any): {
       console.log("Found act wrapper:", actKey, "with act number:", actNumber);
       sceneMap = actData[actKey] || {};
     } else {
-      console.warn("No direct scene data found in the expected formats, attempting fallbacks");
-      
+      console.warn(
+        "No direct scene data found in the expected formats, attempting fallbacks",
+      );
+
       // As a fallback, check if this is a story object with nested actData
-      if (actData.actData && typeof actData.actData === 'object') {
+      if (actData.actData && typeof actData.actData === "object") {
         console.log("Found nested actData, using it instead");
         return convertActFormat(actData.actData);
       }
-      
+
       // As a last resort, try to use the actData directly
       console.log("Using actData directly as scene map");
       sceneMap = actData;
@@ -101,20 +108,24 @@ function convertActFormat(actData: any): {
 
   // Convert the scene map to an array, with additional error checking
   const scenes: Scene[] = [];
-  
+
   try {
-    if (!sceneMap || typeof sceneMap !== 'object') {
+    if (!sceneMap || typeof sceneMap !== "object") {
       console.error("Scene map is invalid:", sceneMap);
-      return { scenes: [], act: actNumber, characterPortraits: actData.characterPortraits };
+      return {
+        scenes: [],
+        act: actNumber,
+        characterPortraits: actData.characterPortraits,
+      };
     }
-    
+
     // Process each scene with error handling
     Object.entries(sceneMap).forEach(([sceneKey, sceneData]: [string, any]) => {
       if (!sceneData) {
         console.warn(`Scene ${sceneKey} has no data, skipping`);
         return; // Skip this entry
       }
-      
+
       // Process choices with error handling
       let choices = [];
       if (sceneData.choices && Array.isArray(sceneData.choices)) {
@@ -125,16 +136,16 @@ function convertActFormat(actData: any): {
           };
         });
       }
-      
+
       // Create the scene with fallbacks for missing properties
       const scene = {
         ...sceneData,
         name: sceneKey, // Use the scene key as the name
         choices: choices,
         dialogue: Array.isArray(sceneData.dialogue) ? sceneData.dialogue : [],
-        background: sceneData.background || "Default Scene"
+        background: sceneData.background || "Default Scene",
       };
-      
+
       scenes.push(scene);
     });
   } catch (error) {
@@ -169,21 +180,21 @@ function SceneBackground({
 
   // Determine if the image source is an actual URL (data:, http:, etc.) vs just a text description
   // useEffect(() => {
-    // Reset states when URL changes
-    // setIsLoading(true);
-    // setHasError(false);
-    
-    // Check if the imageUrl is actually a URL vs a text description
-    // if (imageUrl && (imageUrl.startsWith('data:') || imageUrl.startsWith('http'))) {
-    //   console.log(`Setting actual URL for scene ${sceneId}, source appears to be a valid URL`);
-      // setActualUrl(imageUrl);
-    // } else {
-    //   // console.log(`Using fallback for scene ${sceneId}, source is not a valid URL: ${imageUrl?.slice(0, 30)}...`);
-    //   // setActualUrl(fallbackUrl);
-    //   // Mark as loaded but with error
-    //   setIsLoading(false);
-    //   setHasError(true);
-    // }
+  // Reset states when URL changes
+  // setIsLoading(true);
+  // setHasError(false);
+
+  // Check if the imageUrl is actually a URL vs a text description
+  // if (imageUrl && (imageUrl.startsWith('data:') || imageUrl.startsWith('http'))) {
+  //   console.log(`Setting actual URL for scene ${sceneId}, source appears to be a valid URL`);
+  // setActualUrl(imageUrl);
+  // } else {
+  //   // console.log(`Using fallback for scene ${sceneId}, source is not a valid URL: ${imageUrl?.slice(0, 30)}...`);
+  //   // setActualUrl(fallbackUrl);
+  //   // Mark as loaded but with error
+  //   setIsLoading(false);
+  //   setHasError(true);
+  // }
   // }, [imageUrl]);
 
   const handleImageError = () => {
@@ -269,22 +280,29 @@ export function VnPlayer({
           ? "New nested format"
           : "Legacy array format",
       );
-      
+
       // Debug - log structure of actData and the first scene key
       try {
         const actKeys = Object.keys(rawActData);
         console.log("Act data keys:", actKeys);
-        
+
         if (actKeys.length > 0 && actKeys[0].startsWith("scene")) {
           console.log("First scene key:", actKeys[0]);
           // Use type assertion to avoid TS error with indexing
           const firstSceneData = (rawActData as any)[actKeys[0]];
-          console.log("First scene data sample:", JSON.stringify(firstSceneData).substring(0, 100) + "...");
+          console.log(
+            "First scene data sample:",
+            JSON.stringify(firstSceneData).substring(0, 100) + "...",
+          );
         }
-        
+        console.log(JSON.stringify(actData, null, 2));
+
         // Always log first scene of the processed actData
         if (actData && actData.scenes && actData.scenes.length > 0) {
-          console.log("Processed first scene:", JSON.stringify(actData.scenes[0]).substring(0, 100) + "...");
+          console.log(
+            "Processed first scene:",
+            JSON.stringify(actData.scenes[0]).substring(0, 100) + "...",
+          );
         } else {
           console.error("No scenes found in processed actData");
         }
@@ -302,13 +320,17 @@ export function VnPlayer({
     if (projectData?.characterPortraitsData) {
       return projectData.characterPortraitsData[characterName] || null;
     }
-    
+
     // For shared stories, check if character portraits are included in actData
-    if (actData && typeof actData === 'object' && 'characterPortraits' in actData) {
+    if (
+      actData &&
+      typeof actData === "object" &&
+      "characterPortraits" in actData
+    ) {
       const characterPortraits = (actData as any).characterPortraits;
       return characterPortraits[characterName] || null;
     }
-    
+
     return null;
   };
 
@@ -321,7 +343,7 @@ export function VnPlayer({
     Array<{ speaker: string; text: string }>
   >([]);
   const [clickableContent, setClickableContent] = useState(true);
-  
+
   // Image generation toggle state with a reference to track changes
   const [imageGenerationEnabled, setImageGenerationEnabled] = useState(true);
 
@@ -340,10 +362,12 @@ export function VnPlayer({
   const animateText = useCallback(
     (textContent: any) => {
       // Convert object to string if needed
-      const text = typeof textContent === 'string'
-        ? textContent
-        : ((textContent as {text?: string})?.text || JSON.stringify(textContent));
-        
+      const text =
+        typeof textContent === "string"
+          ? textContent
+          : (textContent as { text?: string })?.text ||
+            JSON.stringify(textContent);
+
       // Skip animation if text speed is set to fast
       if (textSpeed === "fast") {
         setDisplayedText(text);
@@ -359,8 +383,7 @@ export function VnPlayer({
       // Start new animation
       setIsTextAnimating(true);
       let currentIndex = 0;
-      if (!text?.length)
-        return
+      if (!text?.length) return;
       const totalLength = text.length;
 
       // Determine speed in milliseconds per character
@@ -407,16 +430,19 @@ export function VnPlayer({
 
     if (currentScene && currentDialogueIndex < currentScene.dialogue.length) {
       const dialogueContent = currentScene.dialogue[currentDialogueIndex][1];
-      
+
       // Handle case where dialogue content is an object instead of a string
-      if (typeof dialogueContent === 'string') {
+      if (typeof dialogueContent === "string") {
         setDisplayedText(dialogueContent);
-      } else if (dialogueContent && typeof dialogueContent === 'object') {
+      } else if (dialogueContent && typeof dialogueContent === "object") {
         // Use the text property if it exists, otherwise stringify the object
-        setDisplayedText((dialogueContent as {text?: string})?.text || JSON.stringify(dialogueContent));
+        setDisplayedText(
+          (dialogueContent as { text?: string })?.text ||
+            JSON.stringify(dialogueContent),
+        );
       } else {
         // Fallback for any other case
-        setDisplayedText(String(dialogueContent || ''));
+        setDisplayedText(String(dialogueContent || ""));
       }
     }
 
@@ -432,10 +458,14 @@ export function VnPlayer({
 
   // IMAGE GEN
   const generateImage = useCallback(async () => {
-    if (!currentScene || isGenerating || !imageGenerationEnabled || !currentScene?.setting_desc)
-    {
+    if (
+      !currentScene ||
+      isGenerating ||
+      !imageGenerationEnabled ||
+      !currentScene?.setting_desc
+    ) {
       // alert((!currentScene).toString() + isGenerating.toString() + !imageGenerationEnabled.toString()+ (!currentScene?.setting_desc).toString())
-      return
+      return;
     }
     try {
       // Mark as generating
@@ -454,7 +484,11 @@ export function VnPlayer({
       console.log("Generating new image for scene:", currentScene.setting);
       // alert(JSON.stringify({name: currentScene.name, setting_desc: currentScene?.setting_desc || ''}))
       // const result = await ImageGenerator.generateSceneBackground({name: currentScene.name, setting_desc: currentScene?.setting_desc || ''});
-      const response = await apiRequest("POST", "/api/generate/image", { prompt:currentScene.setting_desc, width:1024, height:1024});
+      const response = await apiRequest("POST", "/api/generate/image", {
+        prompt: currentScene.setting_desc,
+        width: 1024,
+        height: 1024,
+      });
       const result = await response.json();
       if (result.url) {
         // Cache the new image
@@ -469,7 +503,7 @@ export function VnPlayer({
       toast({
         title: "Image Generation Failed",
         description: (error as Error).message,
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsGenerating(false);
@@ -483,10 +517,9 @@ export function VnPlayer({
       imageGenerationEnabled,
       isGenerating: isGenerating,
     });
-    if (currentScene && imageGenerationEnabled) 
-    {
+    if (currentScene && imageGenerationEnabled) {
       console.log("Starting image generation for the current scene");
-      generateImage()
+      generateImage();
     }
   }, [currentScene, imageGenerationEnabled]);
 
@@ -496,51 +529,75 @@ export function VnPlayer({
       console.log("Image generation toggled:", e.detail);
       setImageGenerationEnabled(e.detail);
     };
-    window.addEventListener("vnToggleImageGeneration", handleImageGenerationToggle as EventListener);
+    window.addEventListener(
+      "vnToggleImageGeneration",
+      handleImageGenerationToggle as EventListener,
+    );
     return () => {
-      window.removeEventListener("vnToggleImageGeneration", handleImageGenerationToggle as EventListener);
+      window.removeEventListener(
+        "vnToggleImageGeneration",
+        handleImageGenerationToggle as EventListener,
+      );
     };
   }, [currentScene, imageGenerationEnabled]);
 
   //FIRST SCENE INIT
   useEffect(() => {
-    console.log("First scene init effect triggered, checking actData:", 
-      actData ? `Found with ${actData.scenes?.length || 0} scenes` : "No act data");
-    
+    console.log(
+      "First scene init effect triggered, checking actData:",
+      actData
+        ? `Found with ${actData.scenes?.length || 0} scenes`
+        : "No act data",
+    );
+
     // Make sure we have valid scene data
-    if (!actData?.scenes || !Array.isArray(actData.scenes) || actData.scenes.length === 0) {
-      console.error("Cannot initialize VN Player: No scenes found in actData", actData);
+    if (
+      !actData?.scenes ||
+      !Array.isArray(actData.scenes) ||
+      actData.scenes.length === 0
+    ) {
+      console.error(
+        "Cannot initialize VN Player: No scenes found in actData",
+        actData,
+      );
       return;
     }
-    
+
     ImageGenerator.clearImageCache();
-    
+
     try {
       // Set initial scene
       const firstScene = actData.scenes[0];
-      
+
       // Additional validation for the first scene
-      if (!firstScene || typeof firstScene !== 'object') {
+      if (!firstScene || typeof firstScene !== "object") {
         console.error("First scene is invalid:", firstScene);
         return;
       }
-      
+
       console.log(
         `Initializing VN Player (${mode} mode) with first scene:`,
         firstScene.name,
       );
-  
+
       setCurrentScene(firstScene);
       setCurrentSceneId(firstScene.name);
       setCurrentDialogueIndex(0);
       setShowChoices(false);
       setDialogueLog([]);
-  
+
       // Start text animation for the first dialogue line
-      if (firstScene.dialogue && Array.isArray(firstScene.dialogue) && firstScene.dialogue.length > 0) {
+      if (
+        firstScene.dialogue &&
+        Array.isArray(firstScene.dialogue) &&
+        firstScene.dialogue.length > 0
+      ) {
         setDisplayedText(""); // Clear any previous text
         const firstDialogue = firstScene.dialogue[0][1] || "";
-        console.log("Starting animation for first dialogue:", firstDialogue.substring(0, 50) + "...");
+        console.log(
+          "Starting animation for first dialogue:",
+          firstDialogue.substring(0, 50) + "...",
+        );
         animateText(firstDialogue);
       } else {
         console.warn("First scene has no dialogue", firstScene);
@@ -610,18 +667,21 @@ export function VnPlayer({
 
     if (currentDialogueIndex < currentScene.dialogue.length - 1) {
       // Add current dialogue to log
-      const [speaker, dialogueContent] = currentScene.dialogue[currentDialogueIndex];
-      
+      const [speaker, dialogueContent] =
+        currentScene.dialogue[currentDialogueIndex];
+
       // Handle both string and object dialogue content
-      let textToLog = '';
-      if (typeof dialogueContent === 'string') {
+      let textToLog = "";
+      if (typeof dialogueContent === "string") {
         textToLog = dialogueContent;
-      } else if (dialogueContent && typeof dialogueContent === 'object') {
-        textToLog = (dialogueContent as {text?: string})?.text || JSON.stringify(dialogueContent);
+      } else if (dialogueContent && typeof dialogueContent === "object") {
+        textToLog =
+          (dialogueContent as { text?: string })?.text ||
+          JSON.stringify(dialogueContent);
       } else {
-        textToLog = String(dialogueContent || '');
+        textToLog = String(dialogueContent || "");
       }
-      
+
       setDialogueLog((prev) => [...prev, { speaker, text: textToLog }]);
 
       // Advance to next dialogue line
@@ -635,18 +695,21 @@ export function VnPlayer({
     } else {
       // Add final dialogue to log
       if (currentScene.dialogue.length > 0) {
-        const [speaker, dialogueContent] = currentScene.dialogue[currentDialogueIndex];
-        
+        const [speaker, dialogueContent] =
+          currentScene.dialogue[currentDialogueIndex];
+
         // Handle both string and object dialogue content
-        let textToLog = '';
-        if (typeof dialogueContent === 'string') {
+        let textToLog = "";
+        if (typeof dialogueContent === "string") {
           textToLog = dialogueContent;
-        } else if (dialogueContent && typeof dialogueContent === 'object') {
-          textToLog = (dialogueContent as {text?: string})?.text || JSON.stringify(dialogueContent);
+        } else if (dialogueContent && typeof dialogueContent === "object") {
+          textToLog =
+            (dialogueContent as { text?: string })?.text ||
+            JSON.stringify(dialogueContent);
         } else {
-          textToLog = String(dialogueContent || '');
+          textToLog = String(dialogueContent || "");
         }
-        
+
         setDialogueLog((prev) => [...prev, { speaker, text: textToLog }]);
       }
 
@@ -793,7 +856,7 @@ export function VnPlayer({
       );
     };
   }, [mode, isTextAnimating]);
-  
+
   // // Log current scene and image state for debugging
   // useEffect(() => {
   //   if (currentScene) {
@@ -821,19 +884,25 @@ export function VnPlayer({
   let rawDialogueContent = "";
   try {
     // Check if currentScene.dialogue array exists and has the current index
-    if (currentScene?.dialogue && Array.isArray(currentScene.dialogue) && 
-        currentDialogueIndex >= 0 && currentDialogueIndex < currentScene.dialogue.length &&
-        Array.isArray(currentScene.dialogue[currentDialogueIndex])) {
+    if (
+      currentScene?.dialogue &&
+      Array.isArray(currentScene.dialogue) &&
+      currentDialogueIndex >= 0 &&
+      currentDialogueIndex < currentScene.dialogue.length &&
+      Array.isArray(currentScene.dialogue[currentDialogueIndex])
+    ) {
       rawDialogueContent = currentScene.dialogue[currentDialogueIndex][1] || "";
     }
   } catch (error) {
     console.error("Error accessing dialogue content:", error);
   }
-  
+
   // Handle case where dialogue content is an object instead of a string
-  const originalDialogueText = typeof rawDialogueContent === 'string' 
-    ? rawDialogueContent 
-    : ((rawDialogueContent as {text?: string})?.text || JSON.stringify(rawDialogueContent));
+  const originalDialogueText =
+    typeof rawDialogueContent === "string"
+      ? rawDialogueContent
+      : (rawDialogueContent as { text?: string })?.text ||
+        JSON.stringify(rawDialogueContent);
   const dialogueText = isTextAnimating ? displayedText : originalDialogueText;
 
   return (
@@ -930,7 +999,11 @@ export function VnPlayer({
                 </svg>
                 <p>No image available</p>
                 <p className="text-sm text-neutral-400 mt-1">
-                  {imageError ? `Error: ${imageError}` : isGenerating ? "Generating image..." : "Click 'Regenerate' to create an image"}
+                  {imageError
+                    ? `Error: ${imageError}`
+                    : isGenerating
+                      ? "Generating image..."
+                      : "Click 'Regenerate' to create an image"}
                 </p>
               </div>
             )
@@ -970,50 +1043,56 @@ export function VnPlayer({
           )}
 
           {/* Character Images - alternating left/right positions */}
-          {currentScene.dialogue && Array.isArray(currentScene.dialogue) && 
-            currentDialogueIndex < currentScene.dialogue.length && (
-              (() => {
-                const currentSpeaker = currentScene.dialogue[currentDialogueIndex][0];
-                const portraitUrl = getCharacterPortrait(currentSpeaker);
-                const isLeftPosition = currentDialogueIndex % 2 === 0; // Even indices = left, odd = right
-                
-                // Mobile-responsive sizing
-                const isMobile = window.innerWidth <= 768;
-                const isTablet = window.innerWidth > 768 && window.innerWidth <= 1024;
-                const size_percent = isMobile ? 45 : isTablet ? 55 : 60;
-                if (portraitUrl) {
-                  return (
-                    <div
-                      className="absolute bottom-0 z-15"
-                      style={{
-                        right: isLeftPosition ? "auto" : "0",
-                        left: isLeftPosition ? "0" : "auto",
-                        transform: isLeftPosition ? "none" : `translateX(${100 - size_percent}%)`, // ← key part!
-                      }}
-                    >
-                      <img
-                        src={portraitUrl}
-                        alt={`${currentSpeaker} portrait`}
-                        style={{
-                          width: `${size_percent}%`,
-                          height: "auto",
-                          display: "block",
-                          objectFit: "contain",
-                          objectPosition: "bottom center",
-                          filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.5))"
-                        }}
-                        onError={(e) => {
-                          console.warn(`Failed to load portrait for ${currentSpeaker}:`, portraitUrl);
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    </div>
+          {currentScene.dialogue &&
+            Array.isArray(currentScene.dialogue) &&
+            currentDialogueIndex < currentScene.dialogue.length &&
+            (() => {
+              const currentSpeaker =
+                currentScene.dialogue[currentDialogueIndex][0];
+              const portraitUrl = getCharacterPortrait(currentSpeaker);
+              const isLeftPosition = currentDialogueIndex % 2 === 0; // Even indices = left, odd = right
 
-                  );
-                }
-                return null;
-              })()
-            )}
+              // Mobile-responsive sizing
+              const isMobile = window.innerWidth <= 768;
+              const isTablet =
+                window.innerWidth > 768 && window.innerWidth <= 1024;
+              const size_percent = isMobile ? 45 : isTablet ? 55 : 60;
+              if (portraitUrl) {
+                return (
+                  <div
+                    className="absolute bottom-0 z-15"
+                    style={{
+                      right: isLeftPosition ? "auto" : "0",
+                      left: isLeftPosition ? "0" : "auto",
+                      transform: isLeftPosition
+                        ? "none"
+                        : `translateX(${100 - size_percent}%)`, // ← key part!
+                    }}
+                  >
+                    <img
+                      src={portraitUrl}
+                      alt={`${currentSpeaker} portrait`}
+                      style={{
+                        width: `${size_percent}%`,
+                        height: "auto",
+                        display: "block",
+                        objectFit: "contain",
+                        objectPosition: "bottom center",
+                        filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.5))",
+                      }}
+                      onError={(e) => {
+                        console.warn(
+                          `Failed to load portrait for ${currentSpeaker}:`,
+                          portraitUrl,
+                        );
+                        e.currentTarget.style.display = "none";
+                      }}
+                    />
+                  </div>
+                );
+              }
+              return null;
+            })()}
         </div>
 
         <div
@@ -1022,26 +1101,31 @@ export function VnPlayer({
           onClick={handleContentClick}
         >
           {/* Dialogue text */}
-          {currentScene.dialogue && Array.isArray(currentScene.dialogue) && 
+          {currentScene.dialogue &&
+            Array.isArray(currentScene.dialogue) &&
             currentScene.dialogue.length > 0 &&
             currentDialogueIndex < currentScene.dialogue.length && (
               <div className="vn-dialogue">
                 <p className="character-name text-primary-300 font-semibold mb-1 sm:mb-2 text-sm sm:text-base md:text-lg">
-                  {currentScene.dialogue && 
-                   Array.isArray(currentScene.dialogue) && 
-                   currentDialogueIndex < currentScene.dialogue.length && 
-                   Array.isArray(currentScene.dialogue[currentDialogueIndex]) ? 
-                   currentScene.dialogue[currentDialogueIndex][0] : "Character"}
+                  {currentScene.dialogue &&
+                  Array.isArray(currentScene.dialogue) &&
+                  currentDialogueIndex < currentScene.dialogue.length &&
+                  Array.isArray(currentScene.dialogue[currentDialogueIndex])
+                    ? currentScene.dialogue[currentDialogueIndex][0]
+                    : "Character"}
                 </p>
                 <p className="text-white text-sm sm:text-base md:text-lg whitespace-pre-line font-dialogue">
-                  {typeof dialogueText === 'string' ? dialogueText : JSON.stringify(dialogueText)}
+                  {typeof dialogueText === "string"
+                    ? dialogueText
+                    : JSON.stringify(dialogueText)}
                 </p>
               </div>
             )}
 
           {/* Choices */}
           {showChoices &&
-            currentScene && currentScene.choices &&
+            currentScene &&
+            currentScene.choices &&
             Array.isArray(currentScene.choices) &&
             currentScene.choices.length > 0 && (
               <div
@@ -1076,10 +1160,13 @@ export function VnPlayer({
                         // Animation with staggered delay based on index
                         "animate-fadeInUp",
                         // Apply staggered animation delay based on index
-                        index === 0 ? "animation-delay-0" :
-                        index === 1 ? "animation-delay-100" :
-                        index === 2 ? "animation-delay-200" :
-                        "animation-delay-300",
+                        index === 0
+                          ? "animation-delay-0"
+                          : index === 1
+                            ? "animation-delay-100"
+                            : index === 2
+                              ? "animation-delay-200"
+                              : "animation-delay-300",
                         // Base style for all buttons - changed from neutral-800 to black
                         "bg-black text-white border-neutral-800",
                         // Add hover effect only when not showing condition colors
@@ -1115,20 +1202,27 @@ export function VnPlayer({
                       <div className="flex flex-col items-center w-full overflow-hidden">
                         {/* Main choice text */}
                         <div className="text-center whitespace-normal break-words text-xs sm:text-sm md:text-base w-full max-w-full">
-                          {typeof choice.text === 'string' ? choice.text : `Option ${index + 1}`}
+                          {typeof choice.text === "string"
+                            ? choice.text
+                            : `Option ${index + 1}`}
                         </div>
 
                         {/* Description text (if present) */}
                         {choice.description && (
-                          <div className={cn(
-                            "italic text-center whitespace-normal break-words w-full font-dialogue overflow-hidden text-ellipsis",
-                            "text-neutral-400 mt-1",
-                            // Adjust text size based on number of choices
-                            currentScene.choices && currentScene.choices.length <= 2
-                              ? "text-xs md:text-sm" 
-                              : "text-[0.65rem] sm:text-xs"
-                          )}>
-                            {typeof choice.description === 'string' ? choice.description : ''}
+                          <div
+                            className={cn(
+                              "italic text-center whitespace-normal break-words w-full font-dialogue overflow-hidden text-ellipsis",
+                              "text-neutral-400 mt-1",
+                              // Adjust text size based on number of choices
+                              currentScene.choices &&
+                                currentScene.choices.length <= 2
+                                ? "text-xs md:text-sm"
+                                : "text-[0.65rem] sm:text-xs",
+                            )}
+                          >
+                            {typeof choice.description === "string"
+                              ? choice.description
+                              : ""}
                           </div>
                         )}
                       </div>
@@ -1148,7 +1242,9 @@ export function VnPlayer({
             )}
 
           {/* End of act - show return button when at the final scene with no more choices */}
-          {(!('choices' in currentScene) || !currentScene.choices || currentScene.choices.length == 0) &&
+          {(!("choices" in currentScene) ||
+            !currentScene.choices ||
+            currentScene.choices.length == 0) &&
             currentDialogueIndex >= currentScene.dialogue.length - 1 && (
               <div className="mt-8 text-center">
                 <Button onClick={onReturn} className="mx-auto">
