@@ -13,6 +13,7 @@ import { apiRequest } from "@/lib/queryClient";
 function convertActFormat(actData: any): {
   scenes: Scene[];
   act: number;
+  characterPortraits?: Record<string, string>;
 } {
   // First, verify we have valid data
   if (!actData) {
@@ -28,7 +29,10 @@ function convertActFormat(actData: any): {
   // Handle case where the data is already in the correct format
   if (actData.scenes && Array.isArray(actData.scenes)) {
     console.log("Act data is already in the legacy array format");
-    return actData;
+    return {
+      ...actData,
+      characterPortraits: actData.characterPortraits
+    };
   }
 
   let sceneMap = {};
@@ -101,7 +105,7 @@ function convertActFormat(actData: any): {
   try {
     if (!sceneMap || typeof sceneMap !== 'object') {
       console.error("Scene map is invalid:", sceneMap);
-      return { scenes: [], act: actNumber };
+      return { scenes: [], act: actNumber, characterPortraits: actData.characterPortraits };
     }
     
     // Process each scene with error handling
@@ -140,6 +144,7 @@ function convertActFormat(actData: any): {
   return {
     scenes,
     act: actNumber,
+    characterPortraits: actData.characterPortraits,
   };
 }
 
