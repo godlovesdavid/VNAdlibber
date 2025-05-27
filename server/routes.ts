@@ -985,6 +985,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const storyTitle = title || project.title || `Visual Novel Act ${actNum}`;
 
+      // Include character portraits in the shared story data
+      let enrichedActData = actData;
+      if (project.characterPortraitsData && Object.keys(project.characterPortraitsData).length > 0) {
+        enrichedActData = {
+          ...actData,
+          characterPortraits: project.characterPortraitsData
+        };
+      }
+
       // Create a new story entry in the database
       const story = await storage.createStory({
         shareId,
@@ -992,7 +1001,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: project.userId,
         title: storyTitle,
         createdAt: now,
-        actData,
+        actData: enrichedActData,
         actNumber: actNum, // This should be the proper act number from above
       });
 
