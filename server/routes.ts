@@ -1,16 +1,20 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { spawn } from 'child_process';
+import { spawn } from "child_process";
 import { storage } from "./storage";
 import { z } from "zod";
 import { insertVnStorySchema } from "@shared/schema";
 import { generateSceneBackgroundImage } from "./image-generator";
 import { jsonrepair } from "jsonrepair";
 import rateLimit from "express-rate-limit";
-import { handleAutoTranslate, handleClearTranslations, handleScanForMissingKeys } from "./i18n-service";
+import {
+  handleAutoTranslate,
+  handleClearTranslations,
+  handleScanForMissingKeys,
+} from "./i18n-service";
 import { translateTexts } from "./translation-service";
-import { v4 as uuidv4 } from 'uuid';
-import type { Response } from 'express';
+import { v4 as uuidv4 } from "uuid";
+import type { Response } from "express";
 import { timestamp } from "drizzle-orm/mysql-core";
 
 // Use Google's Gemini API instead of OpenAI for text generation
@@ -20,8 +24,8 @@ const GEMINI_API_URL_PRO =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent";
 
 // Get API key from environment variable
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY?.trim()
-const IMAGE_GEN_URL = process.env.IMAGE_GEN_URL?.trim()
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY?.trim();
+const IMAGE_GEN_URL = process.env.IMAGE_GEN_URL?.trim();
 
 // In-memory queue for portrait generation (no Redis needed)
 interface ImageJobData {
@@ -42,38 +46,46 @@ let isProcessing = false;
 setInterval(processImageQueue, 500);
 
 // Content filtering function using NudeNet
-async function checkImageContent(base64ImageData: string): Promise<{appropriate: boolean, message: string, scores: any}> {
+async function checkImageContent(
+  base64ImageData: string,
+): Promise<{ appropriate: boolean; message: string; scores: any }> {
   return new Promise((resolve, reject) => {
-    const python = spawn('.pythonlibs/bin/python', ['./server/content-filter.py'], {
-      cwd: process.cwd(),
-      env: { ...process.env }
-    });
+    const python = spawn(
+      ".pythonlibs/bin/python",
+      ["./server/content-filter.py"],
+      {
+        cwd: process.cwd(),
+        env: { ...process.env },
+      },
+    );
 
-    let output = '';
-    let error = '';
+    let output = "";
+    let error = "";
 
-    python.stdout.on('data', (data) => {
+    python.stdout.on("data", (data) => {
       output += data.toString();
     });
 
-    python.stderr.on('data', (data) => {
+    python.stderr.on("data", (data) => {
       error += data.toString();
     });
 
-    python.on('close', (code) => {
+    python.on("close", (code) => {
       if (code === 0) {
         try {
           const result = JSON.parse(output.trim());
           resolve(result);
         } catch (parseError) {
-          reject(new Error(`Failed to parse content filter result: ${parseError}`));
+          reject(
+            new Error(`Failed to parse content filter result: ${parseError}`),
+          );
         }
       } else {
         reject(new Error(`Content filter failed with code ${code}: ${error}`));
       }
     });
 
-    python.on('error', (err) => {
+    python.on("error", (err) => {
       reject(new Error(`Failed to spawn content filter: ${err.message}`));
     });
 
@@ -85,16 +97,16 @@ async function checkImageContent(base64ImageData: string): Promise<{appropriate:
 
 // Worker function to process portrait generation jobs
 async function processImageQueue() {
-  const BATCH_SIZE = 8
+  const BATCH_SIZE = 8;
   if (isProcessing || imageQueue.length === 0) {
     return;
   }
 
   isProcessing = true;
 
-    // Take up to 8 jobs from the queue
-    const batch = imageQueue.splice(0, BATCH_SIZE);
-    console.log(`Processing batch of ${batch.length} image jobs`);
+  // Take up to 8 jobs from the queue
+  const batch = imageQueue.splice(0, BATCH_SIZE);
+  console.log(`Processing batch of ${batch.length} image jobs`);
 
   try {
     // Create batch workflow for all jobs
@@ -102,30 +114,34 @@ async function processImageQueue() {
 
     // Submit to ComfyUI
     const submissionResponse = await fetch(`${IMAGE_GEN_URL}/prompt`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: batchWorkflow })
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: batchWorkflow }),
     });
 
     if (!submissionResponse.ok) {
-      throw new Error(`ComfyUI submission failed: ${submissionResponse.statusText}`);
+      throw new Error(
+        `ComfyUI submission failed: ${submissionResponse.statusText}`,
+      );
     }
 
     const submissionData = await submissionResponse.json();
     const promptId = submissionData.prompt_id;
 
     // Poll for completion
-    await pollForBatchCompletion(promptId, batch.map(job => job.userId));
-
+    await pollForBatchCompletion(
+      promptId,
+      batch.map((job) => job.userId),
+    );
   } catch (error) {
-    console.error('Batch image generation failed:', error);
+    console.error("Batch image generation failed:", error);
 
     for (const job of batch) {
       const response = pendingRequests.get(job.userId);
       if (response) {
-        response.status(500).json({ 
-          success: false, 
-          message: 'image generation failed' 
+        response.status(500).json({
+          success: false,
+          message: "image generation failed",
         });
         pendingRequests.delete(job.userId);
       }
@@ -142,287 +158,220 @@ function createBatchComfyUIWorkflow(jobs: ImageJobData[]) {
   console.log(`Creating batch workflow for ${jobs.length} jobs`);
 
   const workflow = {
-      "1": {
-        "inputs": {
-          "ckpt_name": "Hyper-SDXL-1step-Unet-Comfyui.fp16.safetensors"
-        },
-        "class_type": "CheckpointLoaderSimple",
-        "_meta": {
-          "title": "Load Checkpoint"
-        }
+    "1": {
+      inputs: {
+        ckpt_name: "Hyper-SDXL-1step-Unet-Comfyui.fp16.safetensors",
       },
-      "2": {
-        "inputs": {
-          "steps": 1,
-          "model": [
-            "1",
-            0
-          ]
-        },
-        "class_type": "HyperSDXL1StepUnetScheduler",
-        "_meta": {
-          "title": "HyperSDXL1StepUnetScheduler"
-        }
+      class_type: "CheckpointLoaderSimple",
+      _meta: {
+        title: "Load Checkpoint",
       },
-      "4": {
-        "inputs": {
-          "text": [
-            "60",
-            1
-          ],
-          "clip": [
-            "1",
-            1
-          ]
-        },
-        "class_type": "CLIPTextEncode",
-        "_meta": {
-          "title": "CLIP Text Encode (Prompt)"
-        }
+    },
+    "2": {
+      inputs: {
+        steps: 1,
+        model: ["1", 0],
       },
-      "5": {
-        "inputs": {
-          "add_noise": true,
-          "noise_seed": 431000548006409,
-          "cfg": 1,
-          "model": [
-            "1",
-            0
-          ],
-          "positive": [
-            "40",
-            0
-          ],
-          "negative": [
-            "4",
-            0
-          ],
-          "sampler": [
-            "9",
-            0
-          ],
-          "sigmas": [
-            "2",
-            0
-          ],
-          "latent_image": [
-            "8",
-            0
-          ]
-        },
-        "class_type": "SamplerCustom",
-        "_meta": {
-          "title": "SamplerCustom"
-        }
+      class_type: "HyperSDXL1StepUnetScheduler",
+      _meta: {
+        title: "HyperSDXL1StepUnetScheduler",
       },
-      "6": {
-        "inputs": {
-          "samples": [
-            "5",
-            1
-          ],
-          "vae": [
-            "1",
-            2
-          ]
-        },
-        "class_type": "VAEDecode",
-        "_meta": {
-          "title": "VAE Decode"
-        }
+    },
+    "4": {
+      inputs: {
+        text: ["60", 1],
+        clip: ["1", 1],
       },
-      "8": {
-        "inputs": {
-          "width": [
-            "60",
-            3
-          ],
-          "height": [
-            "60",
-            4
-          ],
-          "batch_size": 1
-        },
-        "class_type": "EmptyLatentImage",
-        "_meta": {
-          "title": "Empty Latent Image"
-        }
+      class_type: "CLIPTextEncode",
+      _meta: {
+        title: "CLIP Text Encode (Prompt)",
       },
-      "9": {
-        "inputs": {
-          "sampler_name": "uni_pc"
-        },
-        "class_type": "KSamplerSelect",
-        "_meta": {
-          "title": "KSamplerSelect"
-        }
+    },
+    "5": {
+      inputs: {
+        add_noise: true,
+        noise_seed: 431000548006409,
+        cfg: 1,
+        model: ["1", 0],
+        positive: ["40", 0],
+        negative: ["4", 0],
+        sampler: ["9", 0],
+        sigmas: ["2", 0],
+        latent_image: ["8", 0],
       },
-      "12": {
-        "inputs": {
-          "filename_prefix": [
-            "60",
-            2
-          ],
-          "filename_keys": "",
-          "foldername_prefix": "vnadlib",
-          "foldername_keys": "",
-          "delimiter": "",
-          "save_job_data": "disabled",
-          "job_data_per_image": false,
-          "job_custom_text": "",
-          "save_metadata": false,
-          "counter_digits": 0,
-          "counter_position": "last",
-          "one_counter_per_folder": false,
-          "image_preview": false,
-          "output_ext": ".webp",
-          "quality": 70,
-          "named_keys": false,
-          "images": [
-            "63",
-            0
-          ]
-        },
-        "class_type": "SaveImageExtended",
-        "_meta": {
-          "title": "💾 Save Image Extended 2.83"
-        }
+      class_type: "SamplerCustom",
+      _meta: {
+        title: "SamplerCustom",
       },
-      "40": {
-        "inputs": {
-          "text": [
-            "60",
-            0
-          ],
-          "clip": [
-            "1",
-            1
-          ]
-        },
-        "class_type": "CLIPTextEncode",
-        "_meta": {
-          "title": "CLIP Text Encode (Prompt)"
-        }
+    },
+    "6": {
+      inputs: {
+        samples: ["5", 1],
+        vae: ["1", 2],
       },
-      "42": {
-        "inputs": {
-          "stop_at_clip_layer": -2,
-          "clip": [
-            "1",
-            1
-          ]
-        },
-        "class_type": "CLIPSetLastLayer",
-        "_meta": {
-          "title": "CLIP Set Last Layer"
-        }
+      class_type: "VAEDecode",
+      _meta: {
+        title: "VAE Decode",
       },
-      "60": {
-        "inputs": {
-          "zipped_input_prompt": [
-            "64",
-            0
-          ]
-        },
-        "class_type": "UnzipInputPrompt",
-        "_meta": {
-          "title": "📤 Unzip Input Prompt"
-        }
+    },
+    "8": {
+      inputs: {
+        width: ["60", 3],
+        height: ["60", 4],
+        batch_size: 1,
       },
-      "61": {
-        "inputs": {
-          "model_name": "u2netp",
-          "image": [
-            "6",
-            0
-          ]
-        },
-        "class_type": "Image Remove Background (rembg)",
-        "_meta": {
-          "title": "Image Remove Background (rembg)"
-        }
+      class_type: "EmptyLatentImage",
+      _meta: {
+        title: "Empty Latent Image",
       },
-      "63": {
-        "inputs": {
-          "ANY": [
-            "60",
-            5
-          ],
-          "IF_TRUE": [
-            "61",
-            0
-          ],
-          "IF_FALSE": [
-            "6",
-            0
-          ]
-        },
-        "class_type": "If ANY execute A else B",
-        "_meta": {
-          "title": "If"
-        }
+    },
+    "9": {
+      inputs: {
+        sampler_name: "uni_pc",
       },
-      "64": {
-        "inputs": {
-          "positive_prompt_1": "",
-          "negative_prompt_1": "",
-          "name_1": "Prompt_1",
-          "width_1": 1024,
-          "height_1": 1024,
-          "remove_bg_1": false,
-          "positive_prompt_2": "",
-          "negative_prompt_2": "",
-          "name_2": "Prompt_2",
-          "width_2": 1024,
-          "height_2": 1024,
-          "remove_bg_2": false,
-          "positive_prompt_3": "",
-          "negative_prompt_3": "",
-          "name_3": "Prompt_3",
-          "width_3": 1024,
-          "height_3": 1024,
-          "remove_bg_3": false,
-          "positive_prompt_4": "",
-          "negative_prompt_4": "",
-          "name_4": "Prompt_4",
-          "width_4": 1024,
-          "height_4": 1024,
-          "remove_bg_4": false,
-          "positive_prompt_5": "",
-          "negative_prompt_5": "",
-          "name_5": "Prompt_5",
-          "width_5": 1024,
-          "height_5": 1024,
-          "remove_bg_5": false,
-          "positive_prompt_6": "",
-          "negative_prompt_6": "",
-          "name_6": "Prompt_6",
-          "width_6": 1024,
-          "height_6": 1024,
-          "remove_bg_6": false,
-          "positive_prompt_7": "",
-          "negative_prompt_7": "",
-          "name_7": "Prompt_7",
-          "width_7": 1024,
-          "height_7": 1024,
-          "remove_bg_7": false,
-          "positive_prompt_8": "",
-          "negative_prompt_8": "",
-          "name_8": "Prompt_8",
-          "width_8": 1024,
-          "height_8": 1024,
-          "remove_bg_8": false
-        },
-        "class_type": "BatchPromptInput",
-        "_meta": {
-          "title": "📥 Batch Prompt Input"
-        }
-      }
-    }
-  workflow["5"]["inputs"]["noise_seed"] = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) //generate seed
+      class_type: "KSamplerSelect",
+      _meta: {
+        title: "KSamplerSelect",
+      },
+    },
+    "12": {
+      inputs: {
+        filename_prefix: ["60", 2],
+        filename_keys: "",
+        foldername_prefix: "vnadlib",
+        foldername_keys: "",
+        delimiter: "",
+        save_job_data: "disabled",
+        job_data_per_image: false,
+        job_custom_text: "",
+        save_metadata: false,
+        counter_digits: 0,
+        counter_position: "last",
+        one_counter_per_folder: false,
+        image_preview: false,
+        output_ext: ".webp",
+        quality: 70,
+        named_keys: false,
+        images: ["63", 0],
+      },
+      class_type: "SaveImageExtended",
+      _meta: {
+        title: "💾 Save Image Extended 2.83",
+      },
+    },
+    "40": {
+      inputs: {
+        text: ["60", 0],
+        clip: ["1", 1],
+      },
+      class_type: "CLIPTextEncode",
+      _meta: {
+        title: "CLIP Text Encode (Prompt)",
+      },
+    },
+    "42": {
+      inputs: {
+        stop_at_clip_layer: -2,
+        clip: ["1", 1],
+      },
+      class_type: "CLIPSetLastLayer",
+      _meta: {
+        title: "CLIP Set Last Layer",
+      },
+    },
+    "60": {
+      inputs: {
+        zipped_input_prompt: ["64", 0],
+      },
+      class_type: "UnzipInputPrompt",
+      _meta: {
+        title: "📤 Unzip Input Prompt",
+      },
+    },
+    "61": {
+      inputs: {
+        model_name: "u2netp",
+        image: ["6", 0],
+      },
+      class_type: "Image Remove Background (rembg)",
+      _meta: {
+        title: "Image Remove Background (rembg)",
+      },
+    },
+    "63": {
+      inputs: {
+        ANY: ["60", 5],
+        IF_TRUE: ["61", 0],
+        IF_FALSE: ["6", 0],
+      },
+      class_type: "If ANY execute A else B",
+      _meta: {
+        title: "If",
+      },
+    },
+    "64": {
+      inputs: {
+        positive_prompt_1: "",
+        negative_prompt_1: "",
+        name_1: "Prompt_1",
+        width_1: 1024,
+        height_1: 1024,
+        remove_bg_1: false,
+        positive_prompt_2: "",
+        negative_prompt_2: "",
+        name_2: "Prompt_2",
+        width_2: 1024,
+        height_2: 1024,
+        remove_bg_2: false,
+        positive_prompt_3: "",
+        negative_prompt_3: "",
+        name_3: "Prompt_3",
+        width_3: 1024,
+        height_3: 1024,
+        remove_bg_3: false,
+        positive_prompt_4: "",
+        negative_prompt_4: "",
+        name_4: "Prompt_4",
+        width_4: 1024,
+        height_4: 1024,
+        remove_bg_4: false,
+        positive_prompt_5: "",
+        negative_prompt_5: "",
+        name_5: "Prompt_5",
+        width_5: 1024,
+        height_5: 1024,
+        remove_bg_5: false,
+        positive_prompt_6: "",
+        negative_prompt_6: "",
+        name_6: "Prompt_6",
+        width_6: 1024,
+        height_6: 1024,
+        remove_bg_6: false,
+        positive_prompt_7: "",
+        negative_prompt_7: "",
+        name_7: "Prompt_7",
+        width_7: 1024,
+        height_7: 1024,
+        remove_bg_7: false,
+        positive_prompt_8: "",
+        negative_prompt_8: "",
+        name_8: "Prompt_8",
+        width_8: 1024,
+        height_8: 1024,
+        remove_bg_8: false,
+      },
+      class_type: "BatchPromptInput",
+      _meta: {
+        title: "📥 Batch Prompt Input",
+      },
+    },
+  };
+  workflow["5"]["inputs"]["noise_seed"] = Math.floor(
+    Math.random() * Number.MAX_SAFE_INTEGER,
+  ); //generate seed
   let i = 1;
   for (const job of jobs) {
-    const inputs = workflow['64'].inputs as Record<string, any>;
+    const inputs = workflow["64"].inputs as Record<string, any>;
     inputs[`positive_prompt_${i}`] = job.prompt;
     inputs[`name_${i}`] = job.userId;
     inputs[`width_${i}`] = job.width;
@@ -435,12 +384,14 @@ function createBatchComfyUIWorkflow(jobs: ImageJobData[]) {
 
 // Poll ComfyUI history for batch completion
 async function pollForBatchCompletion(promptId: string, userIds: string[]) {
-  const maxAttempts = 20; 
+  const maxAttempts = 20;
   let attempts = 0;
 
   while (attempts < maxAttempts) {
     try {
-      const historyResponse = await fetch(`${IMAGE_GEN_URL}/history/${promptId}`);
+      const historyResponse = await fetch(
+        `${IMAGE_GEN_URL}/history/${promptId}`,
+      );
 
       if (historyResponse.ok) {
         const historyData = await historyResponse.json();
@@ -456,18 +407,17 @@ async function pollForBatchCompletion(promptId: string, userIds: string[]) {
         }
       }
 
-      // Wait 1 second before next poll
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait before next poll
+      await new Promise((resolve) => setTimeout(resolve, 500));
       attempts++;
-
     } catch (error) {
-      console.error('Error polling ComfyUI history:', error);
+      console.error("Error polling ComfyUI history:", error);
       attempts++;
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
   }
 
-  throw new Error('Timeout waiting for batch completion');
+  throw new Error("Timeout waiting for batch completion");
 }
 
 // Process individual image result from batch
@@ -483,7 +433,7 @@ async function processBatchImageResult(userId: string, outputs: any) {
 
     // Get the image data as a base64 string for storage
     const imageBuffer = await imageResponse.arrayBuffer();
-    const base64Image = Buffer.from(imageBuffer).toString('base64');
+    const base64Image = Buffer.from(imageBuffer).toString("base64");
 
     console.log(`Running NudeNet content filter for user ${userId}...`);
 
@@ -492,28 +442,35 @@ async function processBatchImageResult(userId: string, outputs: any) {
       const contentCheck = await checkImageContent(base64Image);
 
       if (!contentCheck.appropriate) {
-        console.log(`Content filter rejected image for user ${userId}: ${contentCheck.message}`);
+        console.log(
+          `Content filter rejected image for user ${userId}: ${contentCheck.message}`,
+        );
 
         // Send error response for inappropriate content
         const response = pendingRequests.get(userId);
         if (response) {
           response.status(400).json({
             success: false,
-            message: "Generated image does not meet content guidelines. Please try again with a different description.",
+            message:
+              "Generated image does not meet content guidelines. Please try again with a different description.",
             contentFilter: {
               appropriate: false,
-              reason: contentCheck.message
-            }
+              reason: contentCheck.message,
+            },
           });
           pendingRequests.delete(userId);
         }
         return;
       }
 
-      console.log(`Content filter passed for user ${userId}: ${contentCheck.message}`);
-
+      console.log(
+        `Content filter passed for user ${userId}: ${contentCheck.message}`,
+      );
     } catch (filterError) {
-      console.error(`Content filtering failed for user ${userId}:`, filterError);
+      console.error(
+        `Content filtering failed for user ${userId}:`,
+        filterError,
+      );
 
       // If filtering fails, err on the side of caution and reject the image
       const response = pendingRequests.get(userId);
@@ -523,8 +480,8 @@ async function processBatchImageResult(userId: string, outputs: any) {
           message: "Content verification failed. Please try again.",
           contentFilter: {
             appropriate: false,
-            reason: "Content filtering system error"
-          }
+            reason: "Content filtering system error",
+          },
         });
         pendingRequests.delete(userId);
       }
@@ -532,7 +489,8 @@ async function processBatchImageResult(userId: string, outputs: any) {
     }
 
     // Get content type (usually image/webp for ComfyUI)
-    const contentType = imageResponse.headers.get('content-type') || 'image/webp';
+    const contentType =
+      imageResponse.headers.get("content-type") || "image/webp";
 
     // Create a data URL that can be used directly in the browser
     const dataUrl = `data:${contentType};base64,${base64Image}`;
@@ -547,12 +505,11 @@ async function processBatchImageResult(userId: string, outputs: any) {
         url: dataUrl,
         contentFilter: {
           appropriate: true,
-          message: "Content verified as appropriate"
-        }
+          message: "Content verified as appropriate",
+        },
       });
       pendingRequests.delete(userId);
     }
-
   } catch (error) {
     console.error(`Error processing image for user ${userId}:`, error);
 
@@ -561,7 +518,7 @@ async function processBatchImageResult(userId: string, outputs: any) {
     if (response) {
       response.status(500).json({
         success: false,
-        message: "Image processing failed"
+        message: "Image processing failed",
       });
       pendingRequests.delete(userId);
     }
@@ -573,7 +530,7 @@ async function generateWithGemini(
   prompt: string,
   systemPrompt: string | null = null,
   responseFormat = "JSON",
-  maxOutputTokens = 4096, // Reduced from 8192 to optimize throughput and capacity
+  maxOutputTokens = 4096, 
   isPro = false,
 ) {
   try {
@@ -618,7 +575,7 @@ Example of CORRECT JSON format:
         { role: "user", parts: [{ text: enhancedPrompt }] },
       ],
       generationConfig: {
-        // temperature: 0.2,
+        // temperature: 0.5,
         // topP: 0.9,
         // topK: 40,
         maxOutputTokens: maxOutputTokens,
@@ -695,24 +652,35 @@ const generateActSchema = z.object({
 });
 
 // Function to moderate content using OpenAI Moderation API
-async function moderateContent(input: string): Promise<{ flagged: boolean; message: string; categories: any }> {
+async function moderateContent(
+  input: string,
+): Promise<{ flagged: boolean; message: string; categories: any }> {
   try {
     if (!process.env.OPENAI_API_KEY) {
       console.warn("OPENAI_API_KEY is not set. Skipping content moderation.");
-      return { flagged: false, message: "OPENAI_API_KEY not set, content moderation skipped.", categories: {} };
+      return {
+        flagged: false,
+        message: "OPENAI_API_KEY not set, content moderation skipped.",
+        categories: {},
+      };
     }
 
-    const moderationResponse = await fetch("https://api.openai.com/v1/moderations", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+    const moderationResponse = await fetch(
+      "https://api.openai.com/v1/moderations",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({ input }),
       },
-      body: JSON.stringify({ input }),
-    });
+    );
 
     if (!moderationResponse.ok) {
-      throw new Error(`OpenAI Moderation API error: ${moderationResponse.statusText}`);
+      throw new Error(
+        `OpenAI Moderation API error: ${moderationResponse.statusText}`,
+      );
     }
 
     const moderationData = await moderationResponse.json();
@@ -720,7 +688,8 @@ async function moderateContent(input: string): Promise<{ flagged: boolean; messa
 
     if (result.flagged) {
       const categories = result.categories;
-      let message = "Content violates OpenAI guidelines in the following categories:\n";
+      let message =
+        "Content violates OpenAI guidelines in the following categories:\n";
       for (const category in categories) {
         if (categories[category]) {
           message += `- ${category}\n`;
@@ -729,13 +698,20 @@ async function moderateContent(input: string): Promise<{ flagged: boolean; messa
       return { flagged: true, message: message, categories: categories };
     }
 
-    return { flagged: false, message: "Content passed moderation check.", categories: result.categories };
+    return {
+      flagged: false,
+      message: "Content passed moderation check.",
+      categories: result.categories,
+    };
   } catch (error) {
     console.error("Error moderating content:", error);
-    return { flagged: true, message: `Content moderation failed: ${error instanceof Error ? error.message : 'Unknown error'}`, categories: {} };
+    return {
+      flagged: true,
+      message: `Content moderation failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      categories: {},
+    };
   }
 }
-
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Configure rate limiters
@@ -746,23 +722,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     legacyHeaders: false,
     message: {
       message: "Too many AI generation requests, please try again later.",
-      errorType: "rate_limit_exceeded"
-    }
+      errorType: "rate_limit_exceeded",
+    },
   });
 
   const imageLimiter = rateLimit({
-    windowMs: 20000, 
-    max: 5, 
+    windowMs: 20000,
+    max: 5,
     standardHeaders: true,
     legacyHeaders: false,
     message: {
       message: "Too many image generation requests, please try again later.",
-      errorType: "rate_limit_exceeded"
-    }
+      errorType: "rate_limit_exceeded",
+    },
   });
 
   // Apply rate limiters to AI generation endpoints
-  app.use(["/api/generate/concept", "/api/generate/plot", "/api/generate/path", "/api/generate/character", "/api/generate/act"], aiGenerationLimiter);
+  app.use(
+    [
+      "/api/generate/concept",
+      "/api/generate/plot",
+      "/api/generate/path",
+      "/api/generate/character",
+      "/api/generate/act",
+    ],
+    aiGenerationLimiter,
+  );
   app.use(["/api/generate/image"], imageLimiter);
 
   // Project CRUD operations
@@ -795,43 +780,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/projects", async (req, res) => {
     try {
       const projectData = req.body;
-      console.log('[SERVER] Project save request received with hash:', projectData.lastSavedHash);
+      console.log(
+        "[SERVER] Project save request received with hash:",
+        projectData.lastSavedHash,
+      );
 
       // Add debug for character portraits
-      console.log('[SERVER] Project has character portraits?', !!projectData.characterPortraitsData);
+      console.log(
+        "[SERVER] Project has character portraits?",
+        !!projectData.characterPortraitsData,
+      );
       if (projectData.characterPortraitsData) {
-        console.log('[SERVER] Character portrait keys:', Object.keys(projectData.characterPortraitsData));
+        console.log(
+          "[SERVER] Character portrait keys:",
+          Object.keys(projectData.characterPortraitsData),
+        );
       }
 
       // If project has an ID, update it
       if (projectData.id) {
-        console.log(`[SERVER] Updating project ${projectData.id} with hash: ${projectData.lastSavedHash}`);
+        console.log(
+          `[SERVER] Updating project ${projectData.id} with hash: ${projectData.lastSavedHash}`,
+        );
         // Make sure characterPortraitsData is preserved
         const dataToUpdate = {
           ...projectData,
-          characterPortraitsData: projectData.characterPortraitsData || {}
+          characterPortraitsData: projectData.characterPortraitsData || {},
         };
 
         const updatedProject = await storage.updateProject(
           projectData.id,
           dataToUpdate,
         );
-        console.log(`[SERVER] Project updated, returning with hash: ${updatedProject.lastSavedHash}`);
-        console.log('[SERVER] Updated project has portraits data?', !!updatedProject.characterPortraitsData);
+        console.log(
+          `[SERVER] Project updated, returning with hash: ${updatedProject.lastSavedHash}`,
+        );
+        console.log(
+          "[SERVER] Updated project has portraits data?",
+          !!updatedProject.characterPortraitsData,
+        );
         return res.json(updatedProject);
       }
 
       // Otherwise create a new project
-      console.log('[SERVER] Creating new project');
+      console.log("[SERVER] Creating new project");
       // Make sure characterPortraitsData is included
       const dataToCreate = {
         ...projectData,
-        characterPortraitsData: projectData.characterPortraitsData || {}
+        characterPortraitsData: projectData.characterPortraitsData || {},
       };
 
       const newProject = await storage.createProject(dataToCreate);
-      console.log(`[SERVER] New project created with ID ${newProject.id} and hash: ${newProject.lastSavedHash}`);
-      console.log('[SERVER] New project has portraits data?', !!newProject.characterPortraitsData);
+      console.log(
+        `[SERVER] New project created with ID ${newProject.id} and hash: ${newProject.lastSavedHash}`,
+      );
+      console.log(
+        "[SERVER] New project has portraits data?",
+        !!newProject.characterPortraitsData,
+      );
       res.status(201).json(newProject);
     } catch (error) {
       console.error("[SERVER] Error saving project:", error);
@@ -874,10 +880,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Helper function to generate a unique ID for shared stories
   function generateShareId(length = 8) {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
+    const characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let result = "";
     for (let i = 0; i < length; i++) {
-      result += characters.charAt(Math.floor(Math.random() * characters.length));
+      result += characters.charAt(
+        Math.floor(Math.random() * characters.length),
+      );
     }
     return result;
   }
@@ -888,14 +897,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { projectId, actNumber: requestedActNumber, title } = req.body;
 
       if (!projectId) {
-        return res.status(400).json({ error: 'No project ID provided' });
+        return res.status(400).json({ error: "No project ID provided" });
       }
 
       // Get the project from storage
       const project = await storage.getProject(projectId);
 
       if (!project) {
-        return res.status(404).json({ error: 'Project not found' });
+        return res.status(404).json({ error: "Project not found" });
       }
 
       // Generate a unique share ID
@@ -903,7 +912,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const now = new Date().toISOString();
 
       // Type assertion for the generatedActs property
-      interface ProjectWithGeneratedActs extends Omit<typeof project, 'generatedActs'> {
+      interface ProjectWithGeneratedActs
+        extends Omit<typeof project, "generatedActs"> {
         generatedActs?: Record<string, any>;
       }
       const typedProject = project as ProjectWithGeneratedActs;
@@ -918,9 +928,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let requestedActNum;
 
         // Handle different types of act number input
-        if (typeof requestedActNumber === 'string') {
+        if (typeof requestedActNumber === "string") {
           requestedActNum = parseInt(requestedActNumber, 10);
-        } else if (typeof requestedActNumber === 'number') {
+        } else if (typeof requestedActNumber === "number") {
           requestedActNum = requestedActNumber;
         } else {
           requestedActNum = null;
@@ -939,16 +949,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const actKeys = Object.keys(generatedActs);
 
         if (actKeys.length === 0) {
-          return res.status(400).json({ error: 'No generated acts found in this project' });
+          return res
+            .status(400)
+            .json({ error: "No generated acts found in this project" });
         }
 
         actKey = actKeys[0];
         // Extract the number from the actKey (e.g., "act1" -> 1)
-        actNum = parseInt(actKey.replace('act', ''), 10);
+        actNum = parseInt(actKey.replace("act", ""), 10);
       }
 
       // Initialize actData variable
-      let actData; 
+      let actData;
 
       // If actData was provided directly in the request body, use that
       // This handles the case for newly generated acts that haven't been saved to the database yet
@@ -964,10 +976,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Make sure the act number is included in the act data for proper loading
         actData.act = actNum;
-      } 
+      }
       // If we can't find the act data anywhere, return an error
       else {
-        return res.status(400).json({ error: `Act ${actNum} not found in this project` });
+        return res
+          .status(400)
+          .json({ error: `Act ${actNum} not found in this project` });
       }
       const storyTitle = title || project.title || `Visual Novel Act ${actNum}`;
 
@@ -979,27 +993,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         title: storyTitle,
         createdAt: now,
         actData,
-        actNumber: actNum  // This should be the proper act number from above
+        actNumber: actNum, // This should be the proper act number from above
       });
 
       // Return the share ID and related information with URL-safe title
-      const urlSafeTitle = storyTitle.toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric chars with hyphens
-        .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+      const urlSafeTitle = storyTitle
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-") // Replace non-alphanumeric chars with hyphens
+        .replace(/^-|-$/g, ""); // Remove leading/trailing hyphens
 
       // The act number in the URL should reflect the actual act number we're sharing
       const actString = `act-${actNum}`;
 
-      res.json({ 
-        shareId, 
+      res.json({
+        shareId,
         storyId: story.id,
         title: storyTitle,
         actNumber: actNum,
-        url: `/play/${shareId}/${actString}/${urlSafeTitle}`
+        url: `/play/${shareId}/${actString}/${urlSafeTitle}`,
       });
     } catch (error) {
-      console.error('Error sharing story:', error);
-      res.status(500).json({ error: 'Failed to share story' });
+      console.error("Error sharing story:", error);
+      res.status(500).json({ error: "Failed to share story" });
     }
   });
 
@@ -1015,39 +1030,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (!story) {
         console.log(`[SERVER] Story not found with share ID: ${shareId}`);
-        return res.status(404).json({ error: 'Shared story not found' });
+        return res.status(404).json({ error: "Shared story not found" });
       }
 
-      console.log(`[SERVER] Found story #${story.id} with title: ${story.title}`);
+      console.log(
+        `[SERVER] Found story #${story.id} with title: ${story.title}`,
+      );
 
       // Validate the actData before sending it to the client
       if (!story.actData) {
         console.log(`[SERVER] Warning: Story #${story.id} has no actData`);
-        return res.status(400).json({ error: 'Shared story has missing data' });
+        return res.status(400).json({ error: "Shared story has missing data" });
       }
 
       // Update the lastAccessed timestamp
       await storage.updateStoryLastAccessed(story.id);
 
       // Ensure actNumber is properly set for the client
-      if (!story.actNumber && story.actData && typeof story.actData === 'object') {
+      if (
+        !story.actNumber &&
+        story.actData &&
+        typeof story.actData === "object"
+      ) {
         // TypeScript: We need to check if 'act' exists on the object
         const actDataAny = story.actData as any;
         if (actDataAny.act) {
-          story.actNumber = typeof actDataAny.act === 'number' 
-            ? actDataAny.act 
-            : parseInt(actDataAny.act) || 1;
-          console.log(`[SERVER] Setting actNumber from actData: ${story.actNumber}`);
+          story.actNumber =
+            typeof actDataAny.act === "number"
+              ? actDataAny.act
+              : parseInt(actDataAny.act) || 1;
+          console.log(
+            `[SERVER] Setting actNumber from actData: ${story.actNumber}`,
+          );
         }
       }
 
-      console.log(`[SERVER] Returning story with actNumber: ${story.actNumber}, actData type: ${typeof story.actData}`);
+      console.log(
+        `[SERVER] Returning story with actNumber: ${story.actNumber}, actData type: ${typeof story.actData}`,
+      );
 
       // Return the story data
       res.json({ story });
     } catch (error) {
-      console.error('Error retrieving shared story:', error);
-      res.status(500).json({ error: 'Failed to retrieve shared story' });
+      console.error("Error retrieving shared story:", error);
+      res.status(500).json({ error: "Failed to retrieve shared story" });
     }
   });
 
@@ -1065,29 +1091,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       expirationDate.setDate(expirationDate.getDate() - daysNumber);
 
       // Filter expired stories
-      const expiredStories = stories.filter(story => {
+      const expiredStories = stories.filter((story) => {
         if (!story.lastAccessed) return false;
         const lastAccessedDate = new Date(story.lastAccessed);
         return lastAccessedDate < expirationDate;
       });
 
       // Return information about expired stories
-      res.json({ 
+      res.json({
         totalStories: stories.length,
         expiredStories: expiredStories.length,
         expirationDays: daysNumber,
         expirationDate: expirationDate.toISOString(),
-        expiredList: expiredStories.map(story => ({
+        expiredList: expiredStories.map((story) => ({
           id: story.id,
           title: story.title,
           shareId: story.shareId,
           lastAccessed: story.lastAccessed,
-          createdAt: story.createdAt
-        }))
+          createdAt: story.createdAt,
+        })),
       });
     } catch (error) {
-      console.error('Error checking expired links:', error);
-      res.status(500).json({ error: 'Failed to check expired links' });
+      console.error("Error checking expired links:", error);
+      res.status(500).json({ error: "Failed to check expired links" });
     }
   });
 
@@ -1105,7 +1131,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       Your job is to validate the following:
       1. Every major character must appear meaningfully in the plot.
       2. Each character's "role" and "goals" must logically align with the plot's story.
-      ${projectContext.pathsData? `3. There should be no confusing routes, unrealistic conflicts, or disjointed plot progressions.` : ``}
+      ${projectContext.pathsData ? `3. There should be no confusing routes, unrealistic conflicts, or disjointed plot progressions.` : ``}
 
       Validation Rules:
       - If the data is fully consistent, reply exactly with:
@@ -1120,10 +1146,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         Do NOT suggest fixes.
         ONLY report validation status.
       `;
-      console.log(validationSystemPrompt)
+      console.log(validationSystemPrompt);
 
       // Create prompt for validation based on content type
-      const validationPrompt = JSON.stringify(projectContext, null, 2)
+      const validationPrompt = JSON.stringify(projectContext, null, 2);
 
       // Validate using Gemini
       const responseContent = await generateWithGemini(
@@ -1154,11 +1180,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error validating content:", error);
 
       // Extract detailed error information
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      const errorCause = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause 
-        ? String(error.cause.message) 
-        : null;
-      const isOverloaded = typeof errorMessage === 'string' && errorMessage.includes("overloaded");
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      const errorCause =
+        error instanceof Error &&
+        error.cause &&
+        typeof error.cause === "object" &&
+        "message" in error.cause
+          ? String(error.cause.message)
+          : null;
+      const isOverloaded =
+        typeof errorMessage === "string" && errorMessage.includes("overloaded");
       const statusCode = isOverloaded ? 503 : 500; // Service Unavailable for overloaded model
 
       res.status(statusCode).json({
@@ -1166,7 +1198,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         technicalDetails: errorMessage,
         rootCause: errorCause || errorMessage,
         isModelOverloaded: isOverloaded,
-        retryRecommended: isOverloaded
+        retryRecommended: isOverloaded,
       });
     }
   });
@@ -1176,7 +1208,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { basicData } = generateConceptSchema.parse(req.body);
       // Create prompt for the concept generation - directly matching our expected format
-      const prompt = `Write a visual novel concept of a ${basicData.tone.replace(/_/g, ' ')} ${basicData.genre.replace(/_/g, ' ')} about ${basicData.theme.replace(/_/g, ' ')} set in ${basicData.setting.replace(/_/g, ' ')}.
+      const prompt = `Write a visual novel concept of a ${basicData.tone.replace(/_/g, " ")} ${basicData.genre.replace(/_/g, " ")} about ${basicData.theme.replace(/_/g, " ")} set in ${basicData.setting.replace(/_/g, " ")}.
         Return in this JSON format:
         {
           "title": "Captivating and unique title",
@@ -1192,7 +1224,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: "Content request violates guidelines",
           technicalDetails: moderationCheck.message,
           categories: moderationCheck.categories,
-          retryRecommended: true
+          retryRecommended: true,
         });
       }
 
@@ -1203,12 +1235,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Try to parse response
       try {
-        if (responseContent === "{}" || !responseContent) throw new Error("Empty response");
+        if (responseContent === "{}" || !responseContent)
+          throw new Error("Empty response");
         const generatedConcept = JSON.parse(responseContent);
 
         // Clean up title if needed
         if (generatedConcept.title) {
-          generatedConcept.title = generatedConcept.title.replace("Echo Bloom: ", ''); //ai likes to put this weird thing as the title
+          generatedConcept.title = generatedConcept.title.replace(
+            "Echo Bloom: ",
+            "",
+          ); //ai likes to put this weird thing as the title
         }
 
         res.json(generatedConcept);
@@ -1217,22 +1253,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("Problematic content:", responseContent);
         res.status(500).json({
           message: "Failed to parse concept data from AI response",
-          technicalDetails: e instanceof Error ? e.message : "Invalid JSON response",
-          rootCause: "The AI generated a response that couldn't be properly converted to JSON",
+          technicalDetails:
+            e instanceof Error ? e.message : "Invalid JSON response",
+          rootCause:
+            "The AI generated a response that couldn't be properly converted to JSON",
           invalidResponse: responseContent?.substring(0, 500), // First 500 chars for debugging
           isModelOverloaded: false,
-          retryRecommended: true
+          retryRecommended: true,
         });
       }
     } catch (error) {
       console.error("Error generating concept:", error);
 
       // Extract detailed error information
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      const errorCause = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause 
-        ? String(error.cause.message) 
-        : null;
-      const isOverloaded = typeof errorMessage === 'string' && errorMessage.includes("overloaded");
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      const errorCause =
+        error instanceof Error &&
+        error.cause &&
+        typeof error.cause === "object" &&
+        "message" in error.cause
+          ? String(error.cause.message)
+          : null;
+      const isOverloaded =
+        typeof errorMessage === "string" && errorMessage.includes("overloaded");
       const statusCode = isOverloaded ? 503 : 500; // Service Unavailable for overloaded model
 
       res.status(statusCode).json({
@@ -1240,7 +1284,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         technicalDetails: errorMessage,
         rootCause: errorCause || errorMessage,
         isModelOverloaded: isOverloaded,
-        retryRecommended: isOverloaded
+        retryRecommended: isOverloaded,
       });
     }
   });
@@ -1295,30 +1339,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const parsed = JSON.parse(jsonrepair(responseContent));
         if (characterTemplates.length > 1)
-          parsed[Object.keys(parsed)[0]].role = 'Protagonist'
-          parsed[Object.keys(parsed)[0]].relationshipPotential = 'N/A'
+          parsed[Object.keys(parsed)[0]].role = "Protagonist";
+        parsed[Object.keys(parsed)[0]].relationshipPotential = "N/A";
         res.json(parsed);
       } catch (e) {
         console.error("Problem parsing character JSON:", e);
         console.error("Problematic content:", responseContent);
         res.status(500).json({
           message: "Failed to parse character data from AI response",
-          technicalDetails: e instanceof Error ? e.message : "Invalid JSON response",
-          rootCause: "The AI generated a response that couldn't be properly converted to JSON",
+          technicalDetails:
+            e instanceof Error ? e.message : "Invalid JSON response",
+          rootCause:
+            "The AI generated a response that couldn't be properly converted to JSON",
           invalidResponse: responseContent.substring(0, 500), // First 500 chars for debugging
           isModelOverloaded: false,
-          retryRecommended: true
+          retryRecommended: true,
         });
       }
     } catch (error) {
       console.error("Error generating characters:", error);
 
       // Extract detailed error information
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      const errorCause = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause 
-        ? String(error.cause.message) 
-        : null;
-      const isOverloaded = typeof errorMessage === 'string' && errorMessage.includes("overloaded");
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      const errorCause =
+        error instanceof Error &&
+        error.cause &&
+        typeof error.cause === "object" &&
+        "message" in error.cause
+          ? String(error.cause.message)
+          : null;
+      const isOverloaded =
+        typeof errorMessage === "string" && errorMessage.includes("overloaded");
       const statusCode = isOverloaded ? 503 : 500; // Service Unavailable for overloaded model
 
       res.status(statusCode).json({
@@ -1326,7 +1378,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         technicalDetails: errorMessage,
         rootCause: errorCause || errorMessage,
         isModelOverloaded: isOverloaded,
-        retryRecommended: isOverloaded
+        retryRecommended: isOverloaded,
       });
     }
   });
@@ -1382,22 +1434,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Send proper error response with details
         res.status(500).json({
           message: "Failed to parse path data from AI response",
-          technicalDetails: e instanceof Error ? e.message : "Invalid JSON response",
-          rootCause: "The AI generated a response that couldn't be properly converted to JSON",
+          technicalDetails:
+            e instanceof Error ? e.message : "Invalid JSON response",
+          rootCause:
+            "The AI generated a response that couldn't be properly converted to JSON",
           invalidResponse: responseContent.substring(0, 500), // First 500 chars for debugging
           isModelOverloaded: false,
-          retryRecommended: true
+          retryRecommended: true,
         });
       }
     } catch (error) {
       console.error("Error generating paths:", error);
 
       // Extract detailed error information
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      const errorCause = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause 
-        ? String(error.cause.message) 
-        : null;
-      const isOverloaded = typeof errorMessage === 'string' && errorMessage.includes("overloaded");
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      const errorCause =
+        error instanceof Error &&
+        error.cause &&
+        typeof error.cause === "object" &&
+        "message" in error.cause
+          ? String(error.cause.message)
+          : null;
+      const isOverloaded =
+        typeof errorMessage === "string" && errorMessage.includes("overloaded");
       const statusCode = isOverloaded ? 503 : 500; // Service Unavailable for overloaded model
 
       res.status(statusCode).json({
@@ -1405,7 +1465,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         technicalDetails: errorMessage,
         rootCause: errorCause || errorMessage,
         isModelOverloaded: isOverloaded,
-        retryRecommended: isOverloaded
+        retryRecommended: isOverloaded,
       });
     }
   });
@@ -1423,8 +1483,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             "title": "Act 1 Title",
             "summary": "Brief overview of Act 1",
             "events": ["Event 1", "Event 2", "Event 3", "Event 4", "Event 5"],
-            ${Object.keys(projectContext.pathsData).length ==1? '' : `"arcsActivated": ["Include route titles from pathsData"],
-            "arcIntersections": ["Intersection 1", "Intersection 2"],`}
+            ${
+              Object.keys(projectContext.pathsData).length == 1
+                ? ""
+                : `"arcsActivated": ["Include route titles from pathsData"],
+            "arcIntersections": ["Intersection 1", "Intersection 2"],`
+            }
             "playerChoices": ["Choice 1 - Consequences", "Choice 2 - Consequences"]
           },
           "act2": {/* same structure as act1 */},
@@ -1452,22 +1516,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Send proper error response with details
         res.status(500).json({
           message: "Failed to parse plot data from AI response",
-          technicalDetails: e instanceof Error ? e.message : "Invalid JSON response",
-          rootCause: "The AI generated a response that couldn't be properly converted to JSON",
+          technicalDetails:
+            e instanceof Error ? e.message : "Invalid JSON response",
+          rootCause:
+            "The AI generated a response that couldn't be properly converted to JSON",
           invalidResponse: responseContent.substring(0, 500), // First 500 chars for debugging
           isModelOverloaded: false,
-          retryRecommended: true
+          retryRecommended: true,
         });
       }
     } catch (error) {
       console.error("Error generating plot:", error);
 
       // Extract detailed error information
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      const errorCause = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause 
-        ? String(error.cause.message) 
-        : null;
-      const isOverloaded = typeof errorMessage === 'string' && errorMessage.includes("overloaded");
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      const errorCause =
+        error instanceof Error &&
+        error.cause &&
+        typeof error.cause === "object" &&
+        "message" in error.cause
+          ? String(error.cause.message)
+          : null;
+      const isOverloaded =
+        typeof errorMessage === "string" && errorMessage.includes("overloaded");
       const statusCode = isOverloaded ? 503 : 500; // Service Unavailable for overloaded model
 
       res.status(statusCode).json({
@@ -1475,7 +1547,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         technicalDetails: errorMessage,
         rootCause: errorCause || errorMessage,
         isModelOverloaded: isOverloaded,
-        retryRecommended: isOverloaded
+        retryRecommended: isOverloaded,
       });
     }
   });
@@ -1491,9 +1563,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         Generate a visual novel act structure in JSON with the exact format below:
         {
-          "scene1": {
-            "setting": "location name (with optionally time of day)",
-            "setting_description": "Detailed visual description of the background for AI image generation",
+          "scene name": {
+            "setting": "Location Name (with optionally time of day) (reusable)",
+            "setting_desc": "Background description for SDXL image generation",
             "dialogue": [
               ["Narrator", "Descriptive text about the scene"],
               ["Character Name", "Character dialogue"],
@@ -1502,42 +1574,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
             "choices": [
               {
                 "text": "Choice option text",
-                "description": "(optional) Brief explanation of consequences",
-                "delta": {"characterName": 1, "anotherCharacter": -1},
-                "next": "scene1a"
+                "next": "scene 2"
               },
               {
                 "text": "Alternative choice",
-                "delta": {"characterName": -1},
-                "next": "scene2"
+                "description": "(optional) Brief explanation of consequences",
+                "delta": {"characterName": 1, "anotherCharacter": -1},
+                "next": "scene 3"
               }
             ]
           }
         }
 
-        Important guidelines:
+        Guidelines:
         - Do not generate any other act except Act ${actNumber}.
         - Create approximately ${scenesCount} scenes for Act ${actNumber}, or more if necessary to convey Act ${actNumber}.
-        - Include branching paths based on 2-4 choices. Choices that continue the dialogue conversation in the same scene are marked with a letter e.g. scene1b (although they are technically different scenes).
-        - Final scene of act should have choices set to null value. Otherwise, ensure the scene has a choice that connects to another valid scene name.
+        - Include branching paths based on 2-4 choices. 
+        - Ensure each scene has at least one choice that connects to another valid scene name. Otherwise, the final scene(s) of act should have no choices (omit the key "choices" althogether).
         - Relationships, inventory items, or skills can be added or subtracted by "delta" values.
-        - Pack each scene with ample dialogue to express the story (5-15+ lines). Be inventive and creative about event details, while ensuring consistency with the plot outline.
+        - Pack each scene with ample dialogue to express the story. Be liberal with the verbosity, illustrating each character's personality. Be inventive and creative about event details, while complying with plot outline. We're trying to bring this story to life!
         - Use of a narrator is encouraged to explain the scene or provide context.
         - The protagonist may think in parentheses.
         - Unknown characters are named "???" until revealed.
-        - "setting_description" is a prompt directed to Stable Diffusion XL and is used for real time generating a background image for the VN program. It is only required when visiting the setting for the first time. Do not include main characters here as those are rendered separately.
-        - Maintain the given tone (${projectContext.basicData.tone}) consistent with the story context.
+        - Use the full name of the character in the dialogue.
+        - Flashbacks or foreshadowing of events are pluses.
+        - "setting_desc" is a prompt directed to Stable Diffusion XL and is used for real time generating a background image for the VN program. It is only required when visiting the setting for the first time. Omit this key altogether otherwise. Do not mention main characters or foreground objects as those are rendered separately.
+        - Maintain the given tone (${projectContext.basicData.tone}) throughout the story.
         - You may optionally include [emotion] or [action] tags before dialogue when it enhances the scene.
         - If a choice increases or decreases a relationship, reflect it subtly in the dialogue tone.
         - For conditional choices, use this format:
-           {
-             "text": "Try to convince guard",
-             "condition": {"guardRelationship": 2},
-             "next": "scene5",
-             "failNext": "scene6"
-           }
-
-        Make it engaging!
+         {
+           "text": "Try to convince guard",
+           "condition": {"guardRelationship": 2},
+           "next": "scene 5",
+           "failNext": "scene 6"
+         }
+         - Lastly, keep it engaging! The audience is teen and up.
       `;
 
       // Generate act using Gemini
@@ -1548,7 +1620,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         prompt,
         systemPrompt,
         "JSON",
-        65536,
+        16384,
         // true,
       );
 
@@ -1562,22 +1634,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Send proper error response with details
         res.status(500).json({
           message: "Failed to parse act data from AI response",
-          technicalDetails: e instanceof Error ? e.message : "Invalid JSON response",
-          rootCause: "The AI generated a response that couldn't be properly converted to JSON",
+          technicalDetails:
+            e instanceof Error ? e.message : "Invalid JSON response",
+          rootCause:
+            "The AI generated a response that couldn't be properly converted to JSON",
           invalidResponse: responseContent.substring(0, 500), // First 500 chars for debugging
           isModelOverloaded: false,
-          retryRecommended: true
+          retryRecommended: true,
         });
       }
     } catch (error) {
       console.error("Error generating act:", error);
 
       // Extract detailed error information
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      const errorCause = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause 
-        ? String(error.cause.message) 
-        : null;
-      const isOverloaded = typeof errorMessage === 'string' && errorMessage.includes("overloaded");
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      const errorCause =
+        error instanceof Error &&
+        error.cause &&
+        typeof error.cause === "object" &&
+        "message" in error.cause
+          ? String(error.cause.message)
+          : null;
+      const isOverloaded =
+        typeof errorMessage === "string" && errorMessage.includes("overloaded");
       const statusCode = isOverloaded ? 503 : 500; // Service Unavailable for overloaded model
 
       res.status(statusCode).json({
@@ -1585,7 +1665,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         technicalDetails: errorMessage,
         rootCause: errorCause || errorMessage,
         isModelOverloaded: isOverloaded,
-        retryRecommended: isOverloaded
+        retryRecommended: isOverloaded,
       });
     }
   });
@@ -1634,7 +1714,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   //         const result = await generateSceneBackgroundImage(
   //           scene.name,
-  //           scene.setting_description,
+  //           scene.setting_desc,
   //         );
 
   //         // No environment variables to reset since we've removed DALL-E
@@ -1695,8 +1775,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   //     // Extract detailed error information
   //     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-  //     const errorCause = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause 
-  //       ? String(error.cause.message) 
+  //     const errorCause = error instanceof Error && error.cause && typeof error.cause === 'object' && 'message' in error.cause
+  //       ? String(error.cause.message)
   //       : null;
   //     const isOverloaded = typeof errorMessage === 'string' && errorMessage.includes("overloaded");
   //     const statusCode = isOverloaded ? 503 : 500; // Service Unavailable for overloaded model
@@ -1712,91 +1792,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // });
 
   // DeepL translation endpoints
-  app.post('/api/translate', async (req, res) => {
+  app.post("/api/translate", async (req, res) => {
     try {
       // Check if DEEPL_API_KEY is set
       if (!process.env.DEEPL_API_KEY) {
         return res.status(400).json({
-          error: 'DeepL API key is not configured'
+          error: "DeepL API key is not configured",
         });
       }
 
       // Import the translation service and process the request
-      const { translateTexts } = await import('./translation-service');
+      const { translateTexts } = await import("./translation-service");
       return translateTexts(req, res);
     } catch (error) {
-      console.error('Error in translation endpoint:', error);
+      console.error("Error in translation endpoint:", error);
       return res.status(500).json({
-        error: error instanceof Error ? error.message : 'Unknown translation error'
+        error:
+          error instanceof Error ? error.message : "Unknown translation error",
       });
     }
   });
 
   // Auto-translation endpoint to update translation files
-  app.get('/api/translate/auto/:language', async (req, res) => {
+  app.get("/api/translate/auto/:language", async (req, res) => {
     try {
       // Check if DEEPL_API_KEY is set
       if (!process.env.DEEPL_API_KEY) {
         return res.status(400).json({
-          error: 'DeepL API key is not configured'
+          error: "DeepL API key is not configured",
         });
       }
 
       // Handle the auto-translation request
       return handleAutoTranslate(req, res);
     } catch (error) {
-      console.error('Error in auto-translation endpoint:', error);
+      console.error("Error in auto-translation endpoint:", error);
       return res.status(500).json({
-        error: error instanceof Error ? error.message : 'Unknown translation error'
+        error:
+          error instanceof Error ? error.message : "Unknown translation error",
       });
     }
   });
 
   // Scan for missing translation keys endpoint
-  app.get('/api/translate/scan', async (req, res) => {
+  app.get("/api/translate/scan", async (req, res) => {
     try {
       // Handle the scan for missing keys request
       return handleScanForMissingKeys(req, res);
     } catch (error) {
-      console.error('Error in scan for missing keys endpoint:', error);
+      console.error("Error in scan for missing keys endpoint:", error);
       return res.status(500).json({
-        error: error instanceof Error ? error.message : 'Unknown translation error'
+        error:
+          error instanceof Error ? error.message : "Unknown translation error",
       });
     }
   });
 
   // Clear translations endpoint
-  app.post('/api/translate/clear/:language', async (req, res) => {
+  app.post("/api/translate/clear/:language", async (req, res) => {
     try {
       // Handle the clear translations request
       return handleClearTranslations(req, res);
     } catch (error) {
-      console.error('Error in clear translations endpoint:', error);
+      console.error("Error in clear translations endpoint:", error);
       return res.status(500).json({
-        error: error instanceof Error ? error.message : 'Unknown translation error'
+        error:
+          error instanceof Error ? error.message : "Unknown translation error",
       });
     }
   });
 
   // Translation status endpoint
-  app.get('/api/translate/status', (req, res) => {
+  app.get("/api/translate/status", (req, res) => {
     const isApiKeyConfigured = !!process.env.DEEPL_API_KEY;
     res.json({
       available: isApiKeyConfigured,
-      source: 'DeepL'
+      source: "DeepL",
     });
   });
-
 
   //image generator endpoint
   app.post("/api/generate/image", async (req, res) => {
     try {
-      const { prompt, width=1024, height=1024, remove_bg =false} = req.body;
+      const {
+        prompt,
+        width = 1024,
+        height = 1024,
+        remove_bg = false,
+      } = req.body;
 
       if (!prompt) {
         return res.status(400).json({
           success: false,
-          message: "Prompt is required"
+          message: "Prompt is required",
         });
       }
 
@@ -1804,21 +1892,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (width && (width < 64 || width > 2048)) {
         return res.status(400).json({
           success: false,
-          message: "Width must be between 64 and 2048 pixels"
+          message: "Width must be between 64 and 2048 pixels",
         });
       }
 
       if (height && (height < 64 || height > 2048)) {
         return res.status(400).json({
           success: false,
-          message: "Height must be between 64 and 2048 pixels"
+          message: "Height must be between 64 and 2048 pixels",
         });
       }
 
       // Generate unique user ID for this request
       const userId = uuidv4();
 
-      console.log(`Queueing image generation for ticket ${userId} with prompt: ${prompt}, dimensions: ${width || 'default'}x${height || 'default'}, remove_bg: ${remove_bg}`);
+      console.log(
+        `Queueing image generation for ticket ${userId} with prompt: ${prompt}, dimensions: ${width || "default"}x${height || "default"}, remove_bg: ${remove_bg}`,
+      );
 
       // Store the response object for later use
       pendingRequests.set(userId, res);
@@ -1830,7 +1920,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         timestamp: Date.now(),
         width: width,
         height: height,
-        remove_bg: remove_bg
+        remove_bg: remove_bg,
       });
 
       // Set timeout to clean up if client disconnects
@@ -1839,20 +1929,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`Cleaning up abandoned request for user ${userId}`);
           pendingRequests.delete(userId);
         }
-      }, 30000); 
+      }, 30000);
 
       // Clean up timeout when request completes
-      res.on('finish', () => {
+      res.on("finish", () => {
         clearTimeout(timeout);
       });
 
       // Note: Response is sent later by the worker via pendingRequests map
-
     } catch (error) {
       console.error("Error queueing portrait generation:", error);
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        message: error instanceof Error ? error.message : "Unknown error queueing portrait generation" 
+        message:
+          error instanceof Error
+            ? error.message
+            : "Unknown error queueing portrait generation",
       });
     }
   });

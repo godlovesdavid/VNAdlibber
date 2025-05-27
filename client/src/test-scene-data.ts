@@ -5,7 +5,7 @@ export const testSceneData: GeneratedAct = {
   "scene1": {
     "name": "Act 1 Scene 1",
     "setting": "A cozy café in downtown on a rainy afternoon",
-    "setting_description": "A warm, inviting café with large windows showing rain outside, soft lighting, wooden tables, and shelves of books along one wall",
+    "setting_desc": "A warm, inviting café with large windows showing rain outside, soft lighting, wooden tables, and shelves of books along one wall",
     "dialogue": [
       ["Narrator", "The rain taps against the window as you sip your coffee, watching people hurry by with their umbrellas."],
       ["Alex", "Mind if I join you? All the other tables are taken."],
@@ -110,7 +110,7 @@ export const testSceneData: GeneratedAct = {
   "scene5": {
     "name": "Act 1 Scene 5",
     "setting": "Outside the café, under the shelter of the awning",
-    "setting_description": "The entrance of a café with a striped awning, rain pouring down around it, two people standing close together watching the rain, city street visible beyond",
+    "setting_desc": "The entrance of a café with a striped awning, rain pouring down around it, two people standing close together watching the rain, city street visible beyond",
     "dialogue": [
       ["Narrator", "The rain has slowed to a gentle drizzle as you and Alex prepare to leave."],
       ["Alex", "I'm really glad we met today."],
@@ -126,7 +126,7 @@ export const testSceneData: GeneratedAct = {
   "scene6": {
     "name": "Act 1 Scene 6",
     "setting": "Outside the café, as the rain tapers off",
-    "setting_description": "The front of a café with rain-slicked streets, the sky beginning to clear, two people standing at a distance from each other in front of the café",
+    "setting_desc": "The front of a café with rain-slicked streets, the sky beginning to clear, two people standing at a distance from each other in front of the café",
     "dialogue": [
       ["Narrator", "The rain has almost stopped as you prepare to leave."],
       ["Alex", "Well, it was nice meeting you."],

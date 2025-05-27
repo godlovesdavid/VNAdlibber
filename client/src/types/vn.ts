@@ -82,9 +82,9 @@ export interface SceneChoice {
 export interface Scene {
   name: string;
   setting: string;
-  setting_description?: string;
+  setting_desc?: string;
   dialogue: [string, string][];
-  choices: SceneChoice[] | null;
+  choices?: SceneChoice[] | null;
 }
 
 // Generated act structure - the complete VN act data

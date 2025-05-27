@@ -419,15 +419,14 @@ export function VnPlayer({
 
   // IMAGE GEN
   const generateImage = useCallback(async () => {
-    if (!currentScene || isGenerating || !imageGenerationEnabled || !currentScene?.setting_description)
+    if (!currentScene || isGenerating || !imageGenerationEnabled || !currentScene?.setting_desc)
     {
-      // alert((!currentScene).toString() + isGenerating.toString() + !imageGenerationEnabled.toString()+ (!currentScene?.setting_description).toString())
+      // alert((!currentScene).toString() + isGenerating.toString() + !imageGenerationEnabled.toString()+ (!currentScene?.setting_desc).toString())
       return
     }
     try {
       // Mark as generating
       setIsGenerating(true);
-
       // Check cache first
       const cachedUrl = ImageGenerator.getCachedImageUrl(currentScene.setting);
 
@@ -440,9 +439,9 @@ export function VnPlayer({
 
       // Generate new image if not cached
       console.log("Generating new image for scene:", currentScene.setting);
-      // alert(JSON.stringify({name: currentScene.name, setting_description: currentScene?.setting_description || ''}))
-      // const result = await ImageGenerator.generateSceneBackground({name: currentScene.name, setting_description: currentScene?.setting_description || ''});
-      const response = await apiRequest("POST", "/api/generate/image", { prompt:currentScene.setting_description, width:1024, height:1024});
+      // alert(JSON.stringify({name: currentScene.name, setting_desc: currentScene?.setting_desc || ''}))
+      // const result = await ImageGenerator.generateSceneBackground({name: currentScene.name, setting_desc: currentScene?.setting_desc || ''});
+      const response = await apiRequest("POST", "/api/generate/image", { prompt:currentScene.setting_desc, width:1024, height:1024});
       const result = await response.json();
       if (result.url) {
         // Cache the new image
@@ -892,10 +891,10 @@ export function VnPlayer({
                 sceneId={currentScene.name}
                 isGenerated={true}
               />
-            ) : currentScene.setting_description ? (
+            ) : currentScene.setting_desc ? (
               // Display scene's existing background image
               <SceneBackground
-                imageUrl={currentScene.setting_description}
+                imageUrl={currentScene.setting_desc}
                 sceneId={currentScene.name}
                 isGenerated={false}
               />
@@ -1136,7 +1135,7 @@ export function VnPlayer({
             )}
 
           {/* End of act - show return button when at the final scene with no more choices */}
-          {currentScene.choices === null &&
+          {(!('choices' in currentScene) || !currentScene.choices || currentScene.choices.length == 0) &&
             currentDialogueIndex >= currentScene.dialogue.length - 1 && (
               <div className="mt-8 text-center">
                 <Button onClick={onReturn} className="mx-auto">

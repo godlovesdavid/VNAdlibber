@@ -86,9 +86,9 @@ export function useImageGeneration(
       currentSceneId.current = scene.name;
 
       // Check if scene already has a background URL
-      if (scene.setting_description && !forceGenerate) {
-        logDebug("Scene already has bg URL:", scene.setting_description);
-        setImageUrl(scene.setting_description);
+      if (scene.setting_desc && !forceGenerate) {
+        logDebug("Scene already has bg URL:", scene.setting_desc);
+        setImageUrl(scene.setting_desc);
         return;
       }
 
@@ -127,7 +127,7 @@ export function useImageGeneration(
 
           // Call API to generate image with retry options
           const result: ImageGenerationResult = await generateSceneBackground(
-            { name: scene.name, setting_description: scene.setting_description || "" },
+            { name: scene.name, setting_desc: scene.setting_desc || "" },
             abortController.current.signal,
             { 
               retryCount: 1, // Try twice total (initial + 1 retry)
@@ -198,7 +198,7 @@ export function useImageGeneration(
       autoGenerateEnabled: autoGenerate,
       isGenerating,
       isQueued: isGenerationQueued.current,
-      hasImagePrompt: !!scene.setting_description,
+      hasImagePrompt: !!scene.setting_desc,
       sceneSetting: scene.setting || 'none'
     });
 
@@ -206,12 +206,12 @@ export function useImageGeneration(
     currentSceneId.current = scene.name;
 
     // Check if scene already has a background URL (not just a text description)
-    if (scene.setting_description && (scene.setting_description.startsWith('data:') || scene.setting_description.startsWith('http'))) {
-      console.log("Scene already has valid image URL in setting_description, using it:", scene.setting_description.slice(0, 30) + "...");
-      setImageUrl(scene.setting_description);
+    if (scene.setting_desc && (scene.setting_desc.startsWith('data:') || scene.setting_desc.startsWith('http'))) {
+      console.log("Scene already has valid image URL in setting_desc, using it:", scene.setting_desc.slice(0, 30) + "...");
+      setImageUrl(scene.setting_desc);
       return;
-    } else if (scene.setting_description) {
-      console.log("Scene has setting_description but it's not a valid URL (will generate image):", scene.setting_description.slice(0, 30) + "...");
+    } else if (scene.setting_desc) {
+      console.log("Scene has setting_desc but it's not a valid URL (will generate image):", scene.setting_desc.slice(0, 30) + "...");
       // Continue to generate a new image
     }
 
