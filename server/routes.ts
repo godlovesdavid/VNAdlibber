@@ -986,12 +986,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const storyTitle = title || project.title || `Visual Novel Act ${actNum}`;
 
       // Include character portraits in the shared story data
+      console.log("PORTRAIT DEBUG: Project has characterPortraitsData:", !!project.characterPortraitsData);
+      console.log("PORTRAIT DEBUG: characterPortraitsData keys:", project.characterPortraitsData ? Object.keys(project.characterPortraitsData) : "none");
+      
       let enrichedActData = actData;
       if (project.characterPortraitsData && Object.keys(project.characterPortraitsData).length > 0) {
+        console.log("PORTRAIT DEBUG: Adding character portraits to shared story");
         enrichedActData = {
           ...actData,
           characterPortraits: project.characterPortraitsData
         };
+      } else {
+        console.log("PORTRAIT DEBUG: No character portraits to add to shared story");
       }
 
       // Create a new story entry in the database

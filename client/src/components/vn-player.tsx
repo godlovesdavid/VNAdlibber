@@ -291,20 +291,13 @@ export function VnPlayer({
   const { playerData, updatePlayerData, projectData } = useVnContext();
   const { toast } = useToast(); // Initialize toast
 
-  // Helper function to get character portrait from project context or shared story data
+  // Helper function to get character portrait from project context
   const getCharacterPortrait = (characterName: string): string | null => {
-    // First try to get from projectData (for regular player)
-    if (projectData?.characterPortraitsData) {
-      return projectData.characterPortraitsData[characterName] || null;
-    }
+    console.log('Checking for "' + characterName + '" in ' + projectData?.characterPortraitsData)
+    if (!projectData?.characterPortraitsData) return null;
     
-    // For shared stories, check if character portraits are included in actData
-    if (rawActData && typeof rawActData === 'object' && 'characterPortraits' in rawActData) {
-      const characterPortraits = (rawActData as any).characterPortraits;
-      return characterPortraits[characterName] || null;
-    }
-    
-    return null;
+    // Find character portrait by name (exact match)
+    return projectData.characterPortraitsData[characterName] || null;
   };
 
   // Core scene and dialogue state
