@@ -1587,7 +1587,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         - Include branching paths based on 2-4 choices. 
         - Ensure each scene has at least one choice that connects to another valid scene name. Otherwise, the final scene(s) of act should have no choices (omit the key "choices" althogether).
         - Relationships, inventory items, or skills can be added or subtracted by "delta" values.
-        - Pack each scene with ample dialogue to express the story. Be liberal with the verbosity, illustrating each character's personality. Be inventive and creative about event details, while complying with plot outline. We're trying to bring this story to life!
+        - Pack each scene with ample dialogue to express the story. Be very liberal with the verbosity, illustrating each character's personality. Be inventive and creative about event details, while complying with plot outline.
         - Use of a narrator is encouraged to explain the scene or provide context.
         - The protagonist may think in parentheses.
         - Unknown characters are named "???" until revealed.
