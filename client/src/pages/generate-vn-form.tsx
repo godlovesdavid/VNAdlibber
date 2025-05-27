@@ -541,11 +541,13 @@ export default function GenerateVnForm() {
             </Card>
           ))}
 
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-neutral-800">
-                Player Data
-              </CardTitle>
+          {/* Player data editing section - only show in advanced mode */}
+          {advancedMode && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-neutral-800">
+                  Player Data
+                </CardTitle>
               <p className="text-sm text-neutral-600">
                 These values represent relationships, inventory items, and
                 skills your character has accumulated throughout the story. You
@@ -668,6 +670,7 @@ export default function GenerateVnForm() {
               </div>
             </CardContent>
           </Card>
+          )}
 
           <div className="pt-6 flex justify-between">
             <Button variant="outline" onClick={handleBack}>
