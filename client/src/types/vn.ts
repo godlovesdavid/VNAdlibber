@@ -80,27 +80,14 @@ export interface SceneChoice {
 
 // Visual novel scene structure
 export interface Scene {
-  name: string;
   setting: string;
   setting_desc?: string;
   dialogue: [string, string][];
   choices?: SceneChoice[] | null;
 }
 
-// Generated act structure - the complete VN act data
-// Legacy format kept for backward compatibility
-export interface LegacyGeneratedAct {
-  act: number;
-  scenes: Scene[];
-}
-
-// New nested format for the generated act data with scene map
-// Format option 1: { act1: { scene1: Scene, scene2: Scene, ... } }
-// Format option 2 (simplified): { scene1: Scene, scene2: Scene, ... }
 export type GeneratedAct =
-  | LegacyGeneratedAct
-  | Record<string, Record<string, Scene>> // Nested format with act wrapper
-  | Record<string, Scene>; // Simplified direct scene map
+   Record<string, Scene>; 
 
 // Player data structure for tracking relationships, inventory, and skills
 export interface PlayerData {
@@ -135,4 +122,5 @@ export interface VnStory {
   createdAt: string;
   actData: GeneratedAct;
   actNumber: number;
+  characterPortraitData: CharacterPortraitsData,
 }

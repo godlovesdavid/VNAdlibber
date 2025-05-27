@@ -89,7 +89,8 @@ export default function PlaySelection() {
 
         // Extract act number from filename if possible
         const filename = file.name;
-        const actNumber = typeof actData.act === 'number' ? actData.act : 1;
+        const match = filename.match(/\bact(\d+)/i)
+        const actNumber = match? match[1] : ''
 
         // Extract title from filename if possible
         let title = t('playSelection.defaultImportTitle', 'Imported Story');

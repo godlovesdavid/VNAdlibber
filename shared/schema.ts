@@ -54,6 +54,7 @@ export const vnStories = pgTable("vn_stories", {
   actNumber: integer("act_number").notNull(),
   // Field for sharing stories
   shareId: text("share_id").unique(),
+  // characterPortraitData: jsonb("character_portraits_data")
 });
 
 export const insertVnStorySchema = createInsertSchema(vnStories).omit({

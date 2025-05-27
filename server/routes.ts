@@ -966,16 +966,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // This handles the case for newly generated acts that haven't been saved to the database yet
       if (req.body.actData) {
         actData = req.body.actData;
-
-        // Make sure the act number is included in the act data for proper loading
-        actData.act = actNum;
       }
       // Otherwise check if the act exists in the project's generatedActs
       else if (generatedActs[actKey]) {
         actData = generatedActs[actKey];
-
-        // Make sure the act number is included in the act data for proper loading
-        actData.act = actNum;
       }
       // If we can't find the act data anywhere, return an error
       else {
@@ -985,22 +979,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const storyTitle = title || project.title || `Visual Novel Act ${actNum}`;
 
-      // Include character portraits in the shared story data
-      console.log("PORTRAIT DEBUG: Project keys:", Object.keys(project));
-      console.log("PORTRAIT DEBUG: Project has characterPortraitsData:", !!project.characterPortraitsData);
-      console.log("PORTRAIT DEBUG: characterPortraitsData keys:", project.characterPortraitsData ? Object.keys(project.characterPortraitsData) : "none");
-      
-      let enrichedActData = actData;
-      if (project.characterPortraitsData && Object.keys(project.characterPortraitsData).length > 0) {
-        console.log("PORTRAIT DEBUG: Adding character portraits to shared story");
-        enrichedActData = {
-          ...actData,
-          characterPortraits: project.characterPortraitsData
-        };
-      } else {
-        console.log("PORTRAIT DEBUG: No character portraits to add to shared story");
-      }
-
       // Create a new story entry in the database
       const story = await storage.createStory({
         shareId,
@@ -1008,7 +986,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: project.userId,
         title: storyTitle,
         createdAt: now,
-        actData: enrichedActData,
+        actData: actData,
+        // characterPortraitData: project.characterPortraitsData,
         actNumber: actNum, // This should be the proper act number from above
       });
 

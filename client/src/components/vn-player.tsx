@@ -9,155 +9,6 @@ import * as ImageGenerator from "@/lib/image-generator";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
-// Helper function to convert various act formats to array format for VN player
-function convertActFormat(actData: any): {
-  scenes: Scene[];
-  act: number;
-  characterPortraits?: Record<string, string>;
-} {
-  // First, verify we have valid data
-  if (!actData) {
-    console.error("convertActFormat received undefined or null actData");
-    return { scenes: [], act: 1 };
-  }
-
-  console.log(
-    "convertActFormat received data:",
-    JSON.stringify(actData).substring(0, 200) + "...",
-  );
-
-  // Reset to debug - dump full data structure
-  console.log("DEBUG: Full act data structure keys:", Object.keys(actData));
-
-  // Handle case where the data is already in the correct format
-  if (actData.scenes && Array.isArray(actData.scenes)) {
-    console.log("Act data is already in the legacy array format");
-    return {
-      ...actData,
-      characterPortraits: actData.characterPortraits,
-    };
-  }
-
-  let sceneMap = {};
-  let actNumber = 1;
-
-  // Check if it has an explicit act number
-  if (actData.act && typeof actData.act === "number") {
-    actNumber = actData.act;
-    console.log("Using explicit act number from data:", actNumber);
-  } else if (actData.act && typeof actData.act === "string") {
-    actNumber = parseInt(actData.act) || 1;
-    console.log("Using parsed act number from string:", actNumber);
-  } else if (actData.actNumber && typeof actData.actNumber === "number") {
-    actNumber = actData.actNumber;
-    console.log("Using actNumber property:", actNumber);
-  }
-
-  // Check for the new simplified format: {scene1: {...}, scene2: {...}}
-  if (Object.keys(actData).some((key) => key.startsWith("scene"))) {
-    console.log(
-      "Act data is in the simplified scene map format with scene keys",
-    );
-    sceneMap = {};
-
-    // Extract only the scene objects (ignore other properties like 'act')
-    Object.keys(actData).forEach((key) => {
-      if (key.startsWith("scene")) {
-        (sceneMap as any)[key] = actData[key];
-      }
-    });
-
-    // Attempt to extract act number from scene names if available
-    const firstScene = Object.values(actData).find(
-      (val) => val && typeof val === "object" && "dialogue" in val,
-    ) as any;
-
-    if (firstScene && firstScene.name && typeof firstScene.name === "string") {
-      const match = firstScene.name.match(/Act (\d+)/i);
-      if (match && match[1]) {
-        actNumber = parseInt(match[1]);
-        console.log("Extracted act number from scene name:", actNumber);
-      }
-    }
-  }
-  // Check for nested format: {act1: {scene1: {...}, scene2: {...}}}
-  else {
-    console.log("Looking for act wrapper format");
-    // Find the act key (e.g., "act1")
-    const actKey = Object.keys(actData).find((key) => key.startsWith("act"));
-    if (actKey) {
-      actNumber = parseInt(actKey.replace("act", "")) || 1;
-      console.log("Found act wrapper:", actKey, "with act number:", actNumber);
-      sceneMap = actData[actKey] || {};
-    } else {
-      console.warn(
-        "No direct scene data found in the expected formats, attempting fallbacks",
-      );
-
-      // As a fallback, check if this is a story object with nested actData
-      if (actData.actData && typeof actData.actData === "object") {
-        console.log("Found nested actData, using it instead");
-        return convertActFormat(actData.actData);
-      }
-
-      // As a last resort, try to use the actData directly
-      console.log("Using actData directly as scene map");
-      sceneMap = actData;
-    }
-  }
-
-  // Convert the scene map to an array, with additional error checking
-  const scenes: Scene[] = [];
-
-  try {
-    if (!sceneMap || typeof sceneMap !== "object") {
-      console.error("Scene map is invalid:", sceneMap);
-      return {
-        scenes: [],
-        act: actNumber,
-        characterPortraits: actData.characterPortraits,
-      };
-    }
-
-    // Process each scene with error handling
-    Object.entries(sceneMap).forEach(([sceneKey, sceneData]: [string, any]) => {
-      if (!sceneData) {
-        console.warn(`Scene ${sceneKey} has no data, skipping`);
-        return; // Skip this entry
-      }
-
-      // Process choices with error handling
-      let choices = [];
-      if (sceneData.choices && Array.isArray(sceneData.choices)) {
-        choices = sceneData.choices.map((choice: any) => {
-          return {
-            ...choice,
-            // We'll use the scene keys directly in next/failNext fields
-          };
-        });
-      }
-
-      // Create the scene with fallbacks for missing properties
-      const scene = {
-        ...sceneData,
-        name: sceneKey, // Use the scene key as the name
-        choices: choices,
-        dialogue: Array.isArray(sceneData.dialogue) ? sceneData.dialogue : [],
-        background: sceneData.background || "Default Scene",
-      };
-
-      scenes.push(scene);
-    });
-  } catch (error) {
-    console.error("Error processing scene map:", error);
-  }
-
-  return {
-    scenes,
-    act: actNumber,
-    characterPortraits: actData.characterPortraits,
-  };
-}
 
 // Dedicated component for handling scene backgrounds with fallbacks
 interface SceneBackgroundProps {
@@ -173,36 +24,9 @@ function SceneBackground({
 }: SceneBackgroundProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  // const [actualUrl, setActualUrl] = useState('');
-
-  // Fallback URL in case of loading failures - using data URI for guaranteed compatibility
-  // const fallbackUrl = `data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%221024%22%20height%3D%22768%22%20viewBox%3D%220%200%201024%20768%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E`;
-
-  // Determine if the image source is an actual URL (data:, http:, etc.) vs just a text description
-  // useEffect(() => {
-  // Reset states when URL changes
-  // setIsLoading(true);
-  // setHasError(false);
-
-  // Check if the imageUrl is actually a URL vs a text description
-  // if (imageUrl && (imageUrl.startsWith('data:') || imageUrl.startsWith('http'))) {
-  //   console.log(`Setting actual URL for scene ${sceneId}, source appears to be a valid URL`);
-  // setActualUrl(imageUrl);
-  // } else {
-  //   // console.log(`Using fallback for scene ${sceneId}, source is not a valid URL: ${imageUrl?.slice(0, 30)}...`);
-  //   // setActualUrl(fallbackUrl);
-  //   // Mark as loaded but with error
-  //   setIsLoading(false);
-  //   setHasError(true);
-  // }
-  // }, [imageUrl]);
-
   const handleImageError = () => {
     console.error(`Image failed to load: ${imageUrl}`);
-    // setHasError(true);
     setIsLoading(false);
-    // Use fallback URL
-    // setActualUrl(fallbackUrl);
   };
 
   const handleImageLoad = () => {
@@ -218,17 +42,6 @@ function SceneBackground({
         transition: "background-color 0.5s ease",
       }}
     >
-      {/* Show placeholder immediately while image loads */}
-      {/* <div className="absolute inset-0 flex items-center justify-center text-white">
-        {isLoading && (
-          <div className="text-center">
-            <RefreshCw className="h-10 w-10 animate-spin mx-auto mb-2" />
-            <p>Loading scene background...</p>
-          </div>
-        )}
-      </div> */}
-
-      {/* Actual image with appropriate handling */}
       <img
         key={`img-${imageUrl}`}
         src={imageUrl}
@@ -241,12 +54,6 @@ function SceneBackground({
         onLoad={handleImageLoad}
         onError={handleImageError}
       />
-
-      {/* Debug info overlay */}
-      {/* <div className="absolute bottom-4 right-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded text-xs z-20">
-        {isGenerated ? "Generated" : "Original"} | Scene: {sceneId}
-        {hasError && " | Using fallback"}
-      </div> */}
     </div>
   );
 }
@@ -261,56 +68,13 @@ interface VnPlayerProps {
 }
 
 export function VnPlayer({
-  actData: rawActData,
+  actData: actData,
   actNumber,
   onReturn,
   onRestart: externalRestart,
   mode = "generated",
   title,
 }: VnPlayerProps) {
-  // Convert the actData to the format expected by the player using useMemo to prevent re-calculation on every render
-  const actData = useMemo(() => convertActFormat(rawActData), [rawActData]);
-
-  // Debug log the conversion
-  useEffect(() => {
-    if (rawActData) {
-      console.log(
-        "VN Player received data format:",
-        Object.keys(rawActData).length > 0 && !Array.isArray(rawActData.scenes)
-          ? "New nested format"
-          : "Legacy array format",
-      );
-
-      // Debug - log structure of actData and the first scene key
-      try {
-        const actKeys = Object.keys(rawActData);
-        console.log("Act data keys:", actKeys);
-
-        if (actKeys.length > 0 && actKeys[0].startsWith("scene")) {
-          console.log("First scene key:", actKeys[0]);
-          // Use type assertion to avoid TS error with indexing
-          const firstSceneData = (rawActData as any)[actKeys[0]];
-          console.log(
-            "First scene data sample:",
-            JSON.stringify(firstSceneData).substring(0, 100) + "...",
-          );
-        }
-        console.log(JSON.stringify(actData, null, 2));
-
-        // Always log first scene of the processed actData
-        if (actData && actData.scenes && actData.scenes.length > 0) {
-          console.log(
-            "Processed first scene:",
-            JSON.stringify(actData.scenes[0]).substring(0, 100) + "...",
-          );
-        } else {
-          console.error("No scenes found in processed actData");
-        }
-      } catch (error) {
-        console.error("Error while debugging act data:", error);
-      }
-    }
-  }, [rawActData, actData]);
   const { playerData, updatePlayerData, projectData } = useVnContext();
   const { toast } = useToast(); // Initialize toast
 
@@ -321,15 +85,15 @@ export function VnPlayer({
       return projectData.characterPortraitsData[characterName] || null;
     }
 
-    // For shared stories, check if character portraits are included in actData
-    if (
-      actData &&
-      typeof actData === "object" &&
-      "characterPortraits" in actData
-    ) {
-      const characterPortraits = (actData as any).characterPortraits;
-      return characterPortraits[characterName] || null;
-    }
+    // // For shared stories, check if character portraits are included in actData
+    // if (
+    //   actData &&
+    //   typeof actData === "object" &&
+    //   "characterPortraits" in actData
+    // ) {
+    //   const characterPortraits = (actData as any).characterPortraits;
+    //   return characterPortraits[characterName] || null;
+    // }
 
     return null;
   };
@@ -464,7 +228,6 @@ export function VnPlayer({
       !imageGenerationEnabled ||
       !currentScene?.setting_desc
     ) {
-      // alert((!currentScene).toString() + isGenerating.toString() + !imageGenerationEnabled.toString()+ (!currentScene?.setting_desc).toString())
       return;
     }
     try {
@@ -482,8 +245,6 @@ export function VnPlayer({
 
       // Generate new image if not cached
       console.log("Generating new image for scene:", currentScene.setting);
-      // alert(JSON.stringify({name: currentScene.name, setting_desc: currentScene?.setting_desc || ''}))
-      // const result = await ImageGenerator.generateSceneBackground({name: currentScene.name, setting_desc: currentScene?.setting_desc || ''});
       const response = await apiRequest("POST", "/api/generate/image", {
         prompt: currentScene.setting_desc,
         width: 1024,
@@ -543,18 +304,9 @@ export function VnPlayer({
 
   //FIRST SCENE INIT
   useEffect(() => {
-    console.log(
-      "First scene init effect triggered, checking actData:",
-      actData
-        ? `Found with ${actData.scenes?.length || 0} scenes`
-        : "No act data",
-    );
-
     // Make sure we have valid scene data
     if (
-      !actData?.scenes ||
-      !Array.isArray(actData.scenes) ||
-      actData.scenes.length === 0
+      Object.keys(actData).length == 0
     ) {
       console.error(
         "Cannot initialize VN Player: No scenes found in actData",
@@ -567,21 +319,11 @@ export function VnPlayer({
 
     try {
       // Set initial scene
-      const firstScene = actData.scenes[0];
-
-      // Additional validation for the first scene
-      if (!firstScene || typeof firstScene !== "object") {
-        console.error("First scene is invalid:", firstScene);
-        return;
-      }
-
-      console.log(
-        `Initializing VN Player (${mode} mode) with first scene:`,
-        firstScene.name,
-      );
+      const firstSceneId = Object.keys(actData)[0]
+      const firstScene = actData[firstSceneId as keyof typeof actData]
 
       setCurrentScene(firstScene);
-      setCurrentSceneId(firstScene.name);
+      setCurrentSceneId(firstSceneId);
       setCurrentDialogueIndex(0);
       setShowChoices(false);
       setDialogueLog([]);
@@ -609,10 +351,17 @@ export function VnPlayer({
 
   // Update current scene when scene ID changes
   useEffect(() => {
-    if (!actData?.scenes || !currentSceneId) return;
-
-    const scene = actData.scenes.find((s) => s.name === currentSceneId);
-    if (scene) {
+    if (!actData || !currentSceneId) return;
+    if (!(currentSceneId in actData))
+    {
+      toast({
+        title: "Error",
+        description: "Scene not found in act.",
+        variant: "destructive",
+      });
+      return
+    }
+      const scene = actData[currentSceneId]
       setCurrentScene(scene);
       setCurrentDialogueIndex(0);
       setShowChoices(false);
@@ -621,7 +370,6 @@ export function VnPlayer({
         setDisplayedText("");
         animateText(scene.dialogue[0][1]);
       }
-    }
   }, [
     actData,
     currentSceneId,
@@ -635,19 +383,18 @@ export function VnPlayer({
 
   // Handle restart
   const handleRestart = useCallback(() => {
-    if (!actData?.scenes?.length) return;
-
+    const firstScene = actData[Object.keys(actData)[0] as keyof typeof actData]
     // Reset all the state
-    setCurrentScene(actData.scenes[0]);
-    setCurrentSceneId(actData.scenes[0].name);
+    setCurrentScene(firstScene);
+    setCurrentSceneId(Object.keys(actData)[0]);
     setCurrentDialogueIndex(0);
     setShowChoices(false);
     setDialogueLog([]);
 
     // Use animation for both modes now
-    if (actData.scenes[0].dialogue && actData.scenes[0].dialogue.length > 0) {
+    if (firstScene.dialogue && firstScene.dialogue.length > 0) {
       setDisplayedText(""); // Clear any previous text
-      animateText(actData.scenes[0].dialogue[0][1]);
+      animateText(firstScene.dialogue[0][1]);
     }
   }, [
     actData,
@@ -762,6 +509,7 @@ export function VnPlayer({
       if (!conditionMet && choice.failNext) {
         // No delay needed for failure path
         if (choice.failNext) {
+          if (!(choice.failNext in actData))
           setCurrentSceneId(choice.failNext);
         }
         setClickableContent(true);
@@ -795,7 +543,6 @@ export function VnPlayer({
           skills: updatedSkills,
         });
       }
-
       // Move to next scene immediately - no delay needed
       setCurrentSceneId(choice.next);
       setClickableContent(true);
@@ -856,20 +603,6 @@ export function VnPlayer({
       );
     };
   }, [mode, isTextAnimating]);
-
-  // // Log current scene and image state for debugging
-  // useEffect(() => {
-  //   if (currentScene) {
-  //     console.log(
-  //       `Current scene updated: ${currentScene.name}, image status:`,
-  //       {
-  //         imageUrl: imageUrl ? "Has URL" : "No URL",
-  //         isGenerating,
-  //         hasError: !!imageError,
-  //       },
-  //     );
-  //   }
-  // }, [currentScene, imageUrl, isGenerating, imageError]);
 
   // Show loading while no scene is available
   if (!currentScene) {
@@ -970,14 +703,14 @@ export function VnPlayer({
               // Display generated image when we have a URL
               <SceneBackground
                 imageUrl={imageUrl}
-                sceneId={currentScene.name}
+                sceneId={currentSceneId}
                 isGenerated={true}
               />
             ) : currentScene.setting_desc ? (
               // Display scene's existing background image
               <SceneBackground
                 imageUrl={currentScene.setting_desc}
-                sceneId={currentScene.name}
+                sceneId={currentSceneId}
                 isGenerated={false}
               />
             ) : (
