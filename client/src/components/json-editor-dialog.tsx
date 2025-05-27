@@ -168,19 +168,50 @@ This editor allows you to modify the structure and content of your visual novel 
         </DialogTrigger>
         <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Edit className="w-5 h-5" />
-              Edit Act {actNumber} JSON Data
-            </DialogTitle>
-            <DialogDescription>
-              Modify the scene data for this act. Make sure to maintain proper JSON syntax.
-            </DialogDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle className="flex items-center gap-2">
+                  <Edit className="w-5 h-5" />
+                  Edit Act {actNumber} JSON Data
+                </DialogTitle>
+                <DialogDescription>
+                  Modify the scene data for this act. Make sure to maintain proper JSON syntax.
+                </DialogDescription>
+              </div>
+              {/* Action Buttons - moved to top right */}
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowGuide(true)}
+                >
+                  <HelpCircle className="w-4 h-4 mr-1" />
+                  Guide
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCancel}
+                >
+                  <X className="w-3 h-3 mr-1" />
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={!!syntaxError}
+                >
+                  <Save className="w-3 h-3 mr-1" />
+                  Save
+                </Button>
+              </div>
+            </div>
           </DialogHeader>
 
-          <div className="flex-1 flex flex-col gap-4 min-h-0">
-            {/* Syntax Status */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+          <div className="flex-1 flex flex-col gap-3 min-h-0">
+            {/* Syntax Status and Error Message - fixed height */}
+            <div className="h-auto">
+              <div className="flex items-center gap-2 mb-2">
                 {syntaxError ? (
                   <>
                     <AlertTriangle className="w-4 h-4 text-destructive" />
@@ -193,50 +224,24 @@ This editor allows you to modify the structure and content of your visual novel 
                   </>
                 )}
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowGuide(true)}
-              >
-                <HelpCircle className="w-4 h-4 mr-1" />
-                Guide
-              </Button>
+              
+              {/* Error Message - fixed position */}
+              {syntaxError && (
+                <div className="p-2 bg-destructive/10 border border-destructive/20 rounded-md">
+                  <p className="text-xs text-destructive font-medium">JSON Syntax Error:</p>
+                  <p className="text-xs text-destructive/80 mt-1">{syntaxError}</p>
+                </div>
+              )}
             </div>
 
-            {/* Error Message */}
-            {syntaxError && (
-              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
-                <p className="text-sm text-destructive font-medium">JSON Syntax Error:</p>
-                <p className="text-sm text-destructive/80 mt-1">{syntaxError}</p>
-              </div>
-            )}
-
-            {/* JSON Editor */}
+            {/* JSON Editor - takes remaining space */}
             <div className="flex-1 min-h-0">
               <Textarea
                 value={jsonText}
                 onChange={(e) => handleJsonChange(e.target.value)}
-                className="h-full min-h-[400px] font-mono text-sm resize-none"
+                className="h-full min-h-[450px] font-mono text-sm resize-none"
                 placeholder="JSON data will appear here..."
               />
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex justify-between pt-4 border-t">
-              <Button
-                variant="outline"
-                onClick={handleCancel}
-              >
-                <X className="w-4 h-4 mr-2" />
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSave}
-                disabled={!!syntaxError}
-              >
-                <Save className="w-4 h-4 mr-2" />
-                Save Changes
-              </Button>
             </div>
           </div>
         </DialogContent>

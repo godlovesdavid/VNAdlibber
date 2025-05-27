@@ -95,7 +95,9 @@ export default function GenerateVnForm() {
   const handleJsonSave = (actNumber: number, updatedData: any) => {
     try {
       setGeneratedAct(actNumber, updatedData);
-      saveProject(projectData);
+      if (projectData) {
+        saveProject(projectData);
+      }
       toast({
         title: "Act Updated",
         description: `Act ${actNumber} has been successfully updated with your changes.`,
