@@ -22,7 +22,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Download, Wand2, Play, Share, Edit } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Download, Wand2, Play, Share, Edit, Settings } from "lucide-react";
 import { ShareStoryDialog } from "@/components/modals/share-story-dialog";
 import { JsonEditorDialog } from "@/components/json-editor-dialog";
 import { PlayerData, GeneratedAct, VnProjectData } from "@/types/vn";
@@ -90,6 +92,7 @@ export default function GenerateVnForm() {
 
   // Form state
   const [scenesPerAct, setScenesPerAct] = useState<number>(10);
+  const [advancedMode, setAdvancedMode] = useState<boolean>(false);
 
   // Handle saving edited JSON data
   const handleJsonSave = (actNumber: number, updatedData: any) => {
@@ -349,13 +352,31 @@ export default function GenerateVnForm() {
                 </SelectContent>
               </Select>
             </div>
-            <Button
-              className="flex items-center"
-              onClick={handleExportActs}
-              disabled={!Object.keys(projectData?.generatedActs || {}).length}
-            >
-              <Download className="mr-1 h-4 w-4" /> {t('generateVnForm.exportActs', 'Export Acts')}
-            </Button>
+            <div className="flex items-center gap-4">
+              {/* Advanced Mode Toggle */}
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="advanced-mode"
+                  checked={advancedMode}
+                  onCheckedChange={setAdvancedMode}
+                />
+                <Label htmlFor="advanced-mode" className="text-sm font-medium text-neutral-700 flex items-center gap-1">
+                  <Settings className="w-4 h-4" />
+                  Advanced
+                </Label>
+              </div>
+              
+              {/* Export Acts Button - only show in advanced mode */}
+              {advancedMode && (
+                <Button
+                  className="flex items-center"
+                  onClick={handleExportActs}
+                  disabled={!Object.keys(projectData?.generatedActs || {}).length}
+                >
+                  <Download className="mr-1 h-4 w-4" /> {t('generateVnForm.exportActs', 'Export Acts')}
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Generation progress indicator */}
@@ -460,8 +481,8 @@ export default function GenerateVnForm() {
                     </Button>
                   )}
                   
-                  {/* Edit button - only show if act is generated */}
-                  {isActGenerated(actNumber) && projectData?.generatedActs?.[`act${actNumber}`] && (
+                  {/* Edit button - only show if act is generated and advanced mode is on */}
+                  {advancedMode && isActGenerated(actNumber) && projectData?.generatedActs?.[`act${actNumber}`] && (
                     <JsonEditorDialog
                       actNumber={actNumber}
                       actData={projectData.generatedActs[`act${actNumber}`]}
