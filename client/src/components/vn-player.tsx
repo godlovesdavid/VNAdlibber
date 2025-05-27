@@ -65,6 +65,7 @@ interface VnPlayerProps {
   onRestart?: () => void; // Optional external restart handler
   mode: "generated" | "imported"; // Mode to determine initialization behavior
   title?: string; // Optional story title
+  characterPortraitsData?: Record<string, string>; // Character portraits from shared stories
 }
 
 export function VnPlayer({
@@ -74,6 +75,7 @@ export function VnPlayer({
   onRestart: externalRestart,
   mode = "generated",
   title,
+  characterPortraitsData,
 }: VnPlayerProps) {
   const { playerData, updatePlayerData, projectData } = useVnContext();
   const { toast } = useToast(); // Initialize toast

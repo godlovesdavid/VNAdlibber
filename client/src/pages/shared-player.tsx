@@ -19,6 +19,7 @@ interface SharedStory {
   actData: any;
   actNumber: number;
   shareId: string;
+  characterPortraitsData?: Record<string, string>;
   // Other properties can be added as needed
 }
 
@@ -72,8 +73,8 @@ export default function SharedPlayer() {
         
         const data = await response.json();
         console.log("Received shared story data:", data);
-        console.log("PORTRAIT DEBUG: actData keys:", data.story?.actData ? Object.keys(data.story.actData) : "no actData");
-        console.log("PORTRAIT DEBUG: Has characterPortraits:", !!(data.story?.actData?.characterPortraits));
+        console.log("PORTRAIT DEBUG: Has characterPortraitsData:", !!(data.story?.characterPortraitsData));
+        console.log("PORTRAIT DEBUG: Character portrait keys:", data.story?.characterPortraitsData ? Object.keys(data.story.characterPortraitsData) : "none");
         
         // Make sure the actData is valid and properly structured
         if (!data.story || !data.story.actData) {

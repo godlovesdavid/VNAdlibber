@@ -987,7 +987,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         title: storyTitle,
         createdAt: now,
         actData: actData,
-        characterPortraitsData: project.characterPortraitsData,
+        characterPortraitsData: project.characterPortraitsData || null,
         actNumber: actNum, // This should be the proper act number from above
       });
 
