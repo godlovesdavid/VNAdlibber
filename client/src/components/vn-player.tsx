@@ -87,15 +87,10 @@ export function VnPlayer({
       return projectData.characterPortraitsData[characterName] || null;
     }
 
-    // // For shared stories, check if character portraits are included in actData
-    // if (
-    //   actData &&
-    //   typeof actData === "object" &&
-    //   "characterPortraits" in actData
-    // ) {
-    //   const characterPortraits = (actData as any).characterPortraits;
-    //   return characterPortraits[characterName] || null;
-    // }
+    // For shared stories, use the characterPortraitsData prop
+    if (characterPortraitsData) {
+      return characterPortraitsData[characterName] || null;
+    }
 
     return null;
   };

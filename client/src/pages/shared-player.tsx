@@ -206,6 +206,7 @@ export default function SharedPlayer() {
         onReturn={handleReturn}
         mode="imported"
         title={story.title}
+        characterPortraitsData={story.characterPortraitsData}
       />
     </PlayerLayout>
   );
