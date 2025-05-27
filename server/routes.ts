@@ -986,6 +986,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const storyTitle = title || project.title || `Visual Novel Act ${actNum}`;
 
       // Include character portraits in the shared story data
+      console.log("PORTRAIT DEBUG: Project keys:", Object.keys(project));
       console.log("PORTRAIT DEBUG: Project has characterPortraitsData:", !!project.characterPortraitsData);
       console.log("PORTRAIT DEBUG: characterPortraitsData keys:", project.characterPortraitsData ? Object.keys(project.characterPortraitsData) : "none");
       
