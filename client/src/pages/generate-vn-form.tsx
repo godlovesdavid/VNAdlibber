@@ -353,6 +353,18 @@ export default function GenerateVnForm() {
               </Select>
             </div>
             <div className="flex items-center gap-4">
+
+              {/* Export Acts Button - only show in advanced mode */}
+              {advancedMode && (
+                <Button
+                  className="flex items-center"
+                  onClick={handleExportActs}
+                  disabled={!Object.keys(projectData?.generatedActs || {}).length}
+                >
+                  <Download className="mr-1 h-4 w-4" /> {t('generateVnForm.exportActs', 'Export Acts')}
+                </Button>
+              )}
+              
               {/* Advanced Mode Toggle */}
               <div className="flex items-center space-x-2">
                 <Switch
@@ -366,16 +378,6 @@ export default function GenerateVnForm() {
                 </Label>
               </div>
               
-              {/* Export Acts Button - only show in advanced mode */}
-              {advancedMode && (
-                <Button
-                  className="flex items-center"
-                  onClick={handleExportActs}
-                  disabled={!Object.keys(projectData?.generatedActs || {}).length}
-                >
-                  <Download className="mr-1 h-4 w-4" /> {t('generateVnForm.exportActs', 'Export Acts')}
-                </Button>
-              )}
             </div>
           </div>
 

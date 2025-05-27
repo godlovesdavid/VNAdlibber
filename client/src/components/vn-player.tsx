@@ -223,7 +223,7 @@ export function VnPlayer({
       !currentScene ||
       isGenerating ||
       !imageGenerationEnabled ||
-      !currentScene?.setting_desc
+      !currentScene?.setting_description
     ) {
       return;
     }
@@ -243,7 +243,7 @@ export function VnPlayer({
       // Generate new image if not cached
       console.log("Generating new image for scene:", currentScene.setting);
       const response = await apiRequest("POST", "/api/generate/image", {
-        prompt: currentScene.setting_desc,
+        prompt: currentScene.setting_description,
         width: 1024,
         height: 1024,
       });
@@ -703,10 +703,10 @@ export function VnPlayer({
                 sceneId={currentSceneId}
                 isGenerated={true}
               />
-            ) : currentScene.setting_desc ? (
+            ) : currentScene.setting_description ? (
               // Display scene's existing background image
               <SceneBackground
-                imageUrl={currentScene.setting_desc}
+                imageUrl={currentScene.setting_description}
                 sceneId={currentSceneId}
                 isGenerated={false}
               />

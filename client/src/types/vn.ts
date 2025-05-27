@@ -81,7 +81,7 @@ export interface SceneChoice {
 // Visual novel scene structure
 export interface Scene {
   setting: string;
-  setting_desc?: string;
+  setting_description?: string;
   dialogue: [string, string][];
   choices?: SceneChoice[] | null;
 }

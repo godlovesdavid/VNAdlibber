@@ -1560,7 +1560,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         {
           "scene name": {
             "setting": "Location Name (with optionally time of day) (reusable)",
-            "setting_desc": "Background description for SDXL image generation",
+            "setting_description": "Background description for SDXL image generation",
             "dialogue": [
               ["Narrator", "Descriptive text about the scene"],
               ["Character Name", "Character dialogue"],
@@ -1593,7 +1593,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         - Unknown characters are named "???" until revealed.
         - Use the full name of the character in the dialogue.
         - Flashbacks or foreshadowing of events are pluses.
-        - "setting_desc" is a prompt directed to Stable Diffusion XL and is used for real time generating a background image for the VN program. It is only required when visiting the setting for the first time. Omit this key altogether otherwise. Do not mention main characters or foreground objects as those are rendered separately.
+        - "setting_description" is a prompt directed to Stable Diffusion XL and is used for real time generating a background image for the VN program. It is only required when visiting the setting for the first time. Omit this key altogether otherwise. Do not mention main characters or foreground objects as those are rendered separately.
         - Maintain the given tone (${projectContext.basicData.tone}) throughout the story.
         - You may optionally include [emotion] or [action] tags before dialogue when it enhances the scene.
         - If a choice increases or decreases a relationship, reflect it subtly in the dialogue tone.
@@ -1709,7 +1709,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   //         const result = await generateSceneBackgroundImage(
   //           scene.name,
-  //           scene.setting_desc,
+  //           scene.setting_description,
   //         );
 
   //         // No environment variables to reset since we've removed DALL-E

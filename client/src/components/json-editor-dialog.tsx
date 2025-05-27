@@ -115,44 +115,40 @@ export function JsonEditorDialog({ actNumber, actData, onSave, trigger }: JsonEd
   };
 
   const guideContent = `
-**JSON Scene Editor Guide**
-
-This editor allows you to modify the structure and content of your visual novel scenes. Here are the key elements:
+**Scene Editor Guide**
+This editor allows you to modify the structure and content of your visual novel scenes.
 
 **Scene Structure:**
-- Each scene has a unique ID (e.g., "scene1_1", "scene1_2")
-- Scenes contain dialogue, choices, and settings
+- Each scene has a unique ID and contains setting, dialogue, and choices.
+"scene id" : 
+{
+  "setting": Scene location shown on the top left
+  "setting_description": Background description for image generation (SDXL)
+  "dialogue": Character/narrator lines (see below)
+  "choices": Player choices (see below)
+}
 
 **Dialogue Format:**
-\`\`\`json
+- Character name must match the one entered in character data to pull the portrait.
 "dialogue": [
   ["Character Name", "What the character says"],
   ["Narrator", "Narrative text"]
 ]
-\`\`\`
 
 **Choices Format:**
-\`\`\`json
+- "text" and "next" are required. 
+- Final scene needs no choices (omit altogether)
+- Relationships, items, and/or skills can be recorded with "delta" and checked against with "condition".
 "choices": [
   {
     "text": "Choice text shown to player",
-    "next": "scene_id_to_go_to"
+    "next": "scene id to go to"
+    "description": "Brief explanation of consequences",
+    "delta": {"characterName": 1, "anotherCharacter": -1},
+    "condition": {"characterName": 2},
+    "failNext": "scene id to go if fail condition"
   }
 ]
-\`\`\`
-
-**Scene Properties:**
-- \`setting\`: Location description
-- \`setting_desc\`: Detailed scene description
-- \`dialogue\`: Array of character/narrator lines
-- \`choices\`: Array of player choices (if any)
-- \`next\`: Default next scene (if no choices)
-
-**Tips:**
-- Keep character names consistent throughout
-- Ensure scene IDs in "next" fields exist
-- Use proper JSON syntax (quotes, commas, brackets)
-- Test your changes by playing the story
   `;
 
   return (
