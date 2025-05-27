@@ -22,8 +22,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Download, Wand2, Play, Share } from "lucide-react";
+import { Download, Wand2, Play, Share, Edit } from "lucide-react";
 import { ShareStoryDialog } from "@/components/modals/share-story-dialog";
+import { JsonEditorDialog } from "@/components/json-editor-dialog";
 import { PlayerData, GeneratedAct, VnProjectData } from "@/types/vn";
 import { ConfirmationModal } from "@/components/modals/confirmation-modal";
 import { GenerationResult } from "@/lib/openai";
@@ -89,6 +90,24 @@ export default function GenerateVnForm() {
 
   // Form state
   const [scenesPerAct, setScenesPerAct] = useState<number>(10);
+
+  // Handle saving edited JSON data
+  const handleJsonSave = (actNumber: number, updatedData: any) => {
+    try {
+      setGeneratedAct(actNumber, updatedData);
+      saveProject(projectData);
+      toast({
+        title: "Act Updated",
+        description: `Act ${actNumber} has been successfully updated with your changes.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Save Failed", 
+        description: "There was an error saving your JSON edits.",
+        variant: "destructive",
+      });
+    }
+  };
   const [currentGeneratingAct, setCurrentGeneratingAct] = useState<
     number | null
   >(null);
@@ -429,7 +448,7 @@ export default function GenerateVnForm() {
                 </div>
 
                 <div className="flex space-x-2">
-                  {/* Play button first, then Regenerate */}
+                  {/* Play button first, then Edit, then Regenerate */}
                   {isActGenerated(actNumber) && (
                     <Button
                       className="flex items-center"
@@ -437,6 +456,24 @@ export default function GenerateVnForm() {
                     >
                       <Play className="mr-1 h-4 w-4" /> Play
                     </Button>
+                  )}
+                  
+                  {/* Edit button - only show if act is generated */}
+                  {isActGenerated(actNumber) && projectData?.generatedActs?.[`act${actNumber}`] && (
+                    <JsonEditorDialog
+                      actNumber={actNumber}
+                      actData={projectData.generatedActs[`act${actNumber}`]}
+                      onSave={handleJsonSave}
+                      trigger={
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex items-center"
+                        >
+                          <Edit className="mr-1 h-4 w-4" /> Edit
+                        </Button>
+                      }
+                    />
                   )}
 
                   <Button
