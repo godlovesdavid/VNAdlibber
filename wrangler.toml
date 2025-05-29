@@ -1,0 +1,33 @@
+name = "vn-adlibber"
+main = "dist/worker.js"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[build]
+command = "npm run build:worker"
+
+# Environment variables for production
+[env.production.vars]
+NODE_ENV = "production"
+
+# Database configuration for Cloudflare D1 or external database
+# Uncomment and configure as needed:
+# [[env.production.d1_databases]]
+# binding = "DB"
+# database_name = "vn-adlibber-db"
+# database_id = "your-d1-database-id"
+
+# For external PostgreSQL (like Neon, Supabase, etc.)
+[env.production.vars]
+# DATABASE_URL will need to be set as a secret
+
+# Durable Objects (if needed for real-time features)
+# [[durable_objects.bindings]]
+# name = "VN_SESSION"
+# class_name = "VNSession"
+
+# KV storage for caching (optional)
+# [[kv_namespaces]]
+# binding = "VN_CACHE"
+# id = "your-kv-namespace-id"
+# preview_id = "your-preview-kv-namespace-id"
