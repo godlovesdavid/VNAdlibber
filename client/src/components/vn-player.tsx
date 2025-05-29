@@ -964,7 +964,7 @@ export function VnPlayer({
 
           {/* Bounce indicator for continuing dialogue */}
           {!showChoices &&
-            currentScene.dialogue.length > 0 &&
+            currentScene?.dialogue?.length > 0 &&
             !isTextAnimating && (
               <div className="absolute bottom-4 right-4 animate-bounce text-white">
                 <ChevronDown className="h-6 w-6" />

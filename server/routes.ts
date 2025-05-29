@@ -1212,17 +1212,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       `;
 
-      // Check content before generation
-      const moderationCheck = await moderateContent(prompt);
-      if (moderationCheck.flagged) {
-        return res.status(400).json({
-          message: "Content request violates guidelines",
-          technicalDetails: moderationCheck.message,
-          categories: moderationCheck.categories,
-          retryRecommended: true,
-        });
-      }
-
       // Generate concept using Gemini
       const systemPrompt =
         "You're a visual novel brainstormer with wildly creative ideas";
@@ -1239,7 +1228,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           generatedConcept.title = generatedConcept.title.replace(
             "Echo Bloom: ",
             "",
-          ); //ai likes to put this weird thing as the title
+          ); //gemini likes to put this weird thing as the title
         }
 
         res.json(generatedConcept);
@@ -1277,7 +1266,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(statusCode).json({
         message: "Failed to generate concept",
         technicalDetails: errorMessage,
-        rootCause: errorCause || errorMessage,
+        rootCause: errorMessage || errorCause,
         isModelOverloaded: isOverloaded,
         retryRecommended: isOverloaded,
       });
@@ -1297,6 +1286,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`Generating ${indices.length} characters`);
 
+      // Check content before generation
+      // const moderationCheck = await moderateContent(projectContext.conceptData);
+      // if (moderationCheck.flagged) {
+      //   return res.status(400).json({
+      //     message: "Content request violates guidelines",
+      //     technicalDetails: moderationCheck.message,
+      //     categories: moderationCheck.categories,
+      //     retryRecommended: true,
+      //   });
+      // }
+      
       // Create prompt for the character generation - {name: {...}} format
       const prompt = `Given this story context:
         ${JSON.stringify(projectContext, null, 2)}
@@ -1382,7 +1382,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/generate/path", async (req, res) => {
     try {
       const { pathTemplates, projectContext } = req.body;
-
+      
       // Create indices array based on the number of templates
       const indices = Array.from({ length: pathTemplates.length }, (_, i) => i);
 
@@ -1558,7 +1558,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         Generate a visual novel act structure in JSON with the exact format below:
         {
-          "scene name": {
+          "scene_id": {
             "setting": "Location Name (with optionally time of day) (reusable)",
             "setting_description": "Background description for SDXL image generation",
             "dialogue": [
@@ -1569,40 +1569,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
             "choices": [
               {
                 "text": "Choice option text",
-                "next": "scene 2"
+                "next": "scene_2"
               },
               {
                 "text": "Alternative choice",
                 "description": "(optional) Brief explanation of consequences",
                 "delta": {"characterName": 1, "anotherCharacter": -1},
-                "next": "scene 3"
+                "next": "scene_3"
               }
             ]
           }
         }
 
         Guidelines:
-        - Do not generate any other act except Act ${actNumber}.
+        - Do not generate any other act except Act ${actNumber}.${actNumber != 1? ` Neither a preamble nor postamble; just jump right into the action.` : ``}
         - Create approximately ${scenesCount} scenes for Act ${actNumber}, or more if necessary to convey Act ${actNumber}.
-        - Include branching paths based on 2-4 choices. 
-        - Ensure each scene has at least one choice that connects to another valid scene name. Otherwise, the final scene(s) of act should have no choices (omit the key "choices" althogether).
+        - Include branching paths based on 2-4 choices. Only "text" and "next" are required in a choice object. Think step-by-step about the plot progression, identify all key decision points, and then map out the possible branches for each decision. Ensure logical consistency across branches. If ${scenesCount} scenes isn't enough to create complex branching, limit branches to 2-3 scenes which then loop back to the main branch.
+        - Scene id does not need to be in a specific format and can have a more memorable title if desired, as long as it is unique.
+        - Choices may continue a conversation, leading to a "part 2" scene (with the same setting).
+        - Ensure each scene has at least one choice that connects to another valid scene id. Otherwise, the final scene(s) of act should have no choices (omit the key "choices" althogether).
         - Relationships, inventory items, or skills can be added or subtracted by "delta" values.
-        - Pack each scene with ample dialogue to express the story. Be very liberal with the verbosity, illustrating each character's personality. Be inventive and creative about event details, while complying with plot outline.
+        - Pack each scene with ample dialogue to express the story. It can be a paragraph per dialogue line, and there can be 5-15+ lines per scene. Be verbally liberal, illustrating each character's personality as outlined in the character data. Be inventive and creative about event details, while complying with plot outline. Use all of the available information provided to construct the story.
         - Use of a narrator is encouraged to explain the scene or provide context.
         - The protagonist may think in parentheses.
         - Unknown characters are named "???" until revealed.
         - Use the full name of the character in the dialogue.
         - Flashbacks or foreshadowing of events are pluses.
-        - "setting_description" is a prompt directed to Stable Diffusion XL and is used for real time generating a background image for the VN program. It is only required when visiting the setting for the first time. Omit this key altogether otherwise. Do not mention main characters or foreground objects as those are rendered separately.
-        - Maintain the given tone (${projectContext.basicData.tone}) throughout the story.
+        - "setting" is the header of each scene. "setting_description" is a prompt directed to Stable Diffusion XL and is used for real time generating a background image for the VN program. It is only required when visiting the setting for the first time. Omit this key altogether otherwise. Do not mention main characters or foreground objects as those are rendered separately.
+        - Remember to maintain the given tone (${projectContext.basicData.tone}) throughout the story.
         - You may optionally include [emotion] or [action] tags before dialogue when it enhances the scene.
         - If a choice increases or decreases a relationship, reflect it subtly in the dialogue tone.
-        - For conditional choices, use this format:
+        - Ensure the first scene of the act is indexed at the first key.
+        - For conditional choices, use this format, where if "condition" is met, it advances to "next". Otherwise, "failnext":
          {
            "text": "Try to convince guard",
            "condition": {"guardRelationship": 2},
-           "next": "scene 5",
-           "failNext": "scene 6"
+           "next": "scene_5",
+           "failNext": "scene_6"
          }
          - Lastly, keep it engaging! The audience is teen and up.
       `;
@@ -1615,8 +1618,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         prompt,
         systemPrompt,
         "JSON",
-        16384,
-        // true,
+        65536,
+        true,
       );
 
       // Try to parse response

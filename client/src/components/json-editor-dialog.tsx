@@ -115,21 +115,20 @@ export function JsonEditorDialog({ actNumber, actData, onSave, trigger }: JsonEd
   };
 
   const guideContent = `
-**Scene Editor Guide**
-This editor allows you to modify the structure and content of your visual novel scenes.
+This editor lets you to rewrite your visual novel script! It is in JSON format.
 
 **Scene Structure:**
 - Each scene has a unique ID and contains setting, dialogue, and choices.
 "scene id" : 
 {
   "setting": Scene location shown on the top left
-  "setting_description": Background description for image generation (SDXL)
+  "setting_description": Background description for image generation
   "dialogue": Character/narrator lines (see below)
   "choices": Player choices (see below)
 }
 
 **Dialogue Format:**
-- Character name must match the one entered in character data to pull the portrait.
+- Names must match the ones entered in character data to pull the portraits.
 "dialogue": [
   ["Character Name", "What the character says"],
   ["Narrator", "Narrative text"]
@@ -168,7 +167,7 @@ This editor allows you to modify the structure and content of your visual novel 
               <div>
                 <DialogTitle className="flex items-center gap-2">
                   <Edit className="w-5 h-5" />
-                  Edit Act {actNumber} JSON Data
+                  Edit Act {actNumber} Data
                 </DialogTitle>
                 <DialogDescription>
                   Modify the scene data for this act. Make sure to maintain proper JSON syntax.
@@ -237,6 +236,7 @@ This editor allows you to modify the structure and content of your visual novel 
                 onChange={(e) => handleJsonChange(e.target.value)}
                 className="h-full min-h-[450px] font-mono text-sm resize-none"
                 placeholder="JSON data will appear here..."
+                spellCheck={false}
               />
             </div>
           </div>

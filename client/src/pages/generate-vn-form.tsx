@@ -91,7 +91,7 @@ export default function GenerateVnForm() {
   const { generateActData, isGenerating, cancelGeneration } = useVnData();
 
   // Form state
-  const [scenesPerAct, setScenesPerAct] = useState<number>(10);
+  const [scenesPerAct, setScenesPerAct] = useState<number>(20);
   const [advancedMode, setAdvancedMode] = useState<boolean>(false);
 
   // Handle saving edited JSON data
@@ -346,7 +346,7 @@ export default function GenerateVnForm() {
                 <SelectContent>
                   <SelectItem value="10">10 Scenes</SelectItem>
                   <SelectItem value="15">15 Scenes</SelectItem>
-                  <SelectItem value="20">20 Scenes</SelectItem>
+                  <SelectItem value="20" >20 Scenes</SelectItem>
                   <SelectItem value="25">25 Scenes</SelectItem>
                   <SelectItem value="30">30 Scenes</SelectItem>
                 </SelectContent>

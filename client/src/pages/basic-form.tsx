@@ -52,6 +52,16 @@ const themes = [
   "technology_vs_humanity",
   "sacrifice",
   "trust_and_betrayal",
+  "fate_vs_free_will",
+  "illusion_vs_reality",
+  "redemption",
+  "family_and_legacy",
+  "power_and_corruption",
+  "belonging_and_alienation",
+  "survival",
+  "hope_vs_despair",
+  "order_vs_chaos",
+  "redemption",
 ];
 
 const settings = [
@@ -368,24 +378,23 @@ export default function BasicForm() {
                       </SelectTrigger>
                       <SelectContent className="min-w-[200px]">
                         <SelectItem value="forgiveness">{t('themes.forgiveness', 'forgiveness')}</SelectItem>
-                        <SelectItem value="freedom_vs_control">
-                          {t('themes.freedom_vs_control', 'freedom vs control')}
-                        </SelectItem>
+                        <SelectItem value="freedom_vs_control">{t('themes.freedom_vs_control', 'freedom vs control')}</SelectItem>
                         <SelectItem value="growth">{t('themes.growth', 'growth')}</SelectItem>
                         <SelectItem value="identity">{t('themes.identity', 'identity')}</SelectItem>
-                        <SelectItem value="love_vs_duty">
-                          {t('themes.love_vs_duty', 'love vs duty')}
-                        </SelectItem>
-                        <SelectItem value="revenge_and_justice">
-                          {t('themes.revenge_and_justice', 'revenge & justice')}
-                        </SelectItem>
-                        <SelectItem value="technology_vs_humanity">
-                          {t('themes.technology_vs_humanity', 'tech vs humanity')}
-                        </SelectItem>
+                        <SelectItem value="love_vs_duty">{t('themes.love_vs_duty', 'love vs duty')}</SelectItem>
+                        <SelectItem value="revenge_and_justice">{t('themes.revenge_and_justice', 'revenge & justice')}</SelectItem>
+                        <SelectItem value="technology_vs_humanity">{t('themes.technology_vs_humanity', 'tech vs humanity')}</SelectItem>
                         <SelectItem value="sacrifice">{t('themes.sacrifice', 'sacrifice')}</SelectItem>
-                        <SelectItem value="trust_and_betrayal">
-                          {t('themes.trust_and_betrayal', 'trust & betrayal')}
-                        </SelectItem>
+                        <SelectItem value="trust_and_betrayal">{t('themes.trust_and_betrayal', 'trust & betrayal')}</SelectItem>
+                        <SelectItem value="fate_vs_free_will">{t('themes.fate_vs_free_will', 'fate vs free will')}</SelectItem>
+                        <SelectItem value="illusion_vs_reality">{t('themes.illusion_vs_reality', 'illusion vs reality')}</SelectItem>
+                        <SelectItem value="redemption">{t('themes.redemption', 'redemption')}</SelectItem>
+                        <SelectItem value="family_and_legacy">{t('themes.family_and_legacy', 'family & legacy')}</SelectItem>
+                        <SelectItem value="power_and_corruption">{t('themes.power_and_corruption', 'power & corruption')}</SelectItem>
+                        <SelectItem value="belonging_and_alienation">{t('themes.belonging_and_alienation', 'belonging & alienation')}</SelectItem>
+                        <SelectItem value="survival">{t('themes.survival', 'survival')}</SelectItem>
+                        <SelectItem value="hope_vs_despair">{t('themes.hope_vs_despair', 'hope vs despair')}</SelectItem>
+                        <SelectItem value="order_vs_chaos">{t('themes.order_vs_chaos', 'order vs chaos')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
