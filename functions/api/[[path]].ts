@@ -135,6 +135,7 @@ STRICT JSON FORMATTING RULES:
         }
       );
     } catch (error) {
+      console.log('Error in concept generation:', error.message);
       return new Response(
         JSON.stringify({ 
           error: 'Failed to generate concept',
