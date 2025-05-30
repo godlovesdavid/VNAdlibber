@@ -1,8 +1,5 @@
 // Cloudflare Pages Function to handle all API routes
-import type { PagesFunction } from '@cloudflare/workers-types';
-
-// This will handle all /api/* routes
-export const onRequest: PagesFunction = async (context) => {
+export const onRequest = async (context: any) => {
   const { request, env } = context;
   const url = new URL(request.url);
   
@@ -18,7 +15,7 @@ export const onRequest: PagesFunction = async (context) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Basic health check
+  // Health check
   if (url.pathname === '/api/health') {
     return new Response(
       JSON.stringify({ 
@@ -35,12 +32,12 @@ export const onRequest: PagesFunction = async (context) => {
     );
   }
 
-  // For now, return a placeholder response
-  // You'll need to migrate your Express routes here
+  // Placeholder for your migrated API routes
   return new Response(
     JSON.stringify({ 
-      error: 'API endpoint not implemented yet',
-      path: url.pathname
+      error: 'Endpoint migration in progress',
+      path: url.pathname,
+      method: request.method
     }),
     { 
       status: 501,
