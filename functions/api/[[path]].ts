@@ -122,7 +122,15 @@ STRICT JSON FORMATTING RULES:
       }
 
       console.log('Parsing result JSON...');
-      const result = JSON.parse(text);
+      // Extract JSON from markdown code blocks if present
+      let jsonText = text.trim();
+      if (jsonText.startsWith('```json')) {
+        jsonText = jsonText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      } else if (jsonText.startsWith('```')) {
+        jsonText = jsonText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      }
+      
+      const result = JSON.parse(jsonText);
       console.log('Success! Generated concept:', result.title);
       
       return new Response(
