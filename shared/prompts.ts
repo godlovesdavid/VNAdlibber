@@ -33,7 +33,7 @@ export const GEMINI_CONFIG = {
 
 export const PROMPTS = {
   CONCEPT: (theme: string, tone: string, genre: string, setting: string) => 
-    `Write a visual novel concept of a ${tone} ${genre} about ${theme} set in ${setting}.
+    `Write a visual novel concept of a ${tone.replace(/_/g, " ")} ${genre.replace(/_/g, " ")} about ${theme.replace(/_/g, " ")} set in ${setting.replace(/_/g, " ")}.
         Return in this JSON format:
         {
           "title": "Captivating and unique title",
@@ -42,26 +42,54 @@ export const PROMPTS = {
         }`,
 
   PLOT: (projectContext: any) => 
-    `Based on this visual novel concept, create a detailed plot outline. Focus on the overarching narrative structure, major story beats, and character development arcs.
+    `Given this story context:
+        ${JSON.stringify(projectContext, null, 2)}
+        Return a JSON object with 5 acts (act1 through act5). Format as follows:
+        {
+          "act1": {
+            "title": "Act 1 Title",
+            "summary": "Brief overview of Act 1",
+            "events": ["Event 1", "Event 2", "Event 3", "Event 4", "Event 5"],
+            ${
+              Object.keys(projectContext.pathsData).length == 1
+                ? ""
+                : `"arcsActivated": ["Include route titles from pathsData"],
+            "arcIntersections": ["Intersection 1", "Intersection 2"],`
+            }
+            "playerChoices": ["Choice 1 - Consequences", "Choice 2 - Consequences"]
+          },
+          "act2": {/* same structure as act1 */},
+          "act3": {/* same structure as act1 */},
+          "act4": {/* same structure as act1 */},
+          "act5": {/* same structure as act1 */}
+        }
 
-Title: ${projectContext.title}
-Premise: ${projectContext.premise}
-Genre: ${projectContext.genre}
-Tone: ${projectContext.tone}
-Theme: ${projectContext.theme}
-Setting: ${projectContext.setting}
+        Make the 5 acts follow this structure: Introduction, Rising Action, Midpoint Twist, Escalating Conflict, Resolution/Endings.
+        Be descriptive and imaginative about events to create a rich visual novel story.`,
 
-Create a comprehensive plot that explores the theme through compelling conflicts and character growth. Return in this JSON format:
-{
-  "plotSummary": "A detailed overview of the complete story from beginning to end",
-  "acts": [
+  CHARACTER: (projectContext: any, pathTitle: string) => 
+    `Create unique characters for this visual novel story. Context:
+    ${JSON.stringify(projectContext, null, 2)}
+    
+    Current path: ${pathTitle}
+    
+    Create a diverse cast of characters that drives the story forward. Return in this JSON format:
     {
-      "title": "Act title that reflects the dramatic progression",
-      "description": "What happens in this act and its significance to the overall story",
-      "themes": ["key themes explored in this act"]
-    }
-  ],
-  "climax": "Description of the story's climactic moment",
-  "resolution": "How the story concludes and themes are resolved"
-}`
+      "mainCharacter": {
+        "name": "Character Name",
+        "age": "Character Age",
+        "description": "Detailed character background and personality",
+        "motivation": "What drives this character",
+        "role": "protagonist"
+      },
+      "supportingCharacters": [
+        {
+          "name": "Character Name",
+          "age": "Character Age", 
+          "description": "Character background and personality",
+          "motivation": "What drives this character",
+          "role": "supporting character role"
+        }
+      ]
+    }`
 };

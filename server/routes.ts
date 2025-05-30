@@ -16,6 +16,7 @@ import { translateTexts } from "./translation-service";
 import { v4 as uuidv4 } from "uuid";
 import type { Response } from "express";
 import { timestamp } from "drizzle-orm/mysql-core";
+import { JSON_FORMAT_INSTRUCTIONS, GEMINI_CONFIG, PROMPTS } from "@shared/prompts";
 
 // Use Google's Gemini API instead of OpenAI for text generation
 const GEMINI_API_URL =
@@ -536,34 +537,11 @@ async function generateWithGemini(
   try {
     const headers = {
       "Content-Type": "application/json",
-      "x-goog-api-key": GEMINI_API_KEY,
+      "x-goog-api-key": GEMINI_API_KEY!,
     };
 
-    // Add strict JSON formatting instructions
-    const jsonFormatInstructions = `
-STRICT JSON FORMATTING RULES:
-1. Return ONLY valid JSON without any explanatory text or markdown.
-2. All property names must be in double quotes.
-3. String values must use double quotes, not single quotes.
-4. No trailing commas in arrays or objects.
-5. No JavaScript-style comments in JSON.
-6. Escape all quotes within strings.
-7. Validate your JSON structure before returning it.
-8. Do not include markdown code blocks in your response.
-9. Every object property name must be quoted.
-10. Use value null instead of string "null"
-
-Example of CORRECT JSON format:
-{
-  "property": "value",
-  "array": [1, 2, 3],
-  "object": {
-    "nested": true
-  }
-}
-`;
     // Add the JSON formatting instructions to the prompt
-    const enhancedPrompt = prompt + "\n\n" + jsonFormatInstructions; //
+    const enhancedPrompt = prompt + "\n\n" + JSON_FORMAT_INSTRUCTIONS; //
     console.log(enhancedPrompt);
 
     // Construct the request body
@@ -582,7 +560,7 @@ Example of CORRECT JSON format:
       },
     };
 
-    const response = await fetch(isPro ? GEMINI_API_URL_PRO : GEMINI_API_URL, {
+    const response = await fetch(isPro ? GEMINI_CONFIG.PRO_MODEL : GEMINI_CONFIG.LITE_MODEL, {
       method: "POST",
       headers,
       body: JSON.stringify(requestBody),
