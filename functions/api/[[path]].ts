@@ -2,7 +2,7 @@
 import { Pool } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import { eq } from 'drizzle-orm';
-import { vnProjects, vnStories } from '../../../shared/schema';
+import { vnProjects, vnStories } from '../../shared/schema';
 
 export const onRequest = async (context: any) => {
   const { request, env } = context;
