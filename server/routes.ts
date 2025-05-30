@@ -1180,15 +1180,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/generate/concept", async (req, res) => {
     try {
       const { basicData } = generateConceptSchema.parse(req.body);
-      // Create prompt for the concept generation - directly matching our expected format
-      const prompt = `Write a visual novel concept of a ${basicData.tone.replace(/_/g, " ")} ${basicData.genre.replace(/_/g, " ")} about ${basicData.theme.replace(/_/g, " ")} set in ${basicData.setting.replace(/_/g, " ")}.
-        Return in this JSON format:
-        {
-          "title": "Captivating and unique title",
-          "tagline": "Brief, memorable catchphrase",
-          "premise": "Detailed premise describing the world, main conflict, and core story without specific character names"
-        }
-      `;
+      // Create prompt for the concept generation using shared configuration
+      const prompt = PROMPTS.CONCEPT(basicData.theme, basicData.tone, basicData.genre, basicData.setting);
 
       // Generate concept using Gemini
       const systemPrompt =
@@ -1275,32 +1268,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       //   });
       // }
       
-      // Create prompt for the character generation - {name: {...}} format
-      const prompt = `Given this story context:
-        ${JSON.stringify(projectContext, null, 2)}
-        Generate ${indices.length} detailed character${indices.length > 1 ? "s" : ""} for a visual novel in JSON format.
-
-        Return in this exact format where the character's name is the key:
-        {
-          "Character Name": {
-            "role": "${indices.length > 1 && indices[0] == 0 ? "Main Protagonist" : "Role in story (antagonist, mentor, etc.)"}",
-            "occupation": "Job or daily activity",
-            "gender": "Gender identity",
-            "age": "Age as a string",
-            "appearance": "Detailed physical description",
-            "personality": "Key traits, behaviors, and quirks",
-            "goals": "Primary motivations and objectives",
-            "relationshipPotential": ${indices.length == 1 && indices[0] == 0 ? "N/A" : '"Potential relationship dynamic with protagonist"'}, 
-            "conflict": "Main personal struggle or challenge"
-          }${indices.length > 1 ? "," : ""}
-          ${indices.length > 1 ? '\n  "Another Character Name": { ... },' : ""}
-          ${indices.length > 1 ? '\n  "Third Character Name": { ... }' : ""}
-        }
-
-        Make characters feel realistic, complex, and memorable with distinct personalities.
-        ${indices.length > 1 ? "Make the first character the main protagonist." : ""}
-        Keep all characters consistent with the story's theme, tone, and genre.
-      `;
+      // Create prompt for the character generation using shared configuration
+      const prompt = PROMPTS.CHARACTER(projectContext, "main");
 
       // Generate characters using Gemini
       const systemPrompt =
@@ -1447,32 +1416,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { projectContext } = generatePlotSchema.parse(req.body);
 
-      // Create prompt for the plot generation - directly matching our expected format
-      const prompt = `Given this story context:
-        ${JSON.stringify(projectContext, null, 2)}
-        Return a JSON object with 5 acts (act1 through act5). Format as follows:
-        {
-          "act1": {
-            "title": "Act 1 Title",
-            "summary": "Brief overview of Act 1",
-            "events": ["Event 1", "Event 2", "Event 3", "Event 4", "Event 5"],
-            ${
-              Object.keys(projectContext.pathsData).length == 1
-                ? ""
-                : `"arcsActivated": ["Include route titles from pathsData"],
-            "arcIntersections": ["Intersection 1", "Intersection 2"],`
-            }
-            "playerChoices": ["Choice 1 - Consequences", "Choice 2 - Consequences"]
-          },
-          "act2": {/* same structure as act1 */},
-          "act3": {/* same structure as act1 */},
-          "act4": {/* same structure as act1 */},
-          "act5": {/* same structure as act1 */}
-        }
-
-        Make the 5 acts follow this structure: Introduction, Rising Action, Midpoint Twist, Escalating Conflict, Resolution/Endings.
-        Be descriptive and imaginative about events to create a rich visual novel story.
-      `;
+      // Create prompt for the plot generation using shared configuration
+      const prompt = PROMPTS.PLOT(projectContext);
 
       // Generate plot using Gemini
       const systemPrompt =
