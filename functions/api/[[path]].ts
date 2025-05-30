@@ -36,9 +36,16 @@ export const onRequest = async (context: any) => {
   // POST /api/generate/concept - Generate story concept
   if (url.pathname === '/api/generate/concept' && request.method === 'POST') {
     try {
+      console.log('Concept generation request received');
+      console.log('Has GEMINI_API_KEY:', !!env.GEMINI_API_KEY);
+      
       if (!env.GEMINI_API_KEY) {
+        console.log('GEMINI_API_KEY missing');
         return new Response(
-          JSON.stringify({ error: 'GEMINI_API_KEY not configured' }),
+          JSON.stringify({ 
+            error: 'GEMINI_API_KEY not configured',
+            debug: 'Environment variable missing'
+          }),
           { 
             status: 500,
             headers: { 

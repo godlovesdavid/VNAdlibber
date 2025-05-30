@@ -1,0 +1,114 @@
+{
+  "wallTime": 1991,
+  "cpuTime": 2,
+  "truncated": false,
+  "executionModel": "stateless",
+  "outcome": "ok",
+  "scriptVersion": {
+    "id": "f0c73f91-7fde-4988-bf9e-5118079653a4"
+  },
+  "scriptName": "pages-worker--6390600-production",
+  "diagnosticsChannelEvents": [],
+  "exceptions": [],
+  "logs": [],
+  "eventTimestamp": 1748583861175,
+  "event": {
+    "request": {
+      "url": "https://vnadlib.pages.dev/api/generate/concept",
+      "method": "POST",
+      "headers": {
+        "accept": "*/*",
+        "accept-encoding": "gzip, br",
+        "accept-language": "en-US,en;q=0.9",
+        "cf-connecting-ip": "47.45.90.17",
+        "cf-ipcountry": "US",
+        "cf-ray": "947beb4c2e8f17f4",
+        "cf-visitor": "{\"scheme\":\"https\"}",
+        "connection": "Keep-Alive",
+        "content-length": "98",
+        "content-type": "application/json",
+        "host": "vnadlib.pages.dev",
+        "origin": "https://vnadlib.pages.dev",
+        "priority": "u=1, i",
+        "referer": "https://vnadlib.pages.dev/create/concept",
+        "sec-ch-ua": "\"Chromium\";v=\"136\", \"Google Chrome\";v=\"136\", \"Not.A/Brand\";v=\"99\"",
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": "\"Windows\"",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-origin",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+        "x-forwarded-proto": "https",
+        "x-real-ip": "47.45.90.17"
+      },
+      "cf": {
+        "requestHeaderNames": {},
+        "httpProtocol": "HTTP/3",
+        "tlsCipher": "AEAD-AES128-GCM-SHA256",
+        "verifiedBotCategory": "",
+        "continent": "NA",
+        "asn": 20115,
+        "clientAcceptEncoding": "gzip, deflate, br, zstd",
+        "tlsClientExtensionsSha1": "9HUsYejoMyCEnbf8m8jHSQZXPDw=",
+        "longitude": "-121.57790",
+        "tlsClientCiphersSha1": "3HTt3+R/6BL3zeALJDSq0pR1yOQ=",
+        "tlsClientHelloLength": "1754",
+        "tlsClientAuth": {
+          "certIssuerDNLegacy": "",
+          "certIssuerSKI": "",
+          "certSubjectDNRFC2253": "",
+          "certSubjectDNLegacy": "",
+          "certFingerprintSHA256": "",
+          "certNotBefore": "",
+          "certSKI": "",
+          "certSerial": "",
+          "certIssuerDN": "",
+          "certVerified": "NONE",
+          "certNotAfter": "",
+          "certSubjectDN": "",
+          "certPresented": "0",
+          "certRevoked": "0",
+          "certIssuerSerial": "",
+          "certIssuerDNRFC2253": "",
+          "certFingerprintSHA1": ""
+        },
+        "region": "California",
+        "tlsExportedAuthenticator": {
+          "clientFinished": "0639f7fdf87a3ae0146b1b4d320e6dd8e4a5b323e4002e30a5c3345c63d2e859",
+          "clientHandshake": "11f25a2ab82112bb481802494edcb687b042a79fd78734a5345da3532c076ead",
+          "serverHandshake": "1bf0ee3f27a199374a9fe91a4b10c042dda6b9860e96d6f8f5fbb902d77d0f91",
+          "serverFinished": "918e49a01ef4be6a5ed25cc50a79614ca1982217396685854eca44690e0b8d6f"
+        },
+        "tlsVersion": "TLSv1.3",
+        "colo": "SJC",
+        "timezone": "America/Los_Angeles",
+        "latitude": "37.01560",
+        "postalCode": "95020",
+        "edgeRequestKeepAliveStatus": 1,
+        "requestPriority": "",
+        "city": "Gilroy",
+        "country": "US",
+        "tlsClientRandom": "xrIQdSTROO3PeAYMNHKxf/2IF349BRh1jckrNP8ZB0Q=",
+        "regionCode": "CA",
+        "asOrganization": "Spectrum",
+        "metroCode": "807",
+        "tlsClientExtensionsSha1Le": "0TYa0Xi2i3Bw/VRvTlyG19a09vI=",
+        "pagesHostName": "vnadlib.pages.dev",
+        "botManagement": {
+          "corporateProxy": false,
+          "verifiedBot": false,
+          "jsDetection": {
+            "passed": false
+          },
+          "staticResource": false,
+          "detectionIds": {},
+          "score": 99
+        }
+      }
+    },
+    "response": {
+      "status": 500
+    }
+  },
+  "id": 0
+}
