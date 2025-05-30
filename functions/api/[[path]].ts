@@ -80,7 +80,22 @@ STRICT JSON FORMATTING RULES:
 1. Return ONLY valid JSON without any explanatory text or markdown.
 2. All property names must be in double quotes.
 3. String values must use double quotes, not single quotes.
-4. No trailing commas in arrays or objects.`;
+4. No trailing commas in arrays or objects.
+5. No JavaScript-style comments in JSON.
+6. Escape all quotes within strings.
+7. Validate your JSON structure before returning it.
+8. Do not include markdown code blocks in your response.
+9. Every object property name must be quoted.
+10. Use value null instead of string "null"
+
+Example of CORRECT JSON format:
+{
+  "property": "value",
+  "array": [1, 2, 3],
+  "object": {
+    "nested": true
+  }
+}`;
 
       const enhancedPrompt = prompt + "\n\n" + jsonInstructions;
 
