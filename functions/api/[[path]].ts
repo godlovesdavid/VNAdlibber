@@ -1,8 +1,4 @@
 // Cloudflare Pages Function to handle all API routes
-import { Pool } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import { eq } from 'drizzle-orm';
-import { vnProjects, vnStories } from '../../shared/schema';
 
 export const onRequest = async (context: any) => {
   const { request, env } = context;
@@ -20,27 +16,6 @@ export const onRequest = async (context: any) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Initialize database connection
-  let db;
-  try {
-    if (!env.DATABASE_URL) {
-      throw new Error('DATABASE_URL not configured');
-    }
-    const pool = new Pool({ connectionString: env.DATABASE_URL });
-    db = drizzle({ client: pool });
-  } catch (error) {
-    return new Response(
-      JSON.stringify({ error: 'Database connection failed' }),
-      { 
-        status: 500,
-        headers: { 
-          'Content-Type': 'application/json',
-          ...corsHeaders
-        }
-      }
-    );
-  }
-
   // Health check
   if (url.pathname === '/api/health') {
     return new Response(
@@ -56,142 +31,6 @@ export const onRequest = async (context: any) => {
         }
       }
     );
-  }
-
-  // GET /api/projects - List all projects
-  if (url.pathname === '/api/projects' && request.method === 'GET') {
-    try {
-      const projects = await db.select().from(vnProjects);
-      return new Response(
-        JSON.stringify(projects),
-        { 
-          headers: { 
-            'Content-Type': 'application/json',
-            ...corsHeaders
-          }
-        }
-      );
-    } catch (error) {
-      return new Response(
-        JSON.stringify({ error: 'Failed to fetch projects' }),
-        { 
-          status: 500,
-          headers: { 
-            'Content-Type': 'application/json',
-            ...corsHeaders
-          }
-        }
-      );
-    }
-  }
-
-  // POST /api/projects - Create or update project
-  if (url.pathname === '/api/projects' && request.method === 'POST') {
-    try {
-      const projectData = await request.json();
-      
-      // If project has an ID, update it
-      if (projectData.id) {
-        const dataToUpdate = {
-          ...projectData,
-          characterPortraitsData: projectData.characterPortraitsData || {},
-        };
-
-        const [updatedProject] = await db
-          .update(vnProjects)
-          .set(dataToUpdate)
-          .where(eq(vnProjects.id, projectData.id))
-          .returning();
-
-        return new Response(
-          JSON.stringify(updatedProject),
-          { 
-            headers: { 
-              'Content-Type': 'application/json',
-              ...corsHeaders
-            }
-          }
-        );
-      }
-
-      // Otherwise create a new project
-      const dataToCreate = {
-        ...projectData,
-        characterPortraitsData: projectData.characterPortraitsData || {},
-      };
-
-      const [newProject] = await db
-        .insert(vnProjects)
-        .values(dataToCreate)
-        .returning();
-
-      return new Response(
-        JSON.stringify(newProject),
-        { 
-          status: 201,
-          headers: { 
-            'Content-Type': 'application/json',
-            ...corsHeaders
-          }
-        }
-      );
-    } catch (error) {
-      return new Response(
-        JSON.stringify({ error: 'Failed to save project' }),
-        { 
-          status: 500,
-          headers: { 
-            'Content-Type': 'application/json',
-            ...corsHeaders
-          }
-        }
-      );
-    }
-  }
-
-  // GET /api/projects/:id - Get specific project
-  if (url.pathname.startsWith('/api/projects/') && request.method === 'GET') {
-    try {
-      const id = parseInt(url.pathname.split('/')[3]);
-      const [project] = await db
-        .select()
-        .from(vnProjects)
-        .where(eq(vnProjects.id, id));
-
-      if (!project) {
-        return new Response(
-          JSON.stringify({ error: 'Project not found' }),
-          { 
-            status: 404,
-            headers: { 
-              'Content-Type': 'application/json',
-              ...corsHeaders
-            }
-          }
-        );
-      }
-
-      return new Response(
-        JSON.stringify(project),
-        { 
-          headers: { 
-            'Content-Type': 'application/json',
-            ...corsHeaders
-          }
-        }
-      );
-    } catch (error) {
-      return new Response(
-        JSON.stringify({ error: 'Failed to fetch project' }),
-        { 
-          status: 500,
-          headers: { 
-            'Content-Type': 'application/json',
-            ...corsHeaders
-          }
-        }
-      );
-    }
   }
 
   // POST /api/generate/concept - Generate story concept
@@ -217,14 +56,59 @@ export const onRequest = async (context: any) => {
         Return in this JSON format:
         {
           "title": "Captivating and unique title",
-          "tagline": "Brief, memorable catchphrase",
+          "tagline": "Brief, memorable catchphrase", 
           "premise": "Detailed premise describing the world, main conflict, and core story without specific character names"
         }`;
 
-      const response = await generateWithGemini(prompt, env.GEMINI_API_KEY);
+      // Call Gemini API directly
+      const headers = {
+        "Content-Type": "application/json",
+        "x-goog-api-key": env.GEMINI_API_KEY,
+      };
+
+      const jsonInstructions = `
+STRICT JSON FORMATTING RULES:
+1. Return ONLY valid JSON without any explanatory text or markdown.
+2. All property names must be in double quotes.
+3. String values must use double quotes, not single quotes.
+4. No trailing commas in arrays or objects.`;
+
+      const enhancedPrompt = prompt + "\n\n" + jsonInstructions;
+
+      const requestBody = {
+        contents: [
+          { role: "user", parts: [{ text: enhancedPrompt }] },
+        ],
+        generationConfig: {
+          maxOutputTokens: 4096,
+          temperature: 0.7,
+        },
+      };
+
+      const apiResponse = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent",
+        {
+          method: "POST",
+          headers,
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      if (!apiResponse.ok) {
+        throw new Error(`Gemini API error: ${apiResponse.status}`);
+      }
+
+      const data = await apiResponse.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      
+      if (!text) {
+        throw new Error("No response from Gemini API");
+      }
+
+      const result = JSON.parse(text);
       
       return new Response(
-        JSON.stringify(response),
+        JSON.stringify(result),
         { 
           headers: { 
             'Content-Type': 'application/json',
@@ -234,7 +118,10 @@ export const onRequest = async (context: any) => {
       );
     } catch (error) {
       return new Response(
-        JSON.stringify({ error: 'Failed to generate concept' }),
+        JSON.stringify({ 
+          error: 'Failed to generate concept',
+          details: error.message 
+        }),
         { 
           status: 500,
           headers: { 
