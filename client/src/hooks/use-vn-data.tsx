@@ -50,7 +50,7 @@ export const useVnData = () => {
       if ((error as Error).name !== "AbortError") {
         toast({
           title: "Generation Failed",
-          description: "Failed to generate concept. Please try again.",
+          description: (error as Error).message,
           variant: "destructive",
           duration: 60000,
         });
