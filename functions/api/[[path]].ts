@@ -56,8 +56,10 @@ export const onRequest = async (context: any) => {
         );
       }
 
+      console.log('Parsing request body...');
       const { basicData } = await request.json();
       const { theme, tone, genre, setting } = basicData;
+      console.log('Request data:', { theme, tone, genre, setting });
 
       const prompt = `Write a visual novel concept of a ${tone} ${genre} about ${theme} set in ${setting}.
         Return in this JSON format:
@@ -92,6 +94,7 @@ STRICT JSON FORMATTING RULES:
         },
       };
 
+      console.log('Making Gemini API call...');
       const apiResponse = await fetch(
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent",
         {
@@ -101,18 +104,26 @@ STRICT JSON FORMATTING RULES:
         }
       );
 
+      console.log('Gemini API response status:', apiResponse.status);
+      
       if (!apiResponse.ok) {
-        throw new Error(`Gemini API error: ${apiResponse.status}`);
+        const errorText = await apiResponse.text();
+        console.log('Gemini API error response:', errorText);
+        throw new Error(`Gemini API error: ${apiResponse.status} - ${errorText}`);
       }
 
+      console.log('Parsing Gemini response...');
       const data = await apiResponse.json();
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
       
       if (!text) {
+        console.log('No text in Gemini response:', JSON.stringify(data));
         throw new Error("No response from Gemini API");
       }
 
+      console.log('Parsing result JSON...');
       const result = JSON.parse(text);
+      console.log('Success! Generated concept:', result.title);
       
       return new Response(
         JSON.stringify(result),
